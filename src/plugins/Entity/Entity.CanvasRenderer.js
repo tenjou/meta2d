@@ -143,7 +143,16 @@ Entity.CanvasRenderer = Entity.Controller.extend
 
 			if(entity._isCached || !entity.isVisible || !entity._isLoaded) { continue; }
 
-			entity.draw(ctx);
+			if(entity.ignoreZoom) {
+				ctx.restore();
+				ctx.save();
+				entity.draw(ctx);
+				ctx.scale(camera._zoom, camera._zoom);
+			}
+			else {
+				entity.draw(ctx);
+			}
+
 			entity._isNeedDraw = false;
 		}
 
@@ -184,7 +193,16 @@ Entity.CanvasRenderer = Entity.Controller.extend
 
 			if(entity._isCached || !entity.isVisible || !entity._isLoaded) { continue; }
 
-			entity.draw(ctx);
+			if(entity.ignoreZoom) {
+				ctx.restore();
+				ctx.save();
+				entity.draw(ctx);
+				ctx.scale(camera._zoom, camera._zoom);
+			}
+			else {
+				entity.draw(ctx);
+			}
+
 			entity._isNeedDraw = false;
 		}
 

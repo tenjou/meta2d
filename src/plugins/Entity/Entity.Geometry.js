@@ -488,7 +488,7 @@ Entity.Geometry = meta.Class.extend
 			var numChildren = this.children.length;
 			for(var i = 0; i < numChildren; i++) {
 					var child = this.children[i];
-					child._onResize_anchor(this, event);				
+					child.updateAnchor(null, null);				
 			}
 		}					
 	},	
@@ -1028,8 +1028,12 @@ Entity.Geometry = meta.Class.extend
 
 		if(entity.isAnchor) {
 			entity.anchor(entity._anchorX, entity._anchorY);
-			//entity._onResize_anchor = null;
+			//entity.updateAnchor = null;
 		}
+		if(entity.ignoreZoom !== this.ignoreZoom) {
+			entity.ignoreZoom = this.ignoreZoom;
+		}
+
 		entity.updatePos();
 
 		if(this._view && this._view._isActive) {
@@ -1417,12 +1421,19 @@ Entity.Geometry = meta.Class.extend
 	},
 
 
-	_onResize_anchor: function(data, event)
+	updateAnchor: function(data, event)
 	{
 		if(this._isAnchor) 
 		{
-			this._anchorPosX = this.parent.volume.width * this._anchorX;
-			this._anchorPosY = this.parent.volume.height * this._anchorY;
+			if(this._ignoreZoom) {
+				this._anchorPosX = this.parent.volume.width * (1.0 / this.parent.volume.scaleX) * this._anchorX;
+				this._anchorPosY = this.parent.volume.height * (1.0 / this.parent.volume.scaleY) * this._anchorY;				
+			}
+			else {
+				this._anchorPosX = this.parent.volume.width * this._anchorX;
+				this._anchorPosY = this.parent.volume.height * this._anchorY;
+			}
+
 			this.updatePos();
 
 			if(this.children)
@@ -1431,7 +1442,7 @@ Entity.Geometry = meta.Class.extend
 				for(var i = 0; i < numChildren; i++) 
 				{
 					var child = this.children[i];
-					child._onResize_anchor(this, event);
+					child.updateAnchor(null, null);
 				}
 			}
 		}
@@ -1511,7 +1522,7 @@ Entity.Geometry = meta.Class.extend
 		}
 		else {
 			this._isAnchor = true;
-			this.onResize = this._onResize_anchor;
+			this.onResize = this.updateAnchor;
 			this.isNeedDraw = true;
 		}
 	},
@@ -1892,6 +1903,20 @@ Entity.Geometry = meta.Class.extend
 
 	get isCached() { return this._isCached; },
 
+	set ignoreZoom(value) 
+	{
+		if(this._ignoreZoom === value) { return; }
+
+		if(this._isAnchor) {
+			this.updateAnchor(null, null);
+		}
+
+		this._ignoreZoom = value;
+		this.isNeedDraw = true;
+	},
+
+	get ignoreZoom() { return this._ignoreZoom; },
+
 
 	//
 	_entityCtrl: null,
@@ -1957,6 +1982,7 @@ Entity.Geometry = meta.Class.extend
 	isHover: false,
 	isPressed: false,
 	isDragged: false,
+	_ignoreZoom: false,
 
 	fps: 0,
 	animSpeed: 1.0,

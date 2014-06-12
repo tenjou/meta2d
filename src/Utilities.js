@@ -576,6 +576,7 @@ meta.addDescription = function(text)
 	msg.size = 14;
 	msg.text = text;
 	msg.isPickable = false;
+	msg.ignoreZoom = true;
 	msg.enableDebug = false;
 
 	var texture = new Resource.Texture();
@@ -588,6 +589,7 @@ meta.addDescription = function(text)
 	bg.anchor(0.5, 0);
 	bg.positionTop(0, 10);
 	bg.isPickable = false;
+	bg.ignoreZoom = true;
 	bg.enableDebug = false;
 	meta.view.add(bg);
 

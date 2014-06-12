@@ -145,7 +145,17 @@ Entity.WebGLRenderer = Entity.Controller.extend
 			else {
 				gl.bindTexture(gl.TEXTURE_2D, texture.image);
 			}
-			gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+			if(entity.ignoreZoom) {
+				gl.uniform1f(gl.getUniformLocation(shader.program, "zoom"), 1.0);
+				//this._position[0] *= meta.camera.volume.width - meta.camera._zoom;
+				gl.uniform2fv(gl.getUniformLocation(shader.program, "pos"), this._position);
+				gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+				gl.uniform1f(gl.getUniformLocation(shader.program, "zoom"), meta.camera._zoom);
+			}
+			else {
+				gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+			}
 
 			entity._isNeedDraw = false;
 		}
@@ -223,7 +233,14 @@ Entity.WebGLRenderer = Entity.Controller.extend
 					gl.uniform2fv(gl.getUniformLocation(shader.program, "pos"), this._position);
 					gl.uniform2fv(gl.getUniformLocation(shader.program, "scale"), this._scale);
 
-					gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+					if(entity.ignoreZoom) {
+						gl.uniform1f(gl.getUniformLocation(shader.program, "zoom"), 1.0);
+						gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+						gl.uniform1f(gl.getUniformLocation(shader.program, "zoom"), meta.camera._zoom);
+					}					
+					else {
+						gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+					}
 				}
 			}
 
