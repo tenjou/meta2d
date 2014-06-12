@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Entity Z-Index :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <script>
+            meta.load = function()
+            {
+                meta.preloadTextures([ "jabba.png", "shrine.png" ], "https://dl.dropboxusercontent.com/u/145051233/meta/");
+
+                var entity1 = new Entity.Geometry("shrine");
+                entity1.anchor(0.5, 0.5);
+                entity1.position(-50, 0);
+                // Set this entity to be in front of others.
+                entity1.z = 100;
+                meta.view.add(entity1); 
+
+                var entity2 = new Entity.Geometry("jabba");
+                entity2.anchor(0.5, 0.5);
+                entity2.position(50, 0);
+                meta.view.add(entity2);  
+
+                meta.addDescription("Entity z-index example");
+            }; 
+        </script>
+    </body>
+</html>

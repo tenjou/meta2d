@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Entity Parent & Child :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <script>
+            meta.load = function()
+            {
+                meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+
+                // Create parent entity as black quad.
+                var parent = new Entity.Geometry();
+                // Create an empty texture.
+                parent.texture = new Resource.Texture();
+                // Fill empty texture with black color.
+                parent.texture.fillRect({
+                    width: 300, height: 300,
+                    color: "black"
+                });
+                // Center parent in the middle of the screen.
+                parent.anchor(0.5, 0.5);
+                meta.view.add(parent);
+
+                // Create child entity with "jabba" texture.
+                var child = new Entity.Geometry("jabba");
+                // Center it in the middle of parent.
+                child.anchor(0.5, 0.5);
+                // Add child to the parent.
+                parent.attach(child);
+
+                meta.addDescription("Entity parent & child example");                
+            };
+        </script>
+    </body>
+</html>

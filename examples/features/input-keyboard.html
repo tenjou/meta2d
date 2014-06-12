@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Keyboard Input :: META</title>
+
+		<script src="http://infinite-games.com/meta.latest.js"></script>
+	</head>
+
+	<body>
+		<script>
+			var player = null;
+
+	        meta.update = function(tDelta)
+	        {
+	            var directionX = 0;
+	            var directionY = 0;
+
+	            var input = Input.ctrl;
+
+	            if(input.isDown(Input.Key.A) || input.isDown(Input.Key.ARROW_LEFT)) { directionX = -1; }
+	            else if(input.isDown(Input.Key.D) || input.isDown(Input.Key.ARROW_RIGHT)) { directionX = 1; }
+
+	            if(input.isDown(Input.Key.W) || input.isDown(Input.Key.ARROW_UP)) { directionY = -1; }
+	            else if(input.isDown(Input.Key.S) || input.isDown(Input.Key.ARROW_DOWN)) { directionY = 1; }
+
+	            player.x += (tDelta * 200 * directionX);
+	            player.y += (tDelta * 200 * directionY);
+	        };
+
+			meta.load = function()
+			{
+				meta.preloadTextures("http://i.imgur.com/85w15oW.png");
+
+				player = new Entity.Geometry();
+				player.texture = "85w15oW";
+				player.anchor(0.5, 0.5);
+				meta.view.add(player);
+			}
+		</script>
+	</body>
+</html>

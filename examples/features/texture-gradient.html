@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Texture Gradient :: META</title>
+
+		<script src="http://infinite-games.com/meta.latest.js"></script>
+	</head>
+
+	<body>
+		<script>
+			meta.load = function()
+			{
+				var bg = new Entity.Geometry();
+				bg.texture = new Resource.Texture();
+				bg.texture.gradient({
+					width: meta.world.width, 
+					height: meta.world.height,
+					dirY: 1,
+					colors: [ [ 0, "#DEF8A7" ], [ 1, "#AEE931" ] ]
+				});	
+				bg.positionTopLeft(0, 0);
+				meta.view.add(bg);
+			};	
+		</script>
+	</body>
+</html>

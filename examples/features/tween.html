@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Tween - META</title>
+
+		<script src="http://infinite-games.com/meta.latest.js"></script>
+	</head>
+
+	<body>
+		<script>
+			meta.load = function()
+			{
+				meta.preloadTextures("http://i.imgur.com/85w15oW.png");
+
+				var entity = new Entity.Geometry();
+				entity.texture = "85w15oW";
+				entity.position(100, 100);
+				entity.tween
+						.to({ x: 400, y: 100, angle: -360 }, 2000)
+						.to({ y: 400 }, 1000)
+						.easing(meta.Tween.Easing.bounceOut).repeat().play();
+				meta.view.add(entity);
+			};
+		</script>
+	</body>
+</html>

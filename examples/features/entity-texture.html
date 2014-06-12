@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Entity Texture :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <script>
+            // Called on the first game load.
+            meta.load = function()
+            {
+                // Engine will wait untill all resources marked for preloading are loaded.
+                meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/shrine.png");
+
+                // Create an entity with texture "shrine".
+                var entity = new Entity.Geometry("shrine");
+                // This will make entity to stick in the center even if screen resolution changes.
+                entity.anchor(0.5, 0.5);
+                // Add entity to the current view so it becomes visible.
+                meta.view.add(entity);
+
+                meta.addDescription("Entity texture example");
+            }; 
+        </script>
+    </body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>UI Styles :: META</title>
+
+		<script src="http://infinite-games.com/meta.latest.js"></script>
+	</head>
+
+	<body>
+		<script>
+			meta.load = function()
+			{
+				var customTexture = new Resource.Texture();
+				customTexture.fillRect({
+					color: "orange",
+					width: 150, height: 40
+				});
+
+				var customActiveTexture = new Resource.Texture();
+				customActiveTexture.fillRect({
+					color: "blue",
+					width: 150, height: 40
+				});
+
+				UI.ctrl.setStyle({
+					button: {
+						"*:active": null,
+						custom: {
+							texture: customTexture
+						},
+						"custom:active": {
+							texture: customActiveTexture
+						}
+					}
+				});
+
+				var button1 = new UI.Button();
+				button1.position(100, 100);
+				button1.text = "b1";
+				meta.view.add(button1);
+
+				var button2 = new UI.Button();
+				button2.style = "custom";
+				button2.position(250, 100);
+				button2.text = "b2";
+				meta.view.add(button2);
+			};
+		</script>
+	</body>
+</html>

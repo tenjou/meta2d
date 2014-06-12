@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>View Controller :: META</title>
+
+		<script src="http://infinite-games.com/meta.latest.js"></script>
+	</head>
+
+	<body>
+		<script>
+			var Splash = {};
+
+			Splash.Controller = meta.Controller.extend
+			({
+				// Called when attached to visible view.
+				load: function()
+				{
+					var bg = new Entity.Geometry();
+					bg.texture = new Resource.Texture();
+					bg.texture.fillRect({
+						color: "#ff0000",
+						width: meta.world.width, 
+						height: meta.world.height
+					});
+					bg.positionTopLeft(0, 0);
+					bg.alpha = 0.7;
+					bg.z = 100;
+					this.view.add(bg);
+				}
+			});
+
+
+			meta.load = function()
+			{
+				// Create a new custom view.
+				var splashView = meta.getView("splash");
+				// Register controller to the view, in this case - Splash.Controller.
+				splashView.register("Splash");
+				// Attach our custom view to current main view.
+				meta.view.attach(splashView);
+			}
+		</script>
+	</body>
+</html>

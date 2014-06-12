@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>UI :: META</title>
+
+		<script src="http://infinite-games.com/meta.latest.js"></script>
+	</head>
+
+	<body>
+		<script>
+			meta.load = function()
+			{
+				var button = new UI.Button();
+				button.anchor(0.5, 0.5);
+				button.text = "button 1";
+				meta.view.add(button);
+			};
+		</script>
+	</body>
+</html>

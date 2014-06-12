@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Tiling :: META</title>
+
+		<script src="http://infinite-games.com/meta.latest.js"></script>
+	</head>
+
+	<body>
+		<script>
+			meta.load = function()
+			{
+				meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/img/block_green.png");
+
+				var bg = new Entity.Geometry();
+				bg.texture = new Resource.Texture();
+				bg.texture.tile({
+					width: meta.world.width,
+					height: meta.world.height,
+					texture: "block_green",
+					center: true
+				});					
+				bg.positionTopLeft(0, 0);
+				meta.view.add(bg);
+			};	
+		</script>
+	</body>
+</html>

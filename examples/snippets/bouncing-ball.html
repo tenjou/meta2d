@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Bouncing Ball :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <script>
+            var entity = null;
+            var x = 100;
+            var y = 100;
+            var speedX = 240;
+            var speedY = 330;
+
+            meta.load = function()
+            {
+                entity = new Entity.Geometry();
+                entity.texture = new Resource.Texture();
+                entity.texture.arc({
+                    color: "red",
+                    radius: 16
+                });
+                entity.position(0, 0);
+                meta.view.add(entity);
+            }
+
+            meta.update = function(tDelta)
+            {
+                x += tDelta * speedX;
+                y += tDelta * speedY;
+
+                var volume = meta.world.volume;
+                if((x < volume.minX) || (x > volume.maxX)) {
+                    speedX = -speedX;
+                }
+                if((y < volume.minY) || (y > volume.maxY)) {
+                    speedY = -speedY;
+                }
+
+                entity.position(x, y);
+            }
+        </script>
+    </body>
+</html>

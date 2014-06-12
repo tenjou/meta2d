@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Import :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <script>
+            meta.import("Agent");
+
+            meta.load = function()
+            {
+                var entity = new Entity.Geometry();
+                entity.texture = new Resource.Texture();
+                entity.texture.fillRect({
+                    width: 50,
+                    height: 50,
+                    color: "red"
+                });
+                entity.addComponent("Agent");
+                entity.anchor(0.5, 0.5);
+                meta.view.add(entity);
+            }
+        </script>
+    </body>
+</html>

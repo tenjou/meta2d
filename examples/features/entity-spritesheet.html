@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Entity SpriteSheet :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <script>
+            meta.load = function()
+            {
+                // Engine will wait untill all resources marked for preloading are loaded.
+                meta.loadSpriteSheet(
+                    "https://dl.dropboxusercontent.com/u/145051233/meta/blocks.json");
+
+                var entity = new Entity.Geometry("block_green");
+                entity.anchor(0.5, 0.5);
+                meta.view.add(entity);
+                
+                meta.addDescription("Entity sprite sheet example");                
+            };
+        </script>
+    </body>
+</html>

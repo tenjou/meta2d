@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Entity Pivot :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <script>
+            var entity;
+
+            meta.load = function()
+            {
+                meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+
+                entity = new Entity.Geometry("jabba");
+                // Center entity in the middle of the screen.
+                entity.anchor(0.5, 0.5);
+                // Set entity pivot to center the left side.
+                entity.pivot(-1.0, 0.0);
+                // Show debug borders with pivot location.
+                entity.showBounds = true;
+                meta.view.add(entity);       
+
+                meta.addDescription("Entity pivot example");                     
+            };
+
+            // Every update frame rotate entity clockwise.
+            meta.update = function(tDelta) {
+                // Rotation will be performed from the pivot point.
+                entity.angle += tDelta * 10;
+            };
+        </script>
+    </body>
+</html>

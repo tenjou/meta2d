@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Entity Rotate :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <script>
+            meta.load = function()
+            {
+                meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/shrine.png");
+
+                var entity = new Entity.Geometry("shrine");
+                entity.anchor(0.5, 0.5); 
+                // Rotate entity clockwise by 180.
+                entity.angle = 180;
+                // An alternative way is to use radians:
+                // entity.angleRad = Math.PI;
+                meta.view.add(entity);
+
+                meta.addDescription("Entity rotation example");
+            }; 
+        </script>
+    </body>
+</html>

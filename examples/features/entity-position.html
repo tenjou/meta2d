@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Entity Position :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <script>
+            meta.load = function()
+            {
+                meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/shrine.png");
+
+                // Center.
+                var center = new Entity.Geometry("shrine");
+                center.anchor(0.5, 0.5);
+                center.showBounds = true;
+                meta.view.add(center); 
+
+                // By default anchor is top left corner.
+                var topLeft = new Entity.Geometry("shrine");
+                // Will change pivot to (-1, -1).
+                topLeft.positionTopLeft(0, 0);
+                topLeft.showBounds = true;
+                meta.view.add(topLeft);
+
+                var topRight = new Entity.Geometry("shrine");
+                // Anchor top right corner.
+                topRight.anchor(1.0, 0.0);
+                // Will change pivot to (1, -1).
+                topRight.positionTopRight(0, 0);
+                topRight.showBounds = true;
+                meta.view.add(topRight);
+
+                var bottomLeft = new Entity.Geometry("shrine");
+                // Anchor bottom left corner.
+                bottomLeft.anchor(0.0, 1.0);
+                // Will change pivot to (-1, 1).
+                bottomLeft.positionBottomLeft(0, 0);
+                bottomLeft.showBounds = true;
+                meta.view.add(bottomLeft);
+
+                var bottomRight = new Entity.Geometry("shrine");
+                // Anchor bottom right corner.
+                bottomRight.anchor(1.0, 1.0);
+                // Will change pivot to (1, 1).
+                bottomRight.positionBottomRight(0, 0);
+                bottomRight.showBounds = true;
+                meta.view.add(bottomRight); 
+
+                meta.addDescription("Entity positioning example");
+            }; 
+        </script>
+    </body>
+</html>

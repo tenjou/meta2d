@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Component :: META</title>
+
+		<script src="http://infinite-games.com/meta.latest.js"></script>
+	</head>
+
+	<body>
+		<script>
+			// Define our component.
+			Component.MyComponent = function() {
+				this.x = 100;
+			}
+
+			Component.MyComponent.prototype = 
+			{
+				// This will be called when entity is being loaded or uppon adding if entity is already loaded.
+				load: function() {
+					console.log("Component has been loaded.");
+				},
+
+				// This will be called if entity is removed.
+				unload: function() {
+					console.log("Component has been unloaded.");
+				},
+
+				// This will be called every update frame, works only if entity.isUpdating flag is set to - true.
+				update: function(tDelta) {
+					console.log("Update:", this.owner.name);
+					// Remove component from entity. Entities can access it's owner from this.owner variable.
+					this.owner.removeComponent(this);
+				}
+			}
+
+			meta.load = function()
+			{
+				var entity1 = new Entity.Geometry();
+				// Create and add an instance of our previously defiend component. 
+				// First parameter - name of the component.
+				// Second parameter - values that will be assigned to the component upon creation.
+				entity1.addComponent("MyComponent", { x: 18.95 });
+				// Telling entity that it should update will call entity.update() 
+				// and all component update() functions every update frame.
+				entity1.isUpdating = true;
+				meta.view.add(entity1);
+
+				var entity2 = new Entity.Geometry();
+				// Create and add component with default parameters.
+				entity2.addComponent("MyComponent");
+				meta.view.add(entity2);	
+
+				// Print x value of both components.
+				console.log("entity1 x:", entity1.components.MyComponent.x);
+				console.log("entity2 x:", entity2.components.MyComponent.x);
+ 
+ 				// Remove entity with all components.
+				entity2.remove(); 
+
+				meta.addDescription("Component example (output is visible in console)");      
+			}
+		</script>
+	</body>
+</html>

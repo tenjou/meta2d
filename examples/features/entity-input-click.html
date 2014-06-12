@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Entity Input Click :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <script>
+            meta.load = function()
+            {
+                meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+
+                var entity = new Entity.Geometry("jabba");
+                entity.anchor(0.5, 0.5);
+                meta.view.add(entity);
+
+                // Called if mouse button or touch pressed the entity.
+                entity.onDown = function(event) {
+                    this.angle = 180;
+                };
+                // Called if mouse button or touch was released.
+                entity.onUp = function(event) {
+                    this.angle = 0;
+                };
+                // Called if mouse button or touch was released inside entity boundaries.
+                entity.onClick = function(event) {
+                    this.angle = 0;
+                };
+
+                meta.addDescription("Entity input click example");                
+            };
+        </script>
+    </body>
+</html>

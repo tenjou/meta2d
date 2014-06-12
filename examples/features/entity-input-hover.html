@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Entity Input Hover :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <script>
+            meta.load = function()
+            {
+                meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+
+                var entity = new Entity.Geometry("jabba");
+                entity.anchor(0.5, 0.5);
+                meta.view.add(entity);
+
+                // Called when input enters entity boundaries for the first time.
+                entity.onHoverEnter = function(event) {
+                    this.showBounds = true;
+                };
+                // Called when input exits entity boundaries.
+                entity.onHoverExit = function(event) {
+                    this.showBounds = false;
+                };
+                // Called when input moves inside entity boundaries.
+                entity.onHover = function(event) {
+                    console.log("onHover");
+                };   
+
+                meta.addDescription("Entity hover example");                
+            };
+        </script>
+    </body>
+</html>
