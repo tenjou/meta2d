@@ -9,7 +9,7 @@
  * @property [zoom=1.0] {Number} Setter/Getter. Current zoom value.
  * @property [zoomRatio=1.0] {Number} Ratio of how smaller or larger is current view compared to default zoom (zoom = 1.0).
  * @property [enableBorderIgnore=true] {Boolean} Setter/Getter. Flag to enable camera movement past world borders.
- * @property [draggable=false] {Boolean} Setter/Getter. Flag to enable dragging.
+ * @property [dragging=false] {Boolean} Setter/Getter. Flag to enable dragging.
  * @property [enableCentering=false] {Boolean} Setter/Getter. Flag to enable to move camera to the center as initial position.
  * @property [enableCenteringX=false] {Boolean} Setter/Getter. Flag to enable camera centering on X axis.
  * @property [enableCenteringY=false] {Boolean} Setter/Getter. Flag to enable camera centering on Y axis.
@@ -27,7 +27,7 @@ meta.Camera = function()
 	this._zoom = 1.0;
 	this.zoomRatio = 1.0;
 
-	this._draggable = false;
+	this._dragging = false;
 	this._isDragging = false;
 	this._isAutoZoom = false;
 
@@ -93,20 +93,6 @@ meta.Camera.prototype =
 		{
 			var width = this.zoomBounds.width;
 			var height = this.zoomBounds.height;
-
-			// if(this.zoomBounds.minWidth > -1 && width < this.zoomBounds.minWidth) {
-			// 	width = this.zoomBounds.minWidth;
-			// }
-			// else if(this.zoomBounds.maxWidth > -1 && width > this.zoomBounds.maxWidth) {
-			// 	width = this.zoomBounds.maxWidth;
-			// }
-			// if(this.zoomBounds.minHeight > -1 && height < this.zoomBounds.minHeight) {
-			// 	height = this.zoomBounds.minHeight;
-			// }
-			// else if(this.zoomBounds.maxHeight > -1 && height > this.zoomBounds.maxHeight) {
-			// 	height = this.zoomBounds.maxHeight;
-			// }	
-
 			var diffX = meta.width / width;
 			var diffY = meta.height / height;
 
@@ -116,9 +102,11 @@ meta.Camera.prototype =
 			}
 		}
 
-		if(prevZoom !== this._zoom) {
+		if(prevZoom !== this._zoom) 
+		{
 			this.zoomRatio = 1.0 / this._zoom;
 			this.volume.scale(this.zoomRatio, this.zoomRatio);
+
 			this._chnResize.emit(this, meta.Event.CAMERA_RESIZE);
 		}
 
@@ -199,7 +187,6 @@ meta.Camera.prototype =
 
 	_onResize: function(data, event)
 	{
-		this.volume.scale(1.0, 1.0);
 		this.volume.resize(data.width, data.height);
 		meta.world.onCameraResize(this, meta.Event.CAMERA_RESIZE);
 		this.updateView();
@@ -213,7 +200,7 @@ meta.Camera.prototype =
 
 	_startDrag: function(data)
 	{
-		if(!this._draggable) { return; }
+		if(!this._dragging) { return; }
 		this._isDragging = true;
 	},
 
@@ -289,11 +276,11 @@ meta.Camera.prototype =
 
 	get enableBorderIgnore() { return this._enableBorderIgnore; },
 
-	set draggable(value)
+	set dragging(value)
 	{
-		if(this._draggable === value) { return; }
+		if(this._dragging === value) { return; }
 
-		this._draggable = value;
+		this._dragging = value;
 
 		if(value) {
 			meta.subscribe(this, [ Input.Event.INPUT_DOWN, Input.Event.INPUT_UP, Input.Event.INPUT_MOVE ], this._onInput);
@@ -304,7 +291,7 @@ meta.Camera.prototype =
 		}
 	},
 
-	get draggable() { return this._draggable; },
+	get dragging() { return this._dragging; },
 
 
 	set isAutoZoom(value) 
