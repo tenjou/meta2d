@@ -715,13 +715,13 @@ Resource.Texture = Resource.Basic.extend
 		data.width = data.width || this.fullWidth;
 		data.height = data.height || this.fullHeight;
 
+		if(!data.drawOver) {
+			this.resize(data.width, data.height);
+		}
+
 		if(data.center) {
 			data.x += (this.fullWidth & (texture.fullWidth - 1)) / 2;
 			data.y += (this.fullHeight & (texture.fullHeight - 1)) / 2;		
-		}
-
-		if(!data.drawOver) {
-			this.resize(data.width, data.height);
 		}
 
 		if(this.textureType) {
@@ -770,8 +770,8 @@ Resource.Texture = Resource.Basic.extend
 	 * @param params {Object} Parameters.
 	 * @param params.buffer {Array} Array with line points.
 	 * @param params.color {Hex} Fill color.
-	 * @param [params.strokeColor=#000000] {Hex=} Border color.
-	 * @param params.lineWidth {Number} Thickness of border line.
+	 * @param [params.borderColor=#000000] {Hex=} Border color.
+	 * @param params.borderWidth {Number} Thickness of border line.
 	 * @param [params.lineCap="butt"] {String=} Type of line endings.
 	 * @param params.lineDash {Array} Array with sequence for dashing.
 	 * @param params.drawOver {Boolean} Flag - draw over previous texture content.
@@ -813,18 +813,18 @@ Resource.Texture = Resource.Basic.extend
 		var ctx = this.ctx;
 		params.addWidth = params.addWidth || 0;
 		params.addHeight = params.addHeight || 0;
-		params.lineWidth = params.lineWidth || 1;
-		if(!params.color && !params.strokeColor) {
-			params.strokeColor = "#000000"; 
+		params.borderWidth = params.borderWidth || 1;
+		if(!params.color && !params.borderColor) {
+			params.borderColor = "#000000"; 
 		}
 
-		var halfLineWidth = params.lineWidth / 2;
+		var halfLineWidth = params.borderWidth / 2;
 		var offsetX = -minX + halfLineWidth + (params.addWidth / 2);
 		var offsetY = -minY + halfLineWidth + (params.addHeight / 2);
 		if(!params.drawOver) 
 		{
-			this.resize(maxX - minX + params.lineWidth + params.addWidth, 
-				maxY - minY + params.lineWidth + params.addHeight);
+			this.resize(maxX - minX + params.borderWidth + params.addWidth, 
+				maxY - minY + params.borderWidth + params.addHeight);
 		}
 
 		if(this.textureType) {
@@ -832,7 +832,7 @@ Resource.Texture = Resource.Basic.extend
 			ctx = this._cachedCtx;
 		}
 
-		ctx.lineWidth = params.lineWidth;
+		ctx.lineWidth = params.borderWidth;
 		if(params.lineCap) {
 			ctx.lineCap = params.lineCap;
 		}
@@ -852,8 +852,8 @@ Resource.Texture = Resource.Basic.extend
 			ctx.fill();
 		}
 
-		if(params.strokeColor) {
-			ctx.strokeStyle = params.strokeColor;
+		if(params.borderColor) {
+			ctx.strokeStyle = params.borderColor;
 			ctx.stroke();
 		}
 
@@ -877,8 +877,8 @@ Resource.Texture = Resource.Basic.extend
 		params.height = params.height || this.fullHeight;
 
 		var lineWidth = 1;
-		if(params.lineWidth) {
-			lineWidth = params.lineWidth;
+		if(params.borderWidth) {
+			lineWidth = params.borderWidth;
 		}
 
 		params.buffer = [ 0, 0, params.width - lineWidth, 0, params.width - lineWidth, 
@@ -898,11 +898,11 @@ Resource.Texture = Resource.Basic.extend
 	 * @param [params.x=0] {Number=} Offset from the left.
 	 * @param [params.y=0] {Number=} Offset from the top.
 	 * @param params.color {Hex} Color of the filled arc.
-	 * @param [params.strokeColor="#000000"] {Hex=} Color of the filled rect.
+	 * @param [params.borderColor="#000000"] {Hex=} Color of the filled rect.
 	 * @param params.radius {Number=} Radius of arc.
 	 * @param [params.startAngle=0] {Number=} Starting angle from where arch is being drawn from.
 	 * @param [params.endAngle=Math.PI*2] {Number=} End angle to where arc form is drawn.
-	 * @param [params.lineWidth=1] {Number=} Thickness of the line.
+	 * @param [params.borderWidth=1] {Number=} Thickness of the line.
 	 * @param [params.drawOver=false] {Boolean=} Flag - draw over previous texture content.
 	 */
 	arc: function(params)
@@ -918,12 +918,12 @@ Resource.Texture = Resource.Basic.extend
 		params.radius = params.radius || 5;
 		params.startAngle = params.startAngle || 0;
 		params.endAngle = params.endAngle || (Math.PI * 2);
-		params.lineWidth = params.lineWidth || 1;
-		if(!params.color && !params.strokeColor) {
-			params.strokeColor = params.strokeColor || "#000000";
+		params.borderWidth = params.borderWidth || 1;
+		if(!params.color && !params.borderColor) {
+			params.borderColor = params.borderColor || "#000000";
 		}
 
-		var size = params.radius * 2 + params.lineWidth;
+		var size = params.radius * 2 + params.borderWidth;
 		if(!params.drawOver) {
 			this.resize(params.x + size, params.y + size);
 		}		
@@ -933,11 +933,11 @@ Resource.Texture = Resource.Basic.extend
 			ctx = this._cachedCtx;
 		}
 
-		ctx.lineWidth = params.lineWidth;
+		ctx.lineWidth = params.borderWidth;
 		
 		ctx.clearRect(0, 0, this.fullWidth, this.fullHeight);
 		ctx.beginPath();
-		ctx.arc(params.x + params.radius + (params.lineWidth / 2), params.y + params.radius + (params.lineWidth / 2),
+		ctx.arc(params.x + params.radius + (params.borderWidth / 2), params.y + params.radius + (params.borderWidth / 2),
 			params.radius, params.startAngle, params.endAngle, false);
 		ctx.closePath();
 
@@ -946,8 +946,8 @@ Resource.Texture = Resource.Basic.extend
 			ctx.fill();
 		}
 
-		if(params.strokeColor) {
-			ctx.strokeStyle = params.strokeColor;
+		if(params.borderColor) {
+			ctx.strokeStyle = params.borderColor;
 			ctx.stroke();
 		}		
 
@@ -967,7 +967,7 @@ Resource.Texture = Resource.Basic.extend
 	 * @param height {Number} The height of the rectangle
 	 * @param radius {Number} The corner radius. Defaults to 5;
 	 * @param params {Object} Additional parameters.
-	 * @param params.lineWidth {Number=} Line width.
+	 * @param params.borderWidth {Number=} Line width.
 	 * @param params.fill {String=} The color of
 	 */
 	roundRect: function(color, width, height, radius, params)
@@ -977,12 +977,12 @@ Resource.Texture = Resource.Basic.extend
 		}
 
 		radius = radius || 5;
-		params.lineWidth = params.lineWidth || 1;
+		params.borderWidth = params.borderWidth || 1;
 
-		var x = params.lineWidth / 2;
-		var y = params.lineWidth / 2;
+		var x = params.borderWidth / 2;
+		var y = params.borderWidth / 2;
 
-		this.upResize(width + params.lineWidth, height + params.lineWidth);
+		this.upResize(width + params.borderWidth, height + params.borderWidth);
 
 		var ctx = null;
 		if(this.textureType === Resource.TextureType.WEBGL)
@@ -996,7 +996,7 @@ Resource.Texture = Resource.Basic.extend
 		}
 
 		ctx.strokeStyle = color;
-		ctx.lineWidth = params.lineWidth;
+		ctx.lineWidth = params.borderWidth;
 		ctx.beginPath();
 		ctx.moveTo(x + radius, y);
 		ctx.lineTo(x + width - radius, y);
