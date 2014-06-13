@@ -71,17 +71,13 @@ meta.Math.AdvAABB.prototype =
 		this.initHalfWidth = width / 2;
 		this.initHalfHeight = height / 2;
 
-		var prevHalfWidth = this.halfWidth;
-		var prevHalfHeight = this.halfHeight;
 		this.width = this.initWidth * this.scaleX;
 		this.height = this.initHeight * this.scaleY;
 		this.halfWidth = this.width / 2;
 		this.halfHeight = this.height / 2;
-		var diffHalfWidth = prevHalfWidth - this.halfWidth;
-		var diffHalfHeight = prevHalfHeight - this.halfHeight;
 
-		this.minX = this.x - diffHalfWidth;
-		this.minY = this.y - diffHalfHeight;
+		this.minX = this.x - this.halfWidth;
+		this.minY = this.y - this.halfHeight;
 		this.maxX = this.minX + this.width;
 		this.maxY = this.minY + this.height;
 	},
