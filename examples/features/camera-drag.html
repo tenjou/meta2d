@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Camera Drag :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <script>
+            meta.load = function()
+            {
+                // Set flag to be able to drag the camera.
+                meta.camera.draggable = true;
+
+                var tex = new Resource.Texture();
+                tex.fillRect({ width: 400, height: 500 });
+
+                var entity = new Entity.Geometry(tex);
+                entity.position(meta.world.centerX, meta.world.centerY);
+                meta.view.add(entity);
+
+                meta.addDescription("Camera dragging example");
+            };
+        </script>
+    </body>
+</html>

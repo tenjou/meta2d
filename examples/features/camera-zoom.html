@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Entity Pivot :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <script>
+            meta.load = function()
+            {
+                // Zoom camera in 2x.
+                meta.camera.zoom = 2.0;
+
+                meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+
+                var entity = new Entity.Geometry("jabba");
+                entity.anchor(0.5);
+                meta.view.add(entity);       
+
+                meta.addDescription("Entity pivot example");                     
+            };
+        </script>
+    </body>
+</html>

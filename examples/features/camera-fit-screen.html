@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Camera Fit Screen :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <script>
+            meta.load = function()
+            {
+                // Define bounds that camera should see.
+                // If space is left camera will zoom in.
+                // If space does not fit in the screen camera will zoom out.
+                meta.camera.bounds(600, 600);
+
+                // Create a dummy texture.
+                var tex = new Resource.Texture();
+                tex.fillRect({ width: 600, height: 600, color: "orange" });
+
+                var entity = new Entity.Geometry(tex);
+                entity.anchor(0.5);
+                meta.view.add(entity);
+
+                meta.addDescription("Camera fit screen example");
+            };
+        </script>
+    </body>
+</html>
