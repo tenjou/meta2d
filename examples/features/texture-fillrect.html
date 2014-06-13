@@ -2,7 +2,7 @@
 
 <html>
 	<head>
-		<title>SVG :: META</title>
+		<title>Texture FillRect - META</title>
 
 		<script src="http://infinite-games.com/meta.latest.js"></script>
 	</head>
@@ -11,42 +11,20 @@
 		<script>
 			meta.load = function()
 			{
-				// Fill rect
-				var rect = new Entity.Geometry();
-				rect.texture = new Resource.Texture();
-				rect.texture.fillRect({
-					color: "blue",
-					width: 50,
-					height: 50
-				})
-				rect.anchor(0.5, 0.5);
-				rect.position(-60, 0);
-				meta.view.add(rect);
-
-				// Fill arc/circle
-				var circle = new Entity.Geometry();
-				circle.texture = new Resource.Texture();
-				circle.texture.arc({
-					color: "red",
-					radius: 25,
-					strokeColor: "yellow",
-					lineWidth: 4
-				})
-				circle.anchor(0.5, 0.5);
-				meta.view.add(circle);
-
-				// Stroke and fill lines.
-				var lines = new Entity.Geometry();
-				lines.texture = new Resource.Texture();
-				lines.texture.stroke({
-					color: "yellow",
-					lineWidth: 2,
-					strokeColor: "black",
-					buffer: [ -10, -10, 30, 40, -40, 40, -10, -10 ]
+				// Create an empty texture.
+				var texture = new Resource.Texture();
+				texture.fillRect({
+					// Size of texture to fill - will set texture size.
+					width: 300, height: 300,
+					// Fill color.
+					color: "red"
 				});
-				lines.anchor(0.5, 0.5);
-				lines.position(60, 0);
-				meta.view.add(lines);	
+
+				var entity = new Entity.Geometry(texture);
+				entity.anchor(0.5);
+				meta.view.add(entity);
+
+				meta.addDescription("Texture fill rect example");
 			};
 		</script>
 	</body>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Controller :: META</title>
+
+		<script src="http://infinite-games.com/meta.latest.js"></script>
+	</head>
+
+	<body>
+		<script>
+			// Define scope
+			window.MyController = {};
+
+			MyController.Controller = meta.Controller.extend
+			({
+				// Constructor.
+				init: function() 
+				{
+					this.entity = new Entity.Geometry("jabba");
+					this.entity.anchor(0.5);
+					// Every controller has access to it's own view it's added to.
+					this.view.add(this.entity);					
+				},
+
+				// All countroller load is called after meta.load function.
+				load: function() {
+					meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+				},
+
+				update: function(tDelta) {
+					this.entity.angle += 10 * tDelta;
+				},
+
+				//
+				entity: null
+			});
+
+
+			meta.load = function()
+			{
+				// Register our controller.
+				meta.register("MyController");
+
+				// Access our controller instance.
+				MyController.ctrl.entity.showBounds = true;
+
+				meta.addDescription("Controller example");   
+			};
+		</script>
+	</body>
+</html>

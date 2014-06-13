@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Texture Circle - META</title>
+
+		<script src="http://infinite-games.com/meta.latest.js"></script>
+	</head>
+
+	<body>
+		<script>
+			meta.load = function()
+			{
+                // Create an empty texture.
+                var texture = new Resource.Texture();
+                // Arc can be used to create circular shape.
+                texture.arc({
+                	// Fill color.
+                    color: "red",
+                    borderColor: "black",
+                    borderWidth: 10,
+                    radius: 64
+                });
+
+                var entity = new Entity.Geometry(texture);
+                entity.anchor(0.5);
+                meta.view.add(entity);
+
+                meta.addDescription("Texture circle example");
+			};
+		</script>
+	</body>
+</html>

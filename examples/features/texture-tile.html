@@ -2,7 +2,7 @@
 
 <html>
 	<head>
-		<title>Tiling :: META</title>
+		<title>Texture Tile :: META</title>
 
 		<script src="http://infinite-games.com/meta.latest.js"></script>
 	</head>
@@ -11,18 +11,21 @@
 		<script>
 			meta.load = function()
 			{
-				meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/img/block_green.png");
+				meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/img/grid.png");
 
-				var bg = new Entity.Geometry();
-				bg.texture = new Resource.Texture();
-				bg.texture.tile({
-					width: meta.world.width,
-					height: meta.world.height,
-					texture: "block_green",
+				var texture = new Resource.Texture();
+				texture.tile({
+					width: meta.world.width, height: meta.world.height,
+					texture: "grid",
+					// Tiling will have exact offset from all sides.
 					center: true
-				});					
+				});
+
+				var bg = new Entity.Geometry(texture);
 				bg.positionTopLeft(0, 0);
 				meta.view.add(bg);
+
+				meta.addDescription("Texture tiling example");
 			};	
 		</script>
 	</body>
