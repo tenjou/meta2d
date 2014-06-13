@@ -29,12 +29,12 @@
 
             meta.load = function()
             {
-                var channel = meta.createChannel("Example");
-                channel.subscribe(window, Listener);
+                meta.createChannel("Example");
+                meta.subscribe(window, "Example", Listener);
 
-                channel.emit(null, "load");
-                channel.emit("jabba", "create");
-                channel.emit(true, "showBounds");
+                meta.emit("Example", null, "load");
+                meta.emit("Example", "jabba", "create");
+                meta.emit("Example", true, "showBounds");
 
                 meta.addDescription("Event example");
             };
