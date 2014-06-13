@@ -440,6 +440,7 @@ Entity.Geometry = meta.Class.extend
 	{
 		this.drawX = this._x + this._parent.childOffsetX + this.textureOffsetX - this.pivotX + this._anchorPosX;
 		this.drawY = this._y + this._parent.childOffsetY + this.textureOffsetY - this.pivotY + this._anchorPosY;
+		
 		if(this._view) {
 			this.drawX += this._view._x;
 			this.drawY += this._view._y;
@@ -1708,20 +1709,32 @@ Entity.Geometry = meta.Class.extend
 	get angleRad() { return this._angleRad; },
 
 	// Scale.
-	set scale(value)
+	updateScale: function()
 	{
-		this._scaleX = value;
-		this._scaleY = value;
-
-		this.volume.scale(value, value);
+		this.volume.scale(this._scaleX, this._scaleY);
 
 		this._draw = this._drawTransform;
 		this.isInside = this._isInsideTransform;
 		this.isNeedDraw = true;
 	},
 
-	set scaleX(value) { this.scale(value, this._scaleY); },
-	set scaleY(value) { this.scale(this._scaleX, value); },
+	set scale(value) {
+		this._scaleX = value;
+		this._scaleY = value;
+		this.updateScale();
+	},
+
+	set scaleX(value) { 
+		this._scaleX = value; 
+		this.updateScale();
+	},
+
+	set scaleY(value) { 
+		this._scaleY = value; 
+		this.updateScale();
+	},
+
+	get scale() { return this._scaleX; },
 	get scaleX() { return this._scaleX; },
 	get scaleY() { return this._scaleY; },
 
@@ -1877,12 +1890,14 @@ Entity.Geometry = meta.Class.extend
 	{
 		if(this._onResize) {
 			meta.unsubscribe(this, meta.Event.RESIZE, this._onResize);
+			meta.unsubscribe(this, meta.Event.CAMERA_RESIZE, this._onResize);
 		}
 
 		this._onResize = func;
 
 		if(func) {
 			meta.subscribe(this, meta.Event.RESIZE, this._onResize);
+			meta.subscribe(this, meta.Event.CAMERA_RESIZE, this._onResize);
 		}
 	},
 

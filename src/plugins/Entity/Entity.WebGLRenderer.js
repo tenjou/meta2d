@@ -148,8 +148,6 @@ Entity.WebGLRenderer = Entity.Controller.extend
 
 			if(entity.ignoreZoom) {
 				gl.uniform1f(gl.getUniformLocation(shader.program, "zoom"), 1.0);
-				//this._position[0] *= meta.camera.volume.width - meta.camera._zoom;
-				gl.uniform2fv(gl.getUniformLocation(shader.program, "pos"), this._position);
 				gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 				gl.uniform1f(gl.getUniformLocation(shader.program, "zoom"), meta.camera._zoom);
 			}

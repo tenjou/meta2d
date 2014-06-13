@@ -9,7 +9,7 @@
  * @property [zoom=1.0] {Number} Setter/Getter. Current zoom value.
  * @property [zoomRatio=1.0] {Number} Ratio of how smaller or larger is current view compared to default zoom (zoom = 1.0).
  * @property [enableBorderIgnore=true] {Boolean} Setter/Getter. Flag to enable camera movement past world borders.
- * @property [dragging=false] {Boolean} Setter/Getter. Flag to enable dragging.
+ * @property [draggable=false] {Boolean} Setter/Getter. Flag to enable draggable.
  * @property [enableCentering=false] {Boolean} Setter/Getter. Flag to enable to move camera to the center as initial position.
  * @property [enableCenteringX=false] {Boolean} Setter/Getter. Flag to enable camera centering on X axis.
  * @property [enableCenteringY=false] {Boolean} Setter/Getter. Flag to enable camera centering on Y axis.
@@ -25,10 +25,11 @@ meta.Camera = function()
 	this.zoomBounds = null;
 
 	this._zoom = 1.0;
+	this.prevZoom = 1.0;
 	this.zoomRatio = 1.0;
 
-	this._dragging = false;
-	this._isDragging = false;
+	this._draggable = false;
+	this._isDraggable = false;
 	this._isAutoZoom = false;
 
 	this._enableBorderIgnore = true;
@@ -86,7 +87,6 @@ meta.Camera.prototype =
 	updateView: function()
 	{
 		var world = meta.world;
-		var prevZoom = this._zoom;
 
 		/* AutoZoom */
 		if(this._isAutoZoom)
@@ -96,13 +96,14 @@ meta.Camera.prototype =
 			var diffX = meta.width / width;
 			var diffY = meta.height / height;
 
+			this.prevZoom = this._zoom;
 			this._zoom = diffX;
 			if(diffY < diffX) { 
 				this._zoom = diffY;
 			}
 		}
 
-		if(prevZoom !== this._zoom) 
+		if(this.prevZoom !== this._zoom) 
 		{
 			this.zoomRatio = 1.0 / this._zoom;
 			this.volume.scale(this.zoomRatio, this.zoomRatio);
@@ -200,17 +201,17 @@ meta.Camera.prototype =
 
 	_startDrag: function(data)
 	{
-		if(!this._dragging) { return; }
-		this._isDragging = true;
+		if(!this._draggable) { return; }
+		this._isDraggable = true;
 	},
 
 	_endDrag: function(data) {
-		this._isDragging = false;
+		this._isDraggable = false;
 	},
 
 	_drag: function(data)
 	{
-		if(!this._isDragging) { return; }
+		if(!this._isDraggable) { return; }
 
 		var diffX = (data.screenX - data.prevScreenX) * this.zoomRatio;
 		var diffY = (data.screenY - data.prevScreenY) * this.zoomRatio;
@@ -262,6 +263,7 @@ meta.Camera.prototype =
 	{
 		if(this._zoom === value) { return; }
 
+		this.prevZoom = this._zoom;
 		this._zoom = value;
 		this.updateView();
 	},
@@ -276,22 +278,22 @@ meta.Camera.prototype =
 
 	get enableBorderIgnore() { return this._enableBorderIgnore; },
 
-	set dragging(value)
+	set draggable(value)
 	{
-		if(this._dragging === value) { return; }
+		if(this._draggable === value) { return; }
 
-		this._dragging = value;
+		this._draggable = value;
 
 		if(value) {
 			meta.subscribe(this, [ Input.Event.INPUT_DOWN, Input.Event.INPUT_UP, Input.Event.INPUT_MOVE ], this._onInput);
 		}
 		else {
 			meta.unsubscribe(this, [ Input.Event.INPUT_DOWN, Input.Event.INPUT_UP, Input.Event.INPUT_MOVE ]);
-			this._isDragging = false;
+			this._isDraggable = false;
 		}
 	},
 
-	get dragging() { return this._dragging; },
+	get draggable() { return this._draggable; },
 
 
 	set isAutoZoom(value) 
