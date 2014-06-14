@@ -10,9 +10,9 @@
 	<body>
 		<script>
 			// Define scope
-			window.MyController = {};
+			window.Example = {};
 
-			MyController.Controller = meta.Controller.extend
+			Example.Controller = meta.Controller.extend
 			({
 				// Constructor.
 				init: function() 
@@ -40,10 +40,10 @@
 			meta.load = function()
 			{
 				// Register our controller.
-				meta.register("MyController");
+				meta.register("Example");
 
 				// Access our controller instance.
-				MyController.ctrl.entity.showBounds = true;
+				Example.ctrl.entity.showBounds = true;
 
 				meta.addDescription("Controller example");   
 			};

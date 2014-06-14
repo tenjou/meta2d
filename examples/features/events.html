@@ -9,8 +9,6 @@
 
 	<body>
 		<script>
-            window.entity;
-
             function Listener(data, event) 
             {
                 if(event === "load") {
@@ -18,12 +16,9 @@
                 }
                 else if(event === "create") 
                 {
-                    entity = new Entity.Geometry(data);
-                    entity.anchor(0.5);
+                    var entity = new Entity.Geometry(anchor);
+                    entity.anchor(data);
                     meta.view.add(entity);
-                }
-                else if(event === "showBounds") {
-                    entity.showBounds = data;
                 }
             };
 
@@ -33,8 +28,8 @@
                 channel.subscribe(window, Listener);
 
                 channel.emit(null, "load");
-                channel.emit("jabba", "create");
-                channel.emit(true, "showBounds");
+                channel.emit(0.4, "create");
+                channel.emit(0.6, "create");
 
                 meta.addDescription("Event example");
             };

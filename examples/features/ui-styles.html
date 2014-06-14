@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
 	<head>
 		<title>UI Styles :: META</title>
@@ -22,8 +23,10 @@
 					width: 150, height: 40
 				});
 
+				// Add some style parameters.
 				UI.ctrl.setStyle({
 					button: {
+						// Will define defualt button style for active state.
 						"*:active": null,
 						custom: {
 							texture: customTexture
@@ -44,6 +47,8 @@
 				button2.position(250, 100);
 				button2.text = "b2";
 				meta.view.add(button2);
+
+				meta.addDescription("UI style example");
 			};
 		</script>
 	</body>

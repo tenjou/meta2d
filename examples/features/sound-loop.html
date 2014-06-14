@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Sound Loop :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <script>
+            meta.load = function()
+            {
+                meta.preloadSounds(
+                    "https://dl.dropboxusercontent.com/u/145051233/meta/audio/sample");
+
+                // Set true to play looped.
+                meta.getSound("sample").play(true);
+
+                meta.addDescription("Looped sound example"); 
+            };
+        </script>
+    </body>
+</html>

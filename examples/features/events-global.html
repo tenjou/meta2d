@@ -2,15 +2,13 @@
 
 <html>
 	<head>
-		<title>Events - META</title>
+		<title>Events Global - META</title>
 
 		<script src="http://infinite-games.com/meta.latest.js"></script>
 	</head>
 
 	<body>
 		<script>
-            window.entity;
-
             function Listener(data, event) 
             {
                 if(event === "load") {
@@ -18,12 +16,9 @@
                 }
                 else if(event === "create") 
                 {
-                    entity = new Entity.Geometry(data);
+                    var entity = new Entity.Geometry(data);
                     entity.anchor(0.5);
                     meta.view.add(entity);
-                }
-                else if(event === "showBounds") {
-                    entity.showBounds = data;
                 }
             };
 
@@ -33,10 +28,10 @@
                 meta.subscribe(window, "Example", Listener);
 
                 meta.emit("Example", null, "load");
-                meta.emit("Example", "jabba", "create");
-                meta.emit("Example", true, "showBounds");
+                meta.emit("Example", 0.4, "create");
+                meta.emit("Example", 0.6, "create");
 
-                meta.addDescription("Event example");
+                meta.addDescription("Global event example");
             };
 		</script>
 	</body>

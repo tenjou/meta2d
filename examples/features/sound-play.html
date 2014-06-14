@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Sound Play :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <script>
+            meta.load = function()
+            {
+                meta.preloadSounds(
+                    "https://dl.dropboxusercontent.com/u/145051233/meta/audio/sample");
+
+                meta.getSound("sample").play();
+
+                meta.addDescription("Sound play example"); 
+            };
+        </script>
+    </body>
+</html>

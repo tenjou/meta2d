@@ -16,7 +16,8 @@
                 var entity = new Entity.Geometry("shrine");
                 entity.anchor(0.5, 0.5);
                 // Scale entity to 2x wider and 2x smaller.
-                entity.scale(2.0, 0.5);
+                entity.scaleX = 2;
+                entity.scaleY = 0.5;
                 meta.view.add(entity);
 
                 meta.addDescription("Entity scaling example");
