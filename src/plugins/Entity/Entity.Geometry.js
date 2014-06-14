@@ -826,6 +826,10 @@ Entity.Geometry = meta.Class.extend
 		return this.volume.vsBorderPoint(newX, newY);
 	},
 
+	vsEntity: function(entity) {
+		return this.volume.vsAABB(entity.volume);
+	},
+
 
 	/**
 	 * Resize entity volume. These changes will be overwritten if entity will change texture.
