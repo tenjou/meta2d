@@ -600,8 +600,61 @@ Resource.Texture = Resource.Basic.extend
 	/**
 	 * Draw over texture
 	 */
-	drawOver: function(texture) {
-		this.ctx.drawImage(texture.image, 0, 0);
+	drawOver: function(texture, x, y) 
+	{
+		if(!texture) {
+			console.warn("[Resource.Texture.drawOver]:", "No texture specified.");
+			return;
+		}
+
+		x = x || 0;
+		y = y || 0;
+
+		console.log("here");
+
+		if(typeof(texture) === "string") 
+		{
+			var obj = meta.getTexture(texture);
+			if(!obj) {
+				console.warn("[Resource.Texture.drawOver]:", "No such texture with name - " + texture);
+				return;
+			}
+			texture = obj;	
+		}
+
+		if(texture.textureType === Resource.TextureType.WEBGL) 
+		{
+			if(texture._canvasCache) {
+				texture = texture._canvasCache;
+			}
+			else
+			{
+				texture._canvasCache = new Resource.Texture(Resource.TextureType.CANVAS, texture.path);
+				texture._canvasCache.load();
+				texture = texture._canvasCache;
+
+				this._loadCache = { name: "drawOver", texture: texture, x: x, y: y };
+				this.isLoaded = false;
+				texture.subscribe(this, this.onTextureCacheEvent);
+				return;	
+			}		
+		}
+
+		var ctx = this.ctx;
+		if(this.textureType) {
+			this._createCachedImg();
+			ctx = this._cachedCtx;
+		}
+
+		ctx.drawImage(texture.image, x, y);
+
+		if(this.textureType) {
+			var gl = meta.ctx;
+			gl.bindTexture(gl.TEXTURE_2D, this.image);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
+		}
+
+		this.isLoaded = true;		
 	},
 
 	/**
@@ -1272,9 +1325,15 @@ Resource.Texture = Resource.Basic.extend
 
 	onTextureCacheEvent: function(data, event)
 	{
-		if(event === Resource.Event.LOADED) {
+		if(event === Resource.Event.LOADED) 
+		{
 			data.unsubscribe(this);
-			this[this._loadCache.name](this._loadCache.data);
+			if(this._loadCache.name === "drawOver") {
+				this.drawOver(this._loadCache.texture, this._loadCache.x, this._loadCache.y);
+			}
+			else {
+				this[this._loadCache.name](this._loadCache.data);
+			}
 			this._loadCache = null;
 		}
 	},
