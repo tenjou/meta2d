@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>View Create :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <script>
+            meta.load = function()
+            {
+                meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+
+                // Get/Create (if not found) view.
+                var exampleView = meta.getView("example");
+
+                var entity = new Entity.Geometry("jabba");
+                entity.anchor(0.5);
+                // Add entity to our custom view.
+                // By default if view is not added to master view (meta.view) 
+                //  all entities to this view added will not be visible.
+                exampleView.add(entity);
+
+                // Make our view visible.
+                meta.view.attach(exampleView);
+            };
+        </script>
+    </body>
+</html>

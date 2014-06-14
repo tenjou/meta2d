@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>View Create :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <script>
+            function SpawnEntity()
+            {
+                var entity = new Entity.Geometry("jabba");
+                // Set random position.
+                entity.position(meta.world.randX, meta.world.randY);
+                meta.view.add(entity);
+            };
+
+            meta.load = function()
+            {
+                meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+
+                // Spawn an entity every 1000ms.
+                meta.addTimer(SpawnEntity, 1000);
+
+                meta.addDescription("Timer example - spawn an entity every 1000ms"); 
+            };
+        </script>
+    </body>
+</html>
