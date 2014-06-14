@@ -19,7 +19,7 @@ Resource.SpriteSheet = Resource.Basic.extend
 		{
 			// Check if specific format is defined.
 			var wildCardIndex = path.lastIndexOf(".");
-			if(wildCardIndex !== -1 && (path.length - wildCardIndex) >= 4) {
+			if(wildCardIndex !== -1 && (path.length - wildCardIndex) <= 5) {
 				this.format = path.substr(wildCardIndex + 1, path.length - wildCardIndex - 1);
 				path = path.substr(0, wildCardIndex);
 			}

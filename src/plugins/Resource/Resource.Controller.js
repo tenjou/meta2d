@@ -71,12 +71,16 @@ Resource.Controller = meta.Controller.extend
 		var path = resource.path;
 		if(resource.name === "unknown" && path)
 		{
-			var pointIndexOf = path.lastIndexOf(".");
-			var slashIndexOf = path.lastIndexOf("/");
+			var wildcardIndex = path.lastIndexOf(".");
+			var slashIndex = path.lastIndexOf("/");
 
-			if(pointIndexOf < 0) { pointIndexOf = path.length; }
-
-			resource.name = path.slice(slashIndexOf + 1, pointIndexOf);
+			// If resource does not have a wildcard.
+			if(wildcardIndex < 0 || (path.length - wildcardIndex) > 5) { 
+				resource.name = path.slice(slashIndex + 1);
+			}
+			else {
+				resource.name = path.slice(slashIndex + 1, wildcardIndex);
+			}
 		}
 
 		if(subBuffer[resource.name])

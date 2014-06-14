@@ -58,7 +58,7 @@ Resource.Texture = Resource.Basic.extend
 			if(this.path)
 			{
 				var wildCardIndex = this.path.lastIndexOf(".");
-				if(wildCardIndex === -1 || this.path.length - wildCardIndex > 4) {
+				if(wildCardIndex === -1 || (path.length - wildCardIndex) <= 5) {
 					this.path += ".png";
 				}
 
