@@ -59,14 +59,15 @@ meta.Device.prototype =
 	checkBrowser: function()
 	{
 		var regexps = {
-			'Chrome': [ /Chrome\/(\S+)/ ],
-			'Firefox': [ /Firefox\/(\S+)/ ],
-			'MSIE': [ /MSIE (\S+);/ ],
-			'Opera': [
+			"Chrome": [ /Chrome\/(\S+)/ ],
+			"Firefox": [ /Firefox\/(\S+)/ ],
+			"MSIE": [ /MSIE (\S+);/ ],
+			"Opera": [
+				/Chrome\/(\S+)/,
 				/Opera\/.*?Version\/(\S+)/,     /* Opera 10 */
 				/Opera\/(\S+)/                  /* Opera 9 and older */
 			],
-			'Safari': [ /Version\/(\S+).*?Safari\// ]
+			"Safari": [ /Version\/(\S+).*?Safari\// ]
 		};
 
 		var userAgent = navigator.userAgent;
