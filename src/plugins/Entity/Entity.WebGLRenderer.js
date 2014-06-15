@@ -97,8 +97,8 @@ Entity.WebGLRenderer = Entity.Controller.extend
 
 		this.clearScreen();
 
-		this.cameraPos[0] = camera._x | 0;
-		this.cameraPos[1] = camera._y | 0;
+		this.cameraPos[0] = camera._x;
+		this.cameraPos[1] = camera._y;
 		gl.uniform2fv(this.locCameraPos, this.cameraPos);
 		gl.uniform1f(this.locZoom, meta.camera._zoom);
 		gl.uniform1i(this.locSampler, 0);
@@ -114,16 +114,16 @@ Entity.WebGLRenderer = Entity.Controller.extend
 			shader.bindBuffer2f("vertexPos", texture.vbo);
 
 			if(entity._flipX === 1.0) {
-				this._position[0] = entity.volume.minX | 0;
+				this._position[0] = entity.volume.minX;
 			}
 			else {
-				this._position[0] = (entity.volume.minX + entity.volume.width) | 0;
+				this._position[0] = (entity.volume.minX + entity.volume.width);
 			}
 			if(entity._flipY === 1.0) {
-				this._position[1] = entity.volume.minY | 0;
+				this._position[1] = entity.volume.minY;
 			}
 			else {
-				this._position[1] = (entity.volume.minY + entity.volume.height) | 0;
+				this._position[1] = (entity.volume.minY + entity.volume.height);
 			}
 
 			if(!entity.isChild) {

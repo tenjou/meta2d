@@ -614,8 +614,8 @@ meta.Engine.prototype =
 			"{ " +
 				"float rotX = sin(-angle);" +
 				"float rotY = cos(-angle);" +
-				"vec2 scaled = floor(vertexPos * scale);" +
-				"vec2 origin = vec2(scaled.x + floor(pos.x) - floor(center.x), scaled.y + floor(pos.y) - floor(center.y));" +
+				"vec2 scaled = vertexPos * scale;" +
+				"vec2 origin = vec2(scaled.x + pos.x - center.x, scaled.y + pos.y - center.y);" +
 				"vec2 newPos = vec2(origin.x * rotY + origin.y * rotX, origin.y * rotY - origin.x * rotX) + floor(center) + cameraPos;" +
 				"newPos *= zoom;" +
 

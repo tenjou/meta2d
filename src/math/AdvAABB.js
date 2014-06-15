@@ -37,8 +37,8 @@ meta.Math.AdvAABB.prototype =
 
 	set: function(x, y)
 	{
-		this.x = Math.floor(x);
-		this.y = Math.floor(y);
+		this.x = x;
+		this.y = y;
 
 		this.minX = this.x - this.halfWidth;
 		this.minY = this.y - this.halfHeight;
