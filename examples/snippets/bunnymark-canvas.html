@@ -2,7 +2,7 @@
 
 <html>
     <head>
-        <title>BunnyMark :: META</title>
+        <title>BunnyMark Canvas :: META</title>
 
         <script src="http://infinite-games.com/meta.latest.js"></script>
     </head>
@@ -14,6 +14,8 @@
             window.numBunnies = 0;
             window.textBunny = null;
             window.world = null;
+
+            meta.enableWebGL = false;
 
             Entity.Bunny = Entity.Geometry.extend
             ({
