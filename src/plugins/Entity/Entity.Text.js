@@ -6,6 +6,7 @@ Entity.Text = Entity.Geometry.extend
 	{
 		this.texture = new Resource.Texture();
 		this._texture.resize(this._fontSize, this._fontSize);
+		this.setText("");
 	},
 
 
