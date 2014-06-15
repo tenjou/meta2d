@@ -53,7 +53,18 @@ Entity.WebGLRenderer = Entity.Controller.extend
 		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
 		gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 		gl.activeTexture(gl.TEXTURE0);
-		gl.enable(gl.BLEND);		
+		gl.enable(gl.BLEND);
+
+		var shader = meta.shader;
+		this.locCameraPos = gl.getUniformLocation(shader.program, "cameraPos");
+		this.locZoom = gl.getUniformLocation(shader.program, "zoom");
+		this.locSampler = gl.getUniformLocation(shader.program, "sampler");
+		this.locAlpha = gl.getUniformLocation(shader.program, "alpha");
+		this.locPos = gl.getUniformLocation(shader.program, "pos");
+		this.locCenter = gl.getUniformLocation(shader.program, "center");
+		this.locScale = gl.getUniformLocation(shader.program, "scale");
+		this.locFrameCoord = gl.getUniformLocation(shader.program, "frameCoord");
+		this.locAngle = gl.getUniformLocation(shader.program, "angle");	
 	},
 
 	ready: function() {
@@ -88,9 +99,9 @@ Entity.WebGLRenderer = Entity.Controller.extend
 
 		this.cameraPos[0] = camera._x | 0;
 		this.cameraPos[1] = camera._y | 0;
-		gl.uniform2fv(gl.getUniformLocation(shader.program, "cameraPos"), this.cameraPos);
-		gl.uniform1f(gl.getUniformLocation(shader.program, "zoom"), meta.camera._zoom);
-		gl.uniform1i(gl.getUniformLocation(shader.program, "sampler"), 0);
+		gl.uniform2fv(this.locCameraPos, this.cameraPos);
+		gl.uniform1f(this.locZoom, meta.camera._zoom);
+		gl.uniform1i(this.locSampler, 0);
 
 		currNode = this.entities.first.next;
 		lastNode = this.entities.last;
@@ -132,12 +143,12 @@ Entity.WebGLRenderer = Entity.Controller.extend
 			this._frameCoord[2] = texture._widthRatio;
 			this._frameCoord[3] = texture._heightRatio;
 
-			gl.uniform1f(gl.getUniformLocation(shader.program, "alpha"), entity._alpha);
-			gl.uniform2fv(gl.getUniformLocation(shader.program, "pos"), this._position);
-			gl.uniform2fv(gl.getUniformLocation(shader.program, "center"), this._center);
-			gl.uniform2fv(gl.getUniformLocation(shader.program, "scale"), this._scale);
-			gl.uniform4fv(gl.getUniformLocation(shader.program, "frameCoord"), this._frameCoord);
-			gl.uniform1f(gl.getUniformLocation(shader.program, "angle"), entity._angleRad);
+			gl.uniform1f(this.locAlpha, entity._alpha);
+			gl.uniform2fv(this.locPos, this._position);
+			gl.uniform2fv(this.locCenter, this._center);
+			gl.uniform2fv(this.locScale, this._scale);
+			gl.uniform4fv(this.locFrameCoord, this._frameCoord);
+			gl.uniform1f(this.locAngle, entity._angleRad);
 
 			if(texture.fromAtlas) {
 				gl.bindTexture(gl.TEXTURE_2D, texture.ptr.image);
@@ -147,9 +158,9 @@ Entity.WebGLRenderer = Entity.Controller.extend
 			}
 
 			if(entity.ignoreZoom) {
-				gl.uniform1f(gl.getUniformLocation(shader.program, "zoom"), 1.0);
+				gl.uniform1f(this.locZoom, 1.0);
 				gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-				gl.uniform1f(gl.getUniformLocation(shader.program, "zoom"), meta.camera._zoom);
+				gl.uniform1f(this.locZoom, meta.camera._zoom);
 			}
 			else {
 				gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -162,7 +173,7 @@ Entity.WebGLRenderer = Entity.Controller.extend
 		if(this.numShowBounds > 0 || this.showBounds)
 		{
 			gl.disable(gl.BLEND);
-			gl.uniform1f(gl.getUniformLocation(shader.program, "alpha"), 1.0);
+			gl.uniform1f(this.locAlpha, 1.0);
 
 			currNode = this.entities.first.next;
 			for(; currNode !== lastNode; currNode = currNode.next)
@@ -202,10 +213,10 @@ Entity.WebGLRenderer = Entity.Controller.extend
 						gl.bindTexture(gl.TEXTURE_2D, this._centerTex.image);
 					}					
 
-					gl.uniform2fv(gl.getUniformLocation(shader.program, "pos"), this._position);
-					gl.uniform2fv(gl.getUniformLocation(shader.program, "center"), this._center);
-					gl.uniform2fv(gl.getUniformLocation(shader.program, "scale"), this._scale);
-					gl.uniform1f(gl.getUniformLocation(shader.program, "angle"), entity._angleRad);
+					gl.uniform2fv(this.locPos, this._position);
+					gl.uniform2fv(this.locCenter, this._center);
+					gl.uniform2fv(this.locScale, this._scale);
+					gl.uniform1f(this.locAngle, entity._angleRad);
 					shader.bindBuffer2f("vertexPos", entity.texture.vbo);
 
 					gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._lineIndices);
@@ -228,13 +239,13 @@ Entity.WebGLRenderer = Entity.Controller.extend
 					this._scale[0] = 1.0;
 					this._scale[1] = 1.0;
 
-					gl.uniform2fv(gl.getUniformLocation(shader.program, "pos"), this._position);
-					gl.uniform2fv(gl.getUniformLocation(shader.program, "scale"), this._scale);
+					gl.uniform2fv(this.locPos, this._position);
+					gl.uniform2fv(this.locScale, this._scale);
 
 					if(entity.ignoreZoom) {
-						gl.uniform1f(gl.getUniformLocation(shader.program, "zoom"), 1.0);
+						gl.uniform1f(this.locZoom, 1.0);
 						gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-						gl.uniform1f(gl.getUniformLocation(shader.program, "zoom"), meta.camera._zoom);
+						gl.uniform1f(this.locZoom, meta.camera._zoom);
 					}					
 					else {
 						gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -253,18 +264,18 @@ Entity.WebGLRenderer = Entity.Controller.extend
 
 			this._scale[0] = world.width;
 			this._scale[1] = world.height;
-			gl.uniform2fv(gl.getUniformLocation(shader.program, "scale"), this._scale);
+			gl.uniform2fv(this.locScale, this._scale);
 
 			this._position[0] = 0;
 			this._position[1] = 0;
-			gl.uniform2fv(gl.getUniformLocation(shader.program, "pos"), this._position);
+			gl.uniform2fv(this.locPos, this._position);
 
 			this._center[0] = 0;
 			this._center[1] = 0;
-			gl.uniform2fv(gl.getUniformLocation(shader.program, "center"), this._center);
+			gl.uniform2fv(this.locCenter, this._center);
 
-			gl.uniform1f(gl.getUniformLocation(shader.program, "angle"), 0.0);
-			gl.uniform1f(gl.getUniformLocation(shader.program, "alpha"), 1.0);
+			gl.uniform1f(this.locAngle, 0.0);
+			gl.uniform1f(this.locAlpha, 1.0);
 
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._lineIndices);
 			gl.lineWidth(2.0);
@@ -277,14 +288,14 @@ Entity.WebGLRenderer = Entity.Controller.extend
 
 				this._scale[0] = world.gridWidth;
 				this._scale[1] = world.gridHeight;
-				gl.uniform2fv(gl.getUniformLocation(shader.program, "scale"), this._scale);
+				gl.uniform2fv(this.locScale, this._scale);
 
 				for(var y = 0; y < numY; y++)
 				{
 					for(var x = 0; x < numX; x++) {
 						this._position[0] = (x * world.gridWidth) + world.gridX;
 						this._position[1] = (y * world.gridHeight) + world.gridY;
-						gl.uniform2fv(gl.getUniformLocation(shader.program, "pos"), this._position);
+						gl.uniform2fv(this.locPos, this._position);
 						gl.drawElements(gl.LINE_STRIP, 5, gl.UNSIGNED_SHORT, 0);
 					}
 				}
@@ -311,5 +322,15 @@ Entity.WebGLRenderer = Entity.Controller.extend
 	_position: null,
 	_center: null,
 	_scale: null,
-	_frameCoord: null
+	_frameCoord: null,
+
+	locCameraPos: null,
+	locZoom: null,
+	locSampler: null,
+	locAlpha: null,
+	locPos: null,
+	locCenter: null,
+	locScale: null,
+	locFrameCoord: null,
+	locAngle: null
 });
