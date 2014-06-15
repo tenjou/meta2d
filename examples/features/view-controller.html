@@ -9,37 +9,45 @@
 
 	<body>
 		<script>
-			var Splash = {};
+			window.Example = {};
 
-			Splash.Controller = meta.Controller.extend
+			Example.Controller = meta.Controller.extend
 			({
-				// Called when attached to visible view.
-				load: function()
+				// Constructor.
+				init: function() 
 				{
-					var bg = new Entity.Geometry();
-					bg.texture = new Resource.Texture();
-					bg.texture.fillRect({
-						color: "#ff0000",
-						width: meta.world.width, 
-						height: meta.world.height
-					});
-					bg.positionTopLeft(0, 0);
-					bg.alpha = 0.7;
-					bg.z = 100;
-					this.view.add(bg);
-				}
+					console.log("example");
+					this.entity = new Entity.Geometry("jabba");
+					this.entity.anchor(0.5);
+					// Every controller has access to it's own view it's added to.
+					this.view.add(this.entity);					
+				},
+
+				// All countroller load is called after meta.load function.
+				load: function() {
+					meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+				},
+
+				update: function(tDelta) {
+					this.entity.angle += 10 * tDelta;
+				},
+
+				//
+				entity: null
 			});
 
 
 			meta.load = function()
 			{
 				// Create a new custom view.
-				var splashView = meta.getView("splash");
-				// Register controller to the view, in this case - Splash.Controller.
-				splashView.register("Splash");
+				var exampleView = meta.getView("example");
+				// Register controller to the view, in this case - Example.Controller.
+				exampleView.register("Example");
 				// Attach our custom view to current main view.
-				meta.view.attach(splashView);
-			}
+				meta.view.attach(exampleView);
+
+				meta.addDescription("View controller example");
+			};
 		</script>
 	</body>
 </html>

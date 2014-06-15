@@ -9,22 +9,25 @@
 
     <body>
         <script>
-            var entity = null;
-            var x = 100;
-            var y = 100;
-            var speedX = 240;
-            var speedY = 330;
+            window.entity = null;
+            window.x = 100;
+            window.y = 100;
+            window.speedX = 240;
+            window.speedY = 330;
 
             meta.load = function()
             {
-                entity = new Entity.Geometry();
-                entity.texture = new Resource.Texture();
-                entity.texture.arc({
+                var texture = new Resource.Texture();
+                texture.arc({
                     color: "red",
                     radius: 16
                 });
+
+                entity = new Entity.Geometry(texture);
                 entity.position(0, 0);
                 meta.view.add(entity);
+
+                meta.addDescription("Bouncing ball example");
             }
 
             meta.update = function(tDelta)
