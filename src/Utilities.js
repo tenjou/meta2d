@@ -565,6 +565,16 @@ meta.import = function(path)
 	meta.loadScript(path, null);
 };
 
+meta.serialize = function(obj)
+{
+	var str = [];
+	for(var key in obj) {
+		str.push(encodeURIComponent(key) + "=" + encodeURIComponent(obj[key]));
+	}
+
+	return str.join("&");
+};
+
 /**
  * Add descriptive widget to the view for demo purposes.
  * @param text {String} Description text.
