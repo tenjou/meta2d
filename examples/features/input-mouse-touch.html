@@ -1,0 +1,10 @@
+function OnInput(data, event)
+{
+	if(event === "inputMove") {
+		console.log(event.x, event.y);
+	}
+};
+
+meta.load = function(data, event) {
+	meta.subscribe(this, [ "inputDown", "inputUp", "inputMove" ], OnInput);
+};

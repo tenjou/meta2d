@@ -15,6 +15,10 @@ meta.ajax = function(params)
 		params.responseType = params.dataType;
 	}
 
+	if(params.type === void(0)) {
+		params.type = "GET";
+	}	
+
 	var data = meta.serialize(params.data);
 
 	var xhr = new XMLHttpRequest();
