@@ -808,17 +808,17 @@ Entity.Geometry = meta.Class.extend
 
 	_isInsideTransform: function(x, y)
 	{
-		var centerX = this._parent.childOffsetX;
-		var centerY = this._parent.childOffsetY;
+		var centerX = this._anchorPosX + this._parent.childOffsetX;
+		var centerY = this._anchorPosY + this._parent.childOffsetY;
 		if(!this.isChild) {
-			centerX = this._x + this._parent.childOffsetX;
-			centerY = this._y + this._parent.childOffsetY;
+			centerX += this._x;
+			centerY += this._y;
 		}
 
 		var offsetX = x - centerX;
 		var offsetY = y - centerY;
-		var sin = Math.sin(this._angleRad);
-		var cos = Math.cos(this._angleRad);
+		var sin = Math.sin(-this._angleRad);
+		var cos = Math.cos(-this._angleRad);
 
 		var newX = offsetX * cos - offsetY * sin + centerX;
 		var newY = offsetY * cos + offsetX * sin + centerY;
