@@ -1354,8 +1354,10 @@ Entity.Geometry = meta.Class.extend
 	 * @param x {Number} World position on x axis to look at.
 	 * @param y {Number} World position on y axis to look at.
 	 */
-	lookAt: function(x, y) {
-		this.angleRad = -Math.atan2(x - (this._x + this._parent.childOffsetX), (this._y + this._parent.childOffsetY) - y);
+	lookAt: function(x, y) 
+	{
+		this.angleRad = -Math.atan2(x - (this.x + this._anchorPosX + this._parent.childOffsetX), 
+			y - (this.y + this._anchorPosY + this._parent.childOffsetY)) + Math.PI;
 	},
 
 	/**
@@ -1366,8 +1368,10 @@ Entity.Geometry = meta.Class.extend
 		this.lookAt(entity._x + entity._parent.childOffsetX, entity._y + entity._parent.childOffsetY);
 	},
 
-	getLookAt: function(x, y) {
-		return -Math.atan2(x - (this._x + this._parent.childOffsetX), (this._y + this._parent.childOffsetY) - y);
+	getLookAt: function(x, y) 
+	{
+		this.angleRad = -Math.atan2(x - (this.x + this._anchorPosX + this._parent.childOffsetX), 
+			y - (this.y + this._anchorPosY + this._parent.childOffsetY)) + Math.PI;
 	},
 
 
