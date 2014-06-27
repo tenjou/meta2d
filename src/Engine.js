@@ -431,13 +431,23 @@ meta.Engine.prototype =
 
 	onResize: function()
 	{
+		var width, height;
+		if(meta.element === document.body) {
+			width = window.innerWidth;
+			height = window.innerHeight;
+		}
+		else {
+			width = meta.element.clientWidth;
+			height = meta.element.clientHeight;
+		}
+
 		var ratio = window.devicePixelRatio;
-		this.width = (window.innerWidth * ratio) | 0;
-		this.height = (window.innerHeight * ratio) | 0;
+		this.width = (width * ratio) | 0;
+		this.height = (height * ratio) | 0;
 		this.canvas.width = this.width;
 		this.canvas.height = this.height;
-		this.canvas.style.width = window.innerWidth + "px";
-		this.canvas.style.height = window.innerHeight + "px";
+		this.canvas.style.width = width + "px";
+		this.canvas.style.height = height + "px";
 		meta.width = this.width;
 		meta.height = this.height;
 
@@ -661,6 +671,10 @@ meta.Engine.prototype =
 				this.unsubscribesetTop += element.unsubscribesetTop;
 			} while(element = element.unsubscribesetParent);
 		}
+
+		var rect = meta.element.getBoundingClientRect();
+		this.unsubscribesetLeft += rect.left;
+		this.unsubscribesetTop += rect.top;
 	},
 
 	_addCorePlugins: function()
