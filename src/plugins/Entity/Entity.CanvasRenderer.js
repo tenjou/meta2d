@@ -224,8 +224,13 @@ Entity.CanvasRenderer = Entity.Controller.extend
 	clearScreen: function()
 	{
 		var scope = meta;
-		scope.ctx.fillStyle = scope.view.bgColor;
-		scope.ctx.fillRect(0, 0, scope.width, scope.height);
+		if(scope.view.bgTransparent) {
+			scope.ctx.clearRect(0, 0, scope.width, scope.height);
+		}
+		else {
+			scope.ctx.fillStyle = scope.view.bgColor;
+			scope.ctx.fillRect(0, 0, scope.width, scope.height);
+		}
 	},
 
 
