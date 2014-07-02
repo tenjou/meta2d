@@ -224,7 +224,7 @@ meta.register = function(ctrlName, view)
 	meta.engine.controllers.push(ctrl);
 	ctrlScope.ctrl = ctrl;
 
-	if(meta.engine.isLoaded || meta.engine.isLoading) {
+	if(meta.engine.isCtrlLoaded) {
 		ctrl.load();
 	}
 	if(meta.engine.isReady) {

@@ -86,6 +86,7 @@ meta.Engine = function()
 	this.isInited = false;
 	this.isLoaded = false;
 	this.isLoading = false;
+	this.isCtrlLoaded = false;
 	this.isReady = false;
 
 	this.pause = false;
@@ -262,6 +263,7 @@ meta.Engine.prototype =
 		}
 
 		meta.view.isActive = true;
+		this.isCtrlLoaded = true;
 		this.isLoading = false;
 
 		if(Resource.ctrl.numToLoad === 0) {
@@ -603,7 +605,7 @@ meta.Engine.prototype =
 
 	_initShaders: function()
 	{
-		this.projection = new meta.Math.Matrix4();
+		this.projection = new meta.math.Matrix4();
 
 		var shader = new meta.Shader();
 		shader.vertexShader =
