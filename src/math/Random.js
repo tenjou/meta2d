@@ -1,6 +1,6 @@
 "use strict";
 
-meta.Math.Random = function()
+meta.math.Random = function()
 {
 	this.seed = 0;
 	this.a = 0;
@@ -13,7 +13,7 @@ meta.Math.Random = function()
 	this.init();
 };
 
-meta.Math.Random.prototype =
+meta.math.Random.prototype =
 {
 	init: function() {
 		this.setSeed(3456789012, true);
@@ -69,4 +69,4 @@ meta.Math.Random.prototype =
 	}
 };
 
-meta.random = new meta.Math.Random();
+meta.random = new meta.math.Random();

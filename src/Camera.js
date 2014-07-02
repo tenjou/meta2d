@@ -5,7 +5,7 @@
  * @constructor
  * @property [x=0] {Number} Setter/Getter. Camera left coordinate on X axis.
  * @property [y=0] {Number} Setter/Getter. Camera top coordinate on Y axis.
- * @property volume {meta.Math.AdvAABB} Volume of viewable region.
+ * @property volume {meta.math.AdvAABB} Volume of viewable region.
  * @property [zoom=1.0] {Number} Setter/Getter. Current zoom value.
  * @property [zoomRatio=1.0] {Number} Ratio of how smaller or larger is current view compared to default zoom (zoom = 1.0).
  * @property [enableBorderIgnore=true] {Boolean} Setter/Getter. Flag to enable camera movement past world borders.
@@ -21,7 +21,7 @@ meta.Camera = function()
 {
 	this._x = 0;
 	this._y = 0;
-	this.volume = new meta.Math.AdvAABB(0, 0, 0, 0);
+	this.volume = new meta.math.AdvAABB(0, 0, 0, 0);
 	this.zoomBounds = null;
 
 	this._zoom = 1.0;

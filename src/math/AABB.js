@@ -1,8 +1,8 @@
 "use strict";
 
-meta.Math = {};
+meta.math = {};
 
-meta.Math.AABB = function(minX, minY, maxX, maxY)
+meta.math.AABB = function(minX, minY, maxX, maxY)
 {
 	this.minX = minX;
 	this.minY = minY;
@@ -10,7 +10,7 @@ meta.Math.AABB = function(minX, minY, maxX, maxY)
 	this.maxY = maxY;
 };
 
-meta.Math.AABB.prototype =
+meta.math.AABB.prototype =
 {
 	move: function(x, y)
 	{

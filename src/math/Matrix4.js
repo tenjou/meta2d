@@ -6,7 +6,7 @@
  * @property m {Float32Array} Matrix buffer.
  * @memberof! <global>
  */
-meta.Math.Matrix4 = function()
+meta.math.Matrix4 = function()
 {
 	this.m = new Float32Array(16);
 	this.m[0] = 1.0;
@@ -15,7 +15,7 @@ meta.Math.Matrix4 = function()
 	this.m[15] = 1.0;
 };
 
-meta.Math.Matrix4.prototype =
+meta.math.Matrix4.prototype =
 {
 	/**
 	 * Resets matrix to identity matrix.

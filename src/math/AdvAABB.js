@@ -1,6 +1,6 @@
 "use strict";
 
-meta.Math.AdvAABB = function(minX, minY, maxX, maxY)
+meta.math.AdvAABB = function(minX, minY, maxX, maxY)
 {
 	this.minX = minX;
 	this.minY = minY;
@@ -23,7 +23,7 @@ meta.Math.AdvAABB = function(minX, minY, maxX, maxY)
 	this.scaleY = 1.0;
 };
 
-meta.Math.AdvAABB.prototype =
+meta.math.AdvAABB.prototype =
 {
 	move: function(x, y)
 	{

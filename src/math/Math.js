@@ -64,6 +64,6 @@ meta.math =
 	},
 
 	lookAtEntity: function(src, target) {
-		return meta.Math.lookAt(src.x, src.y, target.x, target.y);
+		return meta.math.lookAt(src.x, src.y, target.x, target.y);
 	}
 };

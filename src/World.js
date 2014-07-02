@@ -4,7 +4,7 @@ meta.World = function(width, height)
 {
 	this.chn = null;
 
-	this.volume = new meta.Math.AdvAABB(0, 0, 0, 0);
+	this.volume = new meta.math.AdvAABB(0, 0, 0, 0);
 	this.minWidth = -1;
 	this.minHeight = -1;
 	this.maxHeight = -1;
