@@ -726,30 +726,35 @@ Resource.Texture = Resource.Basic.extend
 
 	/**
 	 * Tile source texture on top.
-	 * @param data {Object} Parameters.
-	 * @param data.texture {Resource.Texture|String} Texture object or name of the texture in resources pool.
-	 * @param data.x {Number=} Offset on x axis.
-	 * @param data.y {Number=} Offset on y axis.
-	 * @param data.width {Number=} Width of area to tile.
-	 * @param data.height {Number=} Height of area to tile.
+	 * @param params {Object} Parameters.
+	 * @param params.texture {Resource.Texture|String} Texture object or name of the texture in resources pool.
+	 * @param params.x {Number=} Offset on x axis.
+	 * @param params.y {Number=} Offset on y axis.
+	 * @param params.width {Number=} Width of area to tile.
+	 * @param params.height {Number=} Height of area to tile.
 	 */
-	tile: function(data)
+	tile: function(params, height, texture)
 	{
-		if(!data) {
+		if(typeof(params) === "number") {
+			this.tile({ width: params, height: height, texture: texture });
+			return;
+		}
+
+		if(!params) {
 			console.warn("[Resource.Texture.tile]:", "No parameters specified.");
 			return;
 		}
 
-		if(typeof(data.texture) === "string") {
-			data.texture = Resource.ctrl.getTexture(data.texture);
+		if(typeof(params.texture) === "string") {
+			params.texture = Resource.ctrl.getTexture(params.texture);
 		}
 
-		if(!data.texture) {
+		if(!params.texture) {
 			console.warn("[Resource.Texture.tile]:", "Undefined texture.");
 			return;
 		}
 
-		var texture = data.texture;
+		var texture = params.texture;
 
 		if(texture.textureType === Resource.TextureType.WEBGL) 
 		{
@@ -762,7 +767,7 @@ Resource.Texture = Resource.Basic.extend
 				texture._canvasCache.load();
 				texture = texture._canvasCache;
 
-				this._loadCache = { name: "tile", data: data };
+				this._loadCache = { name: "tile", data: params };
 				this.isLoaded = false;
 				texture.subscribe(this, this.onTextureCacheEvent);
 				return;	
@@ -776,34 +781,34 @@ Resource.Texture = Resource.Basic.extend
 				texture.load();
 			}
 
-			this._loadCache = { name: "tile", data: data };
+			this._loadCache = { name: "tile", data: params };
 			this.isLoaded = false;
 			texture.subscribe(this, this.onTextureCacheEvent);
 			return;
 		}
 
+		params.x = params.x || 0;
+		params.y = params.y || 0;
+		params.width = params.width || this.fullWidth;
+		params.height = params.height || this.fullHeight;
+
+		if(!params.drawOver) {
+			this.resize(params.width, params.height);
+		}
+
+		if(params.center) {
+			params.x += (this.fullWidth & (texture.fullWidth - 1)) / 2;
+			params.y += (this.fullHeight & (texture.fullHeight - 1)) / 2;		
+		}
+
 		var ctx = this.ctx;
-		data.x = data.x || 0;
-		data.y = data.y || 0;
-		data.width = data.width || this.fullWidth;
-		data.height = data.height || this.fullHeight;
-
-		if(!data.drawOver) {
-			this.resize(data.width, data.height);
-		}
-
-		if(data.center) {
-			data.x += (this.fullWidth & (texture.fullWidth - 1)) / 2;
-			data.y += (this.fullHeight & (texture.fullHeight - 1)) / 2;		
-		}
-
 		if(this.textureType) {
 			this._createCachedImg();
 			ctx = this._cachedCtx;
 		}
 
-		var posX = data.x;
-		var posY = data.y;
+		var posX = params.x;
+		var posY = params.y;
 		var numX = Math.ceil(this.fullWidth / texture.fullWidth);
 		var numY = Math.ceil(this.fullHeight/ texture.fullHeight);
 
@@ -1218,42 +1223,36 @@ Resource.Texture = Resource.Basic.extend
 		this.isLoaded = true;
 	},
 
-	grid: function(params, cellHeight, numCellsX, numCellsY, borderWidth, color)
+	grid: function(params, cellHeight, numCellsX, numCellsY)
 	{
-		var x, y, cellWidth, drawOver;
-
 		// Init.
-		if(typeof(params) !== "number")
+		if(typeof(params) === "number") 
 		{
-			if(!params) {
-				console.warn("[Resource.Texture.grid]:", "No params specified.");
-				return;
-			}
-
-			x = params.x || 0;
-			y = params.y || 0;
-			cellWidth = params.cellWidth || 1;
-			cellHeight = params.cellHeight || 1;
-			numCellsX = params.numCellsX || 1;
-			numCellsY = params.numCellsY || 1;
-			color = params.color || "#000";
-			borderWidth = params.borderWidth || 1;
-			drawOver = params.drawOver || false;
-		}
-		else 
-		{
-			x = 0;
-			y = 0;
-			cellWidth = params || 1;
-			color = color || "#000";
-			borderWidth = borderWidth || 1;
-			drawOver = drawOver || false;
+			this.grid({ cellWidth: params, cellHeight: cellHeight, 
+				numCellsX: numCellsX, numCellsY: numCellsY
+			});
+			return;
 		}
 
-		var width = cellWidth * numCellsX;
-		var height = cellHeight * numCellsY;		
+		if(!params) {
+			console.warn("[Resource.Texture.grid]:", "No params specified.");
+			return;
+		}
 
-		if(!drawOver) {
+		var cellWidth = params.cellWidth || 1;
+		var cellHeight = params.cellHeight || 1;
+		var numCellsX = params.numCellsX || 1;
+		var numCellsY = params.numCellsY || 1;
+		params.x = params.x || 0;
+		params.y = params.y || 0;
+		params.color = params.color || "#000000";
+		params.borderWidth = params.borderWidth || 1;
+		params.drawOver = params.drawOver || false;
+
+		var width = params.x + (params.cellWidth * params.numCellsX) + 1;
+		var height = params.y + (params.cellHeight * params.numCellsY) + 1;	
+
+		if(!params.drawOver) {
 			this.resize(width, height);
 		}		
 
@@ -1264,8 +1263,11 @@ Resource.Texture = Resource.Basic.extend
 		}
 
 		// Rendering.
-		ctx.strokeStyle = color;
-		ctx.lineWidth = borderWidth;
+		ctx.strokeStyle = params.color;
+		ctx.lineWidth = params.borderWidth;
+
+		ctx.save();
+		ctx.translate(0.5, 0.5);
 
 		for(var x = 0; x < (numCellsX + 1); x++) {
 			ctx.moveTo((x * cellHeight), 0);
@@ -1278,6 +1280,7 @@ Resource.Texture = Resource.Basic.extend
 		}
 
 		ctx.stroke();
+		ctx.restore();
 
 		// Update.
 		if(this.textureType) {
