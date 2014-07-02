@@ -666,33 +666,53 @@ Resource.Texture = Resource.Basic.extend
 	 * @param [params.height=this.height] {Number=} Height of rect to fill. By default will use current texture height.
 	 * @param [params.color=#000000] {Hex=} Color of the filled rect.
 	 * @param [params.drawOver=false] {Boolean=} Flag - draw over previous texture content.
+	 * @param height {Number=} Height of the rect.
+	 * @param color {String=} Color of the rect.
 	 * @function
 	 */
-	fillRect: function(params)
+	fillRect: function(params, height, color)
 	{
-		if(!params) {
-			console.warn("[Resource.Texture.fillRect]:", "No parameters specified.");
-			return;
+		if(typeof(params) !== "number")
+		{
+			if(!params) {
+				console.warn("[Resource.Texture.fillRect]:", "No parameters specified.");
+				return;
+			}
+
+			var ctx = this.ctx;
+			params.x = params.x || 0;
+			params.y = params.y || 0;
+			params.color = params.color || "#000000";
+			params.width = params.width || this.fullWidth || 1;
+			params.height = params.height || this.fullHeight || 1;
+
+			if(!params.drawOver) {
+				this.resize(params.width + params.x, params.height + params.y);
+			}
+
+			if(this.textureType) {
+				this._createCachedImg();
+				ctx = this._cachedCtx;
+			}
+
+			ctx.fillStyle = params.color;
+			ctx.fillRect(params.x, params.y, params.width, params.height);
 		}
+		else 
+		{
+			var width = params;
+			var color = color || "#000000";
 
-		var ctx = this.ctx;
-		params.x = params.x || 0;
-		params.y = params.y || 0;
-		params.color = params.color || "#000000";
-		params.width = params.width || this.fullWidth || 1;
-		params.height = params.height || this.fullHeight || 1;
+			this.resize(width, height);
 
-		if(!params.drawOver) {
-			this.resize(params.width + params.x, params.height + params.y);
+			if(this.textureType) {
+				this._createCachedImg();
+				ctx = this._cachedCtx;
+			}
+
+			ctx.fillStyle = color;
+			ctx.fillRect(0, 0, width, height);
 		}
-
-		if(this.textureType) {
-			this._createCachedImg();
-			ctx = this._cachedCtx;
-		}
-
-		ctx.fillStyle = params.color;
-		ctx.fillRect(params.x, params.y, params.width, params.height);
 
 		if(this.textureType) {
 			var gl = meta.ctx;
@@ -1201,6 +1221,77 @@ Resource.Texture = Resource.Basic.extend
 		}
 
 		this.isLoaded = true;
+	},
+
+	grid: function(params, cellHeight, numCellsX, numCellsY, borderWidth, color)
+	{
+		var x, y, cellWidth, drawOver;
+
+		// Init.
+		if(typeof(params) !== "number")
+		{
+			if(!params) {
+				console.warn("[Resource.Texture.grid]:", "No params specified.");
+				return;
+			}
+
+			x = params.x || 0;
+			y = params.y || 0;
+			cellWidth = params.cellWidth || 1;
+			cellHeight = params.cellHeight || 1;
+			numCellsX = params.numCellsX || 1;
+			numCellsY = params.numCellsY || 1;
+			color = params.color || "#000";
+			borderWidth = params.borderWidth || 1;
+			drawOver = params.drawOver || false;
+		}
+		else 
+		{
+			x = 0;
+			y = 0;
+			cellWidth = params || 1;
+			color = color || "#000";
+			borderWidth = borderWidth || 1;
+			drawOver = false;
+		}
+
+		var width = cellWidth * numCellsX;
+		var height = cellHeight * numCellsY;		
+
+		if(!drawOver) {
+			this.resize(width, height);
+		}		
+
+		var ctx = this.ctx;	
+		if(this.textureType) {
+			this._createCachedImg();
+			ctx = this._cachedCtx;
+		}
+
+		// Rendering.
+		ctx.strokeColor = color;
+		ctx.lineWidth = borderWidth;
+
+		for(var x = 0; x < (numCellsX + 1); x++) {
+			ctx.moveTo((x * cellHeight), 0);
+			ctx.lineTo((x * cellHeight), height);
+		}
+
+		for(var y = 0; y < (numCellsY + 1); y++) {
+			ctx.moveTo(0, (y * cellHeight));
+			ctx.lineTo(width, (y * cellHeight));
+		}
+
+		ctx.stroke();
+
+		// Update.
+		if(this.textureType) {
+			var gl = meta.ctx;
+			gl.bindTexture(gl.TEXTURE_2D, this.image);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
+		}
+
+		this.isLoaded = true;					
 	},
 
 
