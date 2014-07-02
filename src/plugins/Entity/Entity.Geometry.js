@@ -36,7 +36,7 @@ Entity.Geometry = meta.Class.extend
 	{
 		this.id = this._entityCtrl.getUniqueID();
 		this.name = "entity" + this.id;
-		this.volume = new meta.Math.AdvAABB(0, 0, 0, 0);
+		this.volume = new meta.math.AdvAABB(0, 0, 0, 0);
 		this._parent = this._entityCtrl;
 
 		this._depthNode = new Entity.DepthList.Node();
@@ -470,6 +470,53 @@ Entity.Geometry = meta.Class.extend
 	},
 
 	/**
+	 * Update position from position type.
+	 */
+	updatePosType: function()
+	{
+		if(this.positionType === 0) {
+			return;
+		}
+
+		// TopLeft
+		if(this.positionType === 1) {
+			this._x += this.volume.halfWidth;
+			this._y += this.volume.halfHeight;			
+		}
+		// TopRight
+		else if(this.positionType === 2) {
+			this._x -= this.volume.halfWidth;
+			this._y += this.volume.halfHeight;			
+		}
+		// BottomLeft
+		else if(this.positionType === 3) {
+			this._x += this.volume.halfWidth;
+			this._y -= this.volume.halfHeight;			
+		}
+		// BottomRight
+		else if(this.positionType === 4) {
+			this._x -= this.volume.halfWidth;
+			this._y -= this.volume.halfHeight;			
+		}
+		// Top
+		else if(this.positionType === 5) {
+			this._y += this.volume.halfHeight;			
+		}
+		// Bottom
+		else if(this.positionType === 6) {
+			this._y -= this.volume.halfHeight;			
+		}
+		// Left
+		else if(this.positionType === 7) {
+			this._x += this.volume.halfWidth;			
+		}
+		// Right
+		else if(this.positionType === 8) {
+			this._x -= this.volume.halfWidth;		
+		}			
+	},
+
+	/**
 	 * Update offsets and volume from the texture.
 	 */
 	updateFromTexture: function()
@@ -482,6 +529,7 @@ Entity.Geometry = meta.Class.extend
 			this.childPivotY = ((-this.pivotRatioY - 1.0) * this.volume.halfHeight);
 		}
 
+		this.updatePosType();
 		this.updatePos();
 
 		if(this.children)
@@ -493,6 +541,149 @@ Entity.Geometry = meta.Class.extend
 			}
 		}					
 	},	
+
+	/**
+	 * Set entity world position to x, y.
+	 * @param x {Number} World position on X axis.
+	 * @param y {Number} World position on Y axis.
+	 */
+	position: function(x, y)
+	{
+		this.positionType = 0;
+
+		if(this._x === x && this._y === y) { return; }
+		this.forcePosition(x, y);
+	},
+
+	/**
+	 * Add delta position to world x, y.
+	 * @param deltaX {Number} Amount to add to x position.
+	 * @param deltaY {Number} Amount to add to y position.
+	 */
+	move: function(deltaX, deltaY)
+	{
+		var newX = this._x + deltaX;
+		var newY = this._y + deltaY;
+
+		if(this._x === newX && this._y === newY) { return; }
+		this.forcePosition(newX, newY);
+	},	
+
+	/**
+	 * Position entity from top left corner.
+	 * @param x {Number} Position on x axis.
+	 * @param y {Number} Position on y axis.
+	 */
+	positionTopLeft: function(x, y)
+	{
+		x += this.volume.halfWidth;
+		y += this.volume.halfHeight;
+		this.positionType = 1;
+
+		if(this._x === x && this._y === y) { return; }
+		this.forcePosition(x, y);		
+	},
+
+	/**
+	 * Position entity from top right corner.
+	 * @param x {Number} Position on x axis.
+	 * @param y {Number} Position on y axis.
+	 */
+	positionTopRight: function(x, y)
+	{
+		x += this.volume.halfWidth;
+		y -= this.volume.halfHeight;
+		this.positionType = 2;
+
+		if(this._x === x && this._y === y) { return; }
+		this.forcePosition(x, y);	
+	},
+
+	/**
+	 * Position entity from bottom left corner.
+	 * @param x {Number} Position on x axis.
+	 * @param y {Number} Position on y axis.
+	 */
+	positionBottomLeft: function(x, y)
+	{
+		x -= this.volume.halfWidth;
+		y += this.volume.halfHeight;
+		this.positionType = 3;
+
+		if(this._x === x && this._y === y) { return; }
+		this.forcePosition(x, y);	
+	},
+
+	/**
+	 * Position entity from bottom right corner.
+	 * @param x {Number} Position on x axis.
+	 * @param y {Number} Position on y axis.
+	 */
+	positionBottomRight: function(x, y)
+	{
+		x += this.volume.halfWidth;
+		y += this.volume.halfHeight;
+		this.positionType = 4;
+
+		if(this._x === x && this._y === y) { return; }
+		this.forcePosition(x, y);	
+	},
+
+	/**
+	 * Position entity from top side.
+	 * @param x {Number} Position on x axis.
+	 * @param y {Number} Position on y axis.
+	 */
+	positionTop: function(x, y)
+	{
+		y -= this.volume.halfHeight;
+		this.positionType = 5;
+
+		if(this._x === x && this._y === y) { return; }
+		this.forcePosition(x, y);	
+	},
+
+	/**
+	 * Position entity from bottom side.
+	 * @param x {Number} Position on x axis.
+	 * @param y {Number} Position on y axis.
+	 */
+	positionBottom: function(x, y)
+	{
+		y += this.volume.halfHeight;
+		this.positionType = 6;
+
+		if(this._x === x && this._y === y) { return; }
+		this.forcePosition(x, y);	
+	},
+
+	/**
+	 * Position entity from left side.
+	 * @param x {Number} Position on x axis.
+	 * @param y {Number} Position on y axis.
+	 */
+	positionLeft: function(x, y)
+	{
+		x -= this.volume.halfWidth;
+		this.positionType = 7;
+
+		if(this._x === x && this._y === y) { return; }
+		this.forcePosition(x, y);	
+	},
+
+	/**
+	 * Position entity from right side.
+	 * @param x {Number} Position on x axis.
+	 * @param y {Number} Position on y axis.
+	 */
+	positionRight: function(x, y)
+	{
+		x += this.volume.halfWidth;
+		this.positionType = 8;
+
+		if(this._x === x && this._y === y) { return; }
+		this.forcePosition(x, y);	
+	},
 
 	/**
 	 * Set pivot as ratio. Using prefixed position function will set this to other value.
@@ -539,31 +730,6 @@ Entity.Geometry = meta.Class.extend
 		}
 
 		this.updatePos();
-	},
-
-	/**
-	 * Set entity world position to x, y.
-	 * @param x {Number} World position on X axis.
-	 * @param y {Number} World position on Y axis.
-	 */
-	position: function(x, y)
-	{
-		if(this._x === x && this._y === y) { return; }
-		this.forcePosition(x, y);
-	},
-
-	/**
-	 * Add delta position to world x, y.
-	 * @param deltaX {Number} Amount to add to x position.
-	 * @param deltaY {Number} Amount to add to y position.
-	 */
-	move: function(deltaX, deltaY)
-	{
-		var newX = this._x + deltaX;
-		var newY = this._y + deltaY;
-
-		if(this._x === newX && this._y === newY) { return; }
-		this.forcePosition(newX, newY);
 	},	
 
 	/**
@@ -571,12 +737,11 @@ Entity.Geometry = meta.Class.extend
 	 * @param x {Number} World position on X axis.
 	 * @param y {Number} World position on Y axis.
 	 */
-	positionCenter: function(x, y)
+	pivotCenter: function(x, y)
 	{
-		if(this.positionType !== 0) {
+		if(this.pivotRatioX !== 0.0 && this.pivotRatioY !== 0.0) {
 			this._x = x;
 			this._y = y;
-			this.positionType = 0;
 			this.pivot(0.0, 0.0);
 			return
 		}
@@ -586,16 +751,15 @@ Entity.Geometry = meta.Class.extend
 	},	
 
 	/**
-	 * Position entity from top left corner.
+	 * Pivot and position entity from top left corner.
 	 * @param x {Number} Position on x axis.
 	 * @param y {Number} Position on y axis.
 	 */
-	positionTopLeft: function(x, y)
+	pivotTopLeft: function(x, y)
 	{
-		if(this.positionType !== 1) {
+		if(this.pivotRatioX !== -1.0 && this.pivotRatioY !== -1.0) {
 			this._x = x;
-			this._y = y;			
-			this.positionType = 1;
+			this._y = y;
 			this.pivot(-1.0, -1.0);
 			return;
 		}
@@ -605,16 +769,15 @@ Entity.Geometry = meta.Class.extend
 	},
 
 	/**
-	 * Position entity from top right corner.
+	 * Pivot and position entity from top right corner.
 	 * @param x {Number} Position on x axis.
 	 * @param y {Number} Position on y axis.
 	 */
-	positionTopRight: function(x, y)
+	pivotTopRight: function(x, y)
 	{
-		if(this.positionType !== 2) {
+		if(this.pivotRatioX !== 1.0 && this.pivotRatioY !== -1.0) {
 			this._x = x;
-			this._y = y;			
-			this.positionType = 2;
+			this._y = y;
 			this.pivot(1.0, -1.0);
 			return
 		}
@@ -624,16 +787,15 @@ Entity.Geometry = meta.Class.extend
 	},
 
 	/**
-	 * Position entity from bottom left corner.
+	 * Pivot and position entity from bottom left corner.
 	 * @param x {Number} Position on x axis.
 	 * @param y {Number} Position on y axis.
 	 */
-	positionBottomLeft: function(x, y)
+	pivotBottomLeft: function(x, y)
 	{
-		if(this.positionType !== 3) {
+		if(this.pivotRatioX !== -1.0 && this.pivotRatioY !== 1.0) {
 			this._x = x;
 			this._y = y;			
-			this.positionType = 3;
 			this.pivot(-1.0, 1.0);
 			return
 		}
@@ -643,16 +805,15 @@ Entity.Geometry = meta.Class.extend
 	},
 
 	/**
-	 * Position entity from bottom right corner.
+	 * Pivot and position entity from bottom right corner.
 	 * @param x {Number} Position on x axis.
 	 * @param y {Number} Position on y axis.
 	 */
-	positionBottomRight: function(x, y)
+	pivotBottomRight: function(x, y)
 	{
-		if(this.positionType !== 4) {
+		if(this.pivotRatioX !== 1.0 && this.pivotRatioY !== 1.0) {
 			this._x = x;
 			this._y = y;		
-			this.positionType = 4;
 			this.pivot(1.0, 1.0);
 			return
 		}
@@ -662,16 +823,15 @@ Entity.Geometry = meta.Class.extend
 	},
 
 	/**
-	 * Position entity from top edge.
+	 * Pivot and position entity from top edge.
 	 * @param x {Number} Position on x axis.
 	 * @param y {Number} Position on y axis.
 	 */
-	positionTop: function(x, y)
+	pivotPositionTop: function(x, y)
 	{
-		if(this.positionType !== 5) {
+		if(this.pivotRatioX !== 0.0 && this.pivotRatioY !== -1.0) {
 			this._x = x;
-			this._y = y;			
-			this.positionType = 5;
+			this._y = y;
 			this.pivot(0.0, -1.0);
 			return
 		}
@@ -681,16 +841,15 @@ Entity.Geometry = meta.Class.extend
 	},
 
 	/**
-	 * Position entity from bottom edge.
+	 * Pivot and position entity from bottom edge.
 	 * @param x {Number} Position on x axis.
 	 * @param y {Number} Position on y axis.
 	 */
-	positionBottom: function(x, y)
+	pivotPositionBottom: function(x, y)
 	{
-		if(this.positionType !== 6) {
+		if(this.pivotRatioX !== 0.0 && this.pivotRatioY !== 1.0) {
 			this._x = x;
-			this._y = y;			
-			this.positionType = 6;
+			this._y = y;
 			this.pivot(0.0, 1.0);
 			return
 		}
@@ -700,16 +859,15 @@ Entity.Geometry = meta.Class.extend
 	},
 
 	/**
-	 * Position entity from left edge.
+	 * Pivot and position entity from left edge.
 	 * @param x {Number} Position on x axis.
 	 * @param y {Number} Position on y axis.
 	 */
-	positionLeft: function(x, y)
+	pivotPositionLeft: function(x, y)
 	{
-		if(this.positionType !== 7) {
+		if(this.pivotRatioX !== -1.0 && this.pivotRatioY !== 0.0) {
 			this._x = x;
-			this._y = y;			
-			this.positionType = 7;
+			this._y = y;
 			this.pivot(-1.0, 0.0);
 			return
 		}
@@ -719,16 +877,15 @@ Entity.Geometry = meta.Class.extend
 	},
 
 	/**
-	 * Position entity from right edge.
+	 * Pivot and position entity from right edge.
 	 * @param x {Number} Position on x axis.
 	 * @param y {Number} Position on y axis.
 	 */
-	positionRight: function(x, y)
+	pivotPositionRight: function(x, y)
 	{
-		if(this.positionType !== 8) {
+		if(this.pivotRatioX !== 1.0 && this.pivotRatioY !== 0.0) {
 			this._x = x;
-			this._y = y;			
-			this.positionType = 8;
+			this._y = y;
 			this.pivot(1.0, 0.0);
 			return
 		}
@@ -1125,6 +1282,21 @@ Entity.Geometry = meta.Class.extend
 		}
 
 		this.children.length = 0;
+	},
+
+
+	clip: function(minX, minY, maxX, maxY) 
+	{
+		if(typeof(minX) === "object" && minX instanceof meta.math.AdvAABB) {
+			this.clipVolume = minX;
+		}
+		else {
+			this.clipVolume = new meta.math.AdvAABB(minX, minY, maxX, maxY);
+		}
+
+		this.isNeedDraw = true;
+
+		return this.clipVolume;
 	},
 
 
@@ -1961,15 +2133,7 @@ Entity.Geometry = meta.Class.extend
 	drawX: 0, drawY: 0,
 	offsetX: 0, offsetY: 0,
 
-
-	pivotX: 0, 
-
-	/**
-	 * PivotY. 
-	 * @property pivotY {Number}
-	 * @default
-	 */
-	pivotY: 0,
+	pivotX: 0, pivotY: 0,
 
 	pivotRatioX: 0, pivotRatioY: 0,	
 	childOffsetX: 0, childOffsetY: 0,
@@ -1983,6 +2147,7 @@ Entity.Geometry = meta.Class.extend
 	_tween: null,
 
 	volume: null,
+	clipVolume: null,
 	positionType: 0,
 
 	_angleRad: 0.0,
