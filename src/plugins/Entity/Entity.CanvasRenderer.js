@@ -143,6 +143,24 @@ Entity.CanvasRenderer = Entity.Controller.extend
 
 			if(entity._isCached || !entity.isVisible || !entity._isLoaded) { continue; }
 
+			if(this._clipVolume !== entity.clipVolume) 
+			{
+				if(entity.clipVolume === null) {
+					ctx.restore();
+				}
+				else
+				{
+					ctx.save();
+					var clip = entity.clipVolume;
+					ctx.beginPath();
+					ctx.rect(clip.minX, clip.minY, clip.width, clip.height);
+					ctx.closePath();
+					ctx.clip();
+				}
+
+				this._clipVolume = entity.clipVolume;
+			}			
+
 			if(entity.ignoreZoom) {
 				ctx.restore();
 				ctx.save();
@@ -192,6 +210,24 @@ Entity.CanvasRenderer = Entity.Controller.extend
 			}
 
 			if(entity._isCached || !entity.isVisible || !entity._isLoaded) { continue; }
+
+			if(this._clipVolume !== entity.clipVolume) 
+			{
+				if(entity.clipVolume === null) {
+					ctx.restore();
+				}
+				else
+				{
+					ctx.save();
+					var clip = entity.clipVolume;
+					ctx.beginPath();
+					ctx.rect(clip.minX, clip.minY, clip.width, clip.height);
+					ctx.closePath();
+					ctx.clip();
+				}
+
+				this._clipVolume = entity.clipVolume;
+			}
 
 			if(entity.ignoreZoom) {
 				ctx.restore();
@@ -418,6 +454,8 @@ Entity.CanvasRenderer = Entity.Controller.extend
 
 	_tStaticCheck: 0,
 	tStaticCheckDelay: 500,
+
+	_clipVolume: null,
 
 	x: 0, y: 0
 });
