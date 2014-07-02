@@ -1120,7 +1120,7 @@ Entity.Geometry = meta.Class.extend
 
 
 	/**
-	 * Add entity as child.
+	 * Attach entity as child.
 	 * @param entity {Entity.Geometry}
 	 */
 	attach: function(entity, isRelative)
@@ -1203,6 +1203,10 @@ Entity.Geometry = meta.Class.extend
 		}
 	},
 
+	/**
+	 * Detach child from entity.
+	 * @param entity {Entity.Geometry}
+	 */
 	detach: function(entity)
 	{
 		if(entity)
@@ -1238,6 +1242,9 @@ Entity.Geometry = meta.Class.extend
 		}
 	},
 
+	/**
+	 * Detach all children fro mentity.
+	 */
 	detachChildren: function()
 	{
 		if(!this.children) { return; }
