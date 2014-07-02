@@ -939,7 +939,7 @@ Resource.Texture = Resource.Basic.extend
 		this.isLoaded = true;
 	},
 
-	strokeBorder: function(params)
+	border: function(params)
 	{
 		if(!params) {
 			console.warn("[Resource.Texture.strokeBorder]:", "No parameters specified.");
@@ -958,11 +958,6 @@ Resource.Texture = Resource.Basic.extend
 			params.height - lineWidth, 0, params.height - lineWidth, 0, 0 ];
 
 		this.stroke(params);
-	},
-
-	strokeGrid: function(params)
-	{
-
 	},
 
 	/**
@@ -1252,7 +1247,7 @@ Resource.Texture = Resource.Basic.extend
 			cellWidth = params || 1;
 			color = color || "#000";
 			borderWidth = borderWidth || 1;
-			drawOver = false;
+			drawOver = drawOver || false;
 		}
 
 		var width = cellWidth * numCellsX;
@@ -1269,7 +1264,7 @@ Resource.Texture = Resource.Basic.extend
 		}
 
 		// Rendering.
-		ctx.strokeColor = color;
+		ctx.strokeStyle = color;
 		ctx.lineWidth = borderWidth;
 
 		for(var x = 0; x < (numCellsX + 1); x++) {
