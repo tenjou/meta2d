@@ -2174,6 +2174,7 @@ Entity.Geometry = meta.Class.extend
 	_dragOffsetX: 0, _dragOffsetY: 0,
 	drawX: 0, drawY: 0,
 	offsetX: 0, offsetY: 0,
+	textureOffsetX: 0, textureOffsetY: 0,
 
 	pivotX: 0, pivotY: 0,
 

@@ -302,6 +302,10 @@ Entity.Controller = meta.Controller.extend
 		entity._depthNode.entity = entity;
 		this.entities.push(entity._depthNode);
 
+		if(!entity.texture) {
+			entity.isLoaded = true;
+		}
+
 		if(entity.children)
 		{
 			var numChildren = entity.children.length;

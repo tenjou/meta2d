@@ -366,7 +366,7 @@ meta.Tween.Easing =
 	 * @returns {Number}
 	 */
 	bounceIn: function(k) {
-		return 1 - meta.Easing.bounceOut(1 - k);
+		return 1 - meta.Tween.Easing.bounceOut(1 - k);
 	},
 
 	/**
@@ -397,9 +397,9 @@ meta.Tween.Easing =
 	bounceInOut: function(k)
 	{
 		if(k < 0.5) {
-			return meta.Easing.bounceIn(k * 2) * 0.5;
+			return meta.Tween.Easing.bounceIn(k * 2) * 0.5;
 		}
 
-		return meta.Easing.bounceOut(k * 2 - 1) * 0.5 + 0.5;
+		return meta.Tween.Easing.bounceOut(k * 2 - 1) * 0.5 + 0.5;
 	}
 };
