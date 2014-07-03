@@ -258,7 +258,7 @@ meta.Tween.prototype =
 			}
 
 			if(this.currLink._onComplete) {
-				this.currLink._onComplete.call(this, this.owner);
+				this.currLink._onComplete.call(this.owner);
 			}
 
 			this.next();
