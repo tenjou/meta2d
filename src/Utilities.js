@@ -168,38 +168,28 @@ meta.getSound = function(name) {
 };
 
 /**
- * Register controller to the engine.
+ * Create an instance of the controller.
  * @param ctrlName {String} Name of the controller.
  * @param view {meta.View=} Default view.
  */
-meta.register = function(ctrlName, view)
+meta.createCtrl = function(ctrlName, view)
 {
 	if(!ctrlName) {
-		console.error("[meta.register]:", "No controller name is defined.");
-		return;
+		console.error("[meta.createCtrl]:", "No controller name is defined.");
+		return null;
 	}
 
 	var parts = ctrlName.split(".");
 	if(parts.length > 2) {
-		console.error("[meta.register]:", "Name should be in format \"MyScope.Controller\".");
-		return;
+		console.error("[meta.createCtrl]:", "Name should be in format \"MyScope.Controller\".");
+		return null;
 	}
 
 	var name = parts[0];
 	var ctrlScope = window[name];
 	if(!ctrlScope) {
-		console.error("[meta.register]:", "No such scope defined: " + name);
-		return;
-	}
-
-	if(ctrlScope[name]) {
-		console.error("[meta.register]:", "Controller (" + name + ") is already added in scope.");
-		return;
-	}
-
-	if(ctrlScope.ctrl) {
-		ctrlScope.ctrl.unload();
-		ctrlScope.ctrl.release();
+		console.error("[meta.createCtrl]:", "No such scope defined: " + name);
+		return null;
 	}
 
 	var objName;
@@ -211,8 +201,8 @@ meta.register = function(ctrlName, view)
 	}
 
 	if(!ctrlScope[objName]) {
-		console.error("[meta.register]:", "No Controller (" + objName + ") found in scope: " + name);
-		return;
+		console.error("[meta.createCtrl]:", "No Controller (" + objName + ") found in scope: " + name);
+		return null;
 	}
 
 	view = view || meta.view;
@@ -221,8 +211,83 @@ meta.register = function(ctrlName, view)
 	ctrl.name = name;
 	ctrl.view = view;
 
-	meta.engine.controllers.push(ctrl);
+	return ctrl;
+};
+
+/**
+ * Add an already created controller to the engine.
+ * @param ctrl {meta.Controller} Name of the controller.
+ */
+meta.addCtrl = function(ctrl)
+{
+	if(!ctrl) {
+		console.error("[meta.addCtrl]:", "Invalid controller passed.");
+		return;
+	}
+
+	var ctrlScope = window[ctrl.name];
+	if(ctrlScope.ctrl) {
+		console.error("[meta.addCtrl]:", "Controller (" + ctrl.name + ") is already added in scope.");
+		return;
+	}	
+
 	ctrlScope.ctrl = ctrl;
+	meta.engine.controllers.push(ctrl);
+
+	if(meta.engine.isCtrlLoaded) {
+		ctrl.load();
+	}
+	if(meta.engine.isReady) {
+		ctrl.ready();
+	}
+};
+
+/**
+ * Remove controller from the engine.
+ * @param ctrl {meta.Controller} Name of the controller.
+ */
+meta.removeCtrl = function(ctrl)
+{
+	if(!ctrl) {
+		console.error("[meta.addCtrl]:", "Invalid controller passed.");
+		return;
+	}
+
+	var ctrlScope = window[ctrl.name];
+	if(!ctrlScope.ctrl) {
+		console.error("[meta.removeCtrl]:", "No controller added to the scope.");
+		return;
+	}	
+
+	if(ctrlScope.ctrl !== ctrl) {
+		console.error("[meta.removeCtrl]:", "Controller (" + ctrl.name + ") is not the same what is already added to the scope.");
+		return;
+	}		
+
+	ctrl.unload();
+	ctrl.release();
+	meta.engine.controllersToRemove.push(ctrl);	
+},
+
+/**
+ * Register controller to the engine.
+ * @param ctrlName {String} Name of the controller.
+ * @param view {meta.View=} Default view.
+ * @param autoLoad {Boolean=|true} Auto load controller if possible.
+ */
+meta.register = function(ctrlName, view)
+{
+	var ctrl = meta.createCtrl(ctrlName, view);
+	if(!ctrl) { return; }
+
+	var ctrlScope = window[ctrl.name];
+	if(ctrlScope.ctrl) {
+		console.error("[meta.register]:", "Controller (" + ctrl.name + ") is already added in scope.");
+		return null;
+	}	
+
+	ctrlScope.ctrl = ctrl;
+	meta.engine.controllers.push(ctrl);
 
 	if(meta.engine.isCtrlLoaded) {
 		ctrl.load();

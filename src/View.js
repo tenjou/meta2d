@@ -32,7 +32,6 @@ meta.View = function(name)
 	this.bgColor = this._bgColor;
 
 	this._isActive = false;
-	this._isCtrlInited = false;
 };
 
 meta.View.prototype =
@@ -283,16 +282,19 @@ meta.View.prototype =
 	 */
 	register: function(ctrlName)
 	{
+		var ctrl = meta.createCtrl(ctrlName, this);
+
 		if(!this.controllers) {
-			this.controllers = [ ctrlName ];
+			this.controllers = [ ctrl ];
 		}
 		else {
-			this.controllers.push(ctrName);
+			this.controllers.push(ctrl);
 		}
 
-		if(this._isActive) {
-			meta.register(ctrlName, this);
-		}
+		if(!this._isActive) { return; }
+		if(this.parentView && !this.parentView._isActive) { return; }
+
+		meta.addCtrl(ctrl);
 	},
 
 	/**
@@ -304,7 +306,7 @@ meta.View.prototype =
 		var numControllers = this.controllers.length;
 		for(var i = 0; i < numControllers; i++)
 		{
-			if(this.controllers[i] === ctrlName)
+			if(this.controllers[i].name === ctrlName)
 			{
 				if(this._isActive) {
 					meta.unregister(ctrlName);
@@ -316,39 +318,6 @@ meta.View.prototype =
 		}
 	},
 
-	_registerToEngine: function()
-	{
-		if(this.controllers)
-		{
-			var n;
-			var numControllers = this.controllers.length;
-
-			if(!this._isCtrlInited)
-			{
-				for(n = 0; n < numControllers; n++) {
-					meta.register(this.controllers[n], this);
-				}
-			}
-			else
-			{
-				var ctrl, index;
-				for(n = 0; n < numControllers; n++)
-				{
-					ctrl = this.controllers[n];
-
-					index = ctrl.indexOf(".");
-					if(index !== -1) {
-						ctrl = ctrl.substr(0, index);
-					}
-
-					window[ctrl].ctrl.load();
-				}
-			}
-		}
-
-		this._isCtrlInited = true;
-	},
-
 	_unregisterFromEngine: function()
 	{
 		if(this.controllers)
@@ -356,6 +325,71 @@ meta.View.prototype =
 			var numControllers = this.controllers.length;
 			for(var n = 0; n < numControllers; n++) {
 				meta.unregister(this.controllers[n]);
+			}
+		}
+	},
+
+
+	_addEntities: function()
+	{
+		if(this.numEntities > 0) {
+			this._chnAddedToView.emit(this.entities, meta.Event.ADDED_TO_VIEW);
+		}
+	},
+
+	_removeEntities: function()
+	{
+		if(this.numEntities > 0) {
+			this._chnRemovedFromView.emit(this.entities, meta.Event.REMOVED_FROM_VIEW);
+		}
+	},
+
+	_makeActive: function()
+	{
+		var n;
+
+		// Add controllers to the engine.
+		if(this.controllers) 
+		{
+			var numControllers = this.controllers.length;
+			for(n = 0; n < numControllers; n++) {
+				meta.addCtrl(this.controllers[n]);
+			}			
+		}
+
+		// Add entities from the view.
+		this._addEntities();
+
+		if(this.views)
+		{
+			var numViews = this.views.length;
+			for(n = 0; n < numViews; n++) {
+				this.views[n].isActive = true;
+			}
+		}		
+	},
+
+	_makeInactive: function()
+	{
+		var n;
+
+		// Remove controllers from the engine.
+		if(this.controllers)
+		{
+			var numControllers = this.controllers.length;
+			for(n = 0; n < numControllers; n++) {
+				meta.removeCtrl(this.controllers[n]);
+			}
+		}
+
+		// Remove entities from the view.
+		this._removeEntities();
+
+		if(this.views)
+		{
+			var numViews = this.views.length;
+			for(n = 0; n < numViews; n++) {
+				this.views[n].isActive = false;
 			}
 		}
 	},
@@ -395,58 +429,20 @@ meta.View.prototype =
 	set isActive(value)
 	{
 		if(this._isActive === value) { return; }
-
-		var n, numViews;
-
-		if(value)
+		
+		if(value) 
 		{
-			this._registerToEngine();
-
-			if(this.numEntities > 0) {
-				this._chnAddedToView.emit(this.entities, meta.Event.ADDED_TO_VIEW);
+			if(this.parentView && !this.parentView._isActive) { 
+				return; 
 			}
 
-			if(this.views)
-			{
-				numViews = this.views.length;
-				for(n = 0; n < numViews; n++) {
-					this.views[n].isActive = true;
-				}
-			}
+			this._isActive = value;
+			this._makeActive();				
 		}
-		else
-		{
-			if(this.controllers)
-			{
-				var ctrl, index;
-				var numControllers = this.controllers.length;
-				for(n = 0; n < numControllers; n++)
-				{
-					ctrl = this.controllers[n];
-
-					index = ctrl.indexOf(".");
-					if(index !== -1) {
-						ctrl = ctrl.substr(0, index);
-					}
-
-					window[ctrl].ctrl.unload();
-				}
-			}
-
-			if(this.numEntities > 0) {
-				this._chnRemovedFromView.emit(this.entities, meta.Event.REMOVED_FROM_VIEW);
-			}
-
-			if(this.views)
-			{
-				numViews = this.views.length;
-				for(n = 0; n < numViews; n++) {
-					this.views[n].isActive = false;
-				}
-			}
+		else {
+			this._isActive = value;
+			this._makeInactive();
 		}
-
-		this._isActive = value;
 	},
 
 	get isActive() { return this._isActive; },

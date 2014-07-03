@@ -256,14 +256,15 @@ meta.Engine.prototype =
 
 		var ctrl;
 		var numCtrl = this.controllers.length;
-		for(var i = 0; i < numCtrl; i++) {
-			ctrl = this.controllers[i]
+		for(var i = 0; i < numCtrl; i++) 
+		{
+			ctrl = this.controllers[i];
 			ctrl.load();
 			ctrl.isLoaded = true;
 		}
 
-		meta.view.isActive = true;
 		this.isCtrlLoaded = true;
+		meta.view.isActive = true;
 		this.isLoading = false;
 
 		if(Resource.ctrl.numToLoad === 0) {
