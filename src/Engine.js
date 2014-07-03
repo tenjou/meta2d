@@ -102,6 +102,9 @@ meta.Engine = function()
 	this.fps = 0;
 	this._fpsCounter = 0;
 
+	this.frameID = 0;
+	this.updateFrameID = 0;
+
 	this.enablePauseOnBlur = true;
 };
 
@@ -276,6 +279,7 @@ meta.Engine.prototype =
 
 	update: function()
 	{
+		this.updateFrameID++;
 		this.tNow = Date.now();
 		var tDelta = this.tNow - this.tUpdate;
 
@@ -388,6 +392,8 @@ meta.Engine.prototype =
 
 	render: function()
 	{
+		this.frameID++;
+
 		var tNow = Date.now();
 		var tDelta = tNow - this.tRender;
 		if(tDelta > 250) { tDelta = 250; }
