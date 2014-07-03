@@ -22,6 +22,7 @@ Entity.Controller = meta.Controller.extend
 		this.entitiesToAdd = [];
 		this.entitiesToUpdate = [];
 		this.entitiesToRemove = [];
+		this.entitiesRemoveUpdate = [];
 		this.detachBuffer = [];
 
 		this._centerTex = new Resource.Texture();
@@ -57,6 +58,7 @@ Entity.Controller = meta.Controller.extend
 		this.entitiesToAdd = null;
 		this.entitiesToUpdate = null;
 		this.entitiesToRemove = null;
+		this.entitiesRemoveUpdate = null;
 		this.detachBuffer = null;
 		this.dynamicEntities = null;
 
@@ -187,7 +189,6 @@ Entity.Controller = meta.Controller.extend
 
 		if(this.numEntitiesToRemove)
 		{
-			var entity;
 			for(i = 0; i < this.numEntitiesToRemove; i++) {
 				entity = this.entitiesToRemove[i];
 				this.entities.remove(entity._depthNode);
@@ -207,6 +208,25 @@ Entity.Controller = meta.Controller.extend
 
 			this.entitiesToAdd.length = 0;
 			this.numEntitiesToAdd = 0;
+		}
+
+		if(this.numEntitiesRemoveUpdate) 
+		{
+			var replaceEntity;
+			for(i = 0; i < this.numEntitiesRemoveUpdate; i++) 
+			{
+				entity = this.entitiesRemoveUpdate[i];
+				replaceEntity = this.entitiesToUpdate[this.numEntitiesToUpdate - 1];
+				this.entitiesToUpdate[entity._updateNodeID] = replaceEntity;
+				this.entitiesToUpdate.pop();
+				this.numEntitiesToUpdate--;
+
+				replaceEntity._updateNodeID = entity._updateNodeID;
+				entity._updateNodeID = -1;				
+			}
+
+			this.entitiesRemoveUpdate.length = 0;
+			this.numEntitiesRemoveUpdate = 0;
 		}
 
 		this._isUpdateTick = false;
@@ -350,15 +370,9 @@ Entity.Controller = meta.Controller.extend
 		this.numEntitiesToUpdate++;
 	},
 
-	_removeFromUpdating: function(entity)
-	{
-		var replaceEntity = this.entitiesToUpdate[this.numEntitiesToUpdate - 1];
-		this.entitiesToUpdate[entity._updateNodeID] = replaceEntity;
-		this.entitiesToUpdate.pop();
-		this.numEntitiesToUpdate--;
-
-		replaceEntity._updateNodeID = entity._updateNodeID;
-		entity._updateNodeID = -1;
+	_removeFromUpdating: function(entity) {
+		this.entitiesRemoveUpdate.push(entity);
+		this.numEntitiesRemoveUpdate++;
 	},
 
 
@@ -678,12 +692,14 @@ Entity.Controller = meta.Controller.extend
 	entitiesToAdd: null,
 	entitiesToRemove: null,
 	entitiesToUpdate: null,
+	entitiesRemoveUpdate: null,
 	detachBuffer: null,
 	dynamicEntities: null,
 
 	numEntitiesToAdd: 0,
 	numEntitiesToRemove: 0,
 	numEntitiesToUpdate: 0,
+	numEntitiesRemoveUpdate: 0,
 	numShowBounds: 0,
 	numDetachItems: 0,
 
