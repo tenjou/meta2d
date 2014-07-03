@@ -523,14 +523,15 @@ Entity.Controller = meta.Controller.extend
 				this.pressedEntity._onUp.call(this.pressedEntity, event);
 				this.pressedEntity.onUp.call(this.pressedEntity, event);
 				this._chnOnUp.emit(this.pressedEntity, Entity.Event.UP);	
-				this.pressedEntity = null;	
 
 				// Click.
 				if(this.pressedEntity === this.hoverEntity) {
 					data.entity._onClick.call(data.entity, data);
 					data.entity.onClick.call(data.entity, data);
 					this._chnOnClick.emit(data, Entity.Event.CLICK);
-				}					
+				}	
+
+				this.pressedEntity = null;					
 			}
 		}
 	},
