@@ -1233,7 +1233,7 @@ Entity.Geometry = meta.Class.extend
 					child.move(
 						this._x + this._anchorPosX + this.pivotX - this.volume.halfWidth, 
 						this._y + this._anchorPosY + this.pivotY - this.volume.halfHeight);
-					
+
 					this.onChildRemoved(child);
 					child.onParentRemoved(this);					
 					return;
@@ -2097,6 +2097,9 @@ Entity.Geometry = meta.Class.extend
 	{
 		if(!this._tween) {
 			this._tween = new meta.Tween(this);
+		}
+		else {
+			this._tween.clear();
 		}
 
 		return this._tween;
