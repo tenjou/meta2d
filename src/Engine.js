@@ -570,10 +570,11 @@ meta.Engine.prototype =
 
 		if(meta.enableWebGL && meta.device.support.webgl)
 		{
-			params.antialias = true;
+			//params.antialias = false;
 			params.stencil = true;
+			params.preserveDrawingBuffer = false;
 
-			this.ctx = this.canvas.getContext("experimental-webgl", { stencil: true });
+			this.ctx = this.canvas.getContext("experimental-webgl", params);
 			meta.ctx = this.ctx;
 			this.ctx.imageSmoothingEnabled = false;
 			this.ctx.webkitImageSmoothingEnabled = false;

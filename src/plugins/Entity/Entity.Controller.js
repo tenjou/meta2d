@@ -531,7 +531,7 @@ Entity.Controller = meta.Controller.extend
 					this._chnOnClick.emit(data, Entity.Event.CLICK);
 				}	
 
-				this.pressedEntity = null;					
+				this.pressedEntity = null;				
 			}
 		}
 	},

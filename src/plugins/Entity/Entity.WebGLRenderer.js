@@ -95,7 +95,7 @@ Entity.WebGLRenderer = Entity.Controller.extend
 		var camera = scope.camera;
 		var texture;
 
-		this.clearScreen();
+		this.clearScreen();		
 
 		this.cameraPos[0] = camera._x | 0;
 		this.cameraPos[1] = camera._y | 0;
@@ -112,6 +112,26 @@ Entity.WebGLRenderer = Entity.Controller.extend
 
 			texture = entity._texture;
 			shader.bindBuffer2f("vertexPos", texture.vbo);
+
+			// Clipping.
+			if(this._clipVolume !== entity.clipVolume)
+			{
+				if(entity.clipVolume) 
+				{
+					if(!this._clipVolume) {
+						gl.enable(gl.SCISSOR_TEST);
+					}
+
+					this._clipVolume = entity.clipVolume;
+					gl.scissor(
+						this._clipVolume.minX, Math.min(camera.height - this._clipVolume.maxY, this._clipVolume.height), 
+						this._clipVolume.width, Math.min(camera.height - this._clipVolume.minY, this._clipVolume.height));					
+				}
+				else {
+					gl.disable(gl.SCISSOR_TEST);
+					this._clipVolume = null;
+				}
+			}
 
 			if(entity._flipX === 1.0) {
 				this._position[0] = entity.volume.minX | 0;
@@ -167,6 +187,10 @@ Entity.WebGLRenderer = Entity.Controller.extend
 			}
 
 			entity._isNeedDraw = false;
+		}
+
+		if(this._clipVolume) {
+			gl.disable(gl.SCISSOR_TEST);
 		}
 
 		// Draw bounds.
@@ -323,6 +347,8 @@ Entity.WebGLRenderer = Entity.Controller.extend
 	_center: null,
 	_scale: null,
 	_frameCoord: null,
+
+	_clipVolume: null, 
 
 	locCameraPos: null,
 	locZoom: null,
