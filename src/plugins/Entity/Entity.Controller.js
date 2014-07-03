@@ -502,33 +502,30 @@ Entity.Controller = meta.Controller.extend
 		}
 		else if(inputEvent.INPUT_UP === event)
 		{
-			// Drag end?
-			if(this.pressedEntity && this.pressedEntity.isDragged) {
-				this.pressedEntity.isDragged = false;
-				this.pressedEntity._onDragEnd.call(this.pressedEntity, data);
-				this.pressedEntity.onDragEnd.call(this.pressedEntity, data);
-				this._chnOnDragEnd.emit(data, Entity.Event.DRAG_END);
-			}
-
-			if(!this.hoverEntity || this.hoverEntity !== this.pressedEntity)
-			{
-				if(this.pressedEntity) {
-					this.pressedEntity.isPressed = false;
-					this.pressedEntity._onUp.call(this.pressedEntity, event);
-					this.pressedEntity.onUp.call(this.pressedEntity, event);
-					this._chnOnUp.emit(this.pressedEntity, Entity.Event.UP);
-					this.pressedEntity = null;
-				}
-				return;
-			}
-
 			data.entity = this.pressedEntity;
-			this.pressedEntity.isPressed = false;
-			this.pressedEntity = null;
+
+			if(this.pressedEntity) 
+			{
+				// Drag end?
+				if(this.pressedEntity.isDragged) {
+					this.pressedEntity.isDragged = false;
+					this.pressedEntity._onDragEnd.call(this.pressedEntity, data);
+					this.pressedEntity.onDragEnd.call(this.pressedEntity, data);
+					this._chnOnDragEnd.emit(data, Entity.Event.DRAG_END);					
+				}
+
+				// Input Up.
+				this.pressedEntity.isPressed = false;
+				this.pressedEntity._onUp.call(this.pressedEntity, event);
+				this.pressedEntity.onUp.call(this.pressedEntity, event);
+				this._chnOnUp.emit(this.pressedEntity, Entity.Event.UP);	
+				this.pressedEntity = null;		
+			}
+
+			// Click.
 			data.entity._onClick.call(data.entity, data);
 			data.entity.onClick.call(data.entity, data);
 			this._chnOnClick.emit(data, Entity.Event.CLICK);
-			data.entity = null;
 		}
 	},
 

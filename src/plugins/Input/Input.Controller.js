@@ -179,6 +179,7 @@ Input.Controller = meta.Controller.extend
 		this._event.keyCode = event.button;
 
 		this._chnInputDown.emit(this._event, Input.Event.INPUT_DOWN);
+		this._event.entity = null;
 	},
 
 	/**
@@ -208,6 +209,7 @@ Input.Controller = meta.Controller.extend
 		this._event.keyCode = event.button;
 
 		this._chnInputUp.emit(this._event, Input.Event.INPUT_UP);
+		this._event.entity = null;
 	},
 
 	/**
@@ -237,6 +239,7 @@ Input.Controller = meta.Controller.extend
 		this._event.keyCode = -1;
 
 		this._chnInputMove.emit(this._event, Input.Event.INPUT_MOVE);
+		this._event.entity = null;
 	},
 
 	/**
@@ -274,6 +277,7 @@ Input.Controller = meta.Controller.extend
 			this._event.keyCode = this.numTouches-1;
 
 			this._chnInputDown.emit(this._event, Input.Event.INPUT_DOWN);
+			this._event.entity = null;
 		}
 	},
 
@@ -321,6 +325,7 @@ Input.Controller = meta.Controller.extend
 			this._event.keyCode = id;
 
 			this._chnInputDown.emit(this._event, Input.Event.INPUT_UP);
+			this._event.entity = null;
 		}
 	},
 
@@ -365,6 +370,7 @@ Input.Controller = meta.Controller.extend
 			this._event.keyCode = id;
 
 			this._chnInputMove.emit(this._event, Input.Event.INPUT_MOVE);
+			this._event.entity = null;
 		}
 	},
 
