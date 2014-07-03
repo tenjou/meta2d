@@ -174,7 +174,7 @@ meta.Tween.prototype =
 			link._onStart.call(this);
 		}
 
-		this._tStart = window.performance.now();
+		this._tStart = meta.engine.tNow;
 		this.currLink = link;
 
 		return this;
@@ -224,7 +224,7 @@ meta.Tween.prototype =
 			return;
 		}
 
-		var tCurr = window.performance.now();
+		var tCurr = meta.engine.tNow;
 		if(tCurr - this._tFrame < this.currLink.tFrameDelay) {
 			return;
 		}

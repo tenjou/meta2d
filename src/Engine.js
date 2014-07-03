@@ -98,6 +98,7 @@ meta.Engine = function()
 	this.tUpdate = 0;
 	this.tRender = 0;
 	this.tFPS = 0;
+	this.tNow = 0;
 	this.fps = 0;
 	this._fpsCounter = 0;
 
@@ -275,10 +276,10 @@ meta.Engine.prototype =
 
 	update: function()
 	{
-		var tNow = Date.now();
-		var tDelta = tNow - this.tUpdate;
-		if(this.pause) { tDelta = 0; }
+		this.tNow = Date.now();
+		var tDelta = this.tNow - this.tUpdate;
 
+		if(this.pause) { tDelta = 0; }
 		if(tDelta > 250) { tDelta = 250; }
 
 		var tDeltaF = tDelta / 1000;
@@ -318,9 +319,9 @@ meta.Engine.prototype =
 
 		this._updateTimers(tDelta);
 
-		this.tUpdate = tNow;
+		this.tUpdate = this.tNow;
 		var tSample = Date.now();
-		var tSleep = Math.max(0, meta.tUpdate - (tSample - tNow));
+		var tSleep = Math.max(0, meta.tUpdate - (tSample - this.tNow));
 		window.setTimeout(this._updateLoop, tSleep);
 	},
 
