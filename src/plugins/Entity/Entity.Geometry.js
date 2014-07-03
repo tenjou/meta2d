@@ -1201,6 +1201,9 @@ Entity.Geometry = meta.Class.extend
 		if(this._view && this._view._isActive) {
 			this._entityCtrl.onAddToView(entity, null);
 		}
+
+		this.onChildAdded(entity);
+		entity.onParentAdded(this);
 	},
 
 	/**
@@ -1230,6 +1233,9 @@ Entity.Geometry = meta.Class.extend
 					child.move(
 						this._x + this._anchorPosX + this.pivotX - this.volume.halfWidth, 
 						this._y + this._anchorPosY + this.pivotY - this.volume.halfHeight);
+					
+					this.onChildRemoved(child);
+					child.onParentRemoved(this);					
 					return;
 				}
 			}	
@@ -1265,6 +1271,9 @@ Entity.Geometry = meta.Class.extend
 			child.move(
 				this._x + this._anchorPosX + this.pivotX - this.volume.halfWidth, 
 				this._y + this._anchorPosY + this.pivotY - this.volume.halfHeight);
+
+			this.onChildRemoved(child);
+			child.onParentRemoved(this);			
 		}
 
 		this.children.length = 0;	
@@ -1286,6 +1295,9 @@ Entity.Geometry = meta.Class.extend
 			child.isChild = false;
 			this._view.add(child);
 			child.forcePosition(child._x, child._y);
+
+			this.onChildRemoved(child);
+			child.onParentRemoved(this);			
 		}
 
 		this.children.length = 0;
@@ -1375,6 +1387,26 @@ Entity.Geometry = meta.Class.extend
 	 * Callback on animation end.
 	 */
 	onAnimEnd: null,
+
+	/**
+	 * Callback called when child is added.
+	 */
+	onChildAdded: meta.emptyFuncParam,
+
+	/**
+	 * Callback called when child is removed.
+	 */
+	onChildRemoved: meta.emptyFuncParam,
+
+	/**
+	 * Callback called when parent is added.
+	 */
+	onParentAdded: meta.emptyFuncParam,
+
+	/**
+	 * Callback called when parent is removed.
+	 */
+	onParentRemoved: meta.emptyFuncParam,
 
 
 	/**
