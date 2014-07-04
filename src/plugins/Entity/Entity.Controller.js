@@ -219,7 +219,7 @@ Entity.Controller = meta.Controller.extend
 				this.entitiesRemoveUpdate[i] = null;
 				
 				// Check if still is marked for update removal.
-				if(entity._removeFlag & 4) { 
+				if((entity._removeFlag & 4) !== 4) { 
 					continue; 
 				}
 	
@@ -372,13 +372,12 @@ Entity.Controller = meta.Controller.extend
 	_addToUpdating: function(entity)
 	{
 		// Check if entity is marked for update removal.
-		if(entity._removeFlag & 4) {
+		if((entity._removeFlag & 4) === 4) {
 			entity._removeFlag &= ~4;
-			return;
+			return true;
 		}
-
-		if(entity._updateNodeID !== -1) {
-			return;
+		else if(entity._updateNodeID !== -1) {
+			return false;
 		}
 
 		entity._updateNodeID = this.numEntitiesToUpdate;
@@ -388,13 +387,17 @@ Entity.Controller = meta.Controller.extend
 		}
 
 		this.entitiesToUpdate[this.numEntitiesToUpdate] = entity;
-		this.numEntitiesToUpdate++;		
+		this.numEntitiesToUpdate++;	
+
+		return true;	
 	},
 
 	_removeFromUpdating: function(entity) 
 	{
 		// Check if already marked for update removal.
-		if(entity._removeFlag & 4) { return; }
+		if(entity._updateNodeID === -1 || (entity._removeFlag & 4) === 4) {
+			return false;
+		}
 
 		if(this.entitiesRemoveUpdate.length === this.numEntitiesRemoveUpdate) {
 			this.entitiesRemoveUpdate.length += 4;
@@ -403,6 +406,8 @@ Entity.Controller = meta.Controller.extend
 		entity._removeFlag |= 4;
 		this.entitiesRemoveUpdate[this.numEntitiesRemoveUpdate] = entity;
 		this.numEntitiesRemoveUpdate++;
+
+		return true;
 	},
 
 

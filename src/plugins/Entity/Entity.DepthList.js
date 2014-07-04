@@ -37,7 +37,6 @@ Entity.DepthList.prototype =
 				}
 				this.buffer[this.length] = node.entity;
 				this.length++;
-
 				return;
 			}
 
