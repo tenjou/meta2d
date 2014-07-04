@@ -26,7 +26,7 @@ meta.canvas = null;
 meta.ctx = null;
 meta.width = 0;
 meta.height = 0;
-meta.channels = null;
+meta.channels = {};
 meta.shaders = null;
 meta.view = null;
 meta.world = null;
@@ -132,7 +132,6 @@ meta.Engine.prototype =
 			this._createmeta();
 		}
 
-		meta.channels = {};
 		meta.shaders = {};
 		meta.views = {};
 
