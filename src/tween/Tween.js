@@ -307,7 +307,12 @@ meta.Tween.prototype =
 	},
 
 
-	group: function(group, callback) 
+	/**
+	 * Add group to the tween.
+	 * @param group {meta.Tween.Group} Group object.
+	 * @returns {meta.Tween.Link}
+	 */
+	group: function(group) 
 	{
 		if(!group) {
 			console.warn("[meta.Tween.group]:", "No group name specified.");

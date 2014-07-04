@@ -231,8 +231,13 @@ meta.Tween.Link.prototype =
 	},
 
 
-	group: function(name, callback) {
-		return this.tween.group(name, callback);
+	/**
+	 * Add group to the tween.
+	 * @param group {meta.Tween.Group} Group object.
+	 * @returns {meta.Tween.Link}
+	 */
+	group: function(name) {
+		return this.tween.group(name);
 	},
 
 
