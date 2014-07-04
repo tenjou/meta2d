@@ -212,20 +212,26 @@ Entity.Controller = meta.Controller.extend
 
 		if(this.numEntitiesRemoveUpdate) 
 		{
-			var replaceEntity;
+			var tmpEntity;
 			for(i = 0; i < this.numEntitiesRemoveUpdate; i++) 
 			{
 				entity = this.entitiesRemoveUpdate[i];
-				replaceEntity = this.entitiesToUpdate[this.numEntitiesToUpdate - 1];
-				this.entitiesToUpdate[entity._updateNodeID] = replaceEntity;
-				this.entitiesToUpdate.pop();
+				this.entitiesRemoveUpdate[i] = null;
+				
+				// Check if still is marked for update removal.
+				if(entity._removeFlag & 4) { 
+					continue; 
+				}
+	
 				this.numEntitiesToUpdate--;
-
-				replaceEntity._updateNodeID = entity._updateNodeID;
-				entity._updateNodeID = -1;				
+				tmpEntity = this.entitiesToUpdate[this.numEntitiesToUpdate];
+				tmpEntity._updateNodeID = entity._updateNodeID;
+				this.entitiesToUpdate[entity._updateNodeID] = tmpEntity;
+				this.entitiesToUpdate[this.numEntitiesToUpdate] = null;		
+				entity._removeFlag &= ~4;
+				entity._updateNodeID = -1;
 			}
 
-			this.entitiesRemoveUpdate.length = 0;
 			this.numEntitiesRemoveUpdate = 0;
 		}
 
@@ -365,13 +371,37 @@ Entity.Controller = meta.Controller.extend
 
 	_addToUpdating: function(entity)
 	{
+		// Check if entity is marked for update removal.
+		if(entity._removeFlag & 4) {
+			entity._removeFlag &= ~4;
+			return;
+		}
+
+		if(entity._updateNodeID !== -1) {
+			return;
+		}
+
 		entity._updateNodeID = this.numEntitiesToUpdate;
-		this.entitiesToUpdate.push(entity);
-		this.numEntitiesToUpdate++;
+		
+		if(this.entitiesToUpdate.length === this.numEntitiesToUpdate) {
+			this.entitiesToUpdate.length += 8;
+		}
+
+		this.entitiesToUpdate[this.numEntitiesToUpdate] = entity;
+		this.numEntitiesToUpdate++;		
 	},
 
-	_removeFromUpdating: function(entity) {
-		this.entitiesRemoveUpdate.push(entity);
+	_removeFromUpdating: function(entity) 
+	{
+		// Check if already marked for update removal.
+		if(entity._removeFlag & 4) { return; }
+
+		if(this.entitiesRemoveUpdate.length === this.numEntitiesRemoveUpdate) {
+			this.entitiesRemoveUpdate.length += 4;
+		}
+
+		entity._removeFlag |= 4;
+		this.entitiesRemoveUpdate[this.numEntitiesRemoveUpdate] = entity;
 		this.numEntitiesRemoveUpdate++;
 	},
 

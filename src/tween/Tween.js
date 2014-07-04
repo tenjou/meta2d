@@ -43,7 +43,8 @@ meta.Tween.prototype =
 
 	_play: function()
 	{
-		if(!this._parent && this._updateNodeID === -1) {
+		if(this._updateNodeID === -1) {
+			this.global.numActiveTweens++;
 			Entity.ctrl._addToUpdating(this);
 		}
 	},
@@ -61,7 +62,9 @@ meta.Tween.prototype =
 
 	_stop: function()
 	{
-		if(!this._parent && this._updateNodeID !== -1) {
+		if(!(this._removeFlag & 4)) {
+			console.log(meta.engine.updateFrameID);
+			this.global.numActiveTweens--;
 			Entity.ctrl._removeFromUpdating(this);
 		}
 	},
@@ -137,8 +140,12 @@ meta.Tween.prototype =
 
 		if(this.linkIndex === this.chain.length)
 		{
-			if(this.numRepeat === 0) {
+			if(this.numRepeat === 0) 
+			{
 				this.stop();
+				if(this.currLink._onComplete) {
+					this.currLink._onComplete.call(this.owner);
+				}				
 				return this;
 			}
 			else
@@ -150,6 +157,10 @@ meta.Tween.prototype =
 
 				isRepeating = true;
 			}
+
+			if(this.currLink._onComplete) {
+				this.currLink._onComplete.call(this.owner);
+			}			
 		}
 
 		this._isLinkDone = false;
@@ -257,10 +268,6 @@ meta.Tween.prototype =
 				return;
 			}
 
-			if(this.currLink._onComplete) {
-				this.currLink._onComplete.call(this.owner);
-			}
-
 			this.next();
 		}
 	},
@@ -296,7 +303,13 @@ meta.Tween.prototype =
 	//
 	numRepeat: 0,
 	isPaused: false,
+	isRemoved: false,
 	doReverse: false,
 	_isLinkDone: false,
-	_isReversing: false
+	_isReversing: false,
+	_removeFlag: 0,
+
+	global: {
+		numActiveTweens: 0
+	}
 };

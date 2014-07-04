@@ -2167,6 +2167,7 @@ Entity.Geometry = meta.Class.extend
 
 	_viewNodeID: -1,
 	_updateAnimNodeID: -1,
+	_removeFlag: 0,
 
 	_x: 0, _y: 0, _z: 0,
 	_anchorX: 0, _anchorY: 0,
