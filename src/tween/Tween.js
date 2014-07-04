@@ -32,6 +32,9 @@ meta.Tween.prototype =
 	 */
 	play: function()
 	{
+		// If owner is removed or simply not set.
+		if(!this.owner) { return this; }
+
 		if(this.owner.isRemoved) { return this; }
 
 		this.isPaused = false;
@@ -41,11 +44,10 @@ meta.Tween.prototype =
 		return this;
 	},
 
-	_play: function()
-	{
-		if(this._updateNodeID === -1) {
-			this.global.numActiveTweens++;
-			Entity.ctrl._addToUpdating(this);
+	_play: function() 
+	{	
+		if(Entity.ctrl._addToUpdating(this) && this._group) {
+			this._group.activeUsers++;
 		}
 	},
 
@@ -60,12 +62,14 @@ meta.Tween.prototype =
 		return this;
 	},
 
-	_stop: function()
+	_stop: function() 
 	{
-		if(!(this._removeFlag & 4)) {
-			console.log(meta.engine.updateFrameID);
-			this.global.numActiveTweens--;
-			Entity.ctrl._removeFromUpdating(this);
+		if(Entity.ctrl._removeFromUpdating(this) && this._group) 
+		{
+			this._group.activeUsers--;
+			if(this._group.activeUsers === 0 && this._group.callback) {
+				this._group.callback();
+			}
 		}
 	},
 
@@ -105,6 +109,9 @@ meta.Tween.prototype =
 		this.chain.length = 0;
 		this.linkIndex = 0;
 		this.currLink = null;
+
+		this._group.users--;
+		this._group = null;
 
 		return this;
 	},
@@ -300,16 +307,48 @@ meta.Tween.prototype =
 	},
 
 
+	group: function(group, callback) 
+	{
+		if(!group) {
+			console.warn("[meta.Tween.group]:", "No group name specified.");
+			return this;
+		}
+
+		if(this._group) {
+			console.warn("[meta.Tween.group]:", "Tween already is part of a group.");
+			return this;			
+		}
+
+		if(typeof(group) === "object") {
+			this._group = group;
+		}
+
+		this._group.users++;
+
+		return this;
+	},
+
+
 	//
 	numRepeat: 0,
 	isPaused: false,
 	isRemoved: false,
 	doReverse: false,
+	_group: null,
 	_isLinkDone: false,
 	_isReversing: false,
-	_removeFlag: 0,
+	_removeFlag: 0
+};
 
-	global: {
-		numActiveTweens: 0
+meta.Tween.Group = function(name, callback) 
+{
+	if(typeof(name) === "function") {
+		callback = name;
+		name = "";
 	}
+
+	this.name = name;
+	this.users = 0;
+	this.activeUsers = 0;
+	this.callback = callback || null;
 };

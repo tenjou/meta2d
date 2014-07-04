@@ -176,8 +176,15 @@ meta.Tween.Link.prototype =
 	 * @param func {Function} Easing function.
 	 * @returns {meta.Tween.Link}
 	 */
-	easing: function(func) {
-		this._easing = func;
+	easing: function(func) 
+	{
+		if(typeof(func) === "function") {
+			this._easing = func;
+		}
+		else {
+			this._easing = meta.Tween.Easing[func];
+		}
+		
 		return this;
 	},
 
@@ -221,6 +228,11 @@ meta.Tween.Link.prototype =
 	 */
 	to: function(endValues, duration, onComplete) {
 		return this.tween.to(endValues, duration, onComplete);
+	},
+
+
+	group: function(name, callback) {
+		return this.tween.group(name, callback);
 	},
 
 
