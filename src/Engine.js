@@ -175,6 +175,7 @@ meta.Engine.prototype =
 			document.addEventListener(meta.device.fullScreenOnChange, this._onFullScreenChangeCB);
 		}
 
+		this.tNow = Date.now();
 		this.start();
 		this.isCreated = true;
 	},

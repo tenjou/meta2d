@@ -2026,6 +2026,10 @@ Entity.Geometry = meta.Class.extend
 
 		if(value) 
 		{
+			if(this.load) {
+				this.load();
+			}
+
 			if(this.components) 
 			{
 				var comp;
