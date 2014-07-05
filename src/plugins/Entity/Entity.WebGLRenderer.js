@@ -94,6 +94,8 @@ Entity.WebGLRenderer = Entity.Controller.extend
 		var shader = scope.shader;
 		var camera = scope.camera;
 		var texture;
+		var clipX, clipY;
+		var clipWidth, clipHeight;
 
 		this.clearScreen();		
 
@@ -122,10 +124,23 @@ Entity.WebGLRenderer = Entity.Controller.extend
 						gl.enable(gl.SCISSOR_TEST);
 					}
 
+					//
 					this._clipVolume = entity.clipVolume;
-					gl.scissor(
-						this._clipVolume.minX, Math.min(camera.height - this._clipVolume.maxY, this._clipVolume.height), 
-						this._clipVolume.width, Math.min(camera.height - this._clipVolume.minY, this._clipVolume.height));					
+					clipX = this._clipVolume.minX | 0;
+					clipY = camera.height - this._clipVolume.maxY | 0;
+					clipWidth = this._clipVolume.width;
+					clipHeight = this._clipVolume.height;
+
+					if(clipX < 0) {
+						clipWidth += clipX;
+						clipX = 0;
+					}
+					if(clipY < 0) {
+						clipHeight += clipY;
+						clipY = 0;
+					}
+
+					gl.scissor(clipX, clipY, clipWidth, clipHeight);									
 				}
 				else {
 					gl.disable(gl.SCISSOR_TEST);
@@ -133,6 +148,7 @@ Entity.WebGLRenderer = Entity.Controller.extend
 				}
 			}
 
+			// Flip.
 			if(entity._flipX === 1.0) {
 				this._position[0] = entity.volume.minX | 0;
 			}
