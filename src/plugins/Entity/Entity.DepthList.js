@@ -75,7 +75,7 @@ Entity.DepthList.prototype =
 
 			do
 			{
-				if(currNode.depth < node.depth)
+				if(currNode.depth <= node.depth)
 				{
 					node.prev = currNode;
 					node.next = currNode.next;
