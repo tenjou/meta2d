@@ -686,6 +686,39 @@ Entity.Controller = meta.Controller.extend
 	},
 
 
+	/** 
+	 * Get entity from ID.
+	 * @param id {Number} ID of the entity.
+	 */
+	getByID: function(id)
+	{
+		var buffer = this.entities.buffer;
+		var num = this.entities.length;
+		for(var n = 0; n < num; n++) 
+		{
+			if(id === buffer[n].id) {
+				return buffer[n];
+			}
+		}
+	},
+
+	/** 
+	 * Get entity from Name.
+	 * @param name {String} Name of the entity.
+	 */
+	getByName: function(name)
+	{
+		var buffer = this.entities.buffer;
+		var num = this.entities.length;
+		for(var n = 0; n < num; n++) 
+		{
+			if(name === buffer[n].name) {
+				return buffer[n];
+			}
+		}
+	},	
+
+
 	/**
 	 * Get unique id.
 	 * @return {Number} Generated unique id.
