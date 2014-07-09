@@ -689,57 +689,52 @@ Entity.Geometry = meta.Class.extend
 	 * Position entity from top.
 	 * @param y {Number} Position on y axis.
 	 */
-	set top(y) 
-	{
-		y -= this.volume.halfHeight;
-		this.positionType = 5;
-
-		if(this._x === x && this._y === y) { return; }
-		this.forcePosition(this._x, y);		
+	set top(y) {
+		this.positionTop(this._x, y);	
 	},
 
 	/**
 	 * Position entity from bottom.
 	 * @param x {Number} Position on y axis.
 	 */
-	set bottom(y) 
-	{
-		y += this.volume.halfHeight;
-		this.positionType = 6;
-
-		if(this._x === x && this._y === y) { return; }
-		this.forcePosition(this._x, y);		
+	set bottom(y) {
+		this.positionBottom(this._x, y);	
 	},	
 
 	/**
 	 * Position entity from left side.
 	 * @param x {Number} Position on x axis.
 	 */
-	set left(x) 
-	{
-		x -= this.volume.halfWidth;
-		this.positionType = 7;
-
-		if(this._x === x && this._y === y) { return; }
-		this.forcePosition(x, this._y);		
+	set left(x) {
+		this.positionLeft(x, this._y);	
 	},
 
 	/**
 	 * Position entity from right side.
 	 * @param x {Number} Position on x axis.
 	 */
-	set right(x) 
-	{
-		x += this.volume.halfWidth;
-		this.positionType = 8;
-
-		if(this._x === x && this._y === y) { return; }
-		this.forcePosition(x, this._y);			
+	set right(x) {
+		this.positionRight(x, this._y);	
 	},		
 
+	/**
+	 * Get entity top side position.
+	 */
 	get top() { return this.volume.minY; },
-	get bottom() { return this.volume.maxY; },	
+
+	/**
+	 * Get entity bottom side position.
+	 */	
+	get bottom() { return this.volume.maxY; },
+
+	/**
+	 * Get entity left side position.
+	 */		
 	get left() { return this.volume.minX; },
+
+	/**
+	 * Get entity right side position.
+	 */	
 	get right() { return this.volume.maxX; },
 
 	/**
