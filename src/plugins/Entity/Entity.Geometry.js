@@ -685,6 +685,10 @@ Entity.Geometry = meta.Class.extend
 		this.forcePosition(x, y);	
 	},
 
+	/**
+	 * Position entity from top.
+	 * @param y {Number} Position on y axis.
+	 */
 	set top(y) 
 	{
 		y -= this.volume.halfHeight;
@@ -694,6 +698,10 @@ Entity.Geometry = meta.Class.extend
 		this.forcePosition(this._x, y);		
 	},
 
+	/**
+	 * Position entity from bottom.
+	 * @param x {Number} Position on y axis.
+	 */
 	set bottom(y) 
 	{
 		y += this.volume.halfHeight;
@@ -703,6 +711,10 @@ Entity.Geometry = meta.Class.extend
 		this.forcePosition(this._x, y);		
 	},	
 
+	/**
+	 * Position entity from left side.
+	 * @param x {Number} Position on x axis.
+	 */
 	set left(x) 
 	{
 		x -= this.volume.halfWidth;
@@ -712,6 +724,10 @@ Entity.Geometry = meta.Class.extend
 		this.forcePosition(x, this._y);		
 	},
 
+	/**
+	 * Position entity from right side.
+	 * @param x {Number} Position on x axis.
+	 */
 	set right(x) 
 	{
 		x += this.volume.halfWidth;
