@@ -636,7 +636,7 @@ Entity.Geometry = meta.Class.extend
 	 */
 	positionTop: function(x, y)
 	{
-		y -= this.volume.halfHeight;
+		y += this.volume.halfHeight;
 		this.positionType = 5;
 
 		if(this._x === x && this._y === y) { return; }
@@ -650,7 +650,7 @@ Entity.Geometry = meta.Class.extend
 	 */
 	positionBottom: function(x, y)
 	{
-		y += this.volume.halfHeight;
+		y -= this.volume.halfHeight;
 		this.positionType = 6;
 
 		if(this._x === x && this._y === y) { return; }
@@ -664,7 +664,7 @@ Entity.Geometry = meta.Class.extend
 	 */
 	positionLeft: function(x, y)
 	{
-		x -= this.volume.halfWidth;
+		x += this.volume.halfWidth;
 		this.positionType = 7;
 
 		if(this._x === x && this._y === y) { return; }
@@ -678,7 +678,7 @@ Entity.Geometry = meta.Class.extend
 	 */
 	positionRight: function(x, y)
 	{
-		x += this.volume.halfWidth;
+		x -= this.volume.halfWidth;
 		this.positionType = 8;
 
 		if(this._x === x && this._y === y) { return; }
