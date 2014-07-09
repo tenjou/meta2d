@@ -685,6 +685,47 @@ Entity.Geometry = meta.Class.extend
 		this.forcePosition(x, y);	
 	},
 
+	set top(y) 
+	{
+		y -= this.volume.halfHeight;
+		this.positionType = 5;
+
+		if(this._x === x && this._y === y) { return; }
+		this.forcePosition(this._x, y);		
+	},
+
+	set bottom(y) 
+	{
+		y += this.volume.halfHeight;
+		this.positionType = 6;
+
+		if(this._x === x && this._y === y) { return; }
+		this.forcePosition(this._x, y);		
+	},	
+
+	set left(x) 
+	{
+		x -= this.volume.halfWidth;
+		this.positionType = 7;
+
+		if(this._x === x && this._y === y) { return; }
+		this.forcePosition(x, this._y);		
+	},
+
+	set right(x) 
+	{
+		x += this.volume.halfWidth;
+		this.positionType = 8;
+
+		if(this._x === x && this._y === y) { return; }
+		this.forcePosition(x, this._y);			
+	},		
+
+	get top() { return this.volume.minY; },
+	get bottom() { return this.volume.maxY; },	
+	get left() { return this.volume.minX; },
+	get right() { return this.volume.maxX; },
+
 	/**
 	 * Set pivot as ratio. Using prefixed position function will set this to other value.
 	 * @param x {Number} Ratio on X axis [-1 .. 1].
@@ -1845,11 +1886,6 @@ Entity.Geometry = meta.Class.extend
 	},
 
 	get showBounds() { return this._showBounds; },
-
-	get left() { return this.volume.minX; },
-	get right() { return this.volume.maxX; },
-	get top() { return this.volume.minY; },
-	get bottom() { return this.volume.maxY; },
 
 	set alpha(value)
 	{
