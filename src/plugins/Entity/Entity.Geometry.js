@@ -529,7 +529,9 @@ Entity.Geometry = meta.Class.extend
 			this.childPivotY = ((-this.pivotRatioY - 1.0) * this.volume.halfHeight);
 		}
 
-		this.updatePosType();
+		if(!this._isLoaded) {
+			this.updatePosType();
+		}
 		this.updatePos();
 
 		if(this.children)
@@ -684,6 +686,66 @@ Entity.Geometry = meta.Class.extend
 		if(this._x === x && this._y === y) { return; }
 		this.forcePosition(x, y);	
 	},
+
+	/**
+	 * Position entity from top left corner.
+	 * @param x {Number} Position on x axis.
+	 * @param y {Number} Position on y axis.
+	 */
+	topLeft: function(x, y)
+	{
+		x += this.volume.halfWidth;
+		y += this.volume.halfHeight;
+		this.positionType = 1;
+
+		if(this._x === x && this._y === y) { return; }
+		this.forcePosition(x, y);		
+	},
+
+	/**
+	 * Position entity from top right corner.
+	 * @param x {Number} Position on x axis.
+	 * @param y {Number} Position on y axis.
+	 */
+	topRight: function(x, y)
+	{
+		x += this.volume.halfWidth;
+		y -= this.volume.halfHeight;
+		this.positionType = 2;
+
+		if(this._x === x && this._y === y) { return; }
+		this.forcePosition(x, y);	
+	},
+
+	/**
+	 * Position entity from bottom left corner.
+	 * @param x {Number} Position on x axis.
+	 * @param y {Number} Position on y axis.
+	 */
+	bottomLeft: function(x, y)
+	{
+		x -= this.volume.halfWidth;
+		y += this.volume.halfHeight;
+		this.positionType = 3;
+
+		if(this._x === x && this._y === y) { return; }
+		this.forcePosition(x, y);	
+	},
+
+	/**
+	 * Position entity from bottom right corner.
+	 * @param x {Number} Position on x axis.
+	 * @param y {Number} Position on y axis.
+	 */
+	bottomRight: function(x, y)
+	{
+		x += this.volume.halfWidth;
+		y += this.volume.halfHeight;
+		this.positionType = 4;
+
+		if(this._x === x && this._y === y) { return; }
+		this.forcePosition(x, y);	
+	},	
 
 	/**
 	 * Position entity from top.
@@ -1097,8 +1159,8 @@ Entity.Geometry = meta.Class.extend
 				}
 			}
 			else {
+				this.isLoaded = true;
 				this.updateFromTexture();
-				this.isLoaded = true
 			}			
 
 			if(texture.isAnimated)
