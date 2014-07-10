@@ -34,7 +34,6 @@ meta.Tween.prototype =
 	{
 		// If owner is removed or simply not set.
 		if(!this.owner) { return this; }
-
 		if(this.owner.isRemoved) { return this; }
 
 		this.isPaused = false;
@@ -55,17 +54,21 @@ meta.Tween.prototype =
 	 * Stop tweening.
 	 * @returns {meta.Tween}
 	 */
-	stop: function()
+	stop: function(callCB)
 	{
 		this.linkIndex = 0;
-		this._stop();
+		this._stop(callCB);
 		return this;
 	},
 
-	_stop: function() 
+	_stop: function(callCB) 
 	{
 		if(Entity.ctrl._removeFromUpdating(this) && this._group) 
 		{
+			if(callCB && this.currLink._onComplete) {
+				this.currLink._onComplete.call(this.owner);
+			}	
+
 			this._group.activeUsers--;
 			if(this._group.activeUsers === 0 && this._group.callback) {
 				this._group.callback();
@@ -132,7 +135,7 @@ meta.Tween.prototype =
 			this.owner[key] = this.currLink.startValues[key];
 		}
 
-		this.stop();
+		this.stop(false);
 
 		return this;
 	},
@@ -147,12 +150,8 @@ meta.Tween.prototype =
 
 		if(this.linkIndex === this.chain.length)
 		{
-			if(this.numRepeat === 0) 
-			{
-				this.stop();
-				if(this.currLink._onComplete) {
-					this.currLink._onComplete.call(this.owner);
-				}				
+			if(this.numRepeat === 0) {
+				this.stop(true);
 				return this;
 			}
 			else
@@ -238,12 +237,14 @@ meta.Tween.prototype =
 	update: function(tDelta)
 	{
 		if(!this.currLink) {
-			this.stop();
+			this.stop(false);
 			return;
 		}
 
 		var tCurr = meta.engine.tNow;
-		if(tCurr - this._tFrame < this.currLink.tFrameDelay) {
+		var tFrameDelta = tCurr - this._tFrame;
+
+		if(tFrameDelta < this.currLink.tFrameDelay) {
 			return;
 		}
 
@@ -254,7 +255,7 @@ meta.Tween.prototype =
 
 		if(this._isLinkDone)
 		{
-			if(tCurr - this._tFrame < this.currLink.tDelay) {
+			if(tFrameDelta < this.currLink.tDelay) {
 				return;
 			}
 		}
