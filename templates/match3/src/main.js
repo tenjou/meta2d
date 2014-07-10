@@ -2,17 +2,14 @@
 
 meta.load = function() 
 {
-	meta.loadSpriteSheet("assets/match3.json");
+	meta.preloadTextures("bg-tile", "assets/images");
+	meta.preloadTextures(MatchGame.Cfg.gems, "assets/images");
 
-	// var intro = meta.getView("intro");
-	// intro.register("Intro");
+	var intro = meta.getView("intro");
+	intro.register("Intro");
 
-	// var game = meta.getView("game");
-	// game.register("MatchGame");
+	var game = meta.getView("game");
+	game.register("MatchGame");
 
-	// meta.setView("intro");
-
-                var entity = new Entity.Geometry("circle");
-                entity.anchor(0.5);
-                meta.view.add(entity);
+	meta.setView("intro");
 };
