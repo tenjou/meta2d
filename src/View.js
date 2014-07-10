@@ -202,6 +202,17 @@ meta.View.prototype =
 	 */
 	attach: function(view)
 	{
+		if(!view) 
+		{
+			if(this.parentView) {
+				console.warn("[meta.View.attach]:", "No view was passed.");
+				return;
+			}
+
+			meta.view.attach(this);
+			return;
+		}
+
 		if(typeof(view) === "string")
 		{
 			var srcView = meta.views[view];
@@ -241,11 +252,22 @@ meta.View.prototype =
 	 */
 	detach: function(view)
 	{
+		if(!view) 
+		{
+			if(!this.parentView) {
+				console.warn("[meta.view.detach]:", "No view was passed.");
+				return;
+			}
+
+			this.parentView.detach(this);
+			return;
+		}
+
 		if(typeof(view) === "string")
 		{
 			var srcView = meta.views[view];
 			if(!srcView) {
-				console.warn("[meta.View.attach]:", "No such view found: \"" + view + "\"");
+				console.warn("[meta.View.detach]:", "No such view found: \"" + view + "\"");
 				return;
 			}
 
@@ -274,6 +296,22 @@ meta.View.prototype =
 
 		view.isActive = false;
 		view.parentView = null;
+	},
+
+	detachAll: function()
+	{
+		if(!this.views) { return; }
+
+		var view;
+		var numChildren = this.views.length;
+		var numViews = this.views.length;
+		for(var i = 0; i < numViews; i++) {
+			view = this.views[i];
+			view.isActive = false;
+			view.parentView = null;
+		}
+
+		this.views.length = 0;
 	},
 
 	/**
@@ -510,29 +548,26 @@ meta.View.prototype =
 
 /**
  * Set the view. Will create a new view if not found.
- * @param name {String} Name of the view
+ * @param name {meta.View|String} Name of the view
  */
-meta.setView = function(name)
+meta.setView = function(view)
 {
-	if(!name) {
-		console.error("[meta.getView]:", "No name specified!");
-		return;
-	}
-
-	if(meta.view && name === meta.view.name) {
-		return;
-	}
-
-	var view = meta.views[name];
 	if(!view) {
-		view = new meta.View(name);
-		meta.views[name] = view;
+		console.error("[meta.setView]:", "No view passed.");
+		return;
 	}
 
-	meta.view = view;
-	if(meta.engine.isInited) {
-		meta.engine.onViewChange(view);
+	if(typeof(view) === "string") 
+	{
+		view = meta.views[view];
+		if(!view) {
+			view = new meta.View(name);
+			meta.views[name] = view;
+		}
 	}
+
+	meta.view.detachAll();
+	meta.view.attach(view);
 };
 
 /**
