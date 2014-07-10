@@ -227,7 +227,10 @@ meta.Engine.prototype =
 
 	start: function()
 	{
-		meta.setView("game");
+		// Create master view.
+		var masterView = new meta.View("master");
+		meta.views["master"] = masterView;
+		meta.view = masterView;
 
 		if(meta._cache.init && typeof(meta._cache.init) === "function") {
 			meta._cache.init();
