@@ -13,7 +13,6 @@ Intro.Controller = meta.Controller.extend
 			this.texture.fillRect(data.width, data.height)
 		};
 		bg.onClick = function() {
-			console.log("set");
 			meta.setView("game");
 		};
 		this.view.add(bg);
