@@ -77,10 +77,6 @@ Resource.Texture = Resource.Basic.extend
 		}
 
 		this.generate(this.textureType);
-		
-		if(!this.path) {
-			this._isLoaded = true;
-		}
 	},
 
 	/**
@@ -672,6 +668,8 @@ Resource.Texture = Resource.Basic.extend
 	 */
 	fillRect: function(params, height, color)
 	{
+		var ctx = this.ctx;
+
 		if(typeof(params) !== "number")
 		{
 			if(!params) {
@@ -679,7 +677,6 @@ Resource.Texture = Resource.Basic.extend
 				return;
 			}
 
-			var ctx = this.ctx;
 			params.x = params.x || 0;
 			params.y = params.y || 0;
 			params.color = params.color || "#000000";
