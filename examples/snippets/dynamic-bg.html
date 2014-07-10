@@ -16,7 +16,7 @@
 
 			    var bg = new Entity.Geometry();
 			    bg.texture = new Resource.Texture();
-			    bg.positionTopLeft(0, 0);
+			    bg.pivotTopLeft(0, 0);
 			    bg.onResize = function(data) 
 			    {
 			        this.texture.gradient({

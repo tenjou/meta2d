@@ -19,7 +19,9 @@
 				entity.tween
 						.to({ x: 200, y: 0, angle: 360 }, 2000)
 						.to({ y: 200 }, 1000)
-						.easing(meta.Tween.Easing.bounceOut).repeat().play();
+						.easing("bounceOut")
+						.repeat()
+						.play();
 				meta.view.add(entity);
 
 				meta.addDescription("Tween example");
