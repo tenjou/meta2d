@@ -77,6 +77,10 @@ Resource.Texture = Resource.Basic.extend
 		}
 
 		this.generate(this.textureType);
+
+		if(!this.path) {
+			this._isLoaded = true;
+		}
 	},
 
 	/**
