@@ -272,16 +272,16 @@ Resource.SpriteSheet = Resource.Basic.extend
 		}
 
 		if(json.frames instanceof Array) {
-			this._loadFromJSON_array(json);
+			this._loadJSON_array(json);
 		}
 		else {
-			this._loadFromJSON_hash(json);
+			this._loadJSON_hash(json);
 		}
 
 		return true;
 	},
 
-	_loadFromJSON_array: function(json)
+	_loadJSON_array: function(json)
 	{
 		var frame, texture;
 		var frames = json.frames;
