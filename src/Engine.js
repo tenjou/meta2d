@@ -417,7 +417,6 @@ meta.Engine.prototype =
 		this._fpsCounter++;
 		this.tRender = tNow;
 
-		//window.setTimeout(this._renderLoop, 16.6);
 		requestAnimationFrame(this._renderLoop);
 	},
 

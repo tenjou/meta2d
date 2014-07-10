@@ -545,6 +545,40 @@ meta.View.prototype =
 	bgTransparent: false,
 };
 
+/**
+ * Create a new view. Additionally controllers can be passed for registration.
+ * @param name {String} Name of the view.
+ * @param ctrls {String|Array} Name of the controller or array with controllers to register.
+ */
+meta.createView = function(name, ctrls)
+{
+	if(!name || typeof(name) !== "string") {
+		console.error("[meta.createView]:", "Invalid name of the view.");
+		return;
+	}
+
+	var view = meta.views[name];
+	if(view) {
+		console.error("[meta.createView]:", "View with a name - " + name + ", already exist!");
+		return;		
+	}
+
+	view = new meta.View(name);
+	meta.views[name] = view;
+
+	if(!ctrls) { return; }
+
+	if(ctrls instanceof Array) 
+	{
+		var numCtrls = ctrls.length;
+		for(var i = 0; i < numCtrls; i++) {
+			view.register(ctrls[i]);
+		}
+	}
+	else {
+		view.register(ctrls);
+	}
+};
 
 /**
  * Set the view. Will create a new view if not found.
