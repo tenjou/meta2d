@@ -24,7 +24,8 @@ Resource.Controller = meta.Controller.extend
 		this.resources = {};
 		this.resourcesInUse = {};
 
-		this._chn = meta.createChannel("Resource");
+		this._chn_added = meta.createChannel(Resource.Event.ADDED);
+		this._chn_allLoaded = meta.createChannel(Resource.Event.ALL_LOADED);
 
 		// Bind temp canvas to Resource.Texture
 		var canvas = document.createElement("canvas");
@@ -92,7 +93,7 @@ Resource.Controller = meta.Controller.extend
 
 		subBuffer[resource.name] = resource;
 
-		this._chn.emit(resource, Resource.Event.ADDED);
+		this._chn_added.emit(resource, Resource.Event.ADDED);
 
 		return resource;
 	},
@@ -158,7 +159,7 @@ Resource.Controller = meta.Controller.extend
 
 			if(this.numToLoad === 0 && !meta.engine.isLoading) {
 				meta.engine.onResourcesLoaded();
-				this._chn.emit(this, Resource.Event.ALL_LOADED);
+				this._chn_allLoaded.emit(this, Resource.Event.ALL_LOADED);
 			}
 		}
 	},
@@ -177,7 +178,7 @@ Resource.Controller = meta.Controller.extend
 
 			if(this.numToLoad === 0 && !meta.engine.isLoading) {
 				meta.engine.onResourcesLoaded();
-				this._chn.emit(this, Resource.Event.ALL_LOADED);
+				this._chn_allLoaded.emit(this, Resource.Event.ALL_LOADED);
 			}
 		}
 	},
@@ -283,6 +284,7 @@ Resource.Controller = meta.Controller.extend
 	_syncQueue: null,
 	isSyncLoading: false,
 
-	_chn: null,
+	_chn_added: null,
+	_chn_allLoaded: null,
 	_uniqueID: 0
 });

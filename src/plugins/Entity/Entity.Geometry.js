@@ -1129,7 +1129,7 @@ Entity.Geometry = meta.Class.extend
 			texture = meta.getTexture(textureName);
 			if(!texture) {
 				this._texture = textureName;
-				meta.subscribe(this, "Resource", this._onResourceEvent);
+				meta.subscribe(this, Resource.Event.ALL_LOADED, this._onResAllLoaded);
 				return;
 			}
 		}
@@ -1213,22 +1213,22 @@ Entity.Geometry = meta.Class.extend
 	 * @param data {*} Data of the event.
 	 * @param event {*} Type of the event.
 	 */
-	_onResourceEvent: function(data, event)
+	_onResAllLoaded: function(data, event)
 	{
-		if(event === Resource.Event.ADDED) 
+		if(typeof(this._texture) === "string") 
 		{
-			if(data.name === this._texture) {
-				this._texture = null;
-				this.setTexture(data);
-				meta.unsubscribe(this, "Resource");
-			}
-		}
-		else if(event === Resource.Event.ALL_LOADED) 
-		{
-			if(typeof(this._texture) === "string") {
+			var texture = meta.getTexture(this._texture);
+
+			if(!texture) {
 				console.warn("[Entity.Geometry.setTexture]:", "Could not find texture with a name: " + this._texture);
-				meta.unsubscribe(this, "Resource");
+				this._texture = null;	
 			}
+			else {
+				this._texture = null;
+				this.setTexture(texture);
+			}
+
+			meta.unsubscribe(this, Resource.Event.ALL_LOADED);
 		}
 	},
 
@@ -2278,6 +2278,7 @@ Entity.Geometry = meta.Class.extend
 	_view: null,
 	_depthNode: null,
 
+	_checkID: -1,
 	_viewNodeID: -1,
 	_updateAnimNodeID: -1,
 	_removeFlag: 0,

@@ -757,6 +757,7 @@ Entity.Controller = meta.Controller.extend
 	_numCellX: 0, _numCellY: 0,
 
 	entities: null,
+	entitiesToCheck: null,
 	entitiesToAdd: null,
 	entitiesToRemove: null,
 	entitiesToUpdate: null,
@@ -764,6 +765,7 @@ Entity.Controller = meta.Controller.extend
 	detachBuffer: null,
 	dynamicEntities: null,
 
+	numEntitiesToCheck: 0,
 	numEntitiesToAdd: 0,
 	numEntitiesToRemove: 0,
 	numEntitiesToUpdate: 0,

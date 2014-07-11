@@ -2,7 +2,7 @@
 
 /**
  * Resource event.
- * @enum {Number}
+ * @enum {String}
  * @memberof! <global>
  * @readonly
  */
@@ -10,27 +10,27 @@ Resource.Event = {
 	/**
 	 * Resource unloaded.
 	 */	
-	UNLOADED: 0,
+	UNLOADED: "resUnloaded",
 	/**
 	 * Resource loaded
 	 */	
-	LOADED: 1,
+	LOADED: "resLoaded",
 	/**
 	 * Resource was resized. Used in Resource.Texture.
 	 */	
-	RESIZE: 2,
+	RESIZE: "resResize",
 	/**
 	 * Resource changed.
 	 */	
-	CHANGED: 3,
+	CHANGED: "resChanged",
 	/**
 	 * Resource added.
 	 */	
-	ADDED: 4,
+	ADDED: "resAdded",
 	/**
-	 * All resoruces are loaded.
+	 * All resources are loaded.
 	 */	
-	ALL_LOADED: 5,	
+	ALL_LOADED: "resAllLoaded",	
 };
 
 /**
