@@ -6,11 +6,14 @@ Entity.Text = Entity.Geometry.extend
 	{
 		this.texture = new Resource.Texture();
 		this._texture.resize(this._fontSize, this._fontSize);
-		this.setText("");
 
-		if(typeof(params) === "string") {
+		var type = typeof(params);
+		if(type === "string" || type === "number") {
 			this.setText(params);
-		}		
+		}	
+		else {
+			this.setText("");
+		}	
 	},
 
 	_initParams: function(params) {},
