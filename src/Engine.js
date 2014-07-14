@@ -29,6 +29,7 @@ meta.height = 0;
 meta.channels = {};
 meta.shaders = null;
 meta.view = null;
+meta.loadingView = null;
 meta.world = null;
 meta.camera = null;
 meta.shader = null;
@@ -231,6 +232,12 @@ meta.Engine.prototype =
 		var masterView = new meta.View("master");
 		meta.views["master"] = masterView;
 		meta.view = masterView;
+
+		// Create loading view.
+		var loadingView = new meta.View("loading");
+		loadingView.z = 999999;
+		meta.view["loading"] = loadingView;
+		meta.loadingView = loadingView;
 
 		if(meta._cache.init && typeof(meta._cache.init) === "function") {
 			meta._cache.init();
