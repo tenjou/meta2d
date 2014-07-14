@@ -16,11 +16,6 @@ UI.Button = Entity.Geometry.extend
 			return;
 		}
 
-		if(this._isActive && this._style.states.active) {
-			this.state = "active";
-			return;
-		}
-
 		this.state = "default";
 	},
 
@@ -43,27 +38,13 @@ UI.Button = Entity.Geometry.extend
 		this._updateState();
 	},
 
-	_onPress: function(event) {
+	_onDown: function(event) {
 		this.move(2, 2);
 	},
 
-	_onClick: function(event)
-	{
-		if(!this._style) { return; }
-
-		this.move(-2, -2);
-		if(!this._style.states.active) { return; }
-
-		this.isActive = !this._isActive;
-		this._updateState();
-		this.onActive(this._isActive);
-	},
-
-	_onRelease: function(event) {
+	_onUp: function(event) {
 		this.move(-2, -2);
 	},
-
-	onActive: meta.emptyFuncParam,
 
 
 	// Label.
@@ -88,7 +69,7 @@ UI.Button = Entity.Geometry.extend
 			this._label.color = "white";
 			this._label.size = 20;
 			this._label.text = str;
-			this._label.position(0, 0);
+			this._label.anchor(0.5);
 			this._label.isPickable = false;
 			this.attach(this._label);
 		}
@@ -123,20 +104,10 @@ UI.Button = Entity.Geometry.extend
 	get width() { return this._width; },
 	get height() { return this._height; },
 
-
-	set isActive(value) {
-		this._isActive = value;
-		this._updateState();
-	},
-
-	get isActive() { return this._isActive; },
-
 	//
 	_style: null,
 	_text: null,
 
-	_width: 1,
-	_height: 1,
-
-	_isActive: false
+	_width: 0,
+	_height: 0
 });
