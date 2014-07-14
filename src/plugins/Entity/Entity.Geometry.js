@@ -444,11 +444,7 @@ Entity.Geometry = meta.Class.extend
 	updatePos: function()
 	{
 		this.drawX = this._x + this._parent.childOffsetX + this.textureOffsetX - this.pivotX + this._anchorPosX;
-		this.drawY = this._y + this._parent.childOffsetY + this.textureOffsetY - this.pivotY + this._anchorPosY;
-
-		if(this.name === "texts") {
-			console.log("texts", this.drawX,this.drawY);
-		}		
+		this.drawY = this._y + this._parent.childOffsetY + this.textureOffsetY - this.pivotY + this._anchorPosY;	
 		
 		if(this._view) {
 			this.drawX += this._view._x;
@@ -522,9 +518,7 @@ Entity.Geometry = meta.Class.extend
 		// Right
 		else if(this.positionType === 8) {
 			this._x -= this.volume.halfWidth;		
-		}	
-
-		this.forcePosition(this._x, this._y);		
+		}		
 	},
 
 	/**
@@ -1768,10 +1762,6 @@ Entity.Geometry = meta.Class.extend
 
 	updateAnchor: function(data, event)
 	{
-		// if(this.name === "texts") {
-		// 	console.log("update anchor");
-		// }
-
 		if(this._isAnchor) 
 		{
 			if(this._ignoreZoom) {
