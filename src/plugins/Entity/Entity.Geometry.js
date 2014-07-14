@@ -445,6 +445,10 @@ Entity.Geometry = meta.Class.extend
 	{
 		this.drawX = this._x + this._parent.childOffsetX + this.textureOffsetX - this.pivotX + this._anchorPosX;
 		this.drawY = this._y + this._parent.childOffsetY + this.textureOffsetY - this.pivotY + this._anchorPosY;
+
+		if(this.name === "texts") {
+			console.log("texts", this.drawX,this.drawY);
+		}		
 		
 		if(this._view) {
 			this.drawX += this._view._x;
@@ -1028,8 +1032,8 @@ Entity.Geometry = meta.Class.extend
 
 		this._anchorX = x;
 		this._anchorY = y;
-		this._anchorPosX = this.parent.volume.width * this._anchorX;
-		this._anchorPosY = this.parent.volume.height * this._anchorY;
+		this._anchorPosX = this._parent.volume.width * this._anchorX;
+		this._anchorPosY = this._parent.volume.height * this._anchorY;
 		this.isAnchor = true;
 		this.updatePos();
 	},
@@ -1272,7 +1276,7 @@ Entity.Geometry = meta.Class.extend
 				-this._y - this._anchorPosY - this.pivotY + this.volume.halfHeight);
 		}
 
-		entity.parent = this;
+		entity._parent = this;
 		entity.isChild = true;
 		entity._view = this._view;
 
@@ -1365,7 +1369,7 @@ Entity.Geometry = meta.Class.extend
 		{
 			if(!this.isChild) { return; }
 
-			this.parent.detach(this);
+			this._parent.detach(this);
 		}
 	},
 
@@ -1764,15 +1768,19 @@ Entity.Geometry = meta.Class.extend
 
 	updateAnchor: function(data, event)
 	{
+		// if(this.name === "texts") {
+		// 	console.log("update anchor");
+		// }
+
 		if(this._isAnchor) 
 		{
 			if(this._ignoreZoom) {
-				this._anchorPosX = this.parent.volume.width * (1.0 / this.parent.volume.scaleX) * this._anchorX;
-				this._anchorPosY = this.parent.volume.height * (1.0 / this.parent.volume.scaleY) * this._anchorY;				
+				this._anchorPosX = this._parent.volume.width * (1.0 / this._parent.volume.scaleX) * this._anchorX;
+				this._anchorPosY = this._parent.volume.height * (1.0 / this._parent.volume.scaleY) * this._anchorY;				
 			}
 			else {
-				this._anchorPosX = this.parent.volume.width * this._anchorX;
-				this._anchorPosY = this.parent.volume.height * this._anchorY;
+				this._anchorPosX = this._parent.volume.width * this._anchorX;
+				this._anchorPosY = this._parent.volume.height * this._anchorY;
 			}
 
 			this.updatePos();
@@ -1815,22 +1823,6 @@ Entity.Geometry = meta.Class.extend
 
 
 	get view() { return this._view; },
-
-
-	set parent(value)
-	{
-		this._parent = value;
-
-		if(this.children)
-		{
-			var numChildren = this.children.length;
-			for(var i = 0; i < numChildren; i++) {
-				this.children[i].parent = value;
-			}
-		}
-	},
-
-	get parent() { return this._parent; },
 
 
 	set x(value) { this.position(value, this._y); },
