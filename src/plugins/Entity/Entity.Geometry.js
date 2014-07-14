@@ -518,7 +518,9 @@ Entity.Geometry = meta.Class.extend
 		// Right
 		else if(this.positionType === 8) {
 			this._x -= this.volume.halfWidth;		
-		}			
+		}	
+
+		this.forcePosition(this._x, this._y);		
 	},
 
 	/**
@@ -598,8 +600,8 @@ Entity.Geometry = meta.Class.extend
 	 */
 	positionTopRight: function(x, y)
 	{
-		x += this.volume.halfWidth;
-		y -= this.volume.halfHeight;
+		x -= this.volume.halfWidth;
+		y += this.volume.halfHeight;
 		this.positionType = 2;
 
 		if(this._x === x && this._y === y) { return; }
@@ -613,8 +615,8 @@ Entity.Geometry = meta.Class.extend
 	 */
 	positionBottomLeft: function(x, y)
 	{
-		x -= this.volume.halfWidth;
-		y += this.volume.halfHeight;
+		x += this.volume.halfWidth;
+		y -= this.volume.halfHeight;
 		this.positionType = 3;
 
 		if(this._x === x && this._y === y) { return; }
@@ -628,8 +630,8 @@ Entity.Geometry = meta.Class.extend
 	 */
 	positionBottomRight: function(x, y)
 	{
-		x += this.volume.halfWidth;
-		y += this.volume.halfHeight;
+		x -= this.volume.halfWidth;
+		y -= this.volume.halfHeight;
 		this.positionType = 4;
 
 		if(this._x === x && this._y === y) { return; }
@@ -714,8 +716,8 @@ Entity.Geometry = meta.Class.extend
 	 */
 	topRight: function(x, y)
 	{
-		x += this.volume.halfWidth;
-		y -= this.volume.halfHeight;
+		x -= this.volume.halfWidth;
+		y += this.volume.halfHeight;
 		this.positionType = 2;
 
 		if(this._x === x && this._y === y) { return; }
@@ -729,8 +731,8 @@ Entity.Geometry = meta.Class.extend
 	 */
 	bottomLeft: function(x, y)
 	{
-		x -= this.volume.halfWidth;
-		y += this.volume.halfHeight;
+		x += this.volume.halfWidth;
+		y -= this.volume.halfHeight;
 		this.positionType = 3;
 
 		if(this._x === x && this._y === y) { return; }
@@ -744,8 +746,8 @@ Entity.Geometry = meta.Class.extend
 	 */
 	bottomRight: function(x, y)
 	{
-		x += this.volume.halfWidth;
-		y += this.volume.halfHeight;
+		x -= this.volume.halfWidth;
+		y -= this.volume.halfHeight;
 		this.positionType = 4;
 
 		if(this._x === x && this._y === y) { return; }
@@ -946,7 +948,7 @@ Entity.Geometry = meta.Class.extend
 	 * @param x {Number} Position on x axis.
 	 * @param y {Number} Position on y axis.
 	 */
-	pivotPositionTop: function(x, y)
+	pivotTop: function(x, y)
 	{
 		if(this.pivotRatioX !== 0.0 && this.pivotRatioY !== -1.0) {
 			this._x = x;
@@ -964,9 +966,9 @@ Entity.Geometry = meta.Class.extend
 	 * @param x {Number} Position on x axis.
 	 * @param y {Number} Position on y axis.
 	 */
-	pivotPositionBottom: function(x, y)
+	pivotBottom: function(x, y)
 	{
-		if(this.pivotRatioX !== 0.0 && this.pivotRatioY !== 1.0) {
+		if(this.pivotRatioX !== 0.0 || this.pivotRatioY !== 1.0) {
 			this._x = x;
 			this._y = y;
 			this.pivot(0.0, 1.0);
@@ -982,7 +984,7 @@ Entity.Geometry = meta.Class.extend
 	 * @param x {Number} Position on x axis.
 	 * @param y {Number} Position on y axis.
 	 */
-	pivotPositionLeft: function(x, y)
+	pivotLeft: function(x, y)
 	{
 		if(this.pivotRatioX !== -1.0 && this.pivotRatioY !== 0.0) {
 			this._x = x;
@@ -1000,7 +1002,7 @@ Entity.Geometry = meta.Class.extend
 	 * @param x {Number} Position on x axis.
 	 * @param y {Number} Position on y axis.
 	 */
-	pivotPositionRight: function(x, y)
+	pivotRight: function(x, y)
 	{
 		if(this.pivotRatioX !== 1.0 && this.pivotRatioY !== 0.0) {
 			this._x = x;
