@@ -32,7 +32,7 @@
 Entity.Geometry = meta.Class.extend
 ( /** @lends Entity.Geometry.prototype */ {
 
-	_init: function(obj)
+	_init: function(params)
 	{
 		this.id = this._entityCtrl.getUniqueID();
 		this.name = "entity" + this.id;
@@ -41,24 +41,29 @@ Entity.Geometry = meta.Class.extend
 
 		this._depthNode = new Entity.DepthList.Node();
 
-		if(obj)
+		this._initParams(params);
+	},
+
+	_initParams: function(params)
+	{
+		if(params)
 		{
-			if(typeof(obj) === "object")
+			if(typeof(params) === "object")
 			{
-				if(obj instanceof Resource.Texture) {
-					this.texture = obj;
+				if(params instanceof Resource.Texture) {
+					this.texture = params;
 				}
 				else 
 				{
-					for(var key in obj) {
-						this[key] = obj[key];
+					for(var key in params) {
+						this[key] = params[key];
 					}
 				}
 			}
-			else if(typeof(obj) === "string") {
-				this.texture = obj;
+			else if(typeof(params) === "string") {
+				this.texture = params;
 			}
-		}
+		}		
 	},
 
 

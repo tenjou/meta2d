@@ -2,12 +2,18 @@
 
 Entity.Text = Entity.Geometry.extend
 ({
-	init: function(obj)
+	init: function(params)
 	{
 		this.texture = new Resource.Texture();
 		this._texture.resize(this._fontSize, this._fontSize);
 		this.setText("");
+
+		if(typeof(params) === "string") {
+			this.setText(params);
+		}		
 	},
+
+	_initParams: function(params) {},
 
 
 	setText: function(text)
