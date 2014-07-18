@@ -9,14 +9,13 @@
 
 	<body>
 		<script>
-			window.Example = {};
+			var Example = {};
 
 			Example.Controller = meta.Controller.extend
 			({
 				// Constructor.
 				init: function() 
 				{
-					console.log("example");
 					this.entity = new Entity.Geometry("jabba");
 					this.entity.anchor(0.5);
 					// Every controller has access to it's own view it's added to.
@@ -40,11 +39,9 @@
 			meta.load = function()
 			{
 				// Create a new custom view.
-				var exampleView = meta.getView("example");
-				// Register controller to the view, in this case - Example.Controller.
-				exampleView.register("Example");
-				// Attach our custom view to current main view.
-				meta.view.attach(exampleView);
+				meta.createView("example", "Example");
+				// Setting our created view will load Example controller.
+				meta.setView("example");
 
 				meta.addDescription("View controller example");
 			};

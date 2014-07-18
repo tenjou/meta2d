@@ -63,15 +63,18 @@ meta.Tween.prototype =
 
 	_stop: function(callCB) 
 	{
-		if(Entity.ctrl._removeFromUpdating(this) && this._group) 
+		if(Entity.ctrl._removeFromUpdating(this)) 
 		{
 			if(callCB && this.currLink._onComplete) {
 				this.currLink._onComplete.call(this.owner);
 			}	
 
-			this._group.activeUsers--;
-			if(this._group.activeUsers === 0 && this._group.callback) {
-				this._group.callback();
+			if(this._group)
+			{
+				this._group.activeUsers--;
+				if(this._group.activeUsers === 0 && this._group.callback) {
+					this._group.callback();
+				}
 			}
 		}
 	},
@@ -113,8 +116,10 @@ meta.Tween.prototype =
 		this.linkIndex = 0;
 		this.currLink = null;
 
-		this._group.users--;
-		this._group = null;
+		if(this._group) {
+			this._group.users--;
+			this._group = null;
+		}
 
 		return this;
 	},

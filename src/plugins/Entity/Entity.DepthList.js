@@ -55,6 +55,7 @@ Entity.DepthList.prototype =
 
 		this.buffer[node.index] = this.buffer[this.length-1];
 		this.buffer[this.length-1] = null;
+		node.index = 0;
 
 		this.length--;
 	},

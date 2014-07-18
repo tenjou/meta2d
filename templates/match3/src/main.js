@@ -3,13 +3,16 @@
 meta.load = function() 
 {
 	meta.preloadTextures("bg-tile", "assets/images");
-	meta.preloadTextures(MatchGame.Cfg.gems, "assets/images");
+	meta.preloadTextures(Game.Cfg.gems, "assets/images");
 
-	var intro = meta.getView("intro");
-	intro.register("Intro");
+	//meta.loadSpriteSheet("assets/match3.json");
 
-	var game = meta.getView("game");
-	game.register("MatchGame");
+	meta.createView("intro", "Intro");
+	meta.createView("game", "Game");
 
-	meta.setView("intro");
+	// var entity = new Entity.Geometry("bg-tile");
+	// entity.topLeft(0, 0);
+	// meta.view.add(entity);
+
+	meta.setView("game");
 };

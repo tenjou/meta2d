@@ -1819,8 +1819,8 @@ Entity.Geometry = meta.Class.extend
 	set y(value) { this.position(this._x, value); },
 	get x() { return this._x; },
 	get y() { return this._y; },
-	get absoluteX() { return this._x + this._parent.childOffsetX + this._anchorPosX; },
-	get absoluteY() { return this._y + this._parent.childOffsetY + this._anchorPosY; },
+	get absoluteX() { return this.volume.x; },
+	get absoluteY() { return this.volume.y; },
 
 	get width() { return this.volume.width; },
 	get height() { return this.volume.height; },
@@ -2102,7 +2102,9 @@ Entity.Geometry = meta.Class.extend
 	// Visibility.
 	set visible(value)
 	{
+		if(this.isVisible === value) { return; }
 		this.isVisible = value;
+
 		this._entityCtrl.isNeedRender = true;
 
 		if(this.children)

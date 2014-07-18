@@ -112,6 +112,10 @@ Entity.WebGLRenderer = Entity.Controller.extend
 			entity = currNode.entity;
 			if(!entity.isVisible || !entity.isLoaded || !entity.texture) { continue; }
 
+			if(!entity.isVisible) {
+				console.log("sds");
+			}
+
 			texture = entity._texture;
 			shader.bindBuffer2f("vertexPos", texture.vbo);
 
