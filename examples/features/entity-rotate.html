@@ -8,6 +8,8 @@
     </head>
 
     <body>
+        <!-- Example on how to rotate entities. -->
+
         <script>
             meta.load = function()
             {
@@ -15,9 +17,9 @@
 
                 var entity = new Entity.Geometry("shrine");
                 entity.anchor(0.5, 0.5); 
-                // Rotate entity clockwise by 180.
+                // Rotate entity clockwise by 180 degrees.
                 entity.angle = 180;
-                // An alternative way is to use radians:
+                // An alternatively entity can be rotate by using radians:
                 // entity.angleRad = Math.PI;
                 meta.view.add(entity);
 

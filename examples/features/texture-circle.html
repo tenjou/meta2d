@@ -2,24 +2,25 @@
 
 <html>
 	<head>
-		<title>Texture Circle - META</title>
+		<title>Texture Circle :: META</title>
 
 		<script src="http://infinite-games.com/meta.latest.js"></script>
 	</head>
 
 	<body>
+        <!-- Example of how to draw a renderer independant circle. -->
+
 		<script>
-			meta.load = function()
-			{
+            meta.load = function()
+            {
                 // Create an empty texture.
                 var texture = new Resource.Texture();
-                // Arc can be used to create circular shape.
+                // Arc function can be used to create any circular shape.
                 texture.arc({
-                	// Fill color.
-                    color: "red",
-                    borderColor: "black",
-                    borderWidth: 10,
-                    radius: 64
+                    color: "red",           // fill color
+                    borderColor: "black",   // border color
+                    borderWidth: 10,        // thickness of the border
+                    radius: 64              // radius of the circle
                 });
 
                 var entity = new Entity.Geometry(texture);
@@ -27,7 +28,7 @@
                 meta.view.add(entity);
 
                 meta.addDescription("Texture circle example");
-			};
+            };
 		</script>
 	</body>
 </html>

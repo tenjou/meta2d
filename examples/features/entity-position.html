@@ -8,44 +8,47 @@
     </head>
 
     <body>
+        <!-- Example on how to position entity with different approaches. -->
+
         <script>
             meta.load = function()
             {
                 meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/shrine.png");
 
-                // Center.
+                // Center the entity.
                 var center = new Entity.Geometry("shrine");
-                center.anchor(0.5, 0.5);
+                center.anchor(0.5);
+                // Show debug bounds of the entity.
                 center.showBounds = true;
                 meta.view.add(center); 
 
-                // By default anchor is top left corner.
+                // Position entity at top left corner.
                 var topLeft = new Entity.Geometry("shrine");
-                // Will change pivot to (-1, -1).
+                // Entities by default are anchored at top left corner.
                 topLeft.positionTopLeft(0, 0);
                 topLeft.showBounds = true;
                 meta.view.add(topLeft);
 
+                // Position entity at top right corner.
                 var topRight = new Entity.Geometry("shrine");
-                // Anchor top right corner.
+                // Anchor entity at top right corner.
                 topRight.anchor(1.0, 0.0);
-                // Will change pivot to (1, -1).
                 topRight.positionTopRight(0, 0);
                 topRight.showBounds = true;
                 meta.view.add(topRight);
 
+                // Position entity at bottom left corner.
                 var bottomLeft = new Entity.Geometry("shrine");
-                // Anchor bottom left corner.
+                // Anchor entity at bottom left corner.
                 bottomLeft.anchor(0.0, 1.0);
-                // Will change pivot to (-1, 1).
                 bottomLeft.positionBottomLeft(0, 0);
                 bottomLeft.showBounds = true;
                 meta.view.add(bottomLeft);
 
+                // Position entity at bottom right corner.
                 var bottomRight = new Entity.Geometry("shrine");
-                // Anchor bottom right corner.
+                // Anchor entity at bottom right corner.
                 bottomRight.anchor(1.0, 1.0);
-                // Will change pivot to (1, 1).
                 bottomRight.positionBottomRight(0, 0);
                 bottomRight.showBounds = true;
                 meta.view.add(bottomRight); 

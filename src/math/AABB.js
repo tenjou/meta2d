@@ -1,7 +1,5 @@
 "use strict";
 
-meta.math = {};
-
 meta.math.AABB = function(minX, minY, maxX, maxY)
 {
 	this.minX = minX;

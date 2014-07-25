@@ -1,5 +1,7 @@
 "use strict";
 
+meta.math = {};
+
 meta.math =
 {
 	toRadians: function(degree) {

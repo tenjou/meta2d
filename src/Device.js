@@ -63,7 +63,7 @@ meta.Device.prototype =
 			"Firefox": [ /Firefox\/(\S+)/ ],
 			"MSIE": [ /MSIE (\S+);/ ],
 			"Opera": [
-				/Chrome\/(\S+)/,
+				/OPR\/(\S+)/,
 				/Opera\/.*?Version\/(\S+)/,     /* Opera 10 */
 				/Opera\/(\S+)/                  /* Opera 9 and older */
 			],
