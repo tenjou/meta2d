@@ -8,9 +8,11 @@
 	</head>
 
 	<body>
+		<!-- Example on how to create custom controller. -->
+
 		<script>
-			// Define scope
-			window.Example = {};
+			// Define scope for controller.
+			var Example = {};
 
 			Example.Controller = meta.Controller.extend
 			({
@@ -23,9 +25,11 @@
 					this.view.add(this.entity);					
 				},
 
-				// All countroller load is called after meta.load function.
-				load: function() {
-					meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+				// All controller load function is called after meta.load function.
+				load: function() 
+				{
+					meta.preloadTextures(
+					    "https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
 				},
 
 				update: function(tDelta) {

@@ -2,17 +2,19 @@
 
 <html>
     <head>
-        <title>Entity SpriteSheet :: META</title>
+        <title>Entity Spritesheet :: META</title>
 
         <script src="http://infinite-games.com/meta.latest.js"></script>
     </head>
 
     <body>
+        <!-- Example on how to use spritesheets. -->
+
         <script>
             meta.load = function()
             {
-                // Engine will wait untill all resources marked for preloading are loaded.
-                // Can load .xml, .json and .plist.
+                // Can load .xml, .json (hash and indexed) and .plist spritesheet formats. 
+                // Will try to load image automatically with similar name.
                 meta.loadSpriteSheet(
                     "https://dl.dropboxusercontent.com/u/145051233/meta/blocks.json");
 
@@ -20,7 +22,7 @@
                 entity.anchor(0.5);
                 meta.view.add(entity);
                 
-                meta.addDescription("Entity sprite sheet example");                
+                meta.addDescription("Entity spritesheet example");                
             };
         </script>
     </body>

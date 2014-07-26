@@ -1,10 +1,33 @@
-function OnInput(data, event)
-{
-	if(event === "inputMove") {
-		console.log(event.x, event.y);
-	}
-};
+<!DOCTYPE html>
 
-meta.load = function(data, event) {
-	meta.subscribe(this, [ "inputDown", "inputUp", "inputMove" ], OnInput);
-};
+<html>
+    <head>
+        <title>Input Mouse & Touch :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <!-- Example on how to use mouse or touch events. -->
+
+        <script>
+            var coordTxt = null;
+
+            function HandleInput(data, event) {
+                coordTxt.text = data.x + ", " + data.y;
+            };
+
+            meta.load = function()
+            {
+                coordTxt = new Entity.Text();
+                coordTxt.anchor(0.5);
+                meta.view.add(coordTxt);
+
+                // "inputMove" will work for both mouse or touch events.
+                meta.subscribe(this, [ "inputMove" ], HandleInput);
+
+                meta.addDescription("Input - mouse & touch example");                
+            };
+        </script>
+    </body>
+</html>

@@ -8,20 +8,26 @@
     </head>
 
     <body>
+        <!-- Example on how to change entity Z index (depth). -->
+
         <script>
             meta.load = function()
             {
-                meta.preloadTextures([ "jabba.png", "shrine.png" ], "https://dl.dropboxusercontent.com/u/145051233/meta/");
+                meta.preloadTextures([ "jabba.png", "shrine.png" ], 
+                    // Set default path for both images.
+                    "https://dl.dropboxusercontent.com/u/145051233/meta/");
 
                 var entity1 = new Entity.Geometry("shrine");
-                entity1.anchor(0.5, 0.5);
+                entity1.anchor(0.5);
+                // Offset the first entity from anchor point by -50px.
                 entity1.position(-50, 0);
-                // Set this entity to be in front of others.
+                // Set this entity to be in front of others (who has less z index).
                 entity1.z = 100;
                 meta.view.add(entity1); 
 
                 var entity2 = new Entity.Geometry("jabba");
-                entity2.anchor(0.5, 0.5);
+                entity2.anchor(0.5);
+                // Offset the second entity from anchor point by 50px.
                 entity2.position(50, 0);
                 meta.view.add(entity2);  
 

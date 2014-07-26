@@ -2,22 +2,26 @@
 
 <html>
 	<head>
-		<title>Events Global - META</title>
+		<title>Events Global :: META</title>
 
 		<script src="http://infinite-games.com/meta.latest.js"></script>
 	</head>
 
 	<body>
-		<script>
+        <!-- Example on how to use events globally. -->
+
+        <script>
             function Listener(data, event) 
             {
-                if(event === "load") {
-                    meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+                if(event === "load") 
+                {
+                    meta.preloadTextures(
+                        "https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
                 }
                 else if(event === "create") 
                 {
-                    var entity = new Entity.Geometry(data);
-                    entity.anchor(0.5);
+                    var entity = new Entity.Geometry("jabba");
+                    entity.anchor(data);
                     meta.view.add(entity);
                 }
             };
@@ -27,12 +31,15 @@
                 meta.createChannel("Example");
                 meta.subscribe(window, "Example", Listener);
 
+                // Load texture.
                 meta.emit("Example", null, "load");
+                // Create first entity.
                 meta.emit("Example", 0.4, "create");
+                // Create second entity.
                 meta.emit("Example", 0.6, "create");
 
                 meta.addDescription("Global event example");
             };
-		</script>
+        </script>
 	</body>
 </html>

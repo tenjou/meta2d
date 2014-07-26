@@ -8,14 +8,20 @@
     </head>
 
     <body>
+        <!-- Example on how to enable camera dragging. -->
+
         <script>
             meta.load = function()
             {
                 // Set flag to be able to drag the camera.
                 meta.camera.draggable = true;
 
+                // Create a dummy texture.
                 var tex = new Resource.Texture();
-                tex.fillRect({ width: 400, height: 500 });
+                tex.fillRect({ 
+                    width: 400, height: 500, 
+                    color: "orange" 
+                });
 
                 var entity = new Entity.Geometry(tex);
                 entity.position(meta.world.centerX, meta.world.centerY);

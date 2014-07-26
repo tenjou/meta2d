@@ -8,9 +8,14 @@
     </head>
 
     <body>
+        <!-- Example on how to load and play sounds. -->
+
         <script>
             meta.load = function()
             {
+                // Will try to load one of available formats.
+                // Add prefix to filename if specific format should be loaded, 
+                //  for example: "sample.mp3".
                 meta.preloadSounds(
                     "https://dl.dropboxusercontent.com/u/145051233/meta/audio/sample");
 

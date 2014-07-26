@@ -2,19 +2,21 @@
 
 <html>
 	<head>
-		<title>Texture Lines - META</title>
+		<title>Texture Lines :: META</title>
 
 		<script src="http://infinite-games.com/meta.latest.js"></script>
 	</head>
 
 	<body>
+        <!-- Example on how to draw a renderer independant lines. -->
+
 		<script>
             meta.load = function()
             {
                 var texture = new Resource.Texture();
                 texture.stroke({
-                    borderWidth: 6,
-                    borderColor: "red",
+                    borderWidth: 6,     // Line width.
+                    borderColor: "red", // Color of lines.
                     // Define line points in format: x1, y1, x2 ...
                     buffer: [ -100, 100, 100, 100, 50, 200 ]
                 });

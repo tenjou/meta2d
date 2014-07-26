@@ -2,21 +2,25 @@
 
 <html>
 	<head>
-		<title>Events - META</title>
+		<title>Events Local :: META</title>
 
 		<script src="http://infinite-games.com/meta.latest.js"></script>
 	</head>
 
 	<body>
-		<script>
+        <!-- Example on how to use events locally. -->
+
+        <script>
             function Listener(data, event) 
             {
-                if(event === "load") {
-                    meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+                if(event === "load") 
+                {
+                    meta.preloadTextures(
+                        "https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
                 }
                 else if(event === "create") 
                 {
-                    var entity = new Entity.Geometry(anchor);
+                    var entity = new Entity.Geometry("jabba");
                     entity.anchor(data);
                     meta.view.add(entity);
                 }
@@ -25,14 +29,17 @@
             meta.load = function()
             {
                 var channel = meta.createChannel("Example");
-                channel.subscribe(window, Listener);
+                channel.subscribe(this, Listener);
 
+                // Load texture.
                 channel.emit(null, "load");
+                // Create first entity.
                 channel.emit(0.4, "create");
+                // Create second entity.
                 channel.emit(0.6, "create");
 
-                meta.addDescription("Event example");
+                meta.addDescription("Local event example");
             };
-		</script>
+        </script>
 	</body>
 </html>

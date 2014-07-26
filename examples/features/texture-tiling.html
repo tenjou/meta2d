@@ -8,20 +8,24 @@
 	</head>
 
 	<body>
+		<!-- Example on how to create tiled texture. -->
+
 		<script>
 			meta.load = function()
 			{
-				meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/img/grid.png");
+				meta.preloadTextures(
+					"https://dl.dropboxusercontent.com/u/145051233/img/grid.png");
 
 				var texture = new Resource.Texture();
 				texture.tile({
 					width: meta.world.width, height: meta.world.height,
 					texture: "grid",
-					// Tiling will have exact offset from all sides.
+					// Will offset sides so that tiled texture looks centered.
 					center: true
 				});
 
 				var bg = new Entity.Geometry(texture);
+				// Position at top left corner.
 				bg.positionTopLeft(0, 0);
 				meta.view.add(bg);
 

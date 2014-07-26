@@ -2,29 +2,34 @@
 
 <html>
     <head>
-        <title>Camera Fit Screen :: META</title>
+        <title>Camera Fit in Screen :: META</title>
 
         <script src="http://infinite-games.com/meta.latest.js"></script>
     </head>
 
     <body>
+        <!-- Example on how to make camera fit inside specific region by automatic zooming. -->
+
         <script>
             meta.load = function()
             {
                 // Define bounds that camera should see.
-                // If space is left camera will zoom in.
-                // If space does not fit in the screen camera will zoom out.
+                // If there is any space left - camera will zoom in.
+                // If camera does not fit inside - it will zoom out.
                 meta.camera.bounds(600, 600);
 
                 // Create a dummy texture.
                 var tex = new Resource.Texture();
-                tex.fillRect({ width: 600, height: 600, color: "orange" });
+                tex.fillRect({ 
+                    width: 600, height: 600, 
+                    color: "orange" 
+                });
 
                 var entity = new Entity.Geometry(tex);
                 entity.anchor(0.5);
                 meta.view.add(entity);
 
-                meta.addDescription("Camera fit screen example");
+                meta.addDescription("Camera fit in screen example");
             };
         </script>
     </body>

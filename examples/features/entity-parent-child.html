@@ -8,10 +8,13 @@
     </head>
 
     <body>
+        <!-- Example on how to create parent and child relations. -->
+
         <script>
             meta.load = function()
             {
-                meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+                meta.preloadTextures(
+                    "https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
 
                 // Create parent entity as black quad.
                 var parent = new Entity.Geometry();
@@ -22,15 +25,14 @@
                     width: 300, height: 300,
                     color: "black"
                 });
-                // Center parent in the middle of the screen.
-                parent.anchor(0.5, 0.5);
+                parent.anchor(0.5);
                 meta.view.add(parent);
 
                 // Create child entity with "jabba" texture.
                 var child = new Entity.Geometry("jabba");
-                // Center it in the middle of parent.
-                child.anchor(0.5, 0.5);
-                // Add child to the parent.
+                child.anchor(0.5);
+                // Add entity as child. 
+                // Parents apply to all childrens all transformations that are done to them.
                 parent.attach(child);
 
                 meta.addDescription("Entity parent & child example");                

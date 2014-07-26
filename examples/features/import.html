@@ -8,22 +8,18 @@
     </head>
 
     <body>
+        <!-- Example on how to load assets from Infinite Store. -->
+
         <script>
-            meta.import("Agent");
+            // Import library that has predefined Entity.Example class.
+            meta.import("meta-example");
 
             meta.load = function()
             {
-                var entity = new Entity.Geometry();
-                entity.texture = new Resource.Texture();
-                entity.texture.fillRect({
-                    width: 50,
-                    height: 50,
-                    color: "red"
-                });
-                entity.addComponent("Agent");
-                entity.anchor(0.5, 0.5);
+                var entity = new Entity.Example();
+                entity.anchor(0.5);
                 meta.view.add(entity);
-            }
+            };
         </script>
     </body>
 </html>

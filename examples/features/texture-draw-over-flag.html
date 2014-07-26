@@ -8,14 +8,18 @@
 	</head>
 
 	<body>
+        <!-- Example on how to use texture "drawOver" flag. -->
+
 		<script>
             meta.load = function()
             {
                 var texture = new Resource.Texture();
+                // First fill rect with orange color.
                 texture.fillRect({
                     width: 400, height: 400,
                     color: "orange"
                 })
+                // Draw over shape.
                 texture.stroke({
                     borderWidth: 4,
                     borderColor: "red",

@@ -8,6 +8,8 @@
     </head>
 
     <body>
+        <!-- Example on how to set entity pivot. -->
+
         <script>
             var entity;
 
@@ -16,20 +18,18 @@
                 meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
 
                 entity = new Entity.Geometry("jabba");
-                // Center entity in the middle of the screen.
-                entity.anchor(0.5, 0.5);
-                // Set entity pivot to center the left side.
+                entity.anchor(0.5);
+                // Set pivot at left side of the entity.
                 entity.pivot(-1.0, 0.0);
-                // Show debug borders with pivot location.
                 entity.showBounds = true;
                 meta.view.add(entity);       
 
                 meta.addDescription("Entity pivot example");                     
             };
 
-            // Every update frame rotate entity clockwise.
+            // Every update frame we rotate entity in clockwise.
             meta.update = function(tDelta) {
-                // Rotation will be performed from the pivot point.
+                // Note that changing pivot will change rotation origin too!
                 entity.angle += tDelta * 10;
             };
         </script>

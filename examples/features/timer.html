@@ -8,6 +8,8 @@
     </head>
 
     <body>
+        <!-- Example on how to use engine built in synchronized timer. -->
+
         <script>
             function SpawnEntity()
             {
@@ -19,7 +21,8 @@
 
             meta.load = function()
             {
-                meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+                meta.preloadTextures(
+                    "https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
 
                 // Spawn an entity every 1000ms.
                 meta.addTimer(SpawnEntity, 1000);

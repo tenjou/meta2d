@@ -8,22 +8,25 @@
     </head>
 
     <body>
+        <!-- Example on how to interact with entity input drag events. -->
+
         <script>
             meta.load = function()
             {
                 meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/shrine.png");
 
                 var entity = new Entity.Geometry("shrine");
-                entity.anchor(0.5, 0.5);
+                entity.anchor(0.5);
                 meta.view.add(entity);
    
                 // Called when input tries to move entity for the first time.
                 entity.onDragStart = function(event) {
+                    // Optional: Only when need fixate relation between input and entity.
                     this.dragStart(event.x, event.y);
                 };
-                // Called when input releasesif it was dragged.
+                // Called when pressed input was released.
                 entity.onDragEnd = function(event) {
-                    this.dragEnd();
+                    console.log("DragEnd");
                 };      
                 // Called when input moves entity.
                 entity.onDrag = function(event) {

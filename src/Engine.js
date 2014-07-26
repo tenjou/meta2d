@@ -40,7 +40,7 @@ meta.enableWebGL = true;
 meta.tUpdate = 1000 / 60;
 meta.utils = {};
 meta.modules = {};
-meta.importUrl = "http://infinite-games.com/store/modules/";
+meta.importUrl = "http://infinite-games.com/store/";
 meta._cache = {
 	ismetaAdded: false,
 	init: null,

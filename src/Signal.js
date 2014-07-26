@@ -62,6 +62,11 @@ meta.Channel.prototype =
 	 */
 	subscribe: function(owner, func)
 	{
+		if(!func) {
+			console.warn("[meta.Channel.subscribe]:", "No callback function passed.");
+			return;			
+		}
+
 		for(var i = 0; i < this.numSubs; i++)
 		{
 			if(this.subs[i].owner === owner) {
@@ -161,6 +166,10 @@ meta.subscribe = function(owner, channel, func)
 		console.warn("[meta.subscribe]:", "No owner passed.");
 		return;
 	}
+	if(!func) {
+		console.warn("[meta.subscribe]:", "No callback function passed.");
+		return;		
+	}
 
 	if(typeof(channel) === "string")
 	{
@@ -241,5 +250,5 @@ meta.emit = function(channel, data, event)
 		}
 	}
 
-	channel.emit(event, data);
+	channel.emit(data, event);
 };

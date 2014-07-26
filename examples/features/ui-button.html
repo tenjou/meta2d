@@ -8,12 +8,17 @@
 	</head>
 
 	<body>
+		<!-- Example on how to create and use UI.Button. -->
+
 		<script>
 			meta.load = function()
 			{
 				var button = new UI.Button();
 				button.anchor(0.5);
 				button.text = "MyButton";
+				button.onClick = function(event) {
+					console.log("clicked!");
+				};
 				meta.view.add(button);
 
 				meta.addDescription("UI button example");   

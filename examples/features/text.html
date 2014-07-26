@@ -8,20 +8,22 @@
 	</head>
 
 	<body>
+		<!-- Example on how to use Entity.Text class. -->
+
 		<script>
 			meta.load = function()
 			{
 				var text = new Entity.Text();
 				text.anchor(0.5, 0.5);
 				text.text = "Hello world!";
-				text.size = 50;
+				text.size = 50;	
 				text.style = "bold italic";
 				text.color = "#ffffff";
 				text.outlineColor = "#111111";
 				text.outlineWidth = 3;
 				text.showBounds = true;
 				meta.view.add(text);
-			}
+			};
 		</script>
 	</body>
 </html>

@@ -2035,9 +2035,10 @@ Entity.Geometry = meta.Class.extend
 		this.isNeedDraw = true;
 	},
 
-	set scale(value) {
-		this._scaleX = value;
-		this._scaleY = value;
+	scale: function(x, y) {
+		y = y || x;
+		this._scaleX = x;
+		this._scaleY = y;
 		this.updateScale();
 	},
 
@@ -2051,7 +2052,6 @@ Entity.Geometry = meta.Class.extend
 		this.updateScale();
 	},
 
-	get scale() { return this._scaleX; },
 	get scaleX() { return this._scaleX; },
 	get scaleY() { return this._scaleY; },
 
@@ -2271,6 +2271,7 @@ Entity.Geometry = meta.Class.extend
 
 	_checkID: -1,
 	_viewNodeID: -1,
+	_updateNodeID: -1,
 	_updateAnimNodeID: -1,
 	_removeFlag: 0,
 

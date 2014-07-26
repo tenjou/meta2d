@@ -8,9 +8,12 @@
 	</head>
 
 	<body>
+		<!-- Example on how to add new UI styles. -->
+
 		<script>
 			meta.load = function()
 			{
+				// Create custom texture that we will use as new style.
 				var customTexture = new Resource.Texture();
 				customTexture.fillRect({
 					color: "orange",
@@ -23,12 +26,10 @@
 					width: 150, height: 40
 				});
 
-				// Add some style parameters.
+				// Add our custom button style.
 				UI.ctrl.setStyle({
 					button: {
-						// Will define defualt button style for active state.
-						"*:active": null,
-						custom: {
+						"custom": {
 							texture: customTexture
 						},
 						"custom:active": {
@@ -37,14 +38,18 @@
 					}
 				});
 
+				// Create first button.
 				var button1 = new UI.Button();
-				button1.position(100, 100);
+				button1.anchor(0.5);
+				button1.position(-70, 0);
 				button1.text = "b1";
 				meta.view.add(button1);
 
+				// Create second button.
 				var button2 = new UI.Button();
 				button2.style = "custom";
-				button2.position(250, 100);
+				button2.anchor(0.5);
+				button2.position(70, 0);
 				button2.text = "b2";
 				meta.view.add(button2);
 

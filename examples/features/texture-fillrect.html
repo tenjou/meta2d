@@ -1,31 +1,33 @@
 <!DOCTYPE html>
 
 <html>
-	<head>
-		<title>Texture FillRect - META</title>
+    <head>
+        <title>Texture FillRect :: META</title>
 
-		<script src="http://infinite-games.com/meta.latest.js"></script>
-	</head>
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
 
-	<body>
-		<script>
-			meta.load = function()
-			{
-				// Create an empty texture.
-				var texture = new Resource.Texture();
-				texture.fillRect({
-					// Size of texture to fill - will set texture size.
-					width: 300, height: 300,
-					// Fill color.
-					color: "red"
-				});
+    <body>
+         <!-- Example on how to draw a renderer independant rects. -->
 
-				var entity = new Entity.Geometry(texture);
-				entity.anchor(0.5);
-				meta.view.add(entity);
+        <script>
+            meta.load = function()
+            {
+                // Create an empty texture.
+                var texture = new Resource.Texture();
+                texture.fillRect({
+                    // Size of texture to fill - will set the texture size.
+                    width: 300, height: 300,
+                    // Color to fill.
+                    color: "red"
+                });
 
-				meta.addDescription("Texture fill rect example");
-			};
-		</script>
-	</body>
+                var entity = new Entity.Geometry(texture);
+                entity.anchor(0.5);
+                meta.view.add(entity);
+
+                meta.addDescription("Texture fill rect example");
+            }; 
+        </script>
+    </body>
 </html>

@@ -8,13 +8,15 @@
     </head>
 
     <body>
+        <!-- Example on how to interact with entity down, up, click events. -->
+
         <script>
             meta.load = function()
             {
                 meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
 
                 var entity = new Entity.Geometry("jabba");
-                entity.anchor(0.5, 0.5);
+                entity.anchor(0.5);
                 meta.view.add(entity);
 
                 // Called if mouse button or touch pressed the entity.
@@ -30,7 +32,7 @@
                     this.angle = 0;
                 };
 
-                meta.addDescription("Entity input click example");                
+                meta.addDescription("Entity input click example (click on entity)");                
             };
         </script>
     </body>

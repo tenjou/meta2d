@@ -8,14 +8,15 @@
     </head>
 
     <body>
-        <!-- Example of the simplest way to texture an entity. -->
+        <!-- Example on how to set entity texture. -->
 
         <script>
             // Called on the first game load.
             meta.load = function()
             {
                 // Loading will continue until all resources are preloaded.
-                meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/shrine.png");
+                meta.preloadTextures(
+                    "https://dl.dropboxusercontent.com/u/145051233/meta/shrine.png");
 
                 // Create an entity with "shrine" texture.
                 var entity = new Entity.Geometry("shrine");

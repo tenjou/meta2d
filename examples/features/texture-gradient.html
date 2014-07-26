@@ -8,22 +8,26 @@
 	</head>
 
 	<body>
-		<script>
-			meta.load = function()
-			{
-				var bg = new Entity.Geometry();
-				bg.texture = new Resource.Texture();
-				bg.texture.gradient({
-					width: meta.world.width, 
-					height: meta.world.height,
-					dirY: 1,
-					colors: [ [ 0, "#DEF8A7" ], [ 1, "#AEE931" ] ]
-				});	
-				bg.positionTopLeft(0, 0);
-				meta.view.add(bg);
+        <!-- Example of how to create a renderer independant gradient -->
 
-				meta.addDescription("Texture gradient example");
-			};	
+		<script>
+            meta.load = function()
+            {
+	var bg = new Entity.Geometry();
+	bg.texture = new Resource.Texture();
+	// Create gradient in size of screen.
+	bg.texture.gradient({
+		width: meta.world.width, // Screen width.
+		height: meta.world.height, // Screen height
+		dirY: 1, // Gradient direction from up to down.
+		// Gradient color stops from 0 to 1.
+		colors: [ [ 0, "#277ac1" ], [ 1, "#ffffff" ] ]
+	});	
+	bg.positionTopLeft(0, 0);
+	meta.view.add(bg);
+
+	meta.addDescription("Texture gradient example");
+            };
 		</script>
 	</body>
 </html>

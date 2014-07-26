@@ -8,6 +8,8 @@
 	</head>
 
 	<body>
+		<!-- Example on how to create view specific controller. -->
+
 		<script>
 			var Example = {};
 
@@ -18,13 +20,16 @@
 				{
 					this.entity = new Entity.Geometry("jabba");
 					this.entity.anchor(0.5);
-					// Every controller has access to it's own view it's added to.
+					// Every controller has access to view it's added to.
+					// By default it will be master view.
 					this.view.add(this.entity);					
 				},
 
 				// All countroller load is called after meta.load function.
-				load: function() {
-					meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+				load: function() 
+				{
+					meta.preloadTextures(
+						"https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
 				},
 
 				update: function(tDelta) {
@@ -38,9 +43,13 @@
 
 			meta.load = function()
 			{
-				// Create a new custom view.
+				// Create a new custom view:
+				// First param: Name of the view.
+				// Second param: Name of the controller.
+				// Note: Controller .init() will be called ASAP.
 				meta.createView("example", "Example");
-				// Setting our created view will load Example controller.
+				
+				// Setting view visible will activate controller too.
 				meta.setView("example");
 
 				meta.addDescription("View controller example");

@@ -8,7 +8,7 @@
     </head>
 
     <body>
-    <!-- Example of how to anchor entities to the view. -->
+        <!-- Example on how to anchor entities to the view. -->
 
         <script>
             meta.load = function()
@@ -17,8 +17,8 @@
 
                 var entity = new Entity.Geometry("jabba");
                 // Anchor entity in middle of the screen (0.5).
-                // Also second parameter can be specified if need different anchors for X and Y axis.
-                // Position will update with screen resolution changes.
+                // Also second parameter can be specified if different anchors for X and Y axis is needed.
+                // Note: Position will update with screen resolution changes.
                 entity.anchor(0.5);
                 meta.view.add(entity); 
 
