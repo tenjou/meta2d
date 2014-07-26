@@ -1034,6 +1034,78 @@ Resource.Texture = Resource.Basic.extend
 		this.isLoaded = true;
 	},
 
+	rect: function(params, height, color, borderWidth)
+	{
+		if(typeof(params) !== "object") 
+		{
+			this.rect({ 
+				width: params, height: height,
+				color: color,
+				borderWidth: borderWidth
+			});
+			return;
+		}
+		if(!params) {
+			console.warn("[Resource.Texture.rect]:", "No parameters specified.");
+			return;
+		}
+
+		var ctx = this.ctx;
+		params.width = params.width || 1;
+		params.height = params.height || 1;
+		params.color = params.color || "#0000000";
+		var borderWidth = params.borderWidth || 1;
+
+		if(!params.drawOver) {
+			this.resize(params.width, params.height);
+		}		
+
+		if(this.textureType) {
+			this._createCachedImg();
+			ctx = this._cachedCtx;
+		}
+
+		ctx.strokeStyle = params.color;
+		ctx.lineWidth = borderWidth;
+
+		if(borderWidth % 2 === 1)
+		{
+			ctx.save();
+			ctx.translate(0.5, 0.5);
+			ctx.beginPath();
+			ctx.moveTo(borderWidth, borderWidth);
+			ctx.lineTo(params.width - borderWidth - 1, borderWidth);
+			ctx.lineTo(params.width - borderWidth - 1, params.height - borderWidth - 1);
+			ctx.lineTo(borderWidth, params.height - borderWidth-1);
+			ctx.closePath();
+			ctx.stroke();
+			ctx.restore();
+		}
+		else 
+		{
+			ctx.beginPath();
+			ctx.moveTo(borderWidth, borderWidth);
+			ctx.lineTo(params.width - borderWidth, borderWidth);
+			ctx.lineTo(params.width - borderWidth, params.height- borderWidth);
+			ctx.lineTo(borderWidth, params.height - borderWidth);
+			ctx.closePath();
+			ctx.stroke();	
+		}
+
+		if(params.fillColor) {
+			ctx.fillStyle = params.fillColor;
+			ctx.fill();
+		}
+
+		if(this.textureType === Resource.TextureType.WEBGL) {
+			var gl = meta.ctx;
+			gl.bindTexture(gl.TEXTURE_2D, this.image);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
+		}
+
+		this.isLoaded = true;
+	},
+
 	/**
 	 * Draw a rounded rectangle.
 	 * @param color {String} The color of stroke. Color should be in hex or css color name.
