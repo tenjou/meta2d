@@ -1051,13 +1051,13 @@ Resource.Texture = Resource.Basic.extend
 		}
 
 		var ctx = this.ctx;
-		params.width = params.width || 1;
-		params.height = params.height || 1;
+		var width = params.width || 1;
+		var height = params.height || 1;
 		params.color = params.color || "#0000000";
 		var borderWidth = params.borderWidth || 1;
 
 		if(!params.drawOver) {
-			this.resize(params.width, params.height);
+			this.resize(width, height);
 		}		
 
 		if(this.textureType) {
@@ -1068,15 +1068,17 @@ Resource.Texture = Resource.Basic.extend
 		ctx.strokeStyle = params.color;
 		ctx.lineWidth = borderWidth;
 
+		var halfWidth = Math.ceil(borderWidth / 2);
+
 		if(borderWidth % 2 === 1)
 		{
 			ctx.save();
 			ctx.translate(0.5, 0.5);
 			ctx.beginPath();
-			ctx.moveTo(borderWidth, borderWidth);
-			ctx.lineTo(params.width - borderWidth - 1, borderWidth);
-			ctx.lineTo(params.width - borderWidth - 1, params.height - borderWidth - 1);
-			ctx.lineTo(borderWidth, params.height - borderWidth-1);
+			ctx.moveTo(halfWidth, halfWidth);
+			ctx.lineTo(width - halfWidth - 1, halfWidth);
+			ctx.lineTo(width - halfWidth - 1, height - halfWidth - 1);
+			ctx.lineTo(halfWidth, height - halfWidth - 1);
 			ctx.closePath();
 			ctx.stroke();
 			ctx.restore();
@@ -1084,10 +1086,10 @@ Resource.Texture = Resource.Basic.extend
 		else 
 		{
 			ctx.beginPath();
-			ctx.moveTo(borderWidth, borderWidth);
-			ctx.lineTo(params.width - borderWidth, borderWidth);
-			ctx.lineTo(params.width - borderWidth, params.height- borderWidth);
-			ctx.lineTo(borderWidth, params.height - borderWidth);
+			ctx.moveTo(halfWidth, halfWidth);
+			ctx.lineTo(width - halfWidth, halfWidth);
+			ctx.lineTo(width - halfWidth, height - halfWidth);
+			ctx.lineTo(halfWidth, height - halfWidth);
 			ctx.closePath();
 			ctx.stroke();	
 		}
@@ -1107,64 +1109,89 @@ Resource.Texture = Resource.Basic.extend
 	},
 
 	/**
-	 * Draw a rounded rectangle.
-	 * @param color {String} The color of stroke. Color should be in hex or css color name.
-	 * @param width {Number} The width of the rectangle
-	 * @param height {Number} The height of the rectangle
-	 * @param radius {Number} The corner radius. Defaults to 5;
-	 * @param params {Object} Additional parameters.
-	 * @param params.borderWidth {Number=} Line width.
-	 * @param params.fill {String=} The color of
+	 * Draw a rounded rectangle. 
 	 */
-	roundRect: function(color, width, height, radius, params)
+	roundRect: function(params, height, radius, color, borderWidth)
 	{
-		if(!params) {
-			params = {};
-		}
-
-		radius = radius || 5;
-		params.borderWidth = params.borderWidth || 1;
-
-		var x = params.borderWidth / 2;
-		var y = params.borderWidth / 2;
-
-		this.upResize(width + params.borderWidth, height + params.borderWidth);
-
-		var ctx = null;
-		if(this.textureType === Resource.TextureType.WEBGL)
+		if(typeof(params) !== "object") 
 		{
-			this._tmpCanvas.width = this._width;
-			this._tmpCanvas.height = this._height;
-			ctx = this._tmpCtx;
-		}
-		else {
-			ctx = this.ctx;
+			this.roundRect({ 
+				width: params, height: height,
+				radius: radius,
+				color: color,
+				borderWidth: borderWidth
+			});
+			return;
+		}		
+		if(!params) {
+			console.warn("[Resource.Texture.rect]:", "No parameters specified.");
+			return;
 		}
 
-		ctx.strokeStyle = color;
-		ctx.lineWidth = params.borderWidth;
-		ctx.beginPath();
-		ctx.moveTo(x + radius, y);
-		ctx.lineTo(x + width - radius, y);
-		ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-		ctx.lineTo(x + width, y + height - radius);
-		ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-		ctx.lineTo(x + radius, y + height);
-		ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-		ctx.lineTo(x, y + radius);
-		ctx.quadraticCurveTo(x, y, x + radius, y);
-		ctx.closePath();
-		ctx.stroke();
+		var ctx = this.ctx;
+		var width = params.width || 1;
+		var height = params.height || 1;
+		params.color = params.color || "#0000000";
+		var radius = params.radius || 1;
+		var borderWidth = params.borderWidth || 3;
 
-		if(params.fill) {
-			ctx.fillStyle = params.fill;
+		if(!params.drawOver) {
+			this.resize(width, height);
+		}		
+
+		if(this.textureType) {
+			this._createCachedImg();
+			ctx = this._cachedCtx;
+		}		
+
+		ctx.strokeStyle = params.color;
+		ctx.lineWidth = borderWidth;
+
+		var halfWidth = Math.ceil(borderWidth / 2);
+
+		if(borderWidth % 2 === 1)
+		{
+			ctx.save();
+			ctx.translate(0.5, 0.5);
+			ctx.beginPath();
+			ctx.moveTo(halfWidth + radius, halfWidth);
+			ctx.lineTo(width - halfWidth - radius, halfWidth);
+			ctx.quadraticCurveTo(width - halfWidth, halfWidth, width - halfWidth, halfWidth + radius);
+			ctx.lineTo(width - halfWidth, height - halfWidth - radius);
+			ctx.quadraticCurveTo(width - halfWidth, height - halfWidth, width - halfWidth - radius, height - halfWidth);
+			ctx.lineTo(halfWidth + radius, height - halfWidth);
+			ctx.quadraticCurveTo(halfWidth, height - halfWidth, halfWidth, height - halfWidth - radius);
+			ctx.lineTo(halfWidth, radius + halfWidth);
+			ctx.quadraticCurveTo(halfWidth, halfWidth, halfWidth + radius, halfWidth);
+			ctx.closePath();
+			ctx.stroke();
+			ctx.restore();
+		}
+		else 
+		{
+			ctx.beginPath();
+			ctx.moveTo(halfWidth + radius, halfWidth);
+			ctx.lineTo(width - halfWidth - radius, halfWidth);
+			ctx.quadraticCurveTo(width - halfWidth, halfWidth, width - halfWidth, halfWidth + radius);
+			ctx.lineTo(width - halfWidth, height - halfWidth - radius);
+			ctx.quadraticCurveTo(width - halfWidth, height - halfWidth, width - halfWidth - radius, height - halfWidth);
+			ctx.lineTo(halfWidth + radius, height - halfWidth);
+			ctx.quadraticCurveTo(halfWidth, height - halfWidth, halfWidth, height - halfWidth - radius);
+			ctx.lineTo(halfWidth, radius + halfWidth);
+			ctx.quadraticCurveTo(halfWidth, halfWidth, halfWidth + radius, halfWidth);
+			ctx.closePath();
+			ctx.stroke();			
+		}
+
+		if(params.fillColor) {
+			ctx.fillStyle = params.fillColor;
 			ctx.fill();
 		}
 
 		if(this.textureType === Resource.TextureType.WEBGL) {
 			var gl = meta.ctx;
 			gl.bindTexture(gl.TEXTURE_2D, this.image);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._tmpCanvas);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
 		}
 
 		this.isLoaded = true;
