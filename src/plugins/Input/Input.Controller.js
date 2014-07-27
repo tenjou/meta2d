@@ -238,6 +238,9 @@ Input.Controller = meta.Controller.extend
 		this._event.y = y;
 		this._event.keyCode = -1;
 
+		this.inputX = x;
+		this.inputY = y;
+
 		this._chnInputMove.emit(this._event, Input.Event.INPUT_MOVE);
 		this._event.entity = null;
 	},
@@ -358,6 +361,8 @@ Input.Controller = meta.Controller.extend
 			if(id === 0) {
 				this._event.prevScreenX = this._event.screenX;
 				this._event.prevScreenY = this._event.screenY;
+				this.inputX = x;
+				this.inputY = y;
 			}
 			else {
 				this._event.prevScreenX = screenX;
@@ -584,6 +589,8 @@ Input.Controller = meta.Controller.extend
 	numKeys: 256,
 	numInputs: 10,
 	numTouches: 0,
+
+	inputX: 0, inputY: 0,
 
 	_event: null,
 

@@ -1623,6 +1623,10 @@ Entity.Geometry = meta.Class.extend
 			newComp.load();
 		}
 
+		if(newComp.update && !this._isUpdating) {
+			this.isUpdating = true;
+		}
+
 		return newComp;
 	},
 
@@ -1713,8 +1717,8 @@ Entity.Geometry = meta.Class.extend
 	 */
 	lookAt: function(x, y) 
 	{
-		this.angleRad = -Math.atan2(x - (this.x + this._anchorPosX + this._parent.childOffsetX), 
-			y - (this.y + this._anchorPosY + this._parent.childOffsetY)) + Math.PI;
+		this.angleRad = -Math.atan2(x - (this._x + this._anchorPosX + this._parent.childOffsetX), 
+			y - (this._y + this._anchorPosY + this._parent.childOffsetY)) + Math.PI;
 	},
 
 	/**
