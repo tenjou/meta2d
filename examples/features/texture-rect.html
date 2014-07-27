@@ -2,31 +2,32 @@
 
 <html>
     <head>
-        <title>Texture FillRect :: META</title>
+        <title>Texture Rect :: META</title>
 
         <script src="http://infinite-games.com/meta.latest.js"></script>
     </head>
 
     <body>
-         <!-- Example on how to fill rects. -->
+         <!-- Example on how to draw a rects. -->
 
         <script>
             meta.load = function()
             {
                 // Create an empty texture.
                 var texture = new Resource.Texture();
-                texture.fillRect({
-                    // Size of texture to fill - will set the texture size.
-                    width: 300, height: 300,
-                    // Color to fill.
-                    color: "red"
+                texture.rect({
+                    width: 300,
+                    height: 200,
+                    color: "#000000",
+                    fillColor: "orange",
+                    borderWidth: 20
                 });
 
                 var entity = new Entity.Geometry(texture);
                 entity.anchor(0.5);
                 meta.view.add(entity);
 
-                meta.addDescription("Texture fill rect example");
+                meta.addDescription("Texture rect example");
             }; 
         </script>
     </body>
