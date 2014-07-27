@@ -576,6 +576,33 @@ Entity.Geometry = meta.Class.extend
 		this.forcePosition(newX, newY);
 	},	
 
+	moveForward: function(delta)
+	{
+		var newX = this._x + (delta * Math.cos(this._angleRad - 1.57079));
+		var newY = this._y + (delta * Math.sin(this._angleRad - 1.57079));
+
+		if(this._x === newX && this._y === newY) { return; }
+		this.forcePosition(newX, newY);
+	},
+
+	moveDirected: function(delta, angleOffset)
+	{
+		var newX = this._x + (delta * Math.cos(this._angleRad - 1.57079 + angleOffset));
+		var newY = this._y + (delta * Math.sin(this._angleRad - 1.57079 + angleOffset));
+
+		if(this._x === newX && this._y === newY) { return; }
+		this.forcePosition(newX, newY);		
+	},
+
+	strafe: function(delta)
+	{
+		var newX = this._x + (delta * Math.cos(this._angleRad + Math.PI));
+		var newY = this._y + (delta * Math.sin(this._angleRad + Math.PI));
+
+		if(this._x === newX && this._y === newY) { return; }
+		this.forcePosition(newX, newY);		
+	},
+
 	/**
 	 * Position entity from top left corner.
 	 * @param x {Number} Position on x axis.

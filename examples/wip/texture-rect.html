@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Texture Rect :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+         <!-- Example on how to draw a rects. -->
+
+        <script>
+            meta.load = function()
+            {
+                // Create an empty texture.
+                var texture = new Resource.Texture();
+                texture.rect({
+                    width: 300,
+                    height: 200,
+                    color: "#000000",
+                    fillColor: "orange",
+                    borderWidth: 20
+                });
+
+                var entity = new Entity.Geometry(texture);
+                entity.anchor(0.5);
+                meta.view.add(entity);
+
+                meta.addDescription("Texture rect example");
+            }; 
+        </script>
+    </body>
+</html>
