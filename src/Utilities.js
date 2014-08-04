@@ -17,10 +17,11 @@ meta.emptyFuncParam = function(param) {};
  * Load textures. Textures added will load only after requesting them first.
  * @param buffer {Array|String} Buffer with texture sources.
  * @param folderPath {String=} Path applied to texture sources.
+ * @param hd_folderPath {String=} An alternate path for HD version.
  */
-meta.loadTextures = function(buffer, folderPath)
+meta.loadTextures = function(buffer, folderPath, hd_folderPath)
 {
-	if(!meta._loadResource("Texture", buffer, folderPath)) {
+	if(!meta._loadResource("Texture", buffer, folderPath, hd_folderPath)) {
 		console.warn("[meta.loadTextures]:", "Unsupported parameter was passed.");
 	}
 };
@@ -29,10 +30,11 @@ meta.loadTextures = function(buffer, folderPath)
  * Preload textures. When texture is added it will be auto loaded without anyone requesting it first.
  * @param buffer {Array|String} Buffer with texture sources.
  * @param folderPath {String=} Path applied to texture sources.
+ * @param hd_folderPath {String=} An alternate path for HD version.
  */
-meta.preloadTextures = function(buffer, folderPath)
+meta.preloadTextures = function(buffer, folderPath, hd_folderPath)
 {
-	if(!meta._preloadResource("Texture", buffer, folderPath)) {
+	if(!meta._preloadResource("Texture", buffer, folderPath, hd_folderPath)) {
 		console.warn("[meta.preloadTextures]:", "Unsupported parameter was passed.");
 	}
 };
@@ -670,4 +672,28 @@ meta.addDescription = function(text)
 
 	bg.attach(msg);
 	msg.anchor(0.5);
+};
+
+meta.adaptTo = function(width, height, path)
+{
+	var resolutions = meta._cache.resolutions;
+	if(!resolutions) {
+		resolutions = [];
+		meta._cache.resolutions = resolutions;
+	}
+
+	var lastChar = path.charAt(path.length - 1);
+	if(lastChar !== "/") {
+		path += "/";
+	}
+
+	var newRes = {
+		width: width,
+		height: height,
+		path: path,
+		unitSize: 1,
+		zoomThreshold: 1
+	};
+
+	resolutions.push(newRes);
 };

@@ -32,6 +32,8 @@ Resource.Controller = meta.Controller.extend
 		Resource.Texture.prototype._tmpImg = canvas;
 		Resource.Texture.prototype._tmpCtx = canvas.getContext("2d");
 
+		meta.subscribe(this, meta.Event.ADAPT, this.onAdapt);
+
 		var proto = Resource.Sound.prototype;
 		if(meta.device.isAudioAPI) 
 		{
@@ -157,6 +159,8 @@ Resource.Controller = meta.Controller.extend
 			this.numToLoad--;
 			this.numLoaded++;
 
+			console.log(this.numToLoad, this.numLoaded);
+
 			if(this.numToLoad === 0 && !meta.engine.isLoading) {
 				meta.engine.onResourcesLoaded();
 				this._chn_allLoaded.emit(this, Resource.Event.ALL_LOADED);
@@ -261,6 +265,19 @@ Resource.Controller = meta.Controller.extend
 
 		this._syncQueue[this._syncQueue.length - 1].forceLoad(true);
 		this._syncQueue.pop();
+	},
+
+	/**
+	 * Callback on adapt event.
+	 * @param data {*} Event data.
+	 * @param event {*} Type of the event.
+	 */
+	onAdapt: function(data, event)
+	{
+		var textures = this.resources[Resource.Type.TEXTURE];
+		for(var key in textures) {
+			textures[key].load();
+		}
 	},
 
 

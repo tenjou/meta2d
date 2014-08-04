@@ -92,6 +92,7 @@ Resource.Basic = meta.Class.extend
 	type: Resource.Type.BASIC,
 	name: "unknown",
 	path: "",
+	fullPath: "",
 
 	chn: null,
 

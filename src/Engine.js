@@ -37,6 +37,7 @@ meta.version = "1.1";
 meta.enableDefault = true;
 meta.enablemeta = true;
 meta.enableWebGL = true;
+meta.enableAdaptive = true;
 meta.tUpdate = 1000 / 60;
 meta.utils = {};
 meta.modules = {};
@@ -48,7 +49,10 @@ meta._cache = {
 	ready: null,
 	scripts: null,
 	pendingScripts: null, // IE<10
-	numScriptsToLoad: 0
+	numScriptsToLoad: 0,
+	resolutions: null,
+	currResolution: null,
+	unitSize: 1
 };
 
 /**
@@ -80,6 +84,7 @@ meta.Engine = function()
 	this._chnResize = null;
 	this._chnFocus = null;
 	this._chnFullScreen = null;
+	this._chnAdapt = null;
 
 	this.isCreated = false;
 	this.isFocus = false;
@@ -135,19 +140,22 @@ meta.Engine.prototype =
 
 		meta.shaders = {};
 		meta.views = {};
+		meta.camera = new meta.Camera();		
 
 		this._chnResize = meta.createChannel(meta.Event.RESIZE);
 		this._chnFocus = meta.createChannel(meta.Event.FOCUS);
 		this._chnFullScreen = meta.createChannel(meta.Event.FULLSCREEN);
+		this._chnAdapt = meta.createChannel(meta.Event.ADAPT);
 
 		meta.View.prototype._chnAddedToView = meta.createChannel(meta.Event.ADDED_TO_VIEW);
 		meta.View.prototype._chnRemovedFromView = meta.createChannel(meta.Event.REMOVED_FROM_VIEW);
 
 		this._resolveElement();
 		this._createCanvas();
+
+		this.sortAdaptions();
 		this.onResize();
 
-		meta.camera = new meta.Camera();
 		meta.world = new meta.World(this.width, this.height);
 
 		//
@@ -194,6 +202,7 @@ meta.Engine.prototype =
 		this._chnFocus.remove();
 		this._chnResize.remove();
 		this._chnFullScreen.remove();
+		this._chnAdapt.remove();
 
 		window.removeEventListener("resize", this._onResizeCB);
 		window.removeEventListener("orientationchange", this._onResizeCB);
@@ -235,6 +244,7 @@ meta.Engine.prototype =
 
 		// Create loading view.
 		var loadingView = new meta.View("loading");
+		//loadingView.bgColor = "#000000";
 		loadingView.z = 999999;
 		meta.view["loading"] = loadingView;
 		meta.loadingView = loadingView;
@@ -427,6 +437,66 @@ meta.Engine.prototype =
 		requestAnimationFrame(this._renderLoop);
 	},
 
+	sortAdaptions: function()
+	{
+		var scope = meta;
+		var resolutions = scope._cache.resolutions;
+		if(!resolutions) { return; }
+
+		var numResolutions = resolutions.length;
+		if(numResolutions <= 1) { return; }
+
+		resolutions.sort(function(a, b) {
+			var length_a = scope.math.length2(a.width, a.height);
+			var length_b = scope.math.length2(b.width, b.height);
+			return length_a - length_b;
+		});
+
+		var lowestResolution = resolutions[0];
+		var reso, prevReso;
+		for(var i = 1; i < numResolutions; i++) {
+			prevReso = resolutions[i - 1];
+			reso = resolutions[i];
+			reso.unitSize = reso.height / lowestResolution.height;
+			reso.zoomThreshold = prevReso.unitSize + ((reso.unitSize - prevReso.unitSize) / 100) * 33.3;
+		}
+
+		scope.camera.bounds(lowestResolution.width, lowestResolution.height);		
+	},
+
+	adapt: function()
+	{
+		var scope = meta;
+		var resolutions = scope._cache.resolutions;
+		if(!resolutions) { return false; }
+
+		var numResolutions = resolutions.length;
+		if(numResolutions < 1) { return false; }
+
+		var resolution;
+		var newResolution = resolutions[0];
+		var zoom = scope.camera.zoom;
+
+		for(var i = numResolutions - 1; i >= 0; i--) 
+		{
+			resolution = resolutions[i];
+			if(zoom >= resolution.zoomThreshold) {
+				newResolution = resolution;
+				break;
+			}
+		}		
+
+		if(newResolution === scope._cache.currResolution) {
+			return true;
+		}
+
+		scope._cache.currResolution = newResolution;
+		scope.unitSize = newResolution.unitSize;		
+		this._chnAdapt.emit(newResolution, meta.Event.ADAPT);
+
+		return true;
+	},
+
 	onResourcesLoaded: function()
 	{
 		this.isLoaded = true;
@@ -479,7 +549,6 @@ meta.Engine.prototype =
 		}
 
 		this._updateOffset();
-
 		this._chnResize.emit(this, meta.Event.RESIZE);
 	},
 
@@ -748,7 +817,6 @@ meta.Engine.prototype =
 		document[meta.device.fullScreenExit]();
 	},
 
-
 	//
 	elementStyle: "padding:0; margin:0;",
 	canvasStyle: "position:absolute; overflow:hidden; translateZ(0); " +
@@ -790,6 +858,16 @@ meta.__defineGetter__("load", function() {
 
 meta.__defineGetter__("ready", function() {
 	return meta._cache.ready;
+});
+
+meta.__defineSetter__("unitSize", function(value)
+{
+	if(meta._cache.unitSize === value) { return; }
+	meta._cache.unitSize = value;
+});
+
+meta.__defineGetter__("unitSize", function() {
+	return meta._cache.unitSize;
 });
 
 /**

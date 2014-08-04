@@ -27,14 +27,15 @@ meta.World = function(width, height)
 	this.showBounds = false;
 
 	//
-	this.init(width, height);
+	this.init(width, height)
 };
 
 meta.World.prototype =
 {
 	init: function(width, height) {
-		this.chn = meta.createChannel(meta.Event.WORLD_RESIZE);
 		this.bounds(width, height);
+		this.chn = meta.createChannel(meta.Event.WORLD_RESIZE);
+		meta.subscribe(this, meta.Event.CAMERA_RESIZE, this.onCameraResize);
 	},
 
 
@@ -60,7 +61,9 @@ meta.World.prototype =
 		this.centerY = height / 2;
 		this.volume.resize(width, height);
 
-		this.chn.emit(meta.Event.WORLD_RESIZE, this);
+		if(this.chn) {
+			this.chn.emit(meta.Event.WORLD_RESIZE, this);
+		}
 	},
 
 

@@ -8,5 +8,6 @@ meta.Event = {
 	FOCUS: "focus",
 	FULLSCREEN: "fullScreen",
 	ADDED_TO_VIEW: "addedToView",
-	REMOVED_FROM_VIEW: "removedFromView"
+	REMOVED_FROM_VIEW: "removedFromView",
+	ADAPT: "adapt"
 };

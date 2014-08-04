@@ -56,8 +56,6 @@ meta.Camera.prototype =
 		this._chnMove = meta.createChannel(meta.Event.CAMERA_MOVE);
 		this._chnResize = meta.createChannel(meta.Event.CAMERA_RESIZE);
 
-		this.volume.resize(meta.width, meta.height);
-
 		meta.subscribe(this, meta.Event.RESIZE, this._onResize);
 		meta.subscribe(this, meta.Event.WORLD_RESIZE, this._onWorldResize);
 
@@ -71,13 +69,11 @@ meta.Camera.prototype =
 	/**
 	 * Destructor.
 	 */
-	release: function()
+	release: function() 
 	{
 		this._chnMove.release();
 		meta.unsubscribe(this, meta.Event.RESIZE);
 		meta.unsubscribe(this, meta.Event.WORLD_RESIZE);
-
-		this.enableDrag = false;
 	},
 
 
@@ -86,29 +82,11 @@ meta.Camera.prototype =
 	 */
 	updateView: function()
 	{
-		var world = meta.world;
-
-		/* AutoZoom */
-		if(this._isAutoZoom)
-		{
-			var width = this.zoomBounds.width;
-			var height = this.zoomBounds.height;
-			var diffX = meta.width / width;
-			var diffY = meta.height / height;
-
-			this.prevZoom = this._zoom;
-			this._zoom = diffX;
-			if(diffY < diffX) { 
-				this._zoom = diffY;
-			}
+		if(this._isAutoZoom) {
+			this.updateAutoZoom();
 		}
-
-		if(this.prevZoom !== this._zoom) 
-		{
-			this.zoomRatio = 1.0 / this._zoom;
-			this.volume.scale(this.zoomRatio, this.zoomRatio);
-
-			this._chnResize.emit(this, meta.Event.CAMERA_RESIZE);
+		else {
+			this.updateZoom();
 		}
 
 		/* Initial position */
@@ -116,6 +94,8 @@ meta.Camera.prototype =
 		{
 			if(this._enableCentering)
 			{
+				var world = meta.world;
+
 				if(this._enableCenteringX) {
 					this._x = Math.floor((this.volume.width - world.width) / 2);
 				}
@@ -141,13 +121,57 @@ meta.Camera.prototype =
 		this._chnMove.emit(this, meta.Event.CAMERA_MOVE);
 	},
 
+	updateZoom: function() 
+	{
+		if(this.prevZoom !== this._zoom) 
+		{
+			this.zoomRatio = 1.0 / this._zoom;
+			this.volume.scale(this.zoomRatio, this.zoomRatio);
+			this._chnResize.emit(this, meta.Event.CAMERA_RESIZE);
+			console.log(this._zoom);
+		}	
+	},
+
+	updateAutoZoom: function() 
+	{
+		var scope = meta;
+		var width = this.zoomBounds.width;
+		var height = this.zoomBounds.height;
+		var diffX = scope.width / width;
+		var diffY = scope.height / height;
+
+		this.prevZoom = this._zoom;
+		this._zoom = diffX;
+		if(diffY < diffX) { 
+			this._zoom = diffY;
+		}	
+		
+		if(scope.engine.adapt()) 
+		{
+			width = this.zoomBounds.width * scope.unitSize;
+			height = this.zoomBounds.height * scope.unitSize;
+			diffX = scope.width / width;
+			diffY = scope.height / height;
+
+			this._zoom = diffX;
+			if(diffY < diffX) { 
+				this._zoom = diffY;
+			}				
+		}
+
+		this.updateZoom();
+	},
+
 
 	bounds: function(width, height)
 	{
 		this._isAutoZoom = true;
 		this.zoomBounds.width = width;
 		this.zoomBounds.height = height;
-		this.updateView();		
+		
+		if(this.width !== 0 || this.height !== 0) {
+			this.updateView();		
+		}
 	},
 
 	minBounds: function(width, height)
@@ -189,7 +213,6 @@ meta.Camera.prototype =
 	_onResize: function(data, event)
 	{
 		this.volume.resize(data.width, data.height);
-		meta.world.onCameraResize(this, meta.Event.CAMERA_RESIZE);
 		this.updateView();
 		this._chnResize.emit(this, meta.Event.CAMERA_RESIZE);
 	},

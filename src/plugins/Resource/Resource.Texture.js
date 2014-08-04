@@ -61,8 +61,6 @@ Resource.Texture = Resource.Basic.extend
 				if(wildCardIndex === -1 || this.path.length - wildCardIndex > 4) {
 					this.path += ".png";
 				}
-
-				this.path = Resource.ctrl.rootPath + this.path;
 			}			
 		}
 
@@ -76,11 +74,16 @@ Resource.Texture = Resource.Basic.extend
 			}
 		}
 
-		this.generate(this.textureType);
-
-		if(!this.path) {
-			this._isLoaded = true;
+		if(this.numFrames > 1) {
+			this.numFramesX = this.numFrames;
+			this.isAnimated = true;
 		}
+		else if(this.numFramesX > 1 || this.numFramesY > 1) {
+			this.numFrames = this.numFramesX * this.numFramesY;
+			this.isAnimated = true;
+		}	
+
+		this.generate(this.textureType);
 	},
 
 	/**
@@ -122,15 +125,7 @@ Resource.Texture = Resource.Basic.extend
 			this.image.height = this.fullHeight;
 
 			this.textureType = Resource.TextureType.CANVAS;
-		}
-
-		if(this.numFrames > 1) {
-			this.numFramesX = this.numFrames;
-			this.isAnimated = true;
-		}
-		else if(this.numFramesX > 1 || this.numFramesY > 1) {
-			this.isAnimated = true;
-		}		
+		}	
 	},
 
 	/**
@@ -143,13 +138,19 @@ Resource.Texture = Resource.Basic.extend
 		if(this.isLoading) { return; }
 
 		if(path) {
-			this.path = Resource.ctrl.rootPath + path;
+			this.path = path;	
 		}
 		else if(!this.path) {
 			return;
 		}
 
-		this.isLoaded = false;
+		if(meta._cache.currResolution) {
+			this.fullPath = Resource.ctrl.rootPath + meta._cache.currResolution.path + this.path;
+		}
+		else {
+			this.fullPath = Resource.ctrl.rootPath + this.path;
+		}
+		
 		Resource.ctrl.addToLoad(this);
 
 		var self = this;
@@ -175,7 +176,11 @@ Resource.Texture = Resource.Basic.extend
 			Resource.ctrl.loadFailed(self);
 		};
 
-		img.src = this.path;
+		if(this._isLoaded) {
+			this.clear();
+		}
+
+		img.src = this.fullPath;
 	},
 
 	/**
@@ -185,17 +190,6 @@ Resource.Texture = Resource.Basic.extend
 	 */
 	createFromImg: function(img)
 	{
-		if(this._width && this._height) 
-		{
-			var width = this._width || img.width;
-			var height = this._height || img.height;
-
-			this.numFramesX = (img.width / width) | 0;
-			this.numFramesY = (img.height / height) | 0;
-			this.isAnimated = true;
-		}
-
-		this.numFrames = this.numFramesX * this.numFramesY;
 		this.resize(img.width, img.height);
 
 		if(this.textureType !== Resource.TextureType.WEBGL) {
