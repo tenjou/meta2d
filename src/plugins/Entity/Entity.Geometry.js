@@ -1027,6 +1027,10 @@ Entity.Geometry = meta.Class.extend
 			y = x;
 		}
 
+		if(this._anchorX === x && this._anchorY === y) {
+			return;
+		}
+
 		this._anchorX = x;
 		this._anchorY = y;
 		this._anchorPosX = this._parent.volume.width * this._anchorX;
@@ -1119,7 +1123,7 @@ Entity.Geometry = meta.Class.extend
 	{
 		if(height === void(0)) { height = this.volume.height; }
 
-		this.volume.resize(width, height);
+		this.volume.resize(width * meta.unitSize, height * meta.unitSize);
 	},
 
 
@@ -2329,6 +2333,7 @@ Entity.Geometry = meta.Class.extend
 	ignoreParentAlpha: false,
 
 	isPickable: true,
+	isClickable: true,
 	isHover: false,
 	isPressed: false,
 	isDragged: false,
