@@ -529,11 +529,10 @@ Entity.Controller = meta.Controller.extend
 	 */
 	onAdapt: function(data, event)
 	{
-		var entity;
 		var entities = this.entities.buffer;
 		var numEntities = this.entities.length;
 		for(var i = 0; i < numEntities; i++) {
-			entities[i].updatePosType();
+			entities[i].adapt();
 		}
 	},
 

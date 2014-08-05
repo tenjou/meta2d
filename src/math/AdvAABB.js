@@ -223,6 +223,16 @@ meta.math.AdvAABB.prototype =
 	},
 
 
+	set unitSize(value) 
+	{
+		if(this._unitSize === value) { return; }
+		this._unitSize = value;
+		this.scale(value, value);
+	},
+
+	get unitSize() { return this._unitSize; },
+
+
 	print: function(str)
 	{
 		if(str)
@@ -235,5 +245,9 @@ meta.math.AdvAABB.prototype =
 			console.log("(AABB) minX: " + this.minX + " minY: " + this.minY
 				+ " maxX: " + this.maxX + " maxY: " + this.maxY);
 		}
-	}
+	},
+
+
+	//
+	_unitSize: 1
 };

@@ -531,8 +531,7 @@ Entity.Geometry = meta.Class.extend
 	adapt: function()
 	{
 		if(!this._texture) {
-			console.log("adapt");
-			this.volume.resize(this.volume.width * meta.unitSize, this.volume.height * meta.unitSize);
+			this.volume.unitSize = meta.unitSize;
 		}
 
 		this.updatePosType();
@@ -1160,7 +1159,8 @@ Entity.Geometry = meta.Class.extend
 	{
 		if(height === void(0)) { height = this.volume.height; }
 
-		this.volume.resize(width * meta.unitSize, height * meta.unitSize);
+		this.volume.resize(width, height);
+		this.volume.unitSize = meta.unitSize;
 	},
 
 

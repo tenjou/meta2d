@@ -39,6 +39,8 @@ meta.enablemeta = true;
 meta.enableWebGL = true;
 meta.enableAdaptive = true;
 meta.tUpdate = 1000 / 60;
+meta.unitSize = 1;
+meta.unitRatio = 1;
 meta.utils = {};
 meta.modules = {};
 meta.importUrl = "http://infinite-games.com/store/";
@@ -51,8 +53,7 @@ meta._cache = {
 	pendingScripts: null, // IE<10
 	numScriptsToLoad: 0,
 	resolutions: null,
-	currResolution: null,
-	unitSize: 1
+	currResolution: null
 };
 
 /**
@@ -491,7 +492,8 @@ meta.Engine.prototype =
 		}
 
 		scope._cache.currResolution = newResolution;
-		scope.unitSize = newResolution.unitSize;		
+		scope.unitSize = newResolution.unitSize;	
+		scope.unitRatio = 1.0 / scope.unitSize;	
 		this._chnAdapt.emit(newResolution, meta.Event.ADAPT);
 
 		return true;
