@@ -407,33 +407,7 @@ Entity.Geometry = meta.Class.extend
 	{
 		this._x = x;
 		this._y = y;
-		this.drawX = this._x + this._parent.childOffsetX + this.textureOffsetX - this.pivotX + this._anchorPosX;
-		this.drawY = this._y + this._parent.childOffsetY + this.textureOffsetY - this.pivotY + this._anchorPosY;
-
-		if(this._view) {
-			this.drawX += this._view._x;
-			this.drawY += this._view._y;
-		}
-
-		this.volume.set(this.drawX, this.drawY);
-		this.drawX -= this.volume.initHalfWidth;
-		this.drawY -= this.volume.initHalfHeight;
-
-		if(this.children)
-		{
-			this.childOffsetX = this._x + this.childPivotX + this._anchorPosX + this._parent.childOffsetX;
-			this.childOffsetY = this._y + this.childPivotY + this._anchorPosY + this._parent.childOffsetY;
-
-			if(this._view) {
-				this.childOffsetX += this._view._x;
-				this.childOffsetY += this._view._y;
-			}			
-
-			var numChildren = this.children.length;
-			for(var i = 0; i < numChildren; i++) {
-				this.children[i].updatePos();
-			}
-		}
+		this.updatePos();
 
 		this.isNeedDraw = true;
 	},
@@ -443,8 +417,10 @@ Entity.Geometry = meta.Class.extend
 	 */
 	updatePos: function()
 	{
-		this.drawX = this._x + this._parent.childOffsetX + this.textureOffsetX - this.pivotX + this._anchorPosX;
-		this.drawY = this._y + this._parent.childOffsetY + this.textureOffsetY - this.pivotY + this._anchorPosY;	
+		this.drawX = (this._x * this.meta.unitSize) + this._parent.childOffsetX + this.textureOffsetX
+			- this.pivotX + this._anchorPosX;
+		this.drawY = (this._y * this.meta.unitSize) + this._parent.childOffsetY + this.textureOffsetY
+			- this.pivotY + this._anchorPosY;	
 		
 		if(this._view) {
 			this.drawX += this._view._x;
@@ -486,7 +462,7 @@ Entity.Geometry = meta.Class.extend
 		// TopLeft
 		if(this.positionType === 1) {
 			this._x += this.volume.halfWidth;
-			this._y += this.volume.halfHeight;			
+			this._y += this.volume.halfHeight;		
 		}
 		// TopRight
 		else if(this.positionType === 2) {
@@ -587,8 +563,8 @@ Entity.Geometry = meta.Class.extend
 
 	moveDirected: function(delta, angleOffset)
 	{
-		var newX = this._x + (delta * Math.cos(this._angleRad - 1.57079 + angleOffset));
-		var newY = this._y + (delta * Math.sin(this._angleRad - 1.57079 + angleOffset));
+		var newX = this._x + (-delta * Math.cos(this._angleRad - 1.57079 + angleOffset));
+		var newY = this._y + (-delta * Math.sin(this._angleRad - 1.57079 + angleOffset));
 
 		if(this._x === newX && this._y === newY) { return; }
 		this.forcePosition(newX, newY);		
@@ -596,8 +572,8 @@ Entity.Geometry = meta.Class.extend
 
 	strafe: function(delta)
 	{
-		var newX = this._x + (delta * Math.cos(this._angleRad + Math.PI));
-		var newY = this._y + (delta * Math.sin(this._angleRad + Math.PI));
+		var newX = this._x + (-delta * Math.cos(this._angleRad + Math.PI));
+		var newY = this._y + (-delta * Math.sin(this._angleRad + Math.PI));
 
 		if(this._x === newX && this._y === newY) { return; }
 		this.forcePosition(newX, newY);		
@@ -1235,6 +1211,10 @@ Entity.Geometry = meta.Class.extend
 		}
 		else if(event === resEvent.RESIZE) {
 			this.updateFromTexture();
+		}
+		else if(event === resEvent.CHANGED) {
+			this.updateFromTexture();
+
 		}
 
 		this.isNeedDraw = true;
@@ -2291,6 +2271,7 @@ Entity.Geometry = meta.Class.extend
 
 
 	//
+	meta: meta,
 	_entityCtrl: null,
 
 	id: -1,

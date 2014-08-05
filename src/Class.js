@@ -65,6 +65,5 @@
 		return Class;
 	};
 
-	scope.meta.Class = scope.meta.Class;
 	scope.meta["Class"] = scope.meta.Class;
-})(typeof window !== "undefined" ? window : global);
+})(typeof window !== void(0) ? window : global);

@@ -31,23 +31,25 @@ Entity.Controller = meta.Controller.extend
 			width: 6, height: 6
 		});
 
-		this._chnOnDown = meta.createChannel(Entity.Event.DOWN);
-		this._chnOnUp = meta.createChannel(Entity.Event.UP);
-		this._chnOnClick = meta.createChannel(Entity.Event.CLICK);
-		this._chnOnDrag = meta.createChannel(Entity.Event.DRAG);
-		this._chnOnDragStart = meta.createChannel(Entity.Event.DRAG_START);
-		this._chnOnDragEnd = meta.createChannel(Entity.Event.DRAG_END);
-		this._chnOnHover = meta.createChannel(Entity.Event.HOVER);
-		this._chnOnHoverEnter = meta.createChannel(Entity.Event.HOVER_ENTER);
-		this._chnOnHoverExit = meta.createChannel(Entity.Event.HOVER_EXIT);
+		var scope = meta;
+		this._chnOnDown = scope.createChannel(Entity.Event.DOWN);
+		this._chnOnUp = scope.createChannel(Entity.Event.UP);
+		this._chnOnClick = scope.createChannel(Entity.Event.CLICK);
+		this._chnOnDrag = scope.createChannel(Entity.Event.DRAG);
+		this._chnOnDragStart = scope.createChannel(Entity.Event.DRAG_START);
+		this._chnOnDragEnd = scope.createChannel(Entity.Event.DRAG_END);
+		this._chnOnHover = scope.createChannel(Entity.Event.HOVER);
+		this._chnOnHoverEnter = scope.createChannel(Entity.Event.HOVER_ENTER);
+		this._chnOnHoverExit = scope.createChannel(Entity.Event.HOVER_EXIT);
 
-		meta.subscribe(this, meta.Event.RESIZE, this.onResize);
-		meta.subscribe(this, meta.Event.CAMERA_MOVE, this.onMove);
-		meta.subscribe(this, meta.Event.ADDED_TO_VIEW, this.onAddToView);
-		meta.subscribe(this, meta.Event.REMOVED_FROM_VIEW, this.onRemoveFromView);
+		scope.subscribe(this, scope.Event.RESIZE, this.onResize);
+		scope.subscribe(this, scope.Event.CAMERA_MOVE, this.onMove);
+		scope.subscribe(this, scope.Event.ADAPT, this.onAdapt);
+		scope.subscribe(this, scope.Event.ADDED_TO_VIEW, this.onAddToView);
+		scope.subscribe(this, scope.Event.REMOVED_FROM_VIEW, this.onRemoveFromView);
 
-		this.volume = meta.camera.volume;
-		this.onMove(meta.camera, null);
+		this.volume = scope.camera.volume;
+		this.onMove(scope.camera, null);
 	},
 
 	release: function()
@@ -510,8 +512,7 @@ Entity.Controller = meta.Controller.extend
 		var index, cell;
 		for(var y = loopStartY; y < loopEndY; y++)
 		{
-			for(var x = loopStartX; x < loopEndX; x++) 
-			{
+			for(var x = loopStartX; x < loopEndX; x++) {
 				index = x | (y << 16);
 			}
 		}
@@ -519,6 +520,21 @@ Entity.Controller = meta.Controller.extend
 		this.x = data._x | 0;
 		this.y = data._y | 0;	
 		this.isNeedRender = true;
+	},
+
+	/** 
+	 * Callback on resolution change.
+	 * @param data {*} Event data.
+	 * @param event {*} Event type.
+	 */
+	onAdapt: function(data, event)
+	{
+		var entity;
+		var entities = this.entities.buffer;
+		var numEntities = this.entities.length;
+		for(var i = 0; i < numEntities; i++) {
+			entities[i].updatePosType();
+		}
 	},
 
 

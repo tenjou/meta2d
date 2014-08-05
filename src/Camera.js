@@ -128,7 +128,6 @@ meta.Camera.prototype =
 			this.zoomRatio = 1.0 / this._zoom;
 			this.volume.scale(this.zoomRatio, this.zoomRatio);
 			this._chnResize.emit(this, meta.Event.CAMERA_RESIZE);
-			console.log(this._zoom);
 		}	
 	},
 

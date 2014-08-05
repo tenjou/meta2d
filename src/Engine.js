@@ -457,7 +457,7 @@ meta.Engine.prototype =
 		for(var i = 1; i < numResolutions; i++) {
 			prevReso = resolutions[i - 1];
 			reso = resolutions[i];
-			reso.unitSize = reso.height / lowestResolution.height;
+			reso.unitSize = (reso.height / lowestResolution.height);
 			reso.zoomThreshold = prevReso.unitSize + ((reso.unitSize - prevReso.unitSize) / 100) * 33.3;
 		}
 

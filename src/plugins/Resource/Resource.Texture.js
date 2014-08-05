@@ -177,6 +177,7 @@ Resource.Texture = Resource.Basic.extend
 		};
 
 		if(this._isLoaded) {
+			this._isReloading = true;
 			this.clear();
 		}
 
@@ -202,6 +203,7 @@ Resource.Texture = Resource.Basic.extend
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
 		}
 
+		this._isReloading = false;
 		this.isLoaded = true;
 	},
 
@@ -300,7 +302,7 @@ Resource.Texture = Resource.Basic.extend
 			}
 		}
 
-		if(this._isLoaded) {
+		if(this._isLoaded && !this._isReloading) {
 			this.emit(this, Resource.Event.RESIZE);
 		}
 	},
@@ -568,7 +570,9 @@ Resource.Texture = Resource.Basic.extend
 			this.ctx.clearRect(0, 0, this.fullWidth, this.fullHeight);
 		}
 
-		this.isLoaded = true;
+		if(!this._isReloading) {
+			this.isLoaded = true;
+		}
 	},
 
 	/**
@@ -1638,6 +1642,8 @@ Resource.Texture = Resource.Basic.extend
 	isAnimReverse: false,
 	isEmulateReverse: false,
 	fromAtlas: false,
+
+	isReloading: false,
 
 	_tmpImg: null,
 	_tmpCtx: null,
