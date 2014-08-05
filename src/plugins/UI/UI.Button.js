@@ -14,6 +14,11 @@ UI.Button = Entity.Geometry.extend
 	{
 		if(!this._style) { return; }
 
+		if(this._disabled) {
+			this.state = "disabled";
+			return;
+		}
+
 		if(this.isHover && this._style.states.hover) {
 			this.state = "hover";
 			return;
@@ -41,12 +46,18 @@ UI.Button = Entity.Geometry.extend
 		this._updateState();
 	},
 
-	_onDown: function(event) {
-		this.move(2, 2);
+	_onDown: function(event) 
+	{
+		if(!this._disabled) {
+			this.move(2, 2);
+		}
 	},
 
-	_onUp: function(event) {
-		this.move(-2, -2);
+	_onUp: function(event) 
+	{
+		if(!this._disabled) {
+			this.move(-2, -2);
+		}
 	},
 
 
@@ -90,8 +101,6 @@ UI.Button = Entity.Geometry.extend
 		return this._label._text;
 	},
 
-	get label() { return this._label; },
-
 
 	// Resolution.
 	set width(value) {
@@ -107,10 +116,21 @@ UI.Button = Entity.Geometry.extend
 	get width() { return this._width; },
 	get height() { return this._height; },
 
+	set disabled(value) { 
+		this._disabled = value;
+		this.isClickable = !value;
+		this._updateState();
+	},
+
+	get disabled() { return this._disabled; },
+	
+
 	//
 	_style: null,
 	_text: null,
 
 	_width: 0,
-	_height: 0
+	_height: 0,
+
+	_disabled: false
 });
