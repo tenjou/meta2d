@@ -461,8 +461,8 @@ Entity.Geometry = meta.Class.extend
 
 		// TopLeft
 		if(this.positionType === 1) {
-			this._x += this.volume.halfWidth;
-			this._y += this.volume.halfHeight;		
+			this._x = this.typeX + (this.volume.halfWidth * meta.unitRatio);
+			this._y = this.typeY + (this.volume.halfHeight * meta.unitRatio);		
 		}
 		// TopRight
 		else if(this.positionType === 2) {
@@ -524,6 +524,19 @@ Entity.Geometry = meta.Class.extend
 			}
 		}					
 	},	
+
+	/* 
+	 * Called when resolution has been changed.
+	 */
+	adapt: function()
+	{
+		if(!this._texture) {
+			console.log("adapt");
+			this.volume.resize(this.volume.width * meta.unitSize, this.volume.height * meta.unitSize);
+		}
+
+		this.updatePosType();
+	},
 
 	/**
 	 * Set entity world position to x, y.
@@ -591,6 +604,8 @@ Entity.Geometry = meta.Class.extend
 		this.positionType = 1;
 
 		if(this._x === x && this._y === y) { return; }
+		this.typeX = x;
+		this.typeY = y;
 		this.forcePosition(x, y);		
 	},
 
@@ -606,6 +621,8 @@ Entity.Geometry = meta.Class.extend
 		this.positionType = 2;
 
 		if(this._x === x && this._y === y) { return; }
+		this.typeX = x;
+		this.typeY = y;		
 		this.forcePosition(x, y);	
 	},
 
@@ -621,6 +638,8 @@ Entity.Geometry = meta.Class.extend
 		this.positionType = 3;
 
 		if(this._x === x && this._y === y) { return; }
+		this.typeX = x;
+		this.typeY = y;		
 		this.forcePosition(x, y);	
 	},
 
@@ -636,6 +655,8 @@ Entity.Geometry = meta.Class.extend
 		this.positionType = 4;
 
 		if(this._x === x && this._y === y) { return; }
+		this.typeX = x;
+		this.typeY = y;		
 		this.forcePosition(x, y);	
 	},
 
@@ -650,6 +671,8 @@ Entity.Geometry = meta.Class.extend
 		this.positionType = 5;
 
 		if(this._x === x && this._y === y) { return; }
+		this.typeX = x;
+		this.typeY = y;		
 		this.forcePosition(x, y);	
 	},
 
@@ -664,6 +687,8 @@ Entity.Geometry = meta.Class.extend
 		this.positionType = 6;
 
 		if(this._x === x && this._y === y) { return; }
+		this.typeX = x;
+		this.typeY = y;		
 		this.forcePosition(x, y);	
 	},
 
@@ -678,6 +703,8 @@ Entity.Geometry = meta.Class.extend
 		this.positionType = 7;
 
 		if(this._x === x && this._y === y) { return; }
+		this.typeX = x;
+		this.typeY = y;		
 		this.forcePosition(x, y);	
 	},
 
@@ -692,6 +719,8 @@ Entity.Geometry = meta.Class.extend
 		this.positionType = 8;
 
 		if(this._x === x && this._y === y) { return; }
+		this.typeX = x;
+		this.typeY = y;		
 		this.forcePosition(x, y);	
 	},
 
@@ -707,6 +736,8 @@ Entity.Geometry = meta.Class.extend
 		this.positionType = 1;
 
 		if(this._x === x && this._y === y) { return; }
+		this.typeX = x;
+		this.typeY = y;		
 		this.forcePosition(x, y);		
 	},
 
@@ -722,6 +753,8 @@ Entity.Geometry = meta.Class.extend
 		this.positionType = 2;
 
 		if(this._x === x && this._y === y) { return; }
+		this.typeX = x;
+		this.typeY = y;		
 		this.forcePosition(x, y);	
 	},
 
@@ -737,6 +770,8 @@ Entity.Geometry = meta.Class.extend
 		this.positionType = 3;
 
 		if(this._x === x && this._y === y) { return; }
+		this.typeX = x;
+		this.typeY = y;		
 		this.forcePosition(x, y);	
 	},
 
@@ -752,6 +787,8 @@ Entity.Geometry = meta.Class.extend
 		this.positionType = 4;
 
 		if(this._x === x && this._y === y) { return; }
+		this.typeX = x;
+		this.typeY = y;		
 		this.forcePosition(x, y);	
 	},	
 
@@ -1436,8 +1473,16 @@ Entity.Geometry = meta.Class.extend
 
 	clip: function(minX, minY, maxX, maxY) 
 	{
-		if(typeof(minX) === "object" && minX instanceof meta.math.AdvAABB) {
-			this.clipVolume = minX;
+		if(typeof(minX) === "object") 
+		{
+			// Is AABB volume.
+			if(minX instanceof meta.math.AdvAABB) {
+				this.clipVolume = minX;
+			}
+			// Probably is an entity.
+			else {
+				this.clipVolume = minX.volume;
+			}
 		}
 		else {
 			this.clipVolume = new meta.math.AdvAABB(minX, minY, maxX, maxY);
@@ -2292,6 +2337,7 @@ Entity.Geometry = meta.Class.extend
 	_removeFlag: 0,
 
 	_x: 0, _y: 0, _z: 0,
+	typeX: 0, typeY: 0,
 	_anchorX: 0, _anchorY: 0,
 	_anchorPosX: 0, _anchorPosY: 0,
 	_dragOffsetX: 0, _dragOffsetY: 0,
