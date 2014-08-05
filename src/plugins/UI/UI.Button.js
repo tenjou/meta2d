@@ -2,9 +2,12 @@
 
 UI.Button = Entity.Geometry.extend
 ({
-	init: function(obj) {
-		this.brush = this._style;
-		this.state = "default";
+	init: function(obj) 
+	{
+		if(typeof(obj) !== "string") {
+			this.brush = this._style;
+			this.state = "default";
+		}
 	},
 
 	_updateState: function()
