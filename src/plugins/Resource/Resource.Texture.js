@@ -150,7 +150,8 @@ Resource.Texture = Resource.Basic.extend
 		else {
 			this.fullPath = Resource.ctrl.rootPath + this.path;
 		}
-		
+		this.unitRatio = meta.unitRatio;
+
 		Resource.ctrl.addToLoad(this);
 
 		var self = this;
@@ -670,48 +671,39 @@ Resource.Texture = Resource.Basic.extend
 	 */
 	fillRect: function(params, height, color)
 	{
+		if(!params) {
+			console.warn("[Resource.Texture.fillRect]:", "No parameters specified.");
+			return;
+		}
+
+		if(typeof(params) === "number")
+		{
+			this.fillRect({
+				width: params,
+				height: height,
+				color: color
+			});
+			return;
+		}
+
 		var ctx = this.ctx;
+		params.x = params.x || 0;
+		params.y = params.y || 0;
+		params.color = params.color || "#000000";
+		params.width = params.width || this.fullWidth || 1;
+		params.height = params.height || this.fullHeight || 1;
 
-		if(typeof(params) !== "number")
-		{
-			if(!params) {
-				console.warn("[Resource.Texture.fillRect]:", "No parameters specified.");
-				return;
-			}
-
-			params.x = params.x || 0;
-			params.y = params.y || 0;
-			params.color = params.color || "#000000";
-			params.width = params.width || this.fullWidth || 1;
-			params.height = params.height || this.fullHeight || 1;
-
-			if(!params.drawOver) {
-				this.resize(params.width + params.x, params.height + params.y);
-			}
-
-			if(this.textureType) {
-				this._createCachedImg();
-				ctx = this._cachedCtx;
-			}
-
-			ctx.fillStyle = params.color;
-			ctx.fillRect(params.x, params.y, params.width, params.height);
+		if(!params.drawOver) {
+			this.resize(params.width + params.x, params.height + params.y);
 		}
-		else 
-		{
-			var width = params;
-			var color = color || "#000000";
 
-			this.resize(width, height);
-
-			if(this.textureType) {
-				this._createCachedImg();
-				ctx = this._cachedCtx;
-			}
-
-			ctx.fillStyle = color;
-			ctx.fillRect(0, 0, width, height);
+		if(this.textureType) {
+			this._createCachedImg();
+			ctx = this._cachedCtx;
 		}
+
+		ctx.fillStyle = params.color;
+		ctx.fillRect(params.x, params.y, params.width, params.height);
 
 		if(this.textureType) {
 			var gl = meta.ctx;
@@ -1630,6 +1622,7 @@ Resource.Texture = Resource.Basic.extend
 	fullWidth: 0, fullHeight: 0,
 	_widthRatio: 0, _heightRatio: 0,
 	_offsetX: 0, _offsetY: 0,
+	unitRatio: 1,
 
 	fps: 0,
 	numFrames: 1,
@@ -1654,5 +1647,6 @@ Resource.Texture = Resource.Basic.extend
 	_frames: null,
 
 	_loadCache: null,
-	_canvasCache: null
+	_canvasCache: null,
+	_history: null,
 });

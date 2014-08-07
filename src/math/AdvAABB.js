@@ -199,10 +199,23 @@ meta.math.AdvAABB.prototype =
 
 	draw: function(ctx)
 	{
-		var minX = Math.floor(this.minX);
-		var minY = Math.floor(this.minY);
-		var maxX = Math.floor(this.maxX);
-		var maxY = Math.floor(this.maxY);
+		var unitSize = meta.unitSize;
+		var minX, minY, maxX, maxY;
+
+		// if(unitSize === 1.0)
+		// {
+			minX = Math.floor(this.x - (this.halfWidth * unitSize));
+			minY = Math.floor(this.y - (this.halfHeight * unitSize));
+			maxX = Math.ceil(this.x + (this.halfWidth * unitSize));
+			maxY = Math.ceil(this.y + (this.halfHeight * unitSize));
+		// }
+		// else 
+		// {
+		// 	minX = Math.floor(this.minX) * unitSize - (this.halfWidth * unitSize);
+		// 	minY = Math.floor(this.minY) * unitSize - (this.halfHeight * unitSize);
+		// 	maxX = Math.ceil(this.maxX) * unitSize - (this.halfWidth * unitSize);
+		// 	maxY = Math.ceil(this.maxY) * unitSize - (this.halfHeight * unitSize);			
+		// }
 
 		ctx.beginPath();
 		ctx.moveTo(minX, minY);
@@ -223,16 +236,6 @@ meta.math.AdvAABB.prototype =
 	},
 
 
-	set unitSize(value) 
-	{
-		if(this._unitSize === value) { return; }
-		this._unitSize = value;
-		this.scale(value, value);
-	},
-
-	get unitSize() { return this._unitSize; },
-
-
 	print: function(str)
 	{
 		if(str)
@@ -245,9 +248,5 @@ meta.math.AdvAABB.prototype =
 			console.log("(AABB) minX: " + this.minX + " minY: " + this.minY
 				+ " maxX: " + this.maxX + " maxY: " + this.maxY);
 		}
-	},
-
-
-	//
-	_unitSize: 1
+	}
 };

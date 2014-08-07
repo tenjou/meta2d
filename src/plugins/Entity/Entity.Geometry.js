@@ -23,7 +23,7 @@
  * @param [isLoop=false] {Boolean=} Flag if animation should loop forever.
  * @param [isAnimReverse=false] {Boolean=} Flag if animation should play backwards.
  * @param [pauseAtEnd=false] {Boolean=} Pause animation at the end.
- * @param [isPickable=true] {Boolean=} Flag if entity is pickable by input.
+ * @param [pickable=true] {Boolean=} Flag if entity is pickable by input.
  * @param [isHover=false] {Boolean=} Flag if input is hovering on top of entity.
  * @param [isPressed=false] {Boolean=} Flag if entity is pressed by input.
  * @param [isDragged=false] {Boolean=} Flag if entity is being dragged.
@@ -428,8 +428,8 @@ Entity.Geometry = meta.Class.extend
 		}
 
 		this.volume.set(this.drawX, this.drawY);
-		this.drawX -= this.volume.initHalfWidth;
-		this.drawY -= this.volume.initHalfHeight;
+		this.drawX -= (this.volume.initHalfWidth * this.meta.unitSize);
+		this.drawY -= (this.volume.initHalfHeight * this.meta.unitSize);
 
 		if(this.children)
 		{
@@ -461,39 +461,39 @@ Entity.Geometry = meta.Class.extend
 
 		// TopLeft
 		if(this.positionType === 1) {
-			this._x = this.typeX + (this.volume.halfWidth * meta.unitRatio);
-			this._y = this.typeY + (this.volume.halfHeight * meta.unitRatio);		
+			this._x = (this.typeX + this.volume.halfWidth) | 0;
+			this._y = (this.typeY + this.volume.halfHeight) | 0;	
 		}
 		// TopRight
 		else if(this.positionType === 2) {
-			this._x -= this.volume.halfWidth;
-			this._y += this.volume.halfHeight;			
+			this._x = (this.typeX - this.volume.halfWidth) | 0;
+			this._y = (this.typeY + this.volume.halfHeight) | 0;
 		}
 		// BottomLeft
 		else if(this.positionType === 3) {
-			this._x += this.volume.halfWidth;
-			this._y -= this.volume.halfHeight;			
+			this._x = (this.typeX + this.volume.halfWidth) | 0;
+			this._y = (this.typeY - this.volume.halfHeight) | 0;			
 		}
 		// BottomRight
 		else if(this.positionType === 4) {
-			this._x -= this.volume.halfWidth;
-			this._y -= this.volume.halfHeight;			
+			this._x = (this.typeX - this.volume.halfWidth) | 0;
+			this._y = (this.typeY - this.volume.halfHeight) | 0;	
 		}
 		// Top
 		else if(this.positionType === 5) {
-			this._y += this.volume.halfHeight;			
+			this._y = (this.typeY + this.volume.halfHeight) | 0;		
 		}
 		// Bottom
 		else if(this.positionType === 6) {
-			this._y -= this.volume.halfHeight;			
+			this._y = (this.typeY - this.volume.halfHeight) | 0;	
 		}
 		// Left
 		else if(this.positionType === 7) {
-			this._x += this.volume.halfWidth;			
+			this._x = (this.typeX + this.volume.halfWidth) | 0;
 		}
 		// Right
 		else if(this.positionType === 8) {
-			this._x -= this.volume.halfWidth;		
+			this._x = (this.typeX - this.volume.halfWidth) | 0;
 		}		
 	},
 
@@ -502,7 +502,9 @@ Entity.Geometry = meta.Class.extend
 	 */
 	updateFromTexture: function()
 	{
-		this.volume.moveToAndResize(0, 0, this._texture._width, this._texture._height);
+		this.volume.moveToAndResize(0, 0, 
+			this._texture._width * this._texture.unitRatio, 
+			this._texture._height * this._texture.unitRatio);
 		this.pivotX = this.pivotRatioX * this.volume.halfWidth;
 		this.pivotY = this.pivotRatioY * this.volume.halfHeight;
 		if(this.children) {
@@ -510,9 +512,7 @@ Entity.Geometry = meta.Class.extend
 			this.childPivotY = ((-this.pivotRatioY - 1.0) * this.volume.halfHeight);
 		}
 
-		if(!this._isLoaded) {
-			this.updatePosType();
-		}
+		this.updatePosType();
 		this.updatePos();
 
 		if(this.children)
@@ -520,6 +520,9 @@ Entity.Geometry = meta.Class.extend
 			var numChildren = this.children.length;
 			for(var i = 0; i < numChildren; i++) {
 					var child = this.children[i];
+					if(child.positionType) {
+						child.updatePosType();
+					}
 					child.updateAnchor(null, null);				
 			}
 		}					
@@ -531,10 +534,9 @@ Entity.Geometry = meta.Class.extend
 	adapt: function()
 	{
 		if(!this._texture) {
-			this.volume.unitSize = meta.unitSize;
+			this.updatePosType();
+			this.updatePos();
 		}
-
-		this.updatePosType();
 	},
 
 	/**
@@ -598,14 +600,15 @@ Entity.Geometry = meta.Class.extend
 	 */
 	positionTopLeft: function(x, y)
 	{
-		x += this.volume.halfWidth;
-		y += this.volume.halfHeight;
+		// x += this.volume.halfWidth;
+		// y += this.volume.halfHeight;
 		this.positionType = 1;
 
-		if(this._x === x && this._y === y) { return; }
+		// if(this._x === x && this._y === y) { return; }
 		this.typeX = x;
 		this.typeY = y;
-		this.forcePosition(x, y);		
+		this.updatePosType();
+		this.updatePos();	
 	},
 
 	/**
@@ -616,7 +619,9 @@ Entity.Geometry = meta.Class.extend
 	positionTopRight: function(x, y)
 	{
 		x -= this.volume.halfWidth;
-		y += this.volume.halfHeight;
+		y = 0;
+		//x
+		// y = (this.volume.halfHeight * meta.unitRatio);
 		this.positionType = 2;
 
 		if(this._x === x && this._y === y) { return; }
@@ -1160,7 +1165,6 @@ Entity.Geometry = meta.Class.extend
 		if(height === void(0)) { height = this.volume.height; }
 
 		this.volume.resize(width, height);
-		this.volume.unitSize = meta.unitSize;
 	},
 
 
@@ -1825,12 +1829,12 @@ Entity.Geometry = meta.Class.extend
 		if(this._isAnchor) 
 		{
 			if(this._ignoreZoom) {
-				this._anchorPosX = this._parent.volume.width * (1.0 / this._parent.volume.scaleX) * this._anchorX;
-				this._anchorPosY = this._parent.volume.height * (1.0 / this._parent.volume.scaleY) * this._anchorY;				
+				this._anchorPosX = (this._parent.volume.width * (1.0 / this._parent.volume.scaleX) * this._anchorX + 0.5) | 0;
+				this._anchorPosY = (this._parent.volume.height * (1.0 / this._parent.volume.scaleY) * this._anchorY + 0.5) | 0;				
 			}
 			else {
-				this._anchorPosX = this._parent.volume.width * this._anchorX;
-				this._anchorPosY = this._parent.volume.height * this._anchorY;
+				this._anchorPosX = (this._parent.volume.width * this._anchorX + 0.5) | 0;
+				this._anchorPosY = (this._parent.volume.height * this._anchorY + 0.5) | 0;
 			}
 
 			this.updatePos();
@@ -2378,8 +2382,8 @@ Entity.Geometry = meta.Class.extend
 	ignoreParentAngle: false,
 	ignoreParentAlpha: false,
 
-	isPickable: true,
-	isClickable: true,
+	pickable: true,
+	clickable: true,
 	isHover: false,
 	isPressed: false,
 	isDragged: false,

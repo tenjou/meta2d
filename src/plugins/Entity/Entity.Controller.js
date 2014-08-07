@@ -559,7 +559,7 @@ Entity.Controller = meta.Controller.extend
 		var inputEvent = Input.Event;
 		if(inputEvent.INPUT_DOWN === event)
 		{
-			if(!this.hoverEntity || !this.hoverEntity.isClickable) { return; }
+			if(!this.hoverEntity || !this.hoverEntity.clickable) { return; }
 
 			data.entity = this.hoverEntity;
 			this.pressedEntity = this.hoverEntity;
@@ -572,7 +572,7 @@ Entity.Controller = meta.Controller.extend
 		{
 			data.entity = this.pressedEntity;
 
-			if(this.pressedEntity && this.pressedEntity.isClickable) 
+			if(this.pressedEntity && this.pressedEntity.clickable) 
 			{
 				// Drag end?
 				if(this.pressedEntity.isDragged) {
@@ -615,7 +615,7 @@ Entity.Controller = meta.Controller.extend
 			for(; currNode !== lastNode; currNode = currNode.prev)
 			{
 				entity = currNode.entity;
-				if(!entity.isPickable) { continue; }
+				if(!entity.pickable) { continue; }
 
 				if(entity.isInside(data.x, data.y))
 				{
@@ -666,7 +666,7 @@ Entity.Controller = meta.Controller.extend
 
 	_checkDrag: function(data)
 	{
-		if(this.pressedEntity && this.pressedEntity.isClickable)
+		if(this.pressedEntity && this.pressedEntity.clickable)
 		{
 			data.entity = this.pressedEntity;
 

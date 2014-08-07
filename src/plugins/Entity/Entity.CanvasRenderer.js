@@ -276,6 +276,7 @@ Entity.CanvasRenderer = Entity.Controller.extend
 		if(this.numShowBounds > 0 || this.showBounds)
 		{
 			var isCached = false;
+			var unitSize = meta.unitSize;
 			var ctx = meta.ctx;
 			ctx.strokeStyle = "#ff0000";
 			ctx.lineWidth = 2;
@@ -364,6 +365,7 @@ Entity.CanvasRenderer = Entity.Controller.extend
 
 	_drawCells: function()
 	{
+		var unitSize = meta.unitSize;
 		var ctx = meta.ctx;
 		ctx.strokeStyle = "orange";
 		ctx.lineWidth = 2;

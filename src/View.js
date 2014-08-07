@@ -223,6 +223,10 @@ meta.View.prototype =
 
 			view = srcView;
 		}
+		else if(!(view instanceof meta.View)) {
+			console.warn("[meta.View.attach]:", "Trying to attach invalid view object.");
+			return;
+		}
 
 		if(view._isActive) {
 			console.warn("[meta.View.attach]:", "Can't attach an active view.");

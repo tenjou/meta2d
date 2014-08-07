@@ -29,15 +29,6 @@ Resource.SpriteSheet = Resource.Basic.extend
 				this.format = "xml";
 			}
 		}
-
-		// if(this.texture) {
-		// 	this.texture = new Resource.Texture(this.texture);
-		// 	Resource.ctrl.add(this.texture);
-		// }
-
-		// if(this.atlas) {
-		// 	this.loadFromAtlas();
-		// }
 	},
 
 	load: function()

@@ -55,7 +55,11 @@ Resource.Type = {
 	/**
 	 * Sprite sheet.
 	 */
-	SPRITE_SHEET: 3,	
+	SPRITE_SHEET: 3,
+	/**
+	 * Font.
+	 */
+	FONT: 4	
 };
 
 /**

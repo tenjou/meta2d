@@ -149,17 +149,30 @@ meta.math.AABB.prototype =
 
 	draw: function(ctx)
 	{
-		var minX = Math.floor(this.minX);
-		var minY = Math.floor(this.minY);
-		var maxX = Math.floor(this.maxX);
-		var maxY = Math.floor(this.maxY);
+		var unitSize = meta.unitSize;
+		var minX, minY, maxX, maxY;
+
+		if(unitSize === 1.0)
+		{
+			minX = Math.floor(this.minX);
+			minY = Math.floor(this.minY);
+			maxX = Math.ceil(this.maxX);
+			maxY = Math.ceil(this.maxY);
+		}
+		else 
+		{
+			minX = Math.floor(this.minX) * unitSize - (this.halfWidth * unitSize);
+			minY = Math.floor(this.minY) * unitSize - (this.halfHeight * unitSize);
+			maxX = Math.ceil(this.maxX) * unitSize - (this.halfWidth * unitSize);
+			maxY = Math.ceil(this.maxY) * unitSize - (this.halfHeight * unitSize);			
+		}
 
 		ctx.beginPath();
-		ctx.moveTo(minX - 0.5, minY - 0.5);
-		ctx.lineTo(maxX + 0.5, minY - 0.5);
-		ctx.lineTo(maxX + 0.5, maxY + 0.5);
-		ctx.lineTo(minX - 0.5, maxY + 0.5);
-		ctx.lineTo(minX - 0.5, minY - 0.5);
+		ctx.moveTo(minX, minY);
+		ctx.lineTo(maxX, minY);
+		ctx.lineTo(maxX, maxY);
+		ctx.lineTo(minX, maxY);
+		ctx.lineTo(minX, minY);
 		ctx.stroke();
 	},
 

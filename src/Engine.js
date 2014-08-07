@@ -41,6 +41,8 @@ meta.enableAdaptive = true;
 meta.tUpdate = 1000 / 60;
 meta.unitSize = 1;
 meta.unitRatio = 1;
+meta.maxUnitSize = 1;
+meta.maxUnitRatio = 1;
 meta.utils = {};
 meta.modules = {};
 meta.importUrl = "http://infinite-games.com/store/";
@@ -462,6 +464,9 @@ meta.Engine.prototype =
 			reso.zoomThreshold = prevReso.unitSize + ((reso.unitSize - prevReso.unitSize) / 100) * 33.3;
 		}
 
+		meta.maxUnitSize = resolutions[numResolutions - 1].unitSize;
+		meta.maxUnitRatio = 1.0 / meta.maxUnitSize;
+
 		scope.camera.bounds(lowestResolution.width, lowestResolution.height);		
 	},
 
@@ -522,14 +527,15 @@ meta.Engine.prototype =
 
 	onResize: function()
 	{
+		var scope = meta;
 		var width, height;
-		if(meta.element === document.body) {
+		if(scope.element === document.body) {
 			width = window.innerWidth;
 			height = window.innerHeight;
 		}
 		else {
-			width = meta.element.clientWidth;
-			height = meta.element.clientHeight;
+			width = scope.element.clientWidth;
+			height = scope.element.clientHeight;
 		}
 
 		var ratio = window.devicePixelRatio;
@@ -539,8 +545,8 @@ meta.Engine.prototype =
 		this.canvas.height = this.height;
 		this.canvas.style.width = width + "px";
 		this.canvas.style.height = height + "px";
-		meta.width = this.width;
-		meta.height = this.height;
+		scope.width = this.width;
+		scope.height = this.height;
 
 		if(this.isWebGL)
 		{
@@ -860,16 +866,6 @@ meta.__defineGetter__("load", function() {
 
 meta.__defineGetter__("ready", function() {
 	return meta._cache.ready;
-});
-
-meta.__defineSetter__("unitSize", function(value)
-{
-	if(meta._cache.unitSize === value) { return; }
-	meta._cache.unitSize = value;
-});
-
-meta.__defineGetter__("unitSize", function() {
-	return meta._cache.unitSize;
 });
 
 /**

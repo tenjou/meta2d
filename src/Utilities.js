@@ -19,10 +19,10 @@ meta.emptyFuncParam = function(param) {};
  * @param folderPath {String=} Path applied to texture sources.
  * @param hd_folderPath {String=} An alternate path for HD version.
  */
-meta.loadTextures = function(buffer, folderPath, hd_folderPath)
+meta.loadTexture = function(buffer, folderPath, hd_folderPath)
 {
 	if(!meta._loadResource("Texture", buffer, folderPath, hd_folderPath)) {
-		console.warn("[meta.loadTextures]:", "Unsupported parameter was passed.");
+		console.warn("[meta.loadTexture]:", "Unsupported parameter was passed.");
 	}
 };
 
@@ -32,10 +32,10 @@ meta.loadTextures = function(buffer, folderPath, hd_folderPath)
  * @param folderPath {String=} Path applied to texture sources.
  * @param hd_folderPath {String=} An alternate path for HD version.
  */
-meta.preloadTextures = function(buffer, folderPath, hd_folderPath)
+meta.preloadTexture = function(buffer, folderPath, hd_folderPath)
 {
 	if(!meta._preloadResource("Texture", buffer, folderPath, hd_folderPath)) {
-		console.warn("[meta.preloadTextures]:", "Unsupported parameter was passed.");
+		console.warn("[meta.preloadTexture]:", "Unsupported parameter was passed.");
 	}
 };
 
@@ -44,10 +44,10 @@ meta.preloadTextures = function(buffer, folderPath, hd_folderPath)
  * @param buffer {Array|String} Buffer with sound sources.
  * @param folderPath {String=} Path applied to sound sources.
  */
-meta.loadSounds = function(buffer, folderPath)
+meta.loadSound = function(buffer, folderPath)
 {
 	if(!meta._loadResource("Sound", buffer, folderPath)) {
-		console.warn("[meta.loadSounds]:", "Unsupported parameter was passed.");
+		console.warn("[meta.loadSound]:", "Unsupported parameter was passed.");
 	}
 };
 
@@ -56,7 +56,7 @@ meta.loadSounds = function(buffer, folderPath)
  * @param buffer {Array|String} Buffer with sound sources.
  * @param folderPath {String=} Path applied to sound sources.
  */
-meta.preloadSounds = function(buffer, folderPath)
+meta.preloadSound = function(buffer, folderPath)
 {
 	if(!meta._preloadResource("Sound", buffer, folderPath)) {
 		console.warn("[meta.preloadSound]:", "Unsupported parameter was passed.");
@@ -72,6 +72,18 @@ meta.loadSpriteSheet = function(buffer, folderPath)
 {
 	if(!meta._preloadResource("SpriteSheet", buffer, folderPath)) {
 		console.warn("[meta.loadSpriteSheet]:", "Unsupported parameter was passed.");
+	}
+};
+
+/**
+ * Load bitmap fonts.
+ * @param buffer {Array|String} Buffer with sound sources.
+ * @param folderPath {String=} Path applied to sound sources.
+ */
+meta.loadFont = function(buffer, folderPath)
+{
+	if(!meta._preloadResource("Font", buffer, folderPath)) {
+		console.warn("[meta.loadFont]:", "Unsupported parameter was passed.");
 	}
 };
 

@@ -274,9 +274,14 @@ Resource.Controller = meta.Controller.extend
 	 */
 	onAdapt: function(data, event)
 	{
+		var unitRatio = meta.unitRatio;
+
+		var texture;
 		var textures = this.resources[Resource.Type.TEXTURE];
 		for(var key in textures) {
-			textures[key].load();
+			texture = textures[key];
+			texture.unitRatio = unitRatio;
+			texture.load();
 		}
 	},
 

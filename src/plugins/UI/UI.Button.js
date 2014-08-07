@@ -118,7 +118,7 @@ UI.Button = Entity.Geometry.extend
 
 	set disabled(value) { 
 		this._disabled = value;
-		this.isClickable = !value;
+		this.clickable = !value;
 		this._updateState();
 	},
 

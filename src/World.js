@@ -41,28 +41,32 @@ meta.World.prototype =
 
 	updateVolume: function()
 	{
-		var width = this.volume.width;
-		var height = this.volume.height;
+		// var width = this.volume.width;
+		// var height = this.volume.height;
 
-		if(this.minWidth > -1 && width < this.minWidth) {
-			width = this.minWidth;
-		}
-		else if(this.maxWidth > -1 && width > this.maxWidth) {
-			width = this.maxWidth;
-		}
-		if(this.minHeight > -1 && height < this.minHeight) {
-			height = this.minHeight;
-		}
-		else if(this.maxHeight > -1 && height > this.maxHeight) {
-			height = this.maxHeight;
-		}		
+		// if(this.minWidth > -1 && width < this.minWidth) {
+		// 	width = this.minWidth;
+		// }
+		// else if(this.maxWidth > -1 && width > this.maxWidth) {
+		// 	width = this.maxWidth;
+		// }
+		// if(this.minHeight > -1 && height < this.minHeight) {
+		// 	height = this.minHeight;
+		// }
+		// else if(this.maxHeight > -1 && height > this.maxHeight) {
+		// 	height = this.maxHeight;
+		// }		
+
+		var scope = meta;
+		var width = scope.camera.width * scope.unitRatio;
+		var height = scope.camera.height * scope.unitRatio;
 
 		this.centerX = width / 2;
 		this.centerY = height / 2;
 		this.volume.resize(width, height);
 
 		if(this.chn) {
-			this.chn.emit(meta.Event.WORLD_RESIZE, this);
+			this.chn.emit(scope.Event.WORLD_RESIZE, this);
 		}
 	},
 

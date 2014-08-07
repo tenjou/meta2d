@@ -32,6 +32,7 @@ cat Engine.js \
 	plugins/Resource/Resource.Texture.js \
 	plugins/Resource/Resource.Sound.js \
 	plugins/Resource/Resource.SpriteSheet.js \
+	plugins/Resource/Resource.Font.js \
 	plugins/Entity/Entity.Controller.js \
 	plugins/Entity/Enum.js \
 	plugins/Entity/Entity.WebGLRenderer.js \
