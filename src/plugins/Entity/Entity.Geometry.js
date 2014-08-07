@@ -417,19 +417,19 @@ Entity.Geometry = meta.Class.extend
 	 */
 	updatePos: function()
 	{
-		this.drawX = (this._x * this.meta.unitSize) + this._parent.childOffsetX + this.textureOffsetX
-			- this.pivotX + this._anchorPosX;
-		this.drawY = (this._y * this.meta.unitSize) + this._parent.childOffsetY + this.textureOffsetY
-			- this.pivotY + this._anchorPosY;	
+		var unitSize = this.meta.unitSize;
+		var unitRatio = this.meta.unitRatio;
+		this.drawX = (this._x * unitSize) + this._parent.childOffsetX + this.textureOffsetX - this.pivotX + this._anchorPosX;
+		this.drawY = (this._y * unitSize) + this._parent.childOffsetY + this.textureOffsetY - this.pivotY + this._anchorPosY;	
 		
 		if(this._view) {
 			this.drawX += this._view._x;
 			this.drawY += this._view._y;
 		}
 
-		this.volume.set(this.drawX, this.drawY);
-		this.drawX -= (this.volume.initHalfWidth * this.meta.unitSize);
-		this.drawY -= (this.volume.initHalfHeight * this.meta.unitSize);
+		this.volume.set(this.drawX * unitRatio, this.drawY * unitRatio);
+		this.drawX -= this.volume.initHalfWidth_unit;
+		this.drawY -= this.volume.initHalfHeight_unit;
 
 		if(this.children)
 		{
@@ -502,9 +502,9 @@ Entity.Geometry = meta.Class.extend
 	 */
 	updateFromTexture: function()
 	{
-		this.volume.moveToAndResize(0, 0, 
-			this._texture._width * this._texture.unitRatio, 
-			this._texture._height * this._texture.unitRatio);
+		var unitRatio = meta.unitRatio;
+		this.volume.moveToAndResize(0, 0, this._texture._width * unitRatio, this._texture._height * unitRatio);
+
 		this.pivotX = this.pivotRatioX * this.volume.halfWidth;
 		this.pivotY = this.pivotRatioY * this.volume.halfHeight;
 		if(this.children) {
@@ -518,12 +518,13 @@ Entity.Geometry = meta.Class.extend
 		if(this.children)
 		{
 			var numChildren = this.children.length;
-			for(var i = 0; i < numChildren; i++) {
-					var child = this.children[i];
-					if(child.positionType) {
-						child.updatePosType();
-					}
-					child.updateAnchor(null, null);				
+			for(var i = 0; i < numChildren; i++) 
+			{
+				var child = this.children[i];
+				if(child.positionType) {
+					child.updatePosType();
+				}
+				child.updateAnchor(null, null);				
 			}
 		}					
 	},	
@@ -534,6 +535,7 @@ Entity.Geometry = meta.Class.extend
 	adapt: function()
 	{
 		if(!this._texture) {
+			this.volume.unitSize = meta.unitSize;
 			this.updatePosType();
 			this.updatePos();
 		}
@@ -1074,8 +1076,8 @@ Entity.Geometry = meta.Class.extend
 
 		this._anchorX = x;
 		this._anchorY = y;
-		this._anchorPosX = this._parent.volume.width * this._anchorX;
-		this._anchorPosY = this._parent.volume.height * this._anchorY;
+		this._anchorPosX = this._parent.volume.width_unit * this._anchorX;
+		this._anchorPosY = this._parent.volume.height_unit * this._anchorY;
 		this.isAnchor = true;
 		this.updatePos();
 	},
@@ -1829,12 +1831,12 @@ Entity.Geometry = meta.Class.extend
 		if(this._isAnchor) 
 		{
 			if(this._ignoreZoom) {
-				this._anchorPosX = (this._parent.volume.width * (1.0 / this._parent.volume.scaleX) * this._anchorX + 0.5) | 0;
-				this._anchorPosY = (this._parent.volume.height * (1.0 / this._parent.volume.scaleY) * this._anchorY + 0.5) | 0;				
+				this._anchorPosX = (this._parent.volume.width_unit * (1.0 / this._parent.volume.scaleX) * this._anchorX + 0.5) | 0;
+				this._anchorPosY = (this._parent.volume.height_unit * (1.0 / this._parent.volume.scaleY) * this._anchorY + 0.5) | 0;				
 			}
 			else {
-				this._anchorPosX = (this._parent.volume.width * this._anchorX + 0.5) | 0;
-				this._anchorPosY = (this._parent.volume.height * this._anchorY + 0.5) | 0;
+				this._anchorPosX = (this._parent.volume.width_unit * this._anchorX + 0.5) | 0;
+				this._anchorPosY = (this._parent.volume.height_unit * this._anchorY + 0.5) | 0;
 			}
 
 			this.updatePos();

@@ -393,7 +393,7 @@ Input.Controller = meta.Controller.extend
 	},
 
 	/**
-	 * @description Chech if key is pressed
+	 * @description Check if key is pressed
 	 * @param keyCode {number} Key code index.
 	 * @returns {boolean}
 	 */
@@ -402,7 +402,7 @@ Input.Controller = meta.Controller.extend
 	},
 
 	/**
-	 * @description Chech if input is pressed
+	 * @description Check if input is pressed
 	 * @param keyCode {number} Key code index.
 	 * @returns {boolean}
 	 */

@@ -305,8 +305,8 @@ Entity.CanvasRenderer = Entity.Controller.extend
 					ctx.save();
 					ctx.translate(this.x, this.y);
 
-					pivotOffsetX = entity.volume.x + entity.pivotX;
-					pivotOffsetY = entity.volume.y + entity.pivotY;
+					pivotOffsetX = entity.volume.x_unit + entity.pivotX;
+					pivotOffsetY = entity.volume.y_unit + entity.pivotY;
 
 					if(!entity.isChild) {
 						ctx.translate(pivotOffsetX, pivotOffsetY);

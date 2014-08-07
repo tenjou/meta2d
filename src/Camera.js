@@ -157,8 +157,7 @@ meta.Camera.prototype =
 				this._zoom = diffY;
 			}
 
-			// this.volume.resize(scope.width * scope.unitRatio, scope.height * scope.unitRatio);
-			// console.log(this.volume);			
+			this.volume.resize(scope.width * scope.unitRatio, scope.height * scope.unitRatio);		
 		}
 
 		this.updateZoom();
@@ -214,7 +213,6 @@ meta.Camera.prototype =
 
 	_onResize: function(data, event)
 	{
-		this.volume.resize(data.width, data.height);
 		this.updateView();
 		this._chnResize.emit(this, meta.Event.CAMERA_RESIZE);
 	},
