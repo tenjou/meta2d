@@ -126,10 +126,10 @@ Entity.WebGLRenderer = Entity.Controller.extend
 
 					//
 					this._clipVolume = entity.clipVolume;
-					clipX = this._clipVolume.minX | 0;
-					clipY = camera.height - this._clipVolume.maxY | 0;
-					clipWidth = this._clipVolume.width;
-					clipHeight = this._clipVolume.height;
+					clipX = this._clipVolume.minX_unit | 0;
+					clipY = camera.volume.height_unit - this._clipVolume.maxY_unit | 0;
+					clipWidth = this._clipVolume.width_unit;
+					clipHeight = this._clipVolume.height_unit;
 
 					if(clipX < 0) {
 						clipWidth += clipX;

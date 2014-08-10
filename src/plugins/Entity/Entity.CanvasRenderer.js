@@ -153,7 +153,7 @@ Entity.CanvasRenderer = Entity.Controller.extend
 					ctx.save();
 					var clip = entity.clipVolume;
 					ctx.beginPath();
-					ctx.rect(clip.minX, clip.minY, clip.width, clip.height);
+					ctx.rect(clip.minX_unit, clip.minY_unit, clip.width_unit, clip.height_unit);
 					ctx.closePath();
 					ctx.clip();
 				}

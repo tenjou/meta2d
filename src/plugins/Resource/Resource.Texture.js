@@ -344,6 +344,7 @@ Resource.Texture = Resource.Basic.extend
 		}
 
 		if(!this.fromAtlas) {
+			this.ctx.scale(0.7447916666666666, 0.7447916666666666);
 			ctx.drawImage(this.image, x, y);
 		}
 		else {

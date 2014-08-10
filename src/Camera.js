@@ -123,6 +123,7 @@ meta.Camera.prototype =
 
 	updateZoom: function() 
 	{
+		this._zoom *= 1.3426573426573427;
 		if(this.prevZoom !== this._zoom) 
 		{
 			this.zoomRatio = 1.0 / this._zoom;
