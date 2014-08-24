@@ -177,7 +177,6 @@ Entity.Geometry = meta.Class.extend
 
 		var unitSize = this.meta.unitSize;
 		if(!this._texture.isAnimated) {
-			console.log(this.drawX);
 			this._texture.draw(ctx, (this.drawX | 0) * unitSize, (this.drawY | 0) * unitSize);
 		}
 		else 
@@ -202,23 +201,22 @@ Entity.Geometry = meta.Class.extend
 		{
 			ctx.translate(posX, posY);
 			ctx.rotate(this._angleRad);
+			ctx.scale(this.totalScaleX * this._flipX, this.totalScaleY * this._flipY);
 			ctx.translate(-posX, -posY);
-			ctx.scale(this._scaleX * this._flipX, this._scaleY * this._flipY);
 		}
 		else
 		{
-			// var parentOffsetX = this._parent.volume.x * unitSize;
-			// var parentOffsetY = this._parent.volume.y * unitSize;
+			var parentOffsetX = this._parent.volume.x * unitSize;
+			var parentOffsetY = this._parent.volume.y * unitSize;
 
-			// ctx.translate(parentOffsetX, parentOffsetY);
-			// ctx.rotate(this._parent.totalAngleRad);
-			// ctx.translate(-parentOffsetX, -parentOffsetY);
+			ctx.translate(parentOffsetX, parentOffsetY);
+			ctx.rotate(this._parent.totalAngleRad);
+			ctx.translate(-parentOffsetX, -parentOffsetY);
 
-			// ctx.translate(posX + pivotX, posY + pivotY);
-			// ctx.rotate(this._angleRad);
-			// ctx.translate(-pivotX, -pivotY);
-			// ctx.scale(this._scaleX * this._flipX, this._scaleY * this._flipY);
-			// ctx.translate(-posX, -posY);
+			ctx.translate(posX, posY);
+			ctx.rotate(this._angleRad);
+			ctx.scale(this.totalScaleX * this._flipX, this.totalScaleY * this._flipY);
+			ctx.translate(-posX, -posY);
 		}
 
 		if(!this.texture.isAnimated) {
@@ -1370,15 +1368,10 @@ Entity.Geometry = meta.Class.extend
 		entity.isChild = true;
 		entity._view = this._view;
 
-		if(this._angleRad !== 0.0 && !entity.ignoreParentAngle) {
-			entity.angleRad = this._angleRad;
-		}
-		if(this._alpha !== 1.0 && !entity.ignoreParentAlpha) {
-			entity.alpha = entity._alpha;
-		}
-		if((this._scaleX !== 1.0 || this._scaleY !== 1.0) && !entity.ignoreParentScale) {
-			entity.scale(this._scaleX, this._scaleY);
-		}
+		entity.updateAngle();
+		entity.updateAlpha();
+		entity.updateScale();
+
 		if(this._z !== 0) {
 			entity.z = entity._z;
 		}
@@ -2028,13 +2021,23 @@ Entity.Geometry = meta.Class.extend
 
 	get showBounds() { return this._showBounds; },
 
-	set alpha(value)
+	// Alpha.
+	updateAlpha: function()
 	{
-		var newAlpha = this._parent._alpha * value;
+		var alpha;
 
-		if(this.totalAlpha === newAlpha) { return; }
-		this.totalAlpha = newAlpha;
-		this._alpha = value;
+		if(this._flags & this.Flag.IGNORE_PARENT_ALPHA) {
+			alpha = this._alpha;
+		}
+		else {
+			alpha = this._alpha * this._parent.totalAlpha;
+		}	
+
+		if(this.totalAlpha === alpha) { 
+			return; 
+		}
+
+		this.totalAlpha = alpha;
 
 		if(this.children)
 		{
@@ -2042,21 +2045,49 @@ Entity.Geometry = meta.Class.extend
 			for(var i = 0; i < numChildren; i++)
 			{
 				var child = this.children[i];
-				if(child.ignoreParentAlpha) { return; }
-				child.alpha = newAlpha;
+				if(child._flag & this.Flag.IGNORE_PARENT_ALPHA) { return; }
+
+				child.updateAlpha();
 			}
 		}
 
-		this.isNeedDraw = true;
 		this._draw = this._drawTransform;
+		this.isNeedDraw = true;
+	},
+
+	set alpha(value) 
+	{
+		if(this._alpha === value) { return; }
+		this._alpha = value;
+
+		this.updateAlpha();
 	},
 
 	get alpha() { return this._alpha; },
 
+	set ignoreParentAlpha(value) {
+		this._flags |= this.Flag.IGNORE_PARENT_ALPHA;
+	},
+
+	get ignoreParentAlpha() { 
+		return (this._flags & this.Flag.IGNORE_PARENT_ALPHA); 
+	},
+
 	// Angle.
 	updateAngle: function()
 	{
-		this.totalAngleRad = this._angleRad + this._parent.totalAngleRad;
+		var angleRad;
+
+		if(this._flags & this.Flag.IGNORE_PARENT_ANGLE) {
+			angleRad = this._angleRad;
+		}
+		else {
+			angleRad = this._angleRad + this._parent.totalAngleRad;
+		}
+
+		if(angleRad === this.totalAngleRad) {
+			return;
+		}
 
 		if(this.children)
 		{
@@ -2064,7 +2095,7 @@ Entity.Geometry = meta.Class.extend
 			for(var i = 0; i < numChildren; i++)
 			{
 				var child = this.children[i];
-				if(child.ignoreParentAngle) { continue; }
+				if(child._flags & this.Flag.IGNORE_PARENT_ANGLE) { continue; }
 
 				child.updateAngle();
 			}
@@ -2096,17 +2127,56 @@ Entity.Geometry = meta.Class.extend
 
 	get angleRad() { return this._angleRad; },
 
+	set ignoreParentAngle(value) {
+		this._flags |= this.Flag.IGNORE_PARENT_ANGLE;
+	},
+
+	get ignoreParentAngle() { 
+		return (this._flags & this.Flag.IGNORE_PARENT_ANGLE); 
+	},	
+
 	// Scale.
 	updateScale: function()
 	{
-		this.pivotX = this.pivotSrcX * this._scaleX;
-		this.pivotY = this.pivotSrcY * this._scaleY;
+		var scaleX, scaleY;
 
-		this.volume.scalePivoted(this._scaleX, this._scaleY, 
+		if(this._flags & this.Flag.IGNORE_PARENT_SCALE) {
+			scaleX = this._scaleX;
+			scaleY = this._scaleY;
+		}
+		else {
+			scaleX = this._scaleX * this._parent.totalScaleX;
+			scaleY = this._scaleY * this._parent.totalScaleY;
+		}	
+
+		if(scaleX === this.totalScaleX && scaleY === this.totalScaleY) {
+			return;
+		}
+
+		this.totalScaleX = scaleX;
+		this.totalScaleY = scaleY;
+
+		this.pivotX = this.pivotSrcX * this.totalScaleX;
+		this.pivotY = this.pivotSrcY * this.totalScaleY;
+
+		this.volume.scalePivoted(this.totalScaleX, this.totalScaleY, 
 			this.drawSrcX + this.pivotX, this.drawSrcY + this.pivotY);
+
+		if(this.children)
+		{
+			var numChildren = this.children.length;
+			for(var i = 0; i < numChildren; i++)
+			{
+				var child = this.children[i];
+				if(child._flag & this.Flag.IGNORE_PARENT_SCALE) { continue; }
+
+				child.updateScale();
+			}
+		}		
 
 		this._draw = this._drawTransform;
 		this.isInside = this._isInsideTransform;
+
 		this.isNeedDraw = true;
 	},
 
@@ -2129,6 +2199,14 @@ Entity.Geometry = meta.Class.extend
 
 	get scaleX() { return this._scaleX; },
 	get scaleY() { return this._scaleY; },
+
+	set ignoreParentScale(value) {
+		this._flags |= this.Flag.IGNORE_PARENT_SCALE;
+	},
+
+	get ignoreParentScale() { 
+		return (this._flags & this.Flag.IGNORE_PARENT_SCALE); 
+	},	
 
 	// Flip.
 	/**
@@ -2334,22 +2412,26 @@ Entity.Geometry = meta.Class.extend
 
 	set ignoreZoom(value) 
 	{
-		if(this._ignoreZoom === value) { return; }
+		if((this._flags & this.Flag.IGNORE_ZOOM) === value) { return; }
 
 		if(this._flags & this.Flag.ANCHOR) {
 			this.updateAnchor();
 		}
 
-		this._ignoreZoom = value;
+		this._flags |= this.Flag.IGNORE_ZOOM;
 		this.isNeedDraw = true;
 	},
 
-	get ignoreZoom() { return this._ignoreZoom; },
+	get ignoreZoom() { return (this._flags & this.Flag.IGNORE_ZOOM); },
 
 
 	// Flag Enum
 	Flag: {
-		ANCHOR: 128
+		ANCHOR: 128,
+		IGNORE_ZOOM: 256,
+		IGNORE_PARENT_ANGLE: 512,
+		IGNORE_PARENT_SCALE: 1024,
+		IGNORE_PARENT_ALPHA: 2048
 	},
 
 	//
@@ -2398,10 +2480,13 @@ Entity.Geometry = meta.Class.extend
 	clipVolume: null,
 	positionType: 0,
 
-	_angleRad: 0.0, totalAngleRad: 0.0,
+	_angleRad: 0.0, 
 	_scaleX: 1.0, _scaleY: 1.0,
 	_flipX: 1.0, _flipY: 1.0,
-	_alpha: 1.0, totalAlpha: 1.0,
+	_alpha: 1.0,
+	totalAngleRad: 0.0,
+	totalScaleX: 1.0, totalScaleY: 1.0,
+	totalAlpha: 1.0,
 
 	_texture: null,
 	vbo: null, vertices: null,
@@ -2411,16 +2496,12 @@ Entity.Geometry = meta.Class.extend
 	numComponents: 0,
 
 	children: null,
-	ignoreParentAngle: false,
-	ignoreParentAlpha: false,
-	ignoreParentScale: false,
 
 	pickable: true,
 	clickable: true,
 	isHover: false,
 	isPressed: false,
 	isDragged: false,
-	_ignoreZoom: false,
 
 	fps: 0,
 	animSpeed: 1.0,
