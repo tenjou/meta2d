@@ -93,16 +93,17 @@ Entity.WebGLRenderer = Entity.Controller.extend
 		var gl = scope.ctx;
 		var shader = scope.shader;
 		var camera = scope.camera;
+		var unitSize = scope.unitSize;
 		var texture;
 		var clipX, clipY;
 		var clipWidth, clipHeight;
 
 		this.clearScreen();		
 
-		this.cameraPos[0] = camera._x | 0;
-		this.cameraPos[1] = camera._y | 0;
+		this.cameraPos[0] = camera._x * meta.unitSize | 0;
+		this.cameraPos[1] = camera._y * meta.unitSize | 0;
 		gl.uniform2fv(this.locCameraPos, this.cameraPos);
-		gl.uniform1f(this.locZoom, meta.camera._zoom);
+		gl.uniform1f(this.locZoom, meta.camera._zoom * meta.unitRatio);
 		gl.uniform1i(this.locSampler, 0);
 
 		currNode = this.entities.first.next;
@@ -126,10 +127,11 @@ Entity.WebGLRenderer = Entity.Controller.extend
 
 					//
 					this._clipVolume = entity.clipVolume;
-					clipX = this._clipVolume.minX_unit | 0;
-					clipY = camera.volume.height_unit - this._clipVolume.maxY_unit | 0;
-					clipWidth = this._clipVolume.width_unit;
-					clipHeight = this._clipVolume.height_unit;
+					clipX = (this._clipVolume.minX + camera._x) * camera._zoom | 0;
+					clipY = (camera.volume.height - (this._clipVolume.maxY))  | 0;
+					//clipY = camera.volume.height * camera._zoom - this._clipVolume.maxY;
+					clipWidth = this._clipVolume.width * camera._zoom;
+					clipHeight = this._clipVolume.height * camera._zoom;
 
 					if(clipX < 0) {
 						clipWidth += clipX;
@@ -150,21 +152,21 @@ Entity.WebGLRenderer = Entity.Controller.extend
 
 			// Flip.
 			if(entity._flipX === 1.0) {
-				this._position[0] = entity.volume.minX_unit | 0;
+				this._position[0] = entity.volume.minX * unitSize | 0;
 			}
 			else {
-				this._position[0] = (entity.volume.minX_unit + entity.volume.width_unit) | 0;
+				this._position[0] = (entity.volume.minX + entity.volume.width) * unitSize | 0;
 			}
 			if(entity._flipY === 1.0) {
-				this._position[1] = entity.volume.minY_unit | 0;
+				this._position[1] = entity.volume.minY * unitSize | 0;
 			}
 			else {
-				this._position[1] = (entity.volume.minY_unit + entity.volume.height_unit) | 0;
+				this._position[1] = (entity.volume.minY + entity.volume.height) * unitSize | 0;
 			}
 
 			if(!entity.isChild) {
-				this._center[0] = entity.volume.x_unit + entity.pivotX;
-				this._center[1] = entity.volume.y_unit + entity.pivotY;
+				this._center[0] = (entity.volume.x + entity.pivotX);
+				this._center[1] = (entity.volume.y + entity.pivotY);
 			}
 			else {
 				this._center[0] = entity._parent.childOffsetX;
@@ -222,21 +224,21 @@ Entity.WebGLRenderer = Entity.Controller.extend
 				if((entity._showBounds || this.showBounds) && entity.enableDebug && entity.isVisible && entity.isLoaded)
 				{
 					if(entity._flipX === 1.0) {
-						this._position[0] = entity.volume.minX_unit | 0;
+						this._position[0] = entity.volume.minX * unitSize | 0;
 					}
 					else {
-						this._position[0] = (entity.volume.minX_unit + entity.volume.width) | 0;
+						this._position[0] = (entity.volume.minX + entity.volume.width) * unitSize | 0;
 					}
 					if(entity._flipY === 1.0) {
-						this._position[1] = entity.volume.minY_unit | 0;
+						this._position[1] = entity.volume.minY * unitSize | 0;
 					}
 					else {
-						this._position[1] = (entity.volume.minY_unit + entity.volume.height) | 0;
+						this._position[1] = (entity.volume.minY + entity.volume.height) * unitSize | 0;
 					}
 
 					if(!entity.isChild) {
-						this._center[0] = entity.volume.x_unit + entity.pivotX;
-						this._center[1] = entity.volume.y_unit + entity.pivotY;
+						this._center[0] = entity.volume.x;
+						this._center[1] = entity.volume.y;
 					}
 					else {
 						this._center[0] = entity._parent.childOffsetX;
@@ -274,8 +276,8 @@ Entity.WebGLRenderer = Entity.Controller.extend
 						gl.bindTexture(gl.TEXTURE_2D, this._centerTex.image);
 					}
 
-					this._position[0] = entity.volume.x_unit + entity.pivotX - 3;
-					this._position[1] = entity.volume.y_unit + entity.pivotY - 3;
+					this._position[0] = (entity.volume.x + entity.pivotX - 3) * unitSize;
+					this._position[1] = (entity.volume.y + entity.pivotY - 3) * unitSize;
 					this._scale[0] = 1.0;
 					this._scale[1] = 1.0;
 

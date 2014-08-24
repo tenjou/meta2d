@@ -150,7 +150,8 @@ Resource.Texture = Resource.Basic.extend
 		else {
 			this.fullPath = Resource.ctrl.rootPath + this.path;
 		}
-		this.unitRatio = meta.unitRatio;
+
+		console.log(this.fullPath);
 
 		Resource.ctrl.addToLoad(this);
 
@@ -179,7 +180,6 @@ Resource.Texture = Resource.Basic.extend
 
 		if(this._isLoaded) {
 			this._isReloading = true;
-			this.clear();
 		}
 
 		img.src = this.fullPath;
@@ -192,6 +192,10 @@ Resource.Texture = Resource.Basic.extend
 	 */
 	createFromImg: function(img)
 	{
+		if(this._isLoaded) {
+			this.clear();
+		}
+
 		this.resize(img.width, img.height);
 
 		if(this.textureType !== Resource.TextureType.WEBGL) {
@@ -203,6 +207,8 @@ Resource.Texture = Resource.Basic.extend
 			gl.bindTexture(gl.TEXTURE_2D, this.image);
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
 		}
+
+		this.unitRatio = meta.unitRatio;
 
 		this._isReloading = false;
 		this.isLoaded = true;
@@ -344,7 +350,6 @@ Resource.Texture = Resource.Basic.extend
 		}
 
 		if(!this.fromAtlas) {
-			this.ctx.scale(0.7447916666666666, 0.7447916666666666);
 			ctx.drawImage(this.image, x, y);
 		}
 		else {

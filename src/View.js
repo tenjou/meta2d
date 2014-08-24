@@ -96,11 +96,14 @@ meta.View.prototype =
 			return;
 		}
 
-		entity.updatePos();
+		if(this._x !== 0 || this._y !== 0) {
+			entity.updatePos();
+		}
+		
 		this.entities.push(entity);
 		this.numEntities++;
 
-		this._attachren(entity.children);
+		this._attachChildren(entity.children);
 
 		entity._view = this;
 		entity._viewNodeID = this.numEntities;
@@ -121,7 +124,7 @@ meta.View.prototype =
 		}
 	},
 
-	_attachren: function(children)
+	_attachChildren: function(children)
 	{
 		if(!children) { return; }
 
@@ -132,7 +135,7 @@ meta.View.prototype =
 			child = children[i];
 			if(child.isRemoved) { continue; }
 
-			this._attachren(child.children);
+			this._attachChildren(child.children);
 
 			child._view = this;
 		}

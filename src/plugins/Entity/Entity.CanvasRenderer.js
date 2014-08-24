@@ -74,7 +74,7 @@ Entity.CanvasRenderer = Entity.Controller.extend
 	 */
 	render: function(tDelta)
 	{
-		var currNode = this.entities.first.next;
+		var currNode = this.entities.first.next;		
 
 		if(!this.isNeedRender)
 		{
@@ -114,9 +114,6 @@ Entity.CanvasRenderer = Entity.Controller.extend
 
 		ctx.save();
 		ctx.scale(camera._zoom, camera._zoom);
-		// ctx.drawImage(this._cachedCanvas, 
-		// 	0, 0, camera.width, camera.height,
-		// 	0, 0, camera.width, camera.height);
 
 		var entity;
 		var currNode = this.entities.first.next;
@@ -153,13 +150,13 @@ Entity.CanvasRenderer = Entity.Controller.extend
 					ctx.save();
 					var clip = entity.clipVolume;
 					ctx.beginPath();
-					ctx.rect(clip.minX_unit, clip.minY_unit, clip.width_unit, clip.height_unit);
+					ctx.rect(clip.minX, clip.minY, clip.width, clip.height);
 					ctx.closePath();
 					ctx.clip();
 				}
 
 				this._clipVolume = entity.clipVolume;
-			}			
+			}		
 
 			if(entity.ignoreZoom) {
 				ctx.restore();
@@ -189,12 +186,12 @@ Entity.CanvasRenderer = Entity.Controller.extend
 		var scope = meta;
 		var ctx = scope.ctx;
 		var camera = scope.camera;
+		var unitRatio = scope.unitRatio;
+		var unitSize = scope.unitSize;
 
 		ctx.save();
-		ctx.scale(camera._zoom, camera._zoom);
-		// ctx.drawImage(this._cachedCanvas, 
-		// 	0, 0, camera.width, camera.height,
-		// 	this._cacheOffsetX, this._cacheOffsetY, camera.width, camera.height);
+		ctx.translate(this.x * camera._zoom | 0, this.y * camera._zoom | 0);
+		ctx.scale(camera._zoom * unitRatio, camera._zoom * unitRatio);		
 
 		var entity;
 		var lastNode = this.entities.last;
@@ -221,9 +218,9 @@ Entity.CanvasRenderer = Entity.Controller.extend
 					ctx.save();
 					var clip = entity.clipVolume;
 					ctx.beginPath();
-					ctx.rect(clip.minX, clip.minY, clip.width, clip.height);
+					ctx.rect(clip.minX * unitSize | 0, clip.minY * unitSize | 0, clip.width * unitSize, clip.height * unitSize);
 					ctx.closePath();
-					ctx.clip();
+					ctx.clip();	
 				}
 
 				this._clipVolume = entity.clipVolume;
@@ -233,7 +230,7 @@ Entity.CanvasRenderer = Entity.Controller.extend
 				ctx.restore();
 				ctx.save();
 				entity.draw(ctx);
-				ctx.scale(camera._zoom, camera._zoom);
+				ctx.scale(camera._zoom * unitRatio, camera._zoom * unitRatio);	
 			}
 			else {
 				entity.draw(ctx);
@@ -242,12 +239,22 @@ Entity.CanvasRenderer = Entity.Controller.extend
 			entity._isNeedDraw = false;
 		}
 
+		if(this._clipVolume !== null) {
+			this._clipVolume = null;
+			ctx.restore();
+		}
+		
+		ctx.restore();
+
+		// Debug.
+		ctx.save();
+		ctx.scale(camera._zoom, camera._zoom);	
+		ctx.translate(this.x | 0, this.y | 0);
+
 		this._drawBounds();
 		if(this.showCells) {
 			this._drawCells();
 		}
-//		this._drawWorldBounds();
-
 		ctx.restore();
 
 		this.isNeedRender = false;
@@ -277,6 +284,8 @@ Entity.CanvasRenderer = Entity.Controller.extend
 		{
 			var isCached = false;
 			var unitSize = meta.unitSize;
+			var unitRatio = meta.unitRatio;
+			var camera = meta.camera;
 			var ctx = meta.ctx;
 			ctx.strokeStyle = "#ff0000";
 			ctx.lineWidth = 2;
@@ -303,25 +312,30 @@ Entity.CanvasRenderer = Entity.Controller.extend
 					}
 
 					ctx.save();
-					ctx.translate(this.x, this.y);
-
-					pivotOffsetX = entity.volume.x_unit + entity.pivotX;
-					pivotOffsetY = entity.volume.y_unit + entity.pivotY;
+					pivotOffsetX = entity.volume.x - entity.pivotX;
+					pivotOffsetY = entity.volume.y - entity.pivotY;	
 
 					if(!entity.isChild) {
 						ctx.translate(pivotOffsetX, pivotOffsetY);
 						ctx.rotate(entity._angleRad);
 						ctx.translate(-pivotOffsetX, -pivotOffsetY);
 					}
-					else {
-						ctx.translate(entity._parent.childOffsetX, entity._parent.childOffsetY);
+					else 
+					{
+						var parentOffsetX = entity._parent.volume.x;
+						var parentOffsetY = entity._parent.volume.y;
+
+						ctx.translate(parentOffsetX, parentOffsetY);
+						ctx.rotate(entity._parent.totalAngleRad);
+						ctx.translate(-parentOffsetX, -parentOffsetY);
+
+						ctx.translate(pivotOffsetX, pivotOffsetY);
 						ctx.rotate(entity._angleRad);
-						ctx.translate(-entity._parent.childOffsetX, -entity._parent.childOffsetY);
+						ctx.translate(-pivotOffsetX, -pivotOffsetY);
 					}
 
 					entity.volume.draw(ctx);
-					this._centerTex.draw(ctx, pivotOffsetX - 3, pivotOffsetY - 3);
-
+					this._centerTex.draw(ctx, entity.volume.x-3, entity.volume.y-3);
 					ctx.restore();
 				}
 			}

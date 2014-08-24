@@ -175,12 +175,14 @@ Entity.Geometry = meta.Class.extend
 	{
 		if(!this._texture) { return; }
 
+		var unitSize = this.meta.unitSize;
 		if(!this._texture.isAnimated) {
-			this._texture.draw(ctx, (this._entityCtrl.x + this.drawX) | 0, (this._entityCtrl.y + this.drawY) | 0);
+			console.log(this.drawX);
+			this._texture.draw(ctx, (this.drawX | 0) * unitSize, (this.drawY | 0) * unitSize);
 		}
-		else
+		else 
 		{
-			this._texture.drawFrame(ctx, (this._entityCtrl.x + this.drawX) | 0, (this._entityCtrl.y + this.drawY) | 0,
+			this._texture.drawFrame(ctx, (this.drawX | 0) * unitSize, (this.drawY | 0) * unitSize, 
 				this._currFrame, this.isEmulateReverse);
 		}
 	},
@@ -192,28 +194,40 @@ Entity.Geometry = meta.Class.extend
 		ctx.save();
 		ctx.globalAlpha = this.totalAlpha;
 
-		if(!this.isChild) {
-			ctx.translate(this.volume.x + this._entityCtrl.x + this.pivotX, this.volume.y + this._entityCtrl.y + this.pivotY);
+		var unitSize = this.meta.unitSize;
+		var posX = (this.volume.x - this.pivotX) * unitSize;
+		var posY = (this.volume.y - this.pivotY) * unitSize;
+
+		if(!this.isChild) 
+		{
+			ctx.translate(posX, posY);
 			ctx.rotate(this._angleRad);
+			ctx.translate(-posX, -posY);
 			ctx.scale(this._scaleX * this._flipX, this._scaleY * this._flipY);
-			ctx.translate(-this.volume.x - this.pivotX, -this.volume.y - this.pivotY);
 		}
 		else
 		{
-			ctx.translate(this._parent.childOffsetX, this._parent.childOffsetY);
-			ctx.rotate(this._angleRad);
-			ctx.translate(
-				this.volume.x + this._entityCtrl.x - this._parent.childOffsetX, 
-				this.volume.y + this._entityCtrl.y - this._parent.childOffsetY);
-			ctx.scale(this._scaleX * this._flipX, this._scaleY * this._flipY);
-			ctx.translate(-this.volume.x, -this.volume.y);
+			// var parentOffsetX = this._parent.volume.x * unitSize;
+			// var parentOffsetY = this._parent.volume.y * unitSize;
+
+			// ctx.translate(parentOffsetX, parentOffsetY);
+			// ctx.rotate(this._parent.totalAngleRad);
+			// ctx.translate(-parentOffsetX, -parentOffsetY);
+
+			// ctx.translate(posX + pivotX, posY + pivotY);
+			// ctx.rotate(this._angleRad);
+			// ctx.translate(-pivotX, -pivotY);
+			// ctx.scale(this._scaleX * this._flipX, this._scaleY * this._flipY);
+			// ctx.translate(-posX, -posY);
 		}
 
 		if(!this.texture.isAnimated) {
-			this._texture.draw(ctx, this.drawX | 0, this.drawY | 0);
+			this._texture.draw(ctx, (this.drawX | 0) * unitSize, (this.drawY | 0) * unitSize);
 		}
-		else {
-			this._texture.drawFrame(ctx, this.drawX | 0, this.drawY | 0, this._currFrame, this.isEmulateReverse);
+		else 
+		{
+			this._texture.drawFrame(ctx, (this.drawX | 0) * unitSize, (this.drawY | 0) * unitSize, 
+				this._currFrame, this.isEmulateReverse);
 		}
 
 		ctx.restore();
@@ -408,8 +422,6 @@ Entity.Geometry = meta.Class.extend
 		this._x = x;
 		this._y = y;
 		this.updatePos();
-
-		this.isNeedDraw = true;
 	},
 
 	/**
@@ -417,19 +429,16 @@ Entity.Geometry = meta.Class.extend
 	 */
 	updatePos: function()
 	{
-		var unitSize = this.meta.unitSize;
-		var unitRatio = this.meta.unitRatio;
-		this.drawX = (this._x * unitSize) + this._parent.childOffsetX + this.textureOffsetX - this.pivotX + this._anchorPosX;
-		this.drawY = (this._y * unitSize) + this._parent.childOffsetY + this.textureOffsetY - this.pivotY + this._anchorPosY;	
-		
+		this.drawSrcX = this._x + this._parent.childOffsetX + this.textureOffsetX + this._anchorPosX;
+		this.drawSrcY = this._y + this._parent.childOffsetY + this.textureOffsetY + this._anchorPosY;
 		if(this._view) {
-			this.drawX += this._view._x;
-			this.drawY += this._view._y;
+			this.drawSrcX += this._view._x;
+			this.drawSrcX += this._view._y;
 		}
 
-		this.volume.set(this.drawX * unitRatio, this.drawY * unitRatio);
-		this.drawX -= this.volume.initHalfWidth_unit;
-		this.drawY -= this.volume.initHalfHeight_unit;
+		this.volume.set(this.drawSrcX + this.pivotX, this.drawSrcY + this.pivotY);
+		this.drawX = this.drawSrcX - this.volume.initHalfWidth + this.pivotSrcX;
+		this.drawY = this.drawSrcY - this.volume.initHalfHeight + this.pivotSrcY;
 
 		if(this.children)
 		{
@@ -439,7 +448,7 @@ Entity.Geometry = meta.Class.extend
 			if(this._view) {
 				this.childOffsetX += this._view._x;
 				this.childOffsetY += this._view._y;
-			}
+			}		
 
 			var numChildren = this.children.length;
 			for(var i = 0; i < numChildren; i++) {
@@ -502,16 +511,10 @@ Entity.Geometry = meta.Class.extend
 	 */
 	updateFromTexture: function()
 	{
-		var unitRatio = meta.unitRatio;
+		var unitRatio = this.meta.unitRatio;
 		this.volume.moveToAndResize(0, 0, this._texture._width * unitRatio, this._texture._height * unitRatio);
 
-		this.pivotX = this.pivotRatioX * this.volume.halfWidth;
-		this.pivotY = this.pivotRatioY * this.volume.halfHeight;
-		if(this.children) {
-			this.childPivotX = ((-this.pivotRatioX - 1.0) * this.volume.halfWidth);
-			this.childPivotY = ((-this.pivotRatioY - 1.0) * this.volume.halfHeight);
-		}
-
+		this.updatePivot();
 		this.updatePosType();
 		this.updatePos();
 
@@ -524,7 +527,7 @@ Entity.Geometry = meta.Class.extend
 				if(child.positionType) {
 					child.updatePosType();
 				}
-				child.updateAnchor(null, null);				
+				child.updateAnchor();				
 			}
 		}					
 	},	
@@ -551,7 +554,10 @@ Entity.Geometry = meta.Class.extend
 		this.positionType = 0;
 
 		if(this._x === x && this._y === y) { return; }
-		this.forcePosition(x, y);
+
+		this._x = x;
+		this._y = y;
+		this.updatePos();
 	},
 
 	/**
@@ -602,14 +608,13 @@ Entity.Geometry = meta.Class.extend
 	 */
 	positionTopLeft: function(x, y)
 	{
-		// x += this.volume.halfWidth;
-		// y += this.volume.halfHeight;
-		this.positionType = 1;
+		if(this._x === x && this._y === y && this.positionType === 1) { return; }
 
-		// if(this._x === x && this._y === y) { return; }
+		this.positionType = 1;
 		this.typeX = x;
 		this.typeY = y;
-		this.updatePosType();
+		this._x = (this.typeX + this.volume.halfWidth) | 0;
+		this._y = (this.typeY + this.volume.halfHeight) | 0;
 		this.updatePos();	
 	},
 
@@ -620,16 +625,14 @@ Entity.Geometry = meta.Class.extend
 	 */
 	positionTopRight: function(x, y)
 	{
-		x -= this.volume.halfWidth;
-		y = 0;
-		//x
-		// y = (this.volume.halfHeight * meta.unitRatio);
-		this.positionType = 2;
+		if(this._x === x && this._y === y && this.positionType === 2) { return; }
 
-		if(this._x === x && this._y === y) { return; }
+		this.positionType = 2;
 		this.typeX = x;
-		this.typeY = y;		
-		this.forcePosition(x, y);	
+		this.typeY = y;
+		this._x = (this.typeX - this.volume.halfWidth) | 0;
+		this._y = (this.typeY + this.volume.halfHeight) | 0;
+		this.updatePos();		
 	},
 
 	/**
@@ -639,14 +642,14 @@ Entity.Geometry = meta.Class.extend
 	 */
 	positionBottomLeft: function(x, y)
 	{
-		x += this.volume.halfWidth;
-		y -= this.volume.halfHeight;
-		this.positionType = 3;
+		if(this._x === x && this._y === y && this.positionType === 3) { return; }
 
-		if(this._x === x && this._y === y) { return; }
+		this.positionType = 3;
 		this.typeX = x;
-		this.typeY = y;		
-		this.forcePosition(x, y);	
+		this.typeY = y;
+		this._x = (this.typeX + this.volume.halfWidth) | 0;
+		this._y = (this.typeY - this.volume.halfHeight) | 0;	
+		this.updatePos();		
 	},
 
 	/**
@@ -656,14 +659,14 @@ Entity.Geometry = meta.Class.extend
 	 */
 	positionBottomRight: function(x, y)
 	{
-		x -= this.volume.halfWidth;
-		y -= this.volume.halfHeight;
-		this.positionType = 4;
+		if(this._x === x && this._y === y && this.positionType === 4) { return; }
 
-		if(this._x === x && this._y === y) { return; }
+		this.positionType = 4;
 		this.typeX = x;
-		this.typeY = y;		
-		this.forcePosition(x, y);	
+		this.typeY = y;
+		this._x = (this.typeX - this.volume.halfWidth) | 0;
+		this._y = (this.typeY - this.volume.halfHeight) | 0;	
+		this.updatePos();	
 	},
 
 	/**
@@ -673,13 +676,14 @@ Entity.Geometry = meta.Class.extend
 	 */
 	positionTop: function(x, y)
 	{
-		y += this.volume.halfHeight;
-		this.positionType = 5;
+		if(this._x === x && this._y === y && this.positionType === 5) { return; }
 
-		if(this._x === x && this._y === y) { return; }
+		this.positionType = 5;
 		this.typeX = x;
-		this.typeY = y;		
-		this.forcePosition(x, y);	
+		this.typeY = y;
+		this._x = x;
+		this._y = (this.typeY + this.volume.halfHeight) | 0;	
+		this.updatePos();		
 	},
 
 	/**
@@ -689,13 +693,14 @@ Entity.Geometry = meta.Class.extend
 	 */
 	positionBottom: function(x, y)
 	{
-		y -= this.volume.halfHeight;
-		this.positionType = 6;
+		if(this._x === x && this._y === y && this.positionType === 6) { return; }
 
-		if(this._x === x && this._y === y) { return; }
+		this.positionType = 6;
 		this.typeX = x;
-		this.typeY = y;		
-		this.forcePosition(x, y);	
+		this.typeY = y;
+		this._x = x;
+		this._y = (this.typeY - this.volume.halfHeight) | 0;	
+		this.updatePos();	
 	},
 
 	/**
@@ -705,13 +710,14 @@ Entity.Geometry = meta.Class.extend
 	 */
 	positionLeft: function(x, y)
 	{
-		x += this.volume.halfWidth;
-		this.positionType = 7;
+		if(this._x === x && this._y === y && this.positionType === 7) { return; }
 
-		if(this._x === x && this._y === y) { return; }
+		this.positionType = 7;
 		this.typeX = x;
-		this.typeY = y;		
-		this.forcePosition(x, y);	
+		this.typeY = y;
+		this._x = (this.typeX + this.volume.halfWidth) | 0;
+		this._y = y;
+		this.updatePos();		
 	},
 
 	/**
@@ -721,13 +727,14 @@ Entity.Geometry = meta.Class.extend
 	 */
 	positionRight: function(x, y)
 	{
-		x -= this.volume.halfWidth;
-		this.positionType = 8;
+		if(this._x === x && this._y === y && this.positionType === 8) { return; }
 
-		if(this._x === x && this._y === y) { return; }
+		this.positionType = 8;
 		this.typeX = x;
-		this.typeY = y;		
-		this.forcePosition(x, y);	
+		this.typeY = y;
+		this._x = (this.typeX - this.volume.halfWidth) | 0;
+		this._y = y;
+		this.updatePos();
 	},
 
 	/**
@@ -737,14 +744,14 @@ Entity.Geometry = meta.Class.extend
 	 */
 	topLeft: function(x, y)
 	{
-		x += this.volume.halfWidth;
-		y += this.volume.halfHeight;
-		this.positionType = 1;
+		if(this._x === x && this._y === y && this.positionType === 1) { return; }
 
-		if(this._x === x && this._y === y) { return; }
+		this.positionType = 1;
 		this.typeX = x;
-		this.typeY = y;		
-		this.forcePosition(x, y);		
+		this.typeY = y;
+		this._x = (this.typeX + this.volume.halfWidth) | 0;
+		this._y = (this.typeY + this.volume.halfHeight) | 0;
+		this.updatePos();		
 	},
 
 	/**
@@ -754,14 +761,14 @@ Entity.Geometry = meta.Class.extend
 	 */
 	topRight: function(x, y)
 	{
-		x -= this.volume.halfWidth;
-		y += this.volume.halfHeight;
-		this.positionType = 2;
+		if(this._x === x && this._y === y && this.positionType === 2) { return; }
 
-		if(this._x === x && this._y === y) { return; }
+		this.positionType = 2;
 		this.typeX = x;
-		this.typeY = y;		
-		this.forcePosition(x, y);	
+		this.typeY = y;
+		this._x = (this.typeX - this.volume.halfWidth) | 0;
+		this._y = (this.typeY + this.volume.halfHeight) | 0;
+		this.updatePos();	
 	},
 
 	/**
@@ -771,14 +778,14 @@ Entity.Geometry = meta.Class.extend
 	 */
 	bottomLeft: function(x, y)
 	{
-		x += this.volume.halfWidth;
-		y -= this.volume.halfHeight;
-		this.positionType = 3;
+		if(this._x === x && this._y === y && this.positionType === 3) { return; }
 
-		if(this._x === x && this._y === y) { return; }
+		this.positionType = 3;
 		this.typeX = x;
-		this.typeY = y;		
-		this.forcePosition(x, y);	
+		this.typeY = y;
+		this._x = (this.typeX + this.volume.halfWidth) | 0;
+		this._y = (this.typeY - this.volume.halfHeight) | 0;	
+		this.updatePos();	
 	},
 
 	/**
@@ -788,14 +795,14 @@ Entity.Geometry = meta.Class.extend
 	 */
 	bottomRight: function(x, y)
 	{
-		x -= this.volume.halfWidth;
-		y -= this.volume.halfHeight;
-		this.positionType = 4;
+		if(this._x === x && this._y === y && this.positionType === 4) { return; }
 
-		if(this._x === x && this._y === y) { return; }
+		this.positionType = 4;
 		this.typeX = x;
-		this.typeY = y;		
-		this.forcePosition(x, y);	
+		this.typeY = y;
+		this._x = (this.typeX - this.volume.halfWidth) | 0;
+		this._y = (this.typeY - this.volume.halfHeight) | 0;	
+		this.updatePos();	
 	},	
 
 	/**
@@ -863,17 +870,25 @@ Entity.Geometry = meta.Class.extend
 
 		this.pivotRatioX = x;
 		this.pivotRatioY = y;
-		this.pivotX = this.pivotRatioX * this.volume.halfWidth;
-		this.pivotY = this.pivotRatioY * this.volume.halfHeight;
+
+		this.updatePivot();
+		this.updatePos();
+	},
+
+	updatePivot: function()
+	{
+		this.pivotSrcX = -this.pivotRatioX * this.volume.initHalfWidth;
+		this.pivotSrcY = -this.pivotRatioY * this.volume.initHalfHeight;
+		this.pivotX = this.pivotSrcX * this._scaleX;
+		this.pivotY = this.pivotSrcY * this._scaleY;
+
 		if(this.children) 
 		{
 			this.childPivotX = ((-this.pivotRatioX - 1.0) * this.volume.halfWidth);
 			this.childPivotY = ((-this.pivotRatioY - 1.0) * this.volume.halfHeight);
 			this.childOffsetX = this._x + this.childPivotX + this._anchorPosX;
 			this.childOffsetY = this._y + this.childPivotY + this._anchorPosY;
-		}
-
-		this.updatePos();
+		}		
 	},
 
 	/**
@@ -1076,11 +1091,38 @@ Entity.Geometry = meta.Class.extend
 
 		this._anchorX = x;
 		this._anchorY = y;
-		this._anchorPosX = this._parent.volume.width_unit * this._anchorX;
-		this._anchorPosY = this._parent.volume.height_unit * this._anchorY;
-		this.isAnchor = true;
-		this.updatePos();
+
+		if(!(this._flags & this.Flag.ANCHOR)) {
+			this.isAnchor = true;
+			var self = this;
+			this._onResize_interal = function() { self.updateAnchor(); };
+			this.handleResizeFunc();
+		}
+
+		this.updateAnchor();
 	},
+
+	updateAnchor: function()
+	{
+		if(this._ignoreZoom) {
+			this._anchorPosX = (this._parent.volume.width * (1.0 / this._parent.volume.scaleX) * this._anchorX + 0.5) | 0;
+			this._anchorPosY = (this._parent.volume.height * (1.0 / this._parent.volume.scaleY) * this._anchorY + 0.5) | 0;				
+		}
+		else {
+			this._anchorPosX = (this._parent.volume.width * this._anchorX + 0.5) | 0;
+			this._anchorPosY = (this._parent.volume.height * this._anchorY + 0.5) | 0;
+		}
+
+		this.updatePos();
+
+		if(this.children)
+		{
+			var numChildren = this.children.length;
+			for(var i = 0; i < numChildren; i++) {
+				this.children[i].updateAnchor();
+			}
+		}
+	},	
 
 
 	/**
@@ -1334,7 +1376,7 @@ Entity.Geometry = meta.Class.extend
 		if(this._alpha !== 1.0 && !entity.ignoreParentAlpha) {
 			entity.alpha = entity._alpha;
 		}
-		if(this._scaleX !== 1.0 || this._scaleY !== 1.0) {
+		if((this._scaleX !== 1.0 || this._scaleY !== 1.0) && !entity.ignoreParentScale) {
 			entity.scale(this._scaleX, this._scaleY);
 		}
 		if(this._z !== 0) {
@@ -1362,8 +1404,7 @@ Entity.Geometry = meta.Class.extend
 		}
 
 		if(entity.isAnchor) {
-			entity.anchor(entity._anchorX, entity._anchorY);
-			//entity.updateAnchor = null;
+			entity.updateAnchor();
 		}
 		if(entity.ignoreZoom !== this.ignoreZoom) {
 			entity.ignoreZoom = this.ignoreZoom;
@@ -1482,7 +1523,7 @@ Entity.Geometry = meta.Class.extend
 		if(typeof(minX) === "object") 
 		{
 			// Is AABB volume.
-			if(minX instanceof meta.math.AdvAABB) {
+			if(minX instanceof meta.math.AdvAABB || minX instanceof meta.math.AABB) {
 				this.clipVolume = minX;
 			}
 			// Probably is an entity.
@@ -1826,34 +1867,6 @@ Entity.Geometry = meta.Class.extend
 	},
 
 
-	updateAnchor: function(data, event)
-	{
-		if(this._isAnchor) 
-		{
-			if(this._ignoreZoom) {
-				this._anchorPosX = (this._parent.volume.width_unit * (1.0 / this._parent.volume.scaleX) * this._anchorX + 0.5) | 0;
-				this._anchorPosY = (this._parent.volume.height_unit * (1.0 / this._parent.volume.scaleY) * this._anchorY + 0.5) | 0;				
-			}
-			else {
-				this._anchorPosX = (this._parent.volume.width_unit * this._anchorX + 0.5) | 0;
-				this._anchorPosY = (this._parent.volume.height_unit * this._anchorY + 0.5) | 0;
-			}
-
-			this.updatePos();
-
-			if(this.children)
-			{
-				var numChildren = this.children.length;
-				for(var i = 0; i < numChildren; i++) 
-				{
-					var child = this.children[i];
-					child.updateAnchor(null, null);
-				}
-			}
-		}
-	},
-
-
 	set state(value)
 	{
 		this._state = value;
@@ -1898,7 +1911,7 @@ Entity.Geometry = meta.Class.extend
 
 	set isAnchor(value)
 	{
-		if(this._isAnchor === value) { return; }
+		if((this._flags & this.Flag.ANCHOR) === value) { return; }
 
 		if(!value) 
 		{	
@@ -1906,17 +1919,17 @@ Entity.Geometry = meta.Class.extend
 			this._anchorY = 0;
 			this._anchorPosX = 0;
 			this._anchorPosY = 0;
-			this._isAnchor = false;
-			this.onResize = meta.emptyFuncParam;
+
+			this._flags ^= this.Flag.ANCHOR;
 		}
 		else {
-			this._isAnchor = true;
-			this.onResize = this.updateAnchor;
-			this.isNeedDraw = true;
+			this._flags |= this.Flag.ANCHOR;
 		}
+
+		this.isNeedDraw = true;
 	},
 
-	get isAnchor() { return this._isAnchor; },
+	get isAnchor() { return (this._flags & this.Flag.ANCHOR); },
 
 	get centerX() {
 		return this._x + this._parent.childOffsetX + this.textureOffsetX;
@@ -2040,12 +2053,10 @@ Entity.Geometry = meta.Class.extend
 
 	get alpha() { return this._alpha; },
 
-	set angle(value)
+	// Angle.
+	updateAngle: function()
 	{
-		value = meta.math.toRadians(value);
-		if(this._angleRad === value) { return; }
-
-		this._angleRad = value;
+		this.totalAngleRad = this._angleRad + this._parent.totalAngleRad;
 
 		if(this.children)
 		{
@@ -2055,13 +2066,22 @@ Entity.Geometry = meta.Class.extend
 				var child = this.children[i];
 				if(child.ignoreParentAngle) { continue; }
 
-				child.angleRad = value;
+				child.updateAngle();
 			}
 		}
 
 		this._draw = this._drawTransform;
 		this.isInside = this._isInsideTransform;
-		this.isNeedDraw = true;
+		this.isNeedDraw = true;		
+	},
+
+	set angle(value)
+	{
+		value = meta.math.toRadians(value);
+		if(this._angleRad === value) { return; }
+
+		this._angleRad = value;
+		this.updateAngle();
 	},
 
 	get angle() { return meta.math.toDegree(this._angleRad); },
@@ -2071,22 +2091,7 @@ Entity.Geometry = meta.Class.extend
 		if(this._angleRad === value) { return; }
 
 		this._angleRad = value;
-
-		if(this.children)
-		{
-			var numChildren = this.children.length;
-			for(var i = 0; i < numChildren; i++)
-			{
-				var child = this.children[i];
-				if(child.ignoreParentAngle) { continue; }
-
-				child.angleRad = value;
-			}
-		}
-
-		this._draw = this._drawTransform;
-		this.isInside = this._isInsideTransform;
-		this.isNeedDraw = true;
+		this.updateAngle();
 	},
 
 	get angleRad() { return this._angleRad; },
@@ -2094,7 +2099,11 @@ Entity.Geometry = meta.Class.extend
 	// Scale.
 	updateScale: function()
 	{
-		this.volume.scale(this._scaleX, this._scaleY);
+		this.pivotX = this.pivotSrcX * this._scaleX;
+		this.pivotY = this.pivotSrcY * this._scaleY;
+
+		this.volume.scalePivoted(this._scaleX, this._scaleY, 
+			this.drawSrcX + this.pivotX, this.drawSrcY + this.pivotY);
 
 		this._draw = this._drawTransform;
 		this.isInside = this._isInsideTransform;
@@ -2276,24 +2285,37 @@ Entity.Geometry = meta.Class.extend
 	},
 
 
-	_onResize: meta.emptyFunc,
-
-	set onResize(func)
+	handleResizeFunc: function()
 	{
-		if(this._onResize) {
-			meta.unsubscribe(this, meta.Event.RESIZE, this._onResize);
-			meta.unsubscribe(this, meta.Event.CAMERA_RESIZE, this._onResize);
-		}
-
-		this._onResize = func;
-
-		if(func) {
+		if(this._onResize_user || this._onResize_interal) {
 			meta.subscribe(this, meta.Event.RESIZE, this._onResize);
-			meta.subscribe(this, meta.Event.CAMERA_RESIZE, this._onResize);
+			meta.subscribe(this, meta.Event.CAMERA_RESIZE, this._onResize);		
+		}	
+		else {
+			meta.unsubscribe(this, meta.Event.RESIZE, this._onResize);
+			meta.unsubscribe(this, meta.Event.CAMERA_RESIZE, this._onResize);		
 		}
 	},
 
-	get onResize() { return this._onResize; },
+	_onResize: function(data, event)
+	{
+		if(this._onResize_user) {
+			this._onResize_user();
+		}
+		if(this._onResize_interal) {
+			this._onResize_interal();
+		}
+	},
+
+	_onResize_user: null,
+	_onResize_internal: null,
+
+	set onResize(func) {
+		this._onResize_user = func;
+		this.handleResizeFunc();
+	},
+
+	get onResize() { return this._onResize_user; },
 
 
 	set isCached(value)
@@ -2314,8 +2336,8 @@ Entity.Geometry = meta.Class.extend
 	{
 		if(this._ignoreZoom === value) { return; }
 
-		if(this._isAnchor) {
-			this.updateAnchor(null, null);
+		if(this._flags & this.Flag.ANCHOR) {
+			this.updateAnchor();
 		}
 
 		this._ignoreZoom = value;
@@ -2324,6 +2346,11 @@ Entity.Geometry = meta.Class.extend
 
 	get ignoreZoom() { return this._ignoreZoom; },
 
+
+	// Flag Enum
+	Flag: {
+		ANCHOR: 128
+	},
 
 	//
 	meta: meta,
@@ -2342,18 +2369,21 @@ Entity.Geometry = meta.Class.extend
 	_updateAnimNodeID: -1,
 	_removeFlag: 0,
 
+	_flags: 0,
+
 	_x: 0, _y: 0, _z: 0,
 	typeX: 0, typeY: 0,
 	_anchorX: 0, _anchorY: 0,
 	_anchorPosX: 0, _anchorPosY: 0,
 	_dragOffsetX: 0, _dragOffsetY: 0,
 	drawX: 0, drawY: 0,
+	drawSrcX: 0, drawSrcY: 0,
 	offsetX: 0, offsetY: 0,
 	textureOffsetX: 0, textureOffsetY: 0,
 
 	pivotX: 0, pivotY: 0,
-
 	pivotRatioX: 0, pivotRatioY: 0,	
+	pivotSrcX: 0, pivotSrcY: 0,
 	childOffsetX: 0, childOffsetY: 0,
 	childPivotX: 0, childPivotY: 0,
 
@@ -2368,7 +2398,7 @@ Entity.Geometry = meta.Class.extend
 	clipVolume: null,
 	positionType: 0,
 
-	_angleRad: 0.0,
+	_angleRad: 0.0, totalAngleRad: 0.0,
 	_scaleX: 1.0, _scaleY: 1.0,
 	_flipX: 1.0, _flipY: 1.0,
 	_alpha: 1.0, totalAlpha: 1.0,
@@ -2383,6 +2413,7 @@ Entity.Geometry = meta.Class.extend
 	children: null,
 	ignoreParentAngle: false,
 	ignoreParentAlpha: false,
+	ignoreParentScale: false,
 
 	pickable: true,
 	clickable: true,
@@ -2403,7 +2434,6 @@ Entity.Geometry = meta.Class.extend
 
 	_tChange: 0.0,
 
-	_isAnchor: false,
 	isAdded: false,
 	_isLoaded: false,
 	isVisible: true,

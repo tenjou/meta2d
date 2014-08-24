@@ -21,23 +21,6 @@ meta.math.AdvAABB = function(minX, minY, maxX, maxY)
 	this.y = (minY + this.halfHeight) | 0;
 	this.scaleX = 1.0;
 	this.scaleY = 1.0;
-
-	// Unit sized:
-	var unitSize = meta.unitSize;
-	this.x_unit = this.x * unitSize;
-	this.y_unit = this.y * unitSize;
-
-	this.width_unit = this.width * unitSize;
-	this.height_unit = this.height * unitSize;
-	this.halfWidth_unit = this.width_unit * 0.5;
-	this.halfHeight_unit = this.height_unit * 0.5;
-	this.initHalfWidth_unit = this.halfWidth;
-	this.initHalfHeight_unit = this.halfHeight;
-
-	this.minX_unit = this.x_unit - this.halfWidth_unit;
-	this.minY_unit = this.y_unit - this.halfHeight_unit;
-	this.maxX_unit = this.x_unit + this.halfWidth_unit;
-	this.maxY_unit = this.y_unit + this.halfHeight_unit;	
 };
 
 meta.math.AdvAABB.prototype =
@@ -51,16 +34,6 @@ meta.math.AdvAABB.prototype =
 		this.minY += y;
 		this.maxX += x;
 		this.maxY += y;
-
-		// Unit sized:
-		var unitSize = meta.unitSize;
-		this.x_unit += x * unitSize;
-		this.y_unit += y * unitSize;
-
-		this.minX_unit += this.x_unit;
-		this.minY_unit += this.y_unit;
-		this.maxX_unit += this.x_unit;
-		this.maxY_unit += this.y_unit;	
 	},
 
 	set: function(x, y)
@@ -72,16 +45,6 @@ meta.math.AdvAABB.prototype =
 		this.minY = this.y - this.halfHeight;
 		this.maxX = this.x + this.halfWidth;
 		this.maxY = this.y + this.halfHeight;
-
-		// Unit sized:
-		var unitSize = meta.unitSize;
-		this.x_unit = x * unitSize;
-		this.y_unit = y * unitSize;
-
-		this.minX_unit = this.x_unit - this.halfWidth_unit;
-		this.minY_unit = this.y_unit - this.halfHeight_unit;
-		this.maxX_unit = this.x_unit + this.halfWidth_unit;
-		this.maxY_unit = this.y_unit + this.halfHeight_unit;
 	},
 
 	resize: function(width, height)
@@ -97,22 +60,7 @@ meta.math.AdvAABB.prototype =
 		this.halfHeight = this.height * 0.5;
 
 		this.maxX = this.minX + this.width;
-		this.maxY = this.minY + this.height;
-
-		// Unit sized:
-		var unitSize = meta.unitSize;
-
-		this.width_unit = this.width * unitSize;
-		this.height_unit = this.height * unitSize;
-		this.halfWidth_unit = this.width_unit * 0.5;
-		this.halfHeight_unit = this.height_unit * 0.5;	
-		this.initHalfWidth_unit = this.initHalfWidth * unitSize;
-		this.initHalfHeight_unit = this.initHalfHeight * unitSize;
-
-		this.minX_unit = this.x - this.halfWidth_unit;
-		this.minY_unit = this.y - this.halfHeight_unit;
-		this.maxX_unit = this.x + this.halfWidth_unit;
-		this.maxY_unit = this.y + this.halfHeight_unit;			
+		this.maxY = this.minY + this.height;		
 	},
 
 	moveToAndResize: function(x, y, width, height)
@@ -134,21 +82,6 @@ meta.math.AdvAABB.prototype =
 		this.minY = this.y - this.halfHeight;
 		this.maxX = this.minX + this.width;
 		this.maxY = this.minY + this.height;
-
-		// Unit sized:
-		var unitSize = meta.unitSize;
-
-		this.width_unit = this.width * unitSize;
-		this.height_unit = this.height * unitSize;
-		this.halfWidth_unit = this.width_unit * 0.5;
-		this.halfHeight_unit = this.height_unit * 0.5;	
-		this.initHalfWidth_unit = this.initHalfWidth * unitSize;
-		this.initHalfHeight_unit = this.initHalfHeight * unitSize;		
-
-		this.minX_unit = this.x - this.halfWidth_unit;
-		this.minY_unit = this.y - this.halfHeight_unit;
-		this.maxX_unit = this.x + this.halfWidth_unit;
-		this.maxY_unit = this.y + this.halfHeight_unit;			
 	},
 
 	scale: function(scaleX, scaleY)
@@ -165,19 +98,24 @@ meta.math.AdvAABB.prototype =
 		this.minY = this.y - this.halfHeight;
 		this.maxX = this.minX + this.width;
 		this.maxY = this.minY + this.height;
+	},
 
-		// Unit sized:
-		var unitSize = meta.unitSize;
+	scalePivoted: function(scaleX, scaleY, x, y)
+	{
+		this.scaleX = scaleX;
+		this.scaleY = scaleY;
 
-		this.width_unit = this.width * unitSize;
-		this.height_unit = this.height * unitSize;
-		this.halfWidth_unit = this.width_unit * 0.5;
-		this.halfHeight_unit = this.height_unit * 0.5;	
+		this.width = this.initWidth * this.scaleX;
+		this.height = this.initHeight * this.scaleY;
+		this.halfWidth = this.width / 2;
+		this.halfHeight = this.height / 2;
 
-		this.minX_unit = this.x - this.halfWidth_unit;
-		this.minY_unit = this.y - this.halfHeight_unit;
-		this.maxX_unit = this.x + this.halfWidth_unit;
-		this.maxY_unit = this.y + this.halfHeight_unit;	
+		this.x = x;
+		this.y = y;
+		this.minX = this.x - this.halfWidth;
+		this.minY = this.y - this.halfHeight;
+		this.maxX = this.minX + this.width;
+		this.maxY = this.minY + this.height;
 	},
 
 	vsAABB: function(src)
@@ -284,10 +222,10 @@ meta.math.AdvAABB.prototype =
 		var unitSize = meta.unitSize;
 		var minX, minY, maxX, maxY;
 
-		minX = this.minX_unit | 0;
-		minY = this.minY_unit | 0;
-		maxX = (this.maxX_unit + 0.5) | 0;
-		maxY = (this.maxY_unit + 0.5) | 0;
+		minX = this.minX | 0;
+		minY = this.minY | 0;
+		maxX = (this.maxX + 0.5) | 0;
+		maxY = (this.maxY + 0.5) | 0;
 
 		ctx.beginPath();
 		ctx.moveTo(minX, minY);

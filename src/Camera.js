@@ -117,16 +117,15 @@ meta.Camera.prototype =
 
 			this.volume.move(this._x, this._y);
 		}
-
+		
 		this._chnMove.emit(this, meta.Event.CAMERA_MOVE);
 	},
 
 	updateZoom: function() 
 	{
-		this._zoom *= 1.3426573426573427;
 		if(this.prevZoom !== this._zoom) 
 		{
-			this.zoomRatio = 1.0 / this._zoom;
+			this.zoomRatio = 1.0 / this._zoom;		
 			this.volume.scale(this.zoomRatio, this.zoomRatio);
 			this._chnResize.emit(this, meta.Event.CAMERA_RESIZE);
 		}	
@@ -148,8 +147,8 @@ meta.Camera.prototype =
 		
 		if(scope.engine.adapt()) 
 		{
-			width = this.zoomBounds.width * scope.unitSize;
-			height = this.zoomBounds.height * scope.unitSize;
+			width = this.zoomBounds.width;
+			height = this.zoomBounds.height;
 			diffX = (scope.width / width);
 			diffY = (scope.height / height);
 
@@ -158,7 +157,7 @@ meta.Camera.prototype =
 				this._zoom = diffY;
 			}
 
-			this.volume.resize(scope.width * scope.unitRatio, scope.height * scope.unitRatio);		
+			this.volume.resize(scope.width, scope.height);		
 		}
 
 		this.updateZoom();

@@ -759,6 +759,7 @@ Entity.Controller = meta.Controller.extend
 
 	//
 	_x: 0, _y: 0, _z: 0,
+	totalAngleRad: 0.0,
 	_alpha: 1.0,
 	volume: null,
 

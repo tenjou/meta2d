@@ -159,8 +159,6 @@ Resource.Controller = meta.Controller.extend
 			this.numToLoad--;
 			this.numLoaded++;
 
-			console.log(this.numToLoad, this.numLoaded);
-
 			if(this.numToLoad === 0 && !meta.engine.isLoading) {
 				meta.engine.onResourcesLoaded();
 				this._chn_allLoaded.emit(this, Resource.Event.ALL_LOADED);

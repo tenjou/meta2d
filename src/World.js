@@ -58,8 +58,8 @@ meta.World.prototype =
 		// }		
 
 		var scope = meta;
-		var width = (scope.camera.width * scope.unitRatio + 0.5) | 0;
-		var height = (scope.camera.height * scope.unitRatio + 0.5) | 0;
+		var width = (scope.camera.width + 0.5) | 0;
+		var height = (scope.camera.height + 0.5) | 0;
 
 		this.centerX = width / 2;
 		this.centerY = height / 2;
