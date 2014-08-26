@@ -763,6 +763,7 @@ Entity.Controller = meta.Controller.extend
 	totalAlpha: 1.0,
 	totalScaleX: 1.0, totalScaleY: 1.0,
 	volume: null,
+	pivotX: 0, pivotY: 0,
 
 	cells: null,
 	_cellSizeX: 128, _cellSizeY: 128,

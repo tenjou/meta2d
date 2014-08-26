@@ -219,7 +219,7 @@ meta.Camera.prototype =
 	},
 
 	_onWorldResize: function(data, event) {
-		//this.updateView();
+		
 	},
 
 

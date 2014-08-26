@@ -660,14 +660,13 @@ meta.serialize = function(obj)
  */
 meta.addDescription = function(text)
 {
-	var msg = new Entity.Text();
+	// Text.
+	var msg = new Entity.Text(text);
 	msg.color = "#ffffff";
 	msg.size = 14;
-	msg.text = text;
-	msg.isPickable = false;
-	msg.ignoreZoom = true;
-	msg.enableDebug = false;
+	msg.anchor(0.5);
 
+	// Background.
 	var texture = new Resource.Texture();
 	texture.fillRect({
 		width: msg.width + 10, height: msg.height + 10,
@@ -683,7 +682,10 @@ meta.addDescription = function(text)
 	meta.view.add(bg);
 
 	bg.attach(msg);
-	msg.anchor(0.5);
+	
+
+	window.msg = msg;
+	window.bg =bg;	
 };
 
 meta.adaptTo = function(width, height, path)

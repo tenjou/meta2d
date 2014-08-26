@@ -440,8 +440,8 @@ Entity.Geometry = meta.Class.extend
 
 		if(this.children)
 		{			
-			// this.childOffsetX = (entity._parent.volume.x - entity._parent.pivotX);
-			// this.childOffsetY = (entity._parent.volume.x - entity._parent.pivotX);
+			this.childOffsetX = this._x + this.childPivotX + this._anchorPosX;
+			this.childOffsetY = this._y + this.childPivotY + this._anchorPosY;
 
 			if(this._view) {
 				this.childOffsetX += this._view._x;
@@ -1105,7 +1105,7 @@ Entity.Geometry = meta.Class.extend
 
 	updateAnchor: function()
 	{
-		if(this._ignoreZoom) {
+		if(this._flags & this.Flag.IGNORE_ZOOM) {
 			this._anchorPosX = (this._parent.volume.width * (1.0 / this._parent.volume.scaleX) * this._anchorX + 0.5) | 0;
 			this._anchorPosY = (this._parent.volume.height * (1.0 / this._parent.volume.scaleY) * this._anchorY + 0.5) | 0;				
 		}
@@ -1369,6 +1369,9 @@ Entity.Geometry = meta.Class.extend
 
 		entity._parent = this;
 		entity.isChild = true;
+		entity.ignoreZoom = this.ignoreZoom;
+		entity.isPickable = this.isPickable;
+		entity.enableDebug = this.enableDebug;
 		entity._view = this._view;
 
 		entity.updateAngle();
@@ -2415,6 +2418,7 @@ Entity.Geometry = meta.Class.extend
 
 	get isCached() { return this._isCached; },
 
+	// Ignore Zoom.
 	set ignoreZoom(value) 
 	{
 		if((this._flags & this.Flag.IGNORE_ZOOM) === value) { return; }
@@ -2423,11 +2427,34 @@ Entity.Geometry = meta.Class.extend
 			this.updateAnchor();
 		}
 
-		this._flags |= this.Flag.IGNORE_ZOOM;
+		if(value) {
+			this._flags |= this.Flag.IGNORE_ZOOM;
+		}
+		else {
+			this._flags ^= this.Flag.IGNORE_ZOOM;
+		}
+
 		this.isNeedDraw = true;
 	},
 
-	get ignoreZoom() { return (this._flags & this.Flag.IGNORE_ZOOM); },
+	get ignoreZoom() { return !!(this._flags & this.Flag.IGNORE_ZOOM); },
+
+	// Enable Debug.
+	set enableDebug(value) 
+	{ 
+		if((this._flags & this.Flag.ENABLE_DEBUG) === value) { return; }
+
+		if(value) {
+			this._flag |= this.Flag.ENABLE_DEBUG;
+		}
+		else {
+			this._flag ^= this.Flag.ENABLE_DEBUG;
+		}
+		
+		this.isNeedDraw = true;
+	},
+
+	get enableDebug() { return !!(this._flags & this.Flag.ENABLE_DEBUG); },
 
 
 	// Flag Enum
@@ -2436,7 +2463,8 @@ Entity.Geometry = meta.Class.extend
 		IGNORE_ZOOM: 256,
 		IGNORE_PARENT_ANGLE: 512,
 		IGNORE_PARENT_SCALE: 1024,
-		IGNORE_PARENT_ALPHA: 2048
+		IGNORE_PARENT_ALPHA: 2048,
+		ENABLE_DEBUG: 16384
 	},
 
 	//
@@ -2533,6 +2561,5 @@ Entity.Geometry = meta.Class.extend
 	_cacheIndex: -1, // "-1" - it's cached. If more, it's considered as dynamic entity.
 
 	_showBounds: false,
-	_isHighlight: false,
-	enableDebug: true,
+	_isHighlight: false
 });
