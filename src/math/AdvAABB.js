@@ -63,25 +63,16 @@ meta.math.AdvAABB.prototype =
 		this.maxY = this.minY + this.height;		
 	},
 
-	moveToAndResize: function(x, y, width, height)
+	resizeInit: function(width, height)
 	{
-		this.x = x;
-		this.y = y;
-
 		this.initWidth = width;
 		this.initHeight = height;
 		this.initHalfWidth = width * 0.5;
 		this.initHalfHeight = height * 0.5;
-
-		this.width = this.initWidth * this.scaleX;
-		this.height = this.initHeight * this.scaleY;
-		this.halfWidth = this.width * 0.5;
-		this.halfHeight = this.height * 0.5;	
-
-		this.minX = this.x - this.halfWidth;
-		this.minY = this.y - this.halfHeight;
-		this.maxX = this.minX + this.width;
-		this.maxY = this.minY + this.height;
+		this.width = this.initWidth;
+		this.height = this.initHeight;
+		this.halfWidth = this.initHalfWidth;
+		this.halfHeight = this.initHalfHeight;
 	},
 
 	scale: function(scaleX, scaleY)

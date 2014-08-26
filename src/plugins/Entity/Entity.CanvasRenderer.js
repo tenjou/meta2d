@@ -292,6 +292,7 @@ Entity.CanvasRenderer = Entity.Controller.extend
 
 			var entity;
 			var pivotOffsetX, pivotOffsetY;
+			var parentOffsetX, parentOffsetY;
 			var currNode = this.entities.first.next;
 			var lastNode = this.entities.last;
 			for(; currNode !== lastNode; currNode = currNode.next)
@@ -322,8 +323,8 @@ Entity.CanvasRenderer = Entity.Controller.extend
 					}
 					else 
 					{
-						var parentOffsetX = entity._parent.volume.x;
-						var parentOffsetY = entity._parent.volume.y;
+						parentOffsetX = entity._parent.volume.x - entity._parent.pivotX;
+						parentOffsetY = entity._parent.volume.y - entity._parent.pivotY;
 
 						ctx.translate(parentOffsetX, parentOffsetY);
 						ctx.rotate(entity._parent.totalAngleRad);
@@ -335,7 +336,7 @@ Entity.CanvasRenderer = Entity.Controller.extend
 					}
 
 					entity.volume.draw(ctx);
-					this._centerTex.draw(ctx, entity.volume.x-3, entity.volume.y-3);
+					this._centerTex.draw(ctx, pivotOffsetX - 3, pivotOffsetY - 3);
 					ctx.restore();
 				}
 			}

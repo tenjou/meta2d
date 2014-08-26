@@ -165,28 +165,28 @@ Entity.WebGLRenderer = Entity.Controller.extend
 			}
 
 			if(!entity.isChild) {
-				this._center[0] = (entity.volume.x + entity.pivotX);
-				this._center[1] = (entity.volume.y + entity.pivotY);
+				this._center[0] = (entity.volume.x - entity.pivotX) * unitSize;
+				this._center[1] = (entity.volume.y - entity.pivotY) * unitSize;
 			}
 			else {
-				this._center[0] = entity._parent.childOffsetX;
-				this._center[1] = entity._parent.childOffsetY;
+				this._center[0] = (entity._parent.volume.x - entity._parent.pivotX + entity.volume.x) * unitSize;
+				this._center[1] = (entity._parent.volume.y - entity._parent.pivotY + entity.volume.y) * unitSize;
 			}
 
-			this._scale[0] = entity._scaleX * entity._flipX;
-			this._scale[1] = entity._scaleY * entity._flipY;
+			this._scale[0] = entity.totalScaleX * entity._flipX;
+			this._scale[1] = entity.totalScaleY * entity._flipY;
 
 			this._frameCoord[0] = texture._x + ((entity.currFrame % entity._texture.numFramesX) * texture._xRatio);
 			this._frameCoord[1] = texture._y + (Math.floor(entity.currFrame / entity._texture.numFramesX) * texture._yRatio);
 			this._frameCoord[2] = texture._widthRatio;
 			this._frameCoord[3] = texture._heightRatio;
 
-			gl.uniform1f(this.locAlpha, entity._alpha);
+			gl.uniform1f(this.locAlpha, entity.totalAlpha);
 			gl.uniform2fv(this.locPos, this._position);
 			gl.uniform2fv(this.locCenter, this._center);
 			gl.uniform2fv(this.locScale, this._scale);
 			gl.uniform4fv(this.locFrameCoord, this._frameCoord);
-			gl.uniform1f(this.locAngle, entity._angleRad);
+			gl.uniform1f(this.locAngle, entity.totalAngleRad);
 
 			if(texture.fromAtlas) {
 				gl.bindTexture(gl.TEXTURE_2D, texture.ptr.image);
@@ -216,6 +216,7 @@ Entity.WebGLRenderer = Entity.Controller.extend
 		{
 			gl.disable(gl.BLEND);
 			gl.uniform1f(this.locAlpha, 1.0);
+			gl.lineWidth(2.0);
 
 			currNode = this.entities.first.next;
 			for(; currNode !== lastNode; currNode = currNode.next)
@@ -237,16 +238,16 @@ Entity.WebGLRenderer = Entity.Controller.extend
 					}
 
 					if(!entity.isChild) {
-						this._center[0] = entity.volume.x;
-						this._center[1] = entity.volume.y;
+						this._center[0] = (entity.volume.x - entity.pivotX) * unitSize;
+						this._center[1] = (entity.volume.y - entity.pivotY) * unitSize;
 					}
 					else {
-						this._center[0] = entity._parent.childOffsetX;
-						this._center[1] = entity._parent.childOffsetY;
+						this._center[0] = (entity._parent.volume.x - entity._parent.pivotX + entity.volume.x) * unitSize;
+						this._center[1] = (entity._parent.volume.y - entity._parent.pivotY + entity.volume.y) * unitSize;
 					}
 
-					this._scale[0] = entity._scaleX * entity._flipX;
-					this._scale[1] = entity._scaleY * entity._flipY;
+					this._scale[0] = entity.totalScaleX * entity._flipX;
+					this._scale[1] = entity.totalScaleY * entity._flipY;
 
 					if(entity.isHighlight) {
 						gl.bindTexture(gl.TEXTURE_2D, this._highlightTex.image);
@@ -258,11 +259,10 @@ Entity.WebGLRenderer = Entity.Controller.extend
 					gl.uniform2fv(this.locPos, this._position);
 					gl.uniform2fv(this.locCenter, this._center);
 					gl.uniform2fv(this.locScale, this._scale);
-					gl.uniform1f(this.locAngle, entity._angleRad);
+					gl.uniform1f(this.locAngle, entity.totalAngleRad);
 					shader.bindBuffer2f("vertexPos", entity.texture.vbo);
 
 					gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this._lineIndices);
-					gl.lineWidth(2.0);
 					gl.drawElements(gl.LINE_STRIP, 5, gl.UNSIGNED_SHORT, 0);
 					gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
@@ -276,10 +276,11 @@ Entity.WebGLRenderer = Entity.Controller.extend
 						gl.bindTexture(gl.TEXTURE_2D, this._centerTex.image);
 					}
 
-					this._position[0] = (entity.volume.x + entity.pivotX - 3) * unitSize;
-					this._position[1] = (entity.volume.y + entity.pivotY - 3) * unitSize;
-					this._scale[0] = 1.0;
-					this._scale[1] = 1.0;
+					gl.lineWidth(2.0);
+					this._position[0] = (entity.volume.x - entity.pivotX - 3) * unitSize;
+					this._position[1] = (entity.volume.y - entity.pivotY - 3) * unitSize;
+					this._scale[0] = unitSize;
+					this._scale[1] = unitSize;
 
 					gl.uniform2fv(this.locPos, this._position);
 					gl.uniform2fv(this.locScale, this._scale);

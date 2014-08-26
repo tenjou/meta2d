@@ -206,8 +206,10 @@ Entity.Geometry = meta.Class.extend
 		}
 		else
 		{
-			var parentOffsetX = this._parent.volume.x * unitSize;
-			var parentOffsetY = this._parent.volume.y * unitSize;
+			var posX = (this.volume.x - this.pivotX) * unitSize;
+			var posY = (this.volume.y - this.pivotY) * unitSize;			
+			var parentOffsetX = (this._parent.volume.x - this._parent.pivotX) * unitSize;
+			var parentOffsetY = (this._parent.volume.y - this._parent.pivotY) * unitSize;
 
 			ctx.translate(parentOffsetX, parentOffsetY);
 			ctx.rotate(this._parent.totalAngleRad);
@@ -215,7 +217,6 @@ Entity.Geometry = meta.Class.extend
 
 			ctx.translate(posX, posY);
 			ctx.rotate(this._angleRad);
-			ctx.scale(this.totalScaleX * this._flipX, this.totalScaleY * this._flipY);
 			ctx.translate(-posX, -posY);
 		}
 
@@ -230,7 +231,6 @@ Entity.Geometry = meta.Class.extend
 
 		ctx.restore();
 	},
-
 
 	/**
 	 * Update function.
@@ -439,9 +439,9 @@ Entity.Geometry = meta.Class.extend
 		this.drawY = this.drawSrcY - this.volume.initHalfHeight + this.pivotSrcY;
 
 		if(this.children)
-		{
-			this.childOffsetX = this._x + this.childPivotX + this._anchorPosX + this._parent.childOffsetX;
-			this.childOffsetY = this._y + this.childPivotY + this._anchorPosY + this._parent.childOffsetY;
+		{			
+			// this.childOffsetX = (entity._parent.volume.x - entity._parent.pivotX);
+			// this.childOffsetY = (entity._parent.volume.x - entity._parent.pivotX);
 
 			if(this._view) {
 				this.childOffsetX += this._view._x;
@@ -509,10 +509,9 @@ Entity.Geometry = meta.Class.extend
 	 */
 	updateFromTexture: function()
 	{
-		var unitRatio = this.meta.unitRatio;
-		this.volume.moveToAndResize(0, 0, this._texture._width * unitRatio, this._texture._height * unitRatio);
+		var unitRatio = this.meta.unitRatio;			
+		this.volume.resizeInit(this._texture._width * unitRatio, this._texture._height * unitRatio);	
 
-		this.updatePivot();
 		this.updatePosType();
 		this.updatePos();
 
@@ -880,10 +879,14 @@ Entity.Geometry = meta.Class.extend
 		this.pivotX = this.pivotSrcX * this._scaleX;
 		this.pivotY = this.pivotSrcY * this._scaleY;
 
+		if(this.id == 2) {
+			console.log(this.pivotX, this.pivotY, this.pivotSrcX, this.pivotSrcY);
+		}
+
 		if(this.children) 
 		{
-			this.childPivotX = ((-this.pivotRatioX - 1.0) * this.volume.halfWidth);
-			this.childPivotY = ((-this.pivotRatioY - 1.0) * this.volume.halfHeight);
+			this.childPivotX = ((-this.pivotRatioX - 1.0) * this.volume.initHalfWidth);
+			this.childPivotY = ((-this.pivotRatioY - 1.0) * this.volume.initHalfHeight);
 			this.childOffsetX = this._x + this.childPivotX + this._anchorPosX;
 			this.childOffsetY = this._y + this.childPivotY + this._anchorPosY;
 		}		
@@ -2089,6 +2092,8 @@ Entity.Geometry = meta.Class.extend
 			return;
 		}
 
+		this.totalAngleRad = angleRad;
+
 		if(this.children)
 		{
 			var numChildren = this.children.length;
@@ -2149,15 +2154,15 @@ Entity.Geometry = meta.Class.extend
 			scaleY = this._scaleY * this._parent.totalScaleY;
 		}	
 
-		if(scaleX === this.totalScaleX && scaleY === this.totalScaleY) {
-			return;
-		}
+		// if(scaleX === this.totalScaleX && scaleY === this.totalScaleY) {
+		// 	return;
+		// }
 
 		this.totalScaleX = scaleX;
 		this.totalScaleY = scaleY;
 
-		this.pivotX = this.pivotSrcX * this.totalScaleX;
-		this.pivotY = this.pivotSrcY * this.totalScaleY;
+		this.pivotX = this.pivotSrcX * scaleX;
+		this.pivotY = this.pivotSrcY * scaleY;
 
 		this.volume.scalePivoted(this.totalScaleX, this.totalScaleY, 
 			this.drawSrcX + this.pivotX, this.drawSrcY + this.pivotY);

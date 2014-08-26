@@ -213,6 +213,7 @@ meta.Camera.prototype =
 
 	_onResize: function(data, event)
 	{
+		this.volume.resize(data.width, data.height);
 		this.updateView();
 		this._chnResize.emit(this, meta.Event.CAMERA_RESIZE);
 	},
