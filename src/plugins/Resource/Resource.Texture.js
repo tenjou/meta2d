@@ -151,8 +151,6 @@ Resource.Texture = Resource.Basic.extend
 			this.fullPath = Resource.ctrl.rootPath + this.path;
 		}
 
-		console.log(this.fullPath);
-
 		Resource.ctrl.addToLoad(this);
 
 		var self = this;

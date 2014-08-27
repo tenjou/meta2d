@@ -1371,7 +1371,7 @@ Entity.Geometry = meta.Class.extend
 		entity.isChild = true;
 		entity.ignoreZoom = this.ignoreZoom;
 		entity.isPickable = this.isPickable;
-		entity.enableDebug = this.enableDebug;
+		entity.disableDebug = this.disableDebug;
 		entity._view = this._view;
 
 		entity.updateAngle();
@@ -2011,22 +2011,6 @@ Entity.Geometry = meta.Class.extend
 
 	get isNeedDraw() { return this._isNeedDraw; },
 
-
-	set showBounds(value)
-	{
-		if(this._showBounds === value) { return; }
-
-		this._showBounds = value;
-		if(value) {
-			this._entityCtrl._addToDrawBounds();
-		}
-		else {
-			this._entityCtrl._removeToDrawBounds();
-		}
-	},
-
-	get showBounds() { return this._showBounds; },
-
 	// Alpha.
 	updateAlpha: function()
 	{
@@ -2418,10 +2402,10 @@ Entity.Geometry = meta.Class.extend
 
 	get isCached() { return this._isCached; },
 
-	// Ignore Zoom.
+	// Ignore zoom.
 	set ignoreZoom(value) 
 	{
-		if((this._flags & this.Flag.IGNORE_ZOOM) === value) { return; }
+		if(this._flags & this.Flag.IGNORE_ZOOM === value) { return; }
 
 		if(this._flags & this.Flag.ANCHOR) {
 			this.updateAnchor();
@@ -2439,22 +2423,39 @@ Entity.Geometry = meta.Class.extend
 
 	get ignoreZoom() { return !!(this._flags & this.Flag.IGNORE_ZOOM); },
 
-	// Enable Debug.
-	set enableDebug(value) 
-	{ 
-		if((this._flags & this.Flag.ENABLE_DEBUG) === value) { return; }
+	// Show bounds.
+	set showBounds(value)
+	{
+		if(this._flags & this.Flag.SHOW_BOUNDS === value) { return; }
 
 		if(value) {
-			this._flag |= this.Flag.ENABLE_DEBUG;
+			this._flags |= this.Flag.SHOW_BOUNDS;
+			this._entityCtrl._addToDrawBounds();
 		}
 		else {
-			this._flag ^= this.Flag.ENABLE_DEBUG;
+			this._flags ^= this.Flag.SHOW_BOUNDS;
+			this._entityCtrl._removeToDrawBounds();
+		}
+	},
+
+	get showBounds() { return !!(this._flags & this.Flag.SHOW_BOUNDS); },	
+
+	// Enable debug.
+	set disableDebug(value) 
+	{ 
+		if(this._flags & this.Flag.DISABLE_DEBUG === value) { return; }
+
+		if(value) {
+			this._flag |= this.Flag.DISABLE_DEBUG;
+		}
+		else {
+			this._flag ^= this.Flag.DISABLE_DEBUG;
 		}
 		
 		this.isNeedDraw = true;
 	},
 
-	get enableDebug() { return !!(this._flags & this.Flag.ENABLE_DEBUG); },
+	get disableDebug() { return !!(this._flags & this.Flag.DISABLE_DEBUG); },
 
 
 	// Flag Enum
@@ -2464,7 +2465,8 @@ Entity.Geometry = meta.Class.extend
 		IGNORE_PARENT_ANGLE: 512,
 		IGNORE_PARENT_SCALE: 1024,
 		IGNORE_PARENT_ALPHA: 2048,
-		ENABLE_DEBUG: 16384
+		SHOW_BOUNDS: 4096,
+		DISABLE_DEBUG: 16384
 	},
 
 	//
@@ -2560,6 +2562,5 @@ Entity.Geometry = meta.Class.extend
 	_isNeedOffset: false,
 	_cacheIndex: -1, // "-1" - it's cached. If more, it's considered as dynamic entity.
 
-	_showBounds: false,
 	_isHighlight: false
 });

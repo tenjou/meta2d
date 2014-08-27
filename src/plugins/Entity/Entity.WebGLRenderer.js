@@ -222,7 +222,7 @@ Entity.WebGLRenderer = Entity.Controller.extend
 			for(; currNode !== lastNode; currNode = currNode.next)
 			{
 				entity = currNode.entity;
-				if((entity._showBounds || this.showBounds) && entity.enableDebug && entity.isVisible && entity.isLoaded)
+				if((entity.showBounds || this.showBounds) && !entity.disableDebug && entity.isVisible && entity.isLoaded)
 				{
 					if(entity._flipX === 1.0) {
 						this._position[0] = entity.volume.minX * unitSize | 0;

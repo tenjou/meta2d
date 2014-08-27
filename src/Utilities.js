@@ -678,14 +678,10 @@ meta.addDescription = function(text)
 	bg.positionTop(0, 10);
 	bg.isPickable = false;
 	bg.ignoreZoom = true;
-	bg.enableDebug = false;
+	bg.disableDebug = false;
 	meta.view.add(bg);
 
 	bg.attach(msg);
-	
-
-	window.msg = msg;
-	window.bg =bg;	
 };
 
 meta.adaptTo = function(width, height, path)
