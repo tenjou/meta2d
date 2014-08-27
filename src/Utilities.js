@@ -663,7 +663,6 @@ meta.addDescription = function(text)
 	// Text.
 	var msg = new Entity.Text(text);
 	msg.color = "#ffffff";
-	msg.size = 14;
 	msg.anchor(0.5);
 
 	// Background.

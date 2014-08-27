@@ -66,6 +66,8 @@ Entity.Geometry = meta.Class.extend
 		}		
 	},
 
+	get parent() { return this._parent; },
+
 
 	/**
 	 * Destroy and remove entity from all views.
@@ -454,6 +456,10 @@ Entity.Geometry = meta.Class.extend
 			}
 		}
 
+		if(this instanceof Entity.Text) {
+			console.log(this.drawX, this.drawY);
+		}
+
 		this.isNeedDraw = true;
 	},
 
@@ -512,6 +518,7 @@ Entity.Geometry = meta.Class.extend
 		var unitRatio = this.meta.unitRatio;			
 		this.volume.resizeInit(this._texture._width * unitRatio, this._texture._height * unitRatio);	
 
+		this.updatePivot();
 		this.updatePosType();
 		this.updatePos();
 
@@ -1370,9 +1377,15 @@ Entity.Geometry = meta.Class.extend
 		entity._parent = this;
 		entity.isChild = true;
 		entity.ignoreZoom = this.ignoreZoom;
-		entity.isPickable = this.isPickable;
 		entity.disableDebug = this.disableDebug;
 		entity._view = this._view;
+
+		if(!this.pickable) {
+			entity.pickable = false;
+		}
+		if(!this.clickable) {
+			entity.clickable = false;
+		}
 
 		entity.updateAngle();
 		entity.updateAlpha();

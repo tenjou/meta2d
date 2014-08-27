@@ -16,7 +16,7 @@ Entity.Controller = meta.Controller.extend
 	init: function()
 	{
 		Entity.Geometry.prototype._entityCtrl = this;
-		Entity.Geometry.prototype.parent = this;
+		Entity.Geometry.prototype._parent = this;
 
 		this.entities = new Entity.DepthList();
 		this.entitiesToAdd = [];

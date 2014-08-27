@@ -79,13 +79,14 @@ UI.Button = Entity.Geometry.extend
 	{
 		if(!this._label)
 		{
-			this._label = new Entity.Text();
-			this._label.color = "white";
-			this._label.size = 20;
-			this._label.text = str;
-			this._label.anchor(0.5);
-			this._label.isPickable = false;
+			this._label = new Entity.Text(str);
+			this._label.color = "#ffffff";
 			this.attach(this._label);
+
+			this._label.anchor(0.5);
+			this._label.pickable = false;			
+
+			window.label = this._label;			
 		}
 		else {
 			this._label.setText(str);

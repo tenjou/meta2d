@@ -146,8 +146,8 @@ Entity.Text = Entity.Geometry.extend
 	//
 	_text: "",
 	_font: "Arial",
-	_fontSize: 18,
-	_fontSizePx: "18px",
+	_fontSize: 14,
+	_fontSizePx: "14px",
 	_color: "#000000",
 	_outlineColor: "#ffffff",
 	_outlineWidth: 1,

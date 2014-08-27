@@ -8,7 +8,7 @@ UI.Controller = meta.Controller.extend
 	{
 		var buttonTex = new Resource.Texture();
 		buttonTex.fillRect({
-			color: "#333333",
+			color: "#111",
 			width: 100, height: 40
 		});
 
@@ -28,8 +28,7 @@ UI.Controller = meta.Controller.extend
 		this.style = new UI.Style({
 			button: {
 				"*": {
-					texture: buttonTex,
-					width: 100, height: 40
+					texture: buttonTex
 				},
 				"*:hover": {
 					texture: buttonOnHoverTex
