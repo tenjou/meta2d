@@ -9,19 +9,19 @@ UI.Controller = meta.Controller.extend
 		var buttonTex = new Resource.Texture();
 		buttonTex.fillRect({
 			color: "#111",
-			width: 100, height: 40
+			width: 160, height: 40
 		});
 
 		var buttonOnHoverTex = new Resource.Texture();
 		buttonOnHoverTex.fillRect({
 			color: "#ff0000",
-			width: 100, height: 40
+			width: 160, height: 40
 		});
 
 		var buttonOnActive = new Resource.Texture();
 		buttonOnActive.fillRect({
 			color: "#ff4488",
-			width: 100, height: 40
+			width: 160, height: 40
 		});
 
 		//

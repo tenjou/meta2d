@@ -804,26 +804,29 @@ meta.Engine.prototype =
 		requestAnimationFrame(this._renderLoop);
 	},
 
-
-	enterFullScreen: function()
+	fullscreen: function(value)
 	{
 		var device = meta.device;
-		if(device.isFullScreen) { return; }
+		if(device.isFulScreen === value) { return; }
 
-		if(!device.support.fullScreen) {
-			console.warn("[meta.engine.enterFullScreen]:", "Device does not support fullscreen.");
-			return;
+		if(value) 
+		{
+			if(!device.support.fullScreen) {
+				console.warn("[meta.engine.enterFullScreen]:", "Device does not support fullscreen.");
+				return;
+			}
+
+			document.documentElement[device.fullScreenRequest](Element.ALLOW_KEYBOARD_INPUT);			
 		}
-
-		document.documentElement[device.fullScreenRequest](Element.ALLOW_KEYBOARD_INPUT);
+		else {
+			document[meta.device.fullScreenExit]();
+		}
 	},
 
-	exitFullScreen: function()
-	{
-		if(!meta.device.isFullScreen) { return; }
-
-		document[meta.device.fullScreenExit]();
+	toggleFullscreen: function() {
+		this.fullscreen(!meta.device.isFullScreen);
 	},
+
 
 	//
 	elementStyle: "padding:0; margin:0;",

@@ -456,10 +456,6 @@ Entity.Geometry = meta.Class.extend
 			}
 		}
 
-		if(this instanceof Entity.Text) {
-			console.log(this.drawX, this.drawY);
-		}
-
 		this.isNeedDraw = true;
 	},
 
@@ -885,10 +881,6 @@ Entity.Geometry = meta.Class.extend
 		this.pivotSrcY = -this.pivotRatioY * this.volume.initHalfHeight;
 		this.pivotX = this.pivotSrcX * this._scaleX;
 		this.pivotY = this.pivotSrcY * this._scaleY;
-
-		if(this.id == 2) {
-			console.log(this.pivotX, this.pivotY, this.pivotSrcX, this.pivotSrcY);
-		}
 
 		if(this.children) 
 		{
@@ -2383,10 +2375,10 @@ Entity.Geometry = meta.Class.extend
 	_onResize: function(data, event)
 	{
 		if(this._onResize_user) {
-			this._onResize_user();
+			this._onResize_user(data);
 		}
 		if(this._onResize_interal) {
-			this._onResize_interal();
+			this._onResize_interal(data);
 		}
 	},
 
