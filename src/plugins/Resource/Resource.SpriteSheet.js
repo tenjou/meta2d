@@ -145,6 +145,7 @@ Resource.SpriteSheet = Resource.Basic.extend
 		texture._width = node.getAttribute("width");
 		texture._height = node.getAttribute("height");
 		texture.fromAtlas = true;
+		texture.isLoaded = true;
 		texture.update();
 		Resource.ctrl.add(texture);	
 	},
@@ -159,6 +160,7 @@ Resource.SpriteSheet = Resource.Basic.extend
 		texture._width = node.getAttribute("w");
 		texture._height = node.getAttribute("h");
 		texture.fromAtlas = true;
+		texture.isLoaded = true;
 		texture.update();
 		Resource.ctrl.add(texture);	
 	},
@@ -247,6 +249,7 @@ Resource.SpriteSheet = Resource.Basic.extend
 					texture._width = parseInt(data[2]);
 					texture._height = parseInt(data[3]);
 					texture.fromAtlas = true;
+					texture.isLoaded = true;
 					texture.update();
 					Resource.ctrl.add(texture);						
 					return;
@@ -290,6 +293,7 @@ Resource.SpriteSheet = Resource.Basic.extend
 			texture._width = frame.w;
 			texture._height = frame.h;
 			texture.fromAtlas = true;
+			texture.isLoaded = true;
 			texture.update();
 			Resource.ctrl.add(texture);	
 		}		
@@ -311,6 +315,7 @@ Resource.SpriteSheet = Resource.Basic.extend
 			texture._width = frame.w;
 			texture._height = frame.h;
 			texture.fromAtlas = true;
+			texture.isLoaded = true;
 			texture.update();
 			Resource.ctrl.add(texture);	
 		}		
@@ -352,6 +357,8 @@ Resource.SpriteSheet = Resource.Basic.extend
 			texture._height = item.height;
 			texture.numFrames = item.numFrames || this.params.numFrames || 1;
 			texture.fromAtlas = true;
+			texture.isLoaded = true;
+			texture.update();
 			Resource.ctrl.add(texture);
 		}
 
