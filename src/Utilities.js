@@ -677,7 +677,7 @@ meta.addDescription = function(text)
 	bg.positionTop(0, 10);
 	bg.isPickable = false;
 	bg.ignoreZoom = true;
-	bg.disableDebug = false;
+	bg.disableDebug = true;
 	meta.view.add(bg);
 
 	bg.attach(msg);

@@ -2410,7 +2410,7 @@ Entity.Geometry = meta.Class.extend
 	// Ignore zoom.
 	set ignoreZoom(value) 
 	{
-		if(this._flags & this.Flag.IGNORE_ZOOM === value) { return; }
+		if(!!(this._flags & this.Flag.IGNORE_ZOOM) === value) { return; }
 
 		if(this._flags & this.Flag.ANCHOR) {
 			this.updateAnchor();
@@ -2420,7 +2420,7 @@ Entity.Geometry = meta.Class.extend
 			this._flags |= this.Flag.IGNORE_ZOOM;
 		}
 		else {
-			this._flags ^= this.Flag.IGNORE_ZOOM;
+			this._flags &= ~this.Flag.IGNORE_ZOOM;
 		}
 
 		this.isNeedDraw = true;
@@ -2431,14 +2431,14 @@ Entity.Geometry = meta.Class.extend
 	// Show bounds.
 	set showBounds(value)
 	{
-		if(this._flags & this.Flag.SHOW_BOUNDS === value) { return; }
+		if(!!(this._flags & this.Flag.SHOW_BOUNDS) === value) { return; }
 
 		if(value) {
 			this._flags |= this.Flag.SHOW_BOUNDS;
 			this._entityCtrl._addToDrawBounds();
 		}
 		else {
-			this._flags ^= this.Flag.SHOW_BOUNDS;
+			this._flags &= ~this.Flag.SHOW_BOUNDS;
 			this._entityCtrl._removeToDrawBounds();
 		}
 	},
@@ -2448,13 +2448,13 @@ Entity.Geometry = meta.Class.extend
 	// Enable debug.
 	set disableDebug(value) 
 	{ 
-		if(this._flags & this.Flag.DISABLE_DEBUG === value) { return; }
+		if(!!(this._flags & this.Flag.DISABLE_DEBUG) === value) { return; }
 
 		if(value) {
-			this._flag |= this.Flag.DISABLE_DEBUG;
+			this._flags |= this.Flag.DISABLE_DEBUG;
 		}
 		else {
-			this._flag ^= this.Flag.DISABLE_DEBUG;
+			this._flags &= ~this.Flag.DISABLE_DEBUG;
 		}
 		
 		this.isNeedDraw = true;
