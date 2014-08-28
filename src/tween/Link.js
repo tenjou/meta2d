@@ -184,6 +184,10 @@ meta.Tween.Link.prototype =
 		else {
 			this._easing = meta.Tween.Easing[func];
 		}
+
+		if(this._easing === void(0)) {
+			this._easing = meta.Tween.Easing.linear;
+		}		
 		
 		return this;
 	},
