@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Entity Visibility :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <!-- Example on how to toggle entity visibility. -->
+
+        <script>
+            var entity;
+
+            meta.load = function()
+            {
+                meta.preloadTexture(
+                    "https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+
+                entity = new Entity.Geometry("jabba");
+                entity.anchor(0.5);
+                entity.position(0, -70);
+                meta.view.add(entity);
+
+                var button = new UI.Button();
+                button.text = "Toggle Visibility";
+                button.anchor(0.5);
+                button.position(0, 70);
+                button.onClick = function() {
+                    entity.visible = !entity.visible;
+                };
+                meta.view.add(button);
+
+                meta.addDescription("Example on how to toggle entity visibility");
+            };
+        </script>
+    </body>
+</html>

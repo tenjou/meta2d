@@ -2,7 +2,7 @@
 
 <html>
     <head>
-        <title>Entity Pivot :: META</title>
+        <title>Camera Zoom :: META</title>
 
         <script src="http://infinite-games.com/meta.latest.js"></script>
     </head>
@@ -16,14 +16,14 @@
                 // Zoom camera in two times.
                 meta.camera.zoom = 2.0;
 
-                meta.preloadTextures(
+                meta.preloadTexture(
                     "https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
 
                 var entity = new Entity.Geometry("jabba");
                 entity.anchor(0.5);
                 meta.view.add(entity);       
 
-                meta.addDescription("Entity zoom example");                     
+                meta.addDescription("Camera zoom example");                     
             };
         </script>
     </body>

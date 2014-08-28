@@ -21,13 +21,13 @@
 
             meta.load = function()
             {
-                meta.preloadTextures(
+                meta.preloadTexture(
                     "https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
 
                 // Spawn an entity every 1000ms.
                 meta.addTimer(SpawnEntity, 1000);
 
-                meta.addDescription("Timer example - spawn an entity every 1000ms"); 
+                meta.addDescription("Timer example - spawn one entity every 1000ms"); 
             };
         </script>
     </body>

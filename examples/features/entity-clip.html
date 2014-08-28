@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Entity Clipping :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <!-- Example on how to clip entities. -->
+
+        <script>
+            var entity;
+
+            meta.load = function()
+            {
+                meta.preloadTexture(
+                    "https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+
+                // Create an clipping entity just to see clipping boundaries.
+                var clippingTex = new Resource.Texture();
+                clippingTex.fillRect(150, 150, "#555");
+                var clippingEntity = new Entity.Geometry(clippingTex);
+                clippingEntity.anchor(0.5);
+                meta.view.add(clippingEntity);
+
+                entity = new Entity.Geometry("jabba");
+                entity.anchor(0.5);
+                // Or meta.math.AABB can be used to setup clipping volume.
+                entity.clip(clippingEntity);
+                entity.showBounds = true;
+                meta.view.add(entity);
+
+                meta.addDescription("Example on how to clip entities");
+            };
+
+            meta.update = function(tDelta) {
+                entity.angle += 20 * tDelta;
+            };
+        </script>
+    </body>
+</html>

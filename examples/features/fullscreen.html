@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Fullscreen :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <!-- Example on how to toggle fullscreen. -->
+
+        <script>
+            meta.load = function()
+            {
+                var button = new UI.Button();
+                button.text = "Toggle Fullscreen";
+                button.anchor(0.5);
+                button.onClick = function() {
+                    meta.engine.toggleFullscreen();
+                    // Alternatively meta.engine.fullscreen(true/false) can be used.
+                };
+                meta.view.add(button);
+
+                meta.addDescription("Example on how to toggle fullscreen");
+            };
+        </script>
+    </body>
+</html>

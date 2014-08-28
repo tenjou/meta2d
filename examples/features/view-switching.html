@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>View Switching :: META</title>
+
+        <script src="http://infinite-games.com/meta.latest.js"></script>
+    </head>
+
+    <body>
+        <!-- Example on how to create multiple views and switch between them. -->
+
+        <script>
+            function CreateIntroView()
+            {
+                var introView = meta.getView("intro");
+
+                var shopButton = new UI.Button();
+                shopButton.text = "Shop";
+                shopButton.anchor(0.5);
+                shopButton.position(-90, 0);
+                shopButton.onClick = function() {
+                    meta.setView("shop");
+                };
+                introView.add(shopButton);
+
+                var gameButton = new UI.Button();
+                gameButton.text = "Game";
+                gameButton.anchor(0.5);
+                gameButton.position(90, 0);
+                gameButton.onClick = function() {
+                    meta.setView("game");
+                };
+                introView.add(gameButton);
+            };
+
+            function CreateShopView()
+            {
+                var shopView = meta.getView("shop");
+
+                var backButton = new UI.Button();
+                backButton.text = "Back from shop";
+                backButton.anchor(0.5);
+                backButton.onClick = function() {
+                    meta.setView("intro");
+                };
+                shopView.add(backButton);
+            };
+
+            function CreateGameView()
+            {
+                var gameView = meta.getView("game");
+
+                var backButton = new UI.Button();
+                backButton.text = "Back from game";
+                backButton.anchor(0.5);
+                backButton.onClick = function() {
+                    meta.setView("intro");
+                };
+                gameView.add(backButton);
+            };            
+
+            meta.load = function()
+            {
+                CreateIntroView();
+                CreateShopView();
+                CreateGameView();               
+
+                meta.setView("intro"); 
+
+                meta.addDescription("Example on how to create multiple views and switch between them");               
+            };
+        </script>
+    </body>
+</html>

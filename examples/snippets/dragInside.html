@@ -2,16 +2,19 @@
 
 <html>
 	<head>
-		<title>Untitled Debug :: META</title>
+		<title>Drag Inside :: META</title>
 
         <script src="http://infinite-games.com/meta.latest.js"></script>
 	</head>
 
 	<body>
+        <!-- Example on how to create fixed drag and drop functionality. -->
+
 		<script>
             meta.load = function()
             {
-                meta.preloadTextures("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+                meta.preloadTexture(
+                    "https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
 
                 var parent = new Entity.Geometry();
                 parent.texture = new Resource.Texture();
