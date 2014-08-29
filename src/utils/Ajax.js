@@ -23,7 +23,7 @@ meta.ajax = function(params)
 
 	var xhr = new XMLHttpRequest();
 	xhr.open(params.type, params.url, true);
-	xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+	xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
 	xhr.onload = function()
 	{
