@@ -57,28 +57,6 @@
 
     <body>
         <script>
-
-            // meta.load = function()
-            // {
-            //     meta.loadFont("test-export");
-
-            //     var label = new Entity.Text("test");
-            //     label.font = "test-export";
-            //     label.anchor(0.5);
-            //     meta.view.add(label);
-            // };
-
-            // Define resolutions thresholds. Engine will use the lowest resolution as base, 
-            //  switching to any higher resolutions will change unit size. 
-            // Best practice is to use 1x, 2x and 4x resolution ratio.
-            meta.adaptTo(480, 270, "https://dl.dropboxusercontent.com/u/145051233/meta/adapt/sd");
-            meta.adaptTo(960, 540, "https://dl.dropboxusercontent.com/u/145051233/meta/adapt/med");
-            meta.adaptTo(1920, 1080, "https://dl.dropboxusercontent.com/u/145051233/meta/adapt/hd");
-
-            meta.load = function()
-            {
-                meta.addDescription("Example on dynamic texture streaming depending on available screen resolution");
-            }
         </script>
     </body>
 </html>
