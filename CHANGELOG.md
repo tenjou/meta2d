@@ -1,7 +1,7 @@
 CHANGELONG
 ====
 
-##v1.1.1
+###v1.1.1
 
 What's new:
 * [CORE] Dynamic texture streaming with required texture resolution for different screen resolutions. 
