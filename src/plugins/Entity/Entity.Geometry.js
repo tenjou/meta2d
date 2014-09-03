@@ -2227,8 +2227,8 @@ Entity.Geometry = meta.Class.extend
 			y = (y !== void(0)) ? y : 1.0;
 		}
 
-		x = Math.round(x);
-		y = Math.round(y);
+		x = x | 0;
+		y = y | 0;
 
 		if(x > 1.0) { x = 1.0; }
 		else if(x < -1.0) { x = -1.0; }
@@ -2543,7 +2543,7 @@ Entity.Geometry = meta.Class.extend
 
 	// Flag Enum
 	Flag: {
-		HOVER: 16
+		HOVER: 16,
 		PRESSED: 32,
 		DRAGGED: 64,
 		ANCHOR: 128,
