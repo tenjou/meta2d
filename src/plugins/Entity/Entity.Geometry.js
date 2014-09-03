@@ -1222,6 +1222,11 @@ Entity.Geometry = meta.Class.extend
 	{
 		if(typeof(texture) === "string")
 		{
+			if(this._texture && this._texture.name === texture) {
+				return;
+			}
+			if(this._texture) { return; }
+
 			var textureName = texture;
 			texture = meta.getTexture(textureName);
 			if(!texture) {
@@ -1229,6 +1234,9 @@ Entity.Geometry = meta.Class.extend
 				meta.subscribe(this, Resource.Event.ALL_LOADED, this._onResAllLoaded);
 				return;
 			}
+		}
+		else if(this._texture === texture) {
+			return;
 		}
 
 		if(this._texture) {
@@ -1827,32 +1835,22 @@ Entity.Geometry = meta.Class.extend
 
 	updateState: function()
 	{
+		if(this._style) {
+			this._style.update(this);
+		}
+
 		this.isNeedState = false;
+		
+		// if(this._brushState) {
+		// 	brushState.discardState(this);
+		// }
+		// this._brushState = brushState;
 
-		if(!this._brush) { return; }
+		// console.log("set", brushState.params.texture)
+		// this.setTexture(brushState.params.texture);
 
-		var brushState;
-		if(this._state)
-		{
-			brushState = this._brush.getState(this);
-			if(!brushState) {
-				console.warn("[Entity.Geometry.updateState]:", "Could not get brush state from entity state: " + this._state);
-				return;
-			}
-		}
-		else {
-			brushState = null;
-		}
-
-		if(brushState === this._brushState) { return; }
-
-		if(this._brushState) {
-			brushState.discardState(this);
-		}
-		this._brushState = brushState;
-
-		this.setTexture(brushState.texture);
-		brushState.applyState(this);
+		// this.setTexture(brushState.texture);
+		// brushState.applyState(this);
 	},
 
 	setState: function(name, texture, params)
@@ -1982,12 +1980,18 @@ Entity.Geometry = meta.Class.extend
 	get texture() { return this._texture; },
 
 
-	set brush(brush)
+	set style(style)
 	{
-		this._brush = brush;
-		this._brushParams = {};
+		if(style instanceof meta.Style) {
+			this._style = style;
+		}
+		else {
+			this._style = new meta.Style(style);
+		}
+	
+		this._styleParams = {};
 
-		if(brush) {
+		if(style) {
 			this.isNeedState = true;
 		}
 		else {
@@ -1995,7 +1999,7 @@ Entity.Geometry = meta.Class.extend
 		}
 	},
 
-	get brush() { return this._brush; },
+	get style() { return this._style; },
 
 
 	set isNeedDraw(value)
@@ -2407,6 +2411,74 @@ Entity.Geometry = meta.Class.extend
 
 	get isCached() { return this._isCached; },
 
+	// Input.
+	set hover(value) 
+	{
+		if(value) 
+		{
+			var inputEvent = Input.ctrl.getEvent();
+			
+			if((this._flags & this.Flag.HOVER) === 0) {
+				this._flags |= this.Flag.HOVER;	
+				this._onHoverEnter(inputEvent);
+				this.onHoverEnter(inputEvent);
+			}
+			else {
+				this._onHover(inputEvent);
+				this.onHover(inputEvent);	
+			}
+		}
+		else {
+			this._flags &= ~this.Flag.HOVER;
+			this._onHoverExit(inputEvent);
+			this.onHoverExit(inputEvent);			
+		}
+	},
+
+	set pressed(value) 
+	{
+		if(!!(this._flags & this.Flag.PRESSED) === value) { return; }
+
+		if(value) 
+		{
+			this._flags |= this.Flag.PRESSED;
+
+			var inputEvent = Input.ctrl.getEvent();
+			this._onPress(inputEvent);
+			this.onPress(inputEvent);	
+		}
+		else {
+			this._flags &= ~this.Flag.PRESSED;
+		}		
+	},
+
+	set dragged(value) 
+	{
+		if(value) 
+		{
+			var inputEvent = Input.ctrl.getEvent();
+			
+			if((this._flags & this.Flag.DRAGGED) === 0) {
+				this._flags |= this.Flag.DRAGGED;	
+				this._onDragStart(inputEvent);
+				this.onDragStart(inputEvent);
+			}
+			else {
+				this._onDrag(inputEvent);
+				this.onDrag(inputEvent);
+			}
+		}
+		else {
+			this._flags &= ~this.Flag.DRAGGED;
+			this._onDragEnd(inputEvent);
+			this.onDragEnd(inputEvent);			
+		}
+	},
+
+	get hover() { return !!(this._flags & this.Flag.HOVER); },
+	get pressed() { return !!(this._flags & this.Flag.PRESSED); },
+	get dragged() { return !!(this._flags & this.Flag.DRAGGED); },
+
 	// Ignore zoom.
 	set ignoreZoom(value) 
 	{
@@ -2465,6 +2537,9 @@ Entity.Geometry = meta.Class.extend
 
 	// Flag Enum
 	Flag: {
+		HOVER: 16
+		PRESSED: 32,
+		DRAGGED: 64,
 		ANCHOR: 128,
 		IGNORE_ZOOM: 256,
 		IGNORE_PARENT_ANGLE: 512,
@@ -2512,8 +2587,8 @@ Entity.Geometry = meta.Class.extend
 	cellX: 0, cellY: 0,
 	_cellIndex: 0,
 
-	_brush: null, _brushState: null, _brushParams: null,
-	_state: "",
+	_style: null, _styleState: null, _styleAction: null, _styleParams: null,
+	_state: "default",
 	_tween: null,
 
 	volume: null,
@@ -2539,9 +2614,6 @@ Entity.Geometry = meta.Class.extend
 
 	pickable: true,
 	clickable: true,
-	isHover: false,
-	isPressed: false,
-	isDragged: false,
 
 	fps: 0,
 	animSpeed: 1.0,

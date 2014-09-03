@@ -525,6 +525,21 @@ Input.Controller = meta.Controller.extend
 	},
 
 
+	getEvent: function()
+	{
+		this._event.Event = null;
+		this._event.prevScreenX = this._event.screenX;
+		this._event.prevScreenY = this._event.screenY;
+		this._event.screenX = this.screenX;
+		this._event.screenY = this.screenY;
+		this._event.x = this.inputX;
+		this._event.y = this.inputY;
+		this._event.keyCode = -1;	
+
+		return this._event;	
+	},
+
+
 	_loadIgnoreKeys: function()
 	{
 		this._ignoreKeys = [];
