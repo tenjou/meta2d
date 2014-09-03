@@ -2412,12 +2412,18 @@ Entity.Geometry = meta.Class.extend
 	get isCached() { return this._isCached; },
 
 	// Input.
+	click: function()
+	{
+		var inputEvent = Input.ctrl.getEvent();
+		this._onClick(inputEvent);
+		this.onClick(inputEvent);
+	},
+
 	set hover(value) 
 	{
+		var inputEvent = Input.ctrl.getEvent();
 		if(value) 
-		{
-			var inputEvent = Input.ctrl.getEvent();
-			
+		{	
 			if((this._flags & this.Flag.HOVER) === 0) {
 				this._flags |= this.Flag.HOVER;	
 				this._onHoverEnter(inputEvent);
@@ -2439,25 +2445,25 @@ Entity.Geometry = meta.Class.extend
 	{
 		if(!!(this._flags & this.Flag.PRESSED) === value) { return; }
 
+		var inputEvent = Input.ctrl.getEvent();
 		if(value) 
 		{
 			this._flags |= this.Flag.PRESSED;
-
-			var inputEvent = Input.ctrl.getEvent();
-			this._onPress(inputEvent);
-			this.onPress(inputEvent);	
+			this._onDown(inputEvent);
+			this.onDown(inputEvent);	
 		}
 		else {
 			this._flags &= ~this.Flag.PRESSED;
+			this._onUp(inputEvent);
+			this.onUp(inputEvent);
 		}		
 	},
 
 	set dragged(value) 
 	{
+		var inputEvent = Input.ctrl.getEvent();
 		if(value) 
-		{
-			var inputEvent = Input.ctrl.getEvent();
-			
+		{			
 			if((this._flags & this.Flag.DRAGGED) === 0) {
 				this._flags |= this.Flag.DRAGGED;	
 				this._onDragStart(inputEvent);
