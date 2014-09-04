@@ -79,8 +79,8 @@ Entity.WebGLRenderer = Entity.Controller.extend
 		for(; currNode !== lastNode; currNode = currNode.next)
 		{
 			entity = currNode.entity;
-			if(entity.isNeedState) {
-				entity.updateState();
+			if(entity.isNeedStyle) {
+				entity._style.update(entity);
 			}
 			if(entity._texture && entity.isAnimating) {
 				entity._updateAnim(tDelta);

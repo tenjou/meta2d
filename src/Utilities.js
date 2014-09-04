@@ -685,6 +685,11 @@ meta.addDescription = function(text)
 
 meta.adaptTo = function(width, height, path)
 {
+	if(meta.engine && meta.engine.isInited) {
+		console.warn("[meta.adaptTo]:", "Only usable before engine is initialized.");
+		return;
+	}
+
 	var resolutions = meta._cache.resolutions;
 	if(!resolutions) {
 		resolutions = [];

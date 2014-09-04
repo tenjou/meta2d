@@ -83,8 +83,8 @@ Entity.CanvasRenderer = Entity.Controller.extend
 			for(; currNode !== lastNode; currNode = currNode.next)
 			{
 				entity = currNode.entity;
-				if(entity.isNeedState) {
-					entity.updateState();
+				if(entity.isNeedStyle) {
+					entity._style.update(entity);
 				}
 				if(entity._texture && entity.isAnimating) {
 					entity._updateAnim(tDelta);
@@ -110,10 +110,13 @@ Entity.CanvasRenderer = Entity.Controller.extend
 
 		var scope = meta;
 		var ctx = scope.ctx;
-		var camera = meta.camera;
+		var camera = scope.camera;
+		var unitRatio = scope.unitRatio;
+		var unitSize = scope.unitSize;
 
 		ctx.save();
-		ctx.scale(camera._zoom, camera._zoom);
+		ctx.translate(this.x * camera._zoom | 0, this.y * camera._zoom | 0);
+		ctx.scale(camera._zoom * unitRatio, camera._zoom * unitRatio);	
 
 		var entity;
 		var currNode = this.entities.first.next;
@@ -122,7 +125,34 @@ Entity.CanvasRenderer = Entity.Controller.extend
 			entity = currNode.entity;
 			if(entity._isCached || !entity.isVisible || !entity._isLoaded) { continue; }
 
-			entity.draw(ctx);
+			if(this._clipVolume !== entity.clipVolume) 
+			{
+				if(entity.clipVolume === null) {
+					ctx.restore();
+				}
+				else
+				{
+					ctx.save();
+					var clip = entity.clipVolume;
+					ctx.beginPath();
+					ctx.rect(clip.minX * unitSize | 0, clip.minY * unitSize | 0, clip.width * unitSize, clip.height * unitSize);
+					ctx.closePath();
+					ctx.clip();	
+				}
+
+				this._clipVolume = entity.clipVolume;
+			}			
+
+			if(entity.ignoreZoom) {
+				ctx.restore();
+				ctx.save();
+				entity.draw(ctx);
+				ctx.scale(camera._zoom * unitRatio, camera._zoom * unitRatio);	
+			}
+			else {
+				entity.draw(ctx);
+			}
+
 			entity._isNeedDraw = false;
 		}
 
@@ -131,8 +161,8 @@ Entity.CanvasRenderer = Entity.Controller.extend
 		{
 			entity = currNode.entity;
 
-			if(entity.isNeedState) {
-				entity.updateState();
+			if(entity.isNeedStyle) {
+				entity._style.update(entity);
 			}
 			if(entity._texture && entity.isAnimating) {
 				entity._updateAnim(tDelta);
@@ -150,19 +180,19 @@ Entity.CanvasRenderer = Entity.Controller.extend
 					ctx.save();
 					var clip = entity.clipVolume;
 					ctx.beginPath();
-					ctx.rect(clip.minX, clip.minY, clip.width, clip.height);
+					ctx.rect(clip.minX * unitSize | 0, clip.minY * unitSize | 0, clip.width * unitSize, clip.height * unitSize);
 					ctx.closePath();
-					ctx.clip();
+					ctx.clip();	
 				}
 
 				this._clipVolume = entity.clipVolume;
-			}		
+			}	
 
 			if(entity.ignoreZoom) {
 				ctx.restore();
 				ctx.save();
 				entity.draw(ctx);
-				ctx.scale(camera._zoom, camera._zoom);
+				ctx.scale(camera._zoom * unitRatio, camera._zoom * unitRatio);	
 			}
 			else {
 				entity.draw(ctx);
@@ -171,9 +201,22 @@ Entity.CanvasRenderer = Entity.Controller.extend
 			entity._isNeedDraw = false;
 		}
 
-		this._drawBounds();
-//		this._drawWorldBounds();
+		if(this._clipVolume !== null) {
+			this._clipVolume = null;
+			ctx.restore();
+		}
+		
+		ctx.restore();
 
+		// Debug.
+		ctx.save();
+		ctx.scale(camera._zoom, camera._zoom);	
+		ctx.translate(this.x | 0, this.y | 0);
+
+		this._drawBounds();
+		if(this.showCells) {
+			this._drawCells();
+		}
 		ctx.restore();
 
 		this.isNeedRender = false;
@@ -199,8 +242,8 @@ Entity.CanvasRenderer = Entity.Controller.extend
 		{
 			entity = currNode.entity;
 
-			if(entity.isNeedState) {
-				entity.updateState();
+			if(entity.isNeedStyle) {
+				entity._style.update(entity);
 			}
 			if(entity._texture && entity.isAnimating) {
 				entity._updateAnim(tDelta);
