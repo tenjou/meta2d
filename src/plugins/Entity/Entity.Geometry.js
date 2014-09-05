@@ -429,8 +429,8 @@ Entity.Geometry = meta.Class.extend
 	 */
 	updatePos: function()
 	{
-		this.drawSrcX = this._x + this._parent.childOffsetX + this.textureOffsetX + this._anchorPosX;
-		this.drawSrcY = this._y + this._parent.childOffsetY + this.textureOffsetY + this._anchorPosY;
+		this.drawSrcX = this._x + this._parent.childOffsetX + this.textureOffsetX + this._offsetX + this._anchorPosX;
+		this.drawSrcY = this._y + this._parent.childOffsetY + this.textureOffsetY + this._offsetY + this._anchorPosY;
 		if(this._view) {
 			this.drawSrcX += this._view._x;
 			this.drawSrcX += this._view._y;
@@ -1571,7 +1571,6 @@ Entity.Geometry = meta.Class.extend
 	},
 
 	_onAction_hoverEnter: function()  {
-		console.log("here");
 		this._action = "hover";
 		this._style.updateAction(this);
 	},	
@@ -1896,6 +1895,25 @@ Entity.Geometry = meta.Class.extend
 	get anchorX() { return this._anchorX; },
 	get anchorY() { return this._anchorY; },
 
+	set offsetX(value) 
+	{
+		if(this._offsetX === value) { return; }
+
+		this._offsetX = value;
+		this.updatePos();
+	},
+
+	set offsetY(value) 
+	{
+		if(this._offsetY === value) { return; }
+
+		this._offsetY = value;
+		this.updatePos();
+	},	
+
+	get offsetX() { return this._offsetX; },
+	get offsetY() { return this._offsetY; },
+
 	set isAnchor(value)
 	{
 		if((this._flags & this.Flag.ANCHOR) === value) { return; }
@@ -2070,7 +2088,7 @@ Entity.Geometry = meta.Class.extend
 
 		if(!this._style) 
 		{
-			name = "default";
+			name = "*";
 			this._style = new meta.Style();
 			this._styleParams = {};
 		}
@@ -2113,7 +2131,9 @@ Entity.Geometry = meta.Class.extend
 
 	set state(value)
 	{
+		if(!value) { value = "*"; }
 		if(this._state === value) { return; }
+
 		this._state = value;
 
 		if(this._style)
@@ -2664,6 +2684,9 @@ Entity.Geometry = meta.Class.extend
 
 	get disableDebug() { return !!(this._flags & this.Flag.DISABLE_DEBUG); },
 
+	// Cursor.
+	set cursor(value) { document.body.style.cursor = value; },
+	get cursor() { return document.body.style.cursor; },
 
 	// Flag Enum
 	Flag: {
@@ -2710,7 +2733,7 @@ Entity.Geometry = meta.Class.extend
 	_dragOffsetX: 0, _dragOffsetY: 0,
 	drawX: 0, drawY: 0,
 	drawSrcX: 0, drawSrcY: 0,
-	offsetX: 0, offsetY: 0,
+	_offsetX: 0, _offsetY: 0,
 	textureOffsetX: 0, textureOffsetY: 0,
 
 	pivotX: 0, pivotY: 0,
@@ -2725,7 +2748,7 @@ Entity.Geometry = meta.Class.extend
 	_style: null, 
 	_styleState: null, _styleAction: null, 
 	_styleParams: null, _styleActionParams: null,
-	_state: "default", _action: "",
+	_state: "*", _action: "",
 
 	_tween: null,
 

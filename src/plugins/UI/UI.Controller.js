@@ -18,38 +18,34 @@ UI.Controller = meta.Controller.extend
 			width: 160, height: 40
 		});
 
-		var buttonOnActive = new Resource.Texture();
-		buttonOnActive.fillRect({
-			color: "#ff4488",
-			width: 160, height: 40
-		});
-
-		//
-		this.style = new UI.Style({
-			button: {
+		this.style = 
+		{
+			button: new meta.Style({
 				"*": {
-					texture: buttonTex
+					texture: buttonTex,
 				},
 				"*:hover": {
-					texture: buttonOnHoverTex
+					texture: buttonOnHoverTex,
+					cursor: "pointer"
 				},
-				"*:active": {
-					texture: buttonOnActive
+				"*:pressed": {
+					texture: buttonOnHoverTex,
+					cursor: "pointer",
+					offsetX: 2,
+					offsetY: 2
 				}
-			}
-		});
-
-		UI.Button.prototype._style = this.style.getStyle("button");
+			})
+		};
 	},
 
 
-	setStyle: function(style) {
-		this.style.setStyle(style);
-	},
+	// setStyle: function(style) {
+	// 	this.style.setStyle(style);
+	// },
 
-	getStyle: function(def) {
-		return this.style.getStyle(def);
-	},
+	// getStyle: function(def) {
+	// 	return this.style.getStyle(def);
+	// },
 
 
 	//

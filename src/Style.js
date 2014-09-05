@@ -34,13 +34,13 @@ meta.Style = meta.Class.extend
 			var action = name.substr(actionIndex + 1, name.length - actionIndex - 1);
 			name = name.substr(0, actionIndex);
 
-			if(!name) 
+			if(!name || name === "*") 
 			{
 				if(!this.actions) {
 					this.actions = {};
 				}
 
-				state = new meta.StyleState(name, params);
+				state = new meta.StyleState(action, params);
 				this.actions[action] = state;
 			}
 			else 
@@ -52,7 +52,7 @@ meta.Style = meta.Class.extend
 					this.states[name] = state;
 				}
 
-				state.actions[action] = new meta.StyleState(name, params);
+				state.actions[action] = new meta.StyleState(action, params);
 			}
 
 			this.haveActions = true;
@@ -139,6 +139,8 @@ meta.Style = meta.Class.extend
 		for(key in entityParams) {
 			entity[key] = entityParams[key];
 		}
+		entityParams = {};
+		entity._styleParams = entityParams;	
 
 		// Apply new params.
 		var params = styleState.params;
@@ -160,11 +162,13 @@ meta.Style = meta.Class.extend
 		for(var key in entityParams) {
 			entity[key] = entityParams[key];
 		}
+		entityParams = {};
+		entity._styleActionParams = entityParams;
 
 		var action;
 		var state = this.states[entity._state];
 		if(state.actions) {
-			action = state.action[entity._action];
+			action = state.actions[entity._action];
 		}
 
 		if(!action && this.actions) {
@@ -183,10 +187,8 @@ meta.Style = meta.Class.extend
 
 	_applyActions: function(entity)
 	{
-		var action;
 		for(var key in this.actions) {
-			action = "_" + key;
-			entity[action] = true;
+			entity["_" + key] = true;
 		}
 	},
 
@@ -245,13 +247,16 @@ meta.StyleState.prototype =
 	{
 		if(this.params && this.params.texture !== void(0)) 
 		{
-			var texture = meta.getTexture(this.params.texture);
-			if(!texture) {
-				console.warn("[meta.StyleState]:", "Could not get texture from texture name: " + this.params.texture);
+			var texture = this.params.texture;
+			if(typeof(texture) !== "string") { return; }
+
+			var newTexture = meta.getTexture(texture);
+			if(!newTexture) {
+				console.warn("[meta.StyleState]:", "Could not get texture from texture name: " + texture);
 				return;
 			}		
 
-			this.params.texture = texture;
+			this.params.texture = newTexture;
 		}
 	},
 

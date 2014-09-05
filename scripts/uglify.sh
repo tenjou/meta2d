@@ -44,7 +44,6 @@ cat Engine.js \
 	plugins/Input/Input.Controller.js \
 	plugins/Input/Enum.js \
 	plugins/UI/UI.Controller.js \
-	plugins/UI/UI.Style.js \
 	plugins/UI/UI.Button.js \
 	plugins/UI/UI.ProgressBar.js \
 	Loader.js \
