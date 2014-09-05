@@ -16,7 +16,7 @@ UI.Controller = meta.Controller.extend
 		buttonOnHoverTex.fillRect({
 			color: "#ff0000",
 			width: 160, height: 40
-		});
+		});		
 
 		this.style = 
 		{
