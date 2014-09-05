@@ -3,17 +3,26 @@
 UI.Button = Entity.Geometry.extend
 ({
 	_initParams: function(params) 
-	{
-		this.style = UI.ctrl.style.button;
-		
+	{		
 		// If texture.
-		if(typeof(params) === "string" || params instanceof Resource.Texture) {
+		if(typeof(params) === "string" || params instanceof Resource.Texture) 
+		{
 			this.texture = params;
+
+			var newStyle = Object.create(UI.ctrl.coreStyle.button);
+			newStyle["*"] = {
+				texture: "start-button"
+			};
+
+			this.style = newStyle;
 		}
 		// If possible style object.
 		else if(params instanceof meta.Style) {
 			this.style = params;
 		}	
+		else {
+			this.style = UI.ctrl.style.button;
+		}
 	},
 
 

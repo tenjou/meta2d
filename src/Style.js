@@ -7,17 +7,16 @@
  * @property states {Object} Dictionary of all states added.
  * @property defaultState {meta.StyleState} Usually the first state added to the brush.
  */
-meta.Style = meta.Class.extend
-( /** @lends meta.Style.prototype */ {
+meta.Style = function(params) 
+{
+	this.states = {};
+	
+	//	
+	this.setStates(params);
+};
 
-	_init: function(params) 
-	{
-		this.states = {};
-		
-		this.setStates(params);
-	},
-
-
+meta.Style.prototype = 
+{
 	/**
 	 * Set or rewrite state.
 	 * @param name {String} Name of the state.
@@ -223,7 +222,7 @@ meta.Style = meta.Class.extend
 	actions: null,
 	defaultState: null,
 	haveActions: false
-});
+};
 
 /**
  * Holds information about meta.Style state.

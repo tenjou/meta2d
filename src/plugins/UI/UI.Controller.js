@@ -18,6 +18,20 @@ UI.Controller = meta.Controller.extend
 			width: 160, height: 40
 		});		
 
+		this.coreStyle = 
+		{
+			button: {
+				"*:hover": {
+					cursor: "pointer"
+				},
+				"*:pressed": {
+					cursor: "pointer",
+					offsetX: 2,
+					offsetY: 2
+				}
+			}
+		};
+
 		this.style = 
 		{
 			button: new meta.Style({
