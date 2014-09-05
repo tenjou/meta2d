@@ -18,6 +18,7 @@ UI.Style.prototype =
 
 	setStyle: function(style)
 	{
+		return;
 		var element, data, index, selector, elementID;
 		var elementObj;
 
@@ -62,6 +63,7 @@ UI.Style.prototype =
 
 	getStyle: function(def)
 	{
+		return
 		var index = def.indexOf(".");
 
 		var elementType, styleID;

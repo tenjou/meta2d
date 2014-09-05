@@ -314,15 +314,14 @@ Resource.Texture = Resource.Basic.extend
 
 	upResize: function(width, height)
 	{
-		if(width > this.fullWidth)
-		{
-			if(height > this.fullHeight) {
-				this.resize(width, height);
-			}
-			else {
-				this.resize(width, this.fullHeight);
-			}
+		if(width < this.fullWidth) {
+			width = this.fullWidth;
 		}
+		if(height < this.fullHeight) {
+			height = this.fullHeight;
+		}
+
+		this.resize(width, height);
 	},
 
 	update: function()
@@ -690,27 +689,37 @@ Resource.Texture = Resource.Basic.extend
 			return;
 		}
 
+		var scope = meta;
 		var ctx = this.ctx;
+
 		params.x = params.x || 0;
 		params.y = params.y || 0;
-		params.color = params.color || "#000000";
-		params.width = params.width || this.fullWidth || 1;
-		params.height = params.height || this.fullHeight || 1;
+		var width = (params.width || this.fullWidth || 1) + params.x;
+		var height = (params.height || this.fullHeight || 1) + params.y;
 
-		if(!params.drawOver) {
-			this.resize(params.width + params.x, params.height + params.y);
-		}
+		// if(meta.maxUnitSize > 1) 
+		// {
+		// 	width *= scope.maxUnitSize;
+		// 	height *= scope.maxUnitSize;
+
+		// 	this._maxResCanvasCache = document.createElement("canvas");
+		// 	this._maxResCanvasCache.width = width;
+		// 	this._maxResCanvasCache.height = height;
+		// 	this._maxResCtxCache = this._maxResCanvasCache("2d");
+		// }
+
+		this.upResize(width, height);
 
 		if(this.textureType) {
 			this._createCachedImg();
 			ctx = this._cachedCtx;
 		}
 
-		ctx.fillStyle = params.color;
-		ctx.fillRect(params.x, params.y, params.width, params.height);
+		ctx.fillStyle = (params.color || "#000000");
+		ctx.fillRect(params.x, params.y, width, height);
 
 		if(this.textureType) {
-			var gl = meta.ctx;
+			var gl = scope.ctx;
 			gl.bindTexture(gl.TEXTURE_2D, this.image);
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
 		}
@@ -1652,5 +1661,6 @@ Resource.Texture = Resource.Basic.extend
 
 	_loadCache: null,
 	_canvasCache: null,
-	_history: null,
+	_maxResCanvasCache: null,
+	_maxResCtxCache: null
 });

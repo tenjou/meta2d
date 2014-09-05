@@ -7,7 +7,7 @@
  * @param [name=""] {String} Name of the entity.
  * @param [x=0] {Number} Position on x axis.
  * @param [y=0] {Number} Position on y axis.
- * @param [texture=null] {Resource.Texture=} <b>Setter/Getter.</b> Set the current texture. Will call <b>this.setTexture()</b> function.
+ * @param [texture=null] {Resource.Texture=} <b>Setter/Getter.</b> Set the current texture.
  * @param [components=null] {Object=} References to the added components.
  * @param componentBuffer {Array} References to the added components.
  * @param numComponents {Number} Number of components added.
@@ -1213,85 +1213,6 @@ Entity.Geometry = meta.Class.extend
 
 
 	/**
-	 * Set current texture.
-	 * @param texture {Resource.Texture} Texture to be set.
-	 * @return {Resource.Texture} Return texture that was set.
-	 * @function
-	 */
-	setTexture: function(texture)
-	{
-		if(typeof(texture) === "string")
-		{
-			if(this._texture && this._texture.name === texture) {
-				return;
-			}
-			if(this._texture) { return; }
-
-			var textureName = texture;
-			texture = meta.getTexture(textureName);
-			if(!texture) {
-				this._texture = textureName;
-				meta.subscribe(this, Resource.Event.ALL_LOADED, this._onResAllLoaded);
-				return;
-			}
-		}
-		else if(this._texture === texture) {
-			return;
-		}
-
-		if(this._texture) {
-			this._texture.unsubscribe(this);
-		}
-
-		if(texture)
-		{
-			if(!(texture instanceof Resource.Texture)) {
-				console.warn("[Entity.Geometry.setTexture]:", "Texture should extend Resource.Texture class.");
-				return null;
-			}
-
-			this._texture = texture;
-			this._texture.subscribe(this, this._onTextureEvent);
-
-			this.textureOffsetX = this._texture._offsetX;
-			this.textureOffsetY = this._texture._offsetY;
-
-			if(!this._texture._isLoaded) 
-			{
-				this.isLoaded = false;
-				if(!this._texture.isLoading) {
-					this._texture.load();
-				}
-			}
-			else {
-				this.isLoaded = true;
-				this.updateFromTexture();
-			}			
-
-			if(texture.isAnimated)
-			{
-				if(!this.isAnimating) {
-					this.isAnimating = texture.autoPlay;
-				}
-				if(texture.isEmulateReverse) {
-					this.isEmulateReverse = true;
-				}
-
-				this.isAnimReverse = texture.isAnimReverse;
-			}
-
-			return texture;
-		}
-		else {
-			this._texture = null;
-			this.isLoaded = false;
-		}
-
-		return null;
-	},
-
-
-	/**
 	 * Callback for texture events.
 	 * @param data {*} Data of the event.
 	 * @param event {*} Type of the event.
@@ -1329,12 +1250,11 @@ Entity.Geometry = meta.Class.extend
 			var texture = meta.getTexture(this._texture);
 
 			if(!texture) {
-				console.warn("[Entity.Geometry.setTexture]:", "Could not find texture with a name: " + this._texture);
+				console.warn("[Entity.Geometry._onResAllLoaded]:", "Could not find texture with a name: " + this._texture);
 				this._texture = null;	
 			}
 			else {
-				this._texture = null;
-				this.setTexture(texture);
+				this.texture = texture;
 			}
 
 			meta.unsubscribe(this, Resource.Event.ALL_LOADED);
@@ -1562,6 +1482,121 @@ Entity.Geometry = meta.Class.extend
 	_onHover: meta.emptyFuncParam,
 	_onHoverEnter: meta.emptyFuncParam,
 	_onHoverExit: meta.emptyFuncParam,
+
+	set _pressed(value) 
+	{
+		if(value) {
+			this._onDown = this._onAction_down;
+			this._onUp = this._onAction_up;
+		}
+		else {
+			this._onDown = this._onUp = meta.emptyFuncParam;
+		}
+	},
+
+	set _drag(value) 
+	{
+		if(value) {
+			this._onDragStart = this._onAction_dragStart;
+			this._onDragEnd = this._onAction_dragEnd;
+		}
+		else {
+			this._onDragStart = this._onDragEnd = meta.emptyFuncParam;
+		};
+	},	
+
+	set _hover(value) 
+	{
+		if(value) {
+			this._onHoverEnter = this._onAction_hoverEnter;
+			this._onHoverExit = this._onAction_hoverExit;
+		}
+		else {
+			this._onHoverEnter = this._onHoverExit = meta.emptyFuncParam;
+		}
+	},
+
+	_onAction_down: function() {
+		this._action = "pressed";
+		this._style.updateAction(this);
+	},
+
+	_onAction_up: function() 
+	{
+		if(this._inputFlags > 0)
+		{
+			if(this._inputFlags & this.InputFlag.DRAGGED) {
+				this._action = "drag";
+			}
+			else if(this._inputFlags & this.InputFlag.HOVER) {
+				this._action = "hover";
+			}
+			else {
+				console.warn("[Entity.Geometry._onAction_hoverExit]:", "Unhandled action caught: " + this._inputFlags);
+				this._action = "";
+			}
+		}
+		else {
+			this._action = "";
+		}
+	
+		this._style.updateAction(this);
+	},
+
+	_onAction_dragStart: function() {
+		this._action = "drag";
+		this._style.updateAction(this);
+	},
+
+	_onAction_dragEnd: function() 
+	{
+		if(this._inputFlags > 0)
+		{
+			if(this._inputFlags & this.InputFlag.PRESSED) {
+				this._action = "pressed";
+			}
+			else if(this._inputFlags & this.InputFlag.HOVER) {
+				this._action = "hover";
+			}
+			else {
+				console.warn("[Entity.Geometry._onAction_hoverExit]:", "Unhandled action caught: " + this._inputFlags);
+				this._action = "";
+			}
+		}
+		else {
+			this._action = "";
+		}
+	
+		this._style.updateAction(this);
+	},
+
+	_onAction_hoverEnter: function()  {
+		console.log("here");
+		this._action = "hover";
+		this._style.updateAction(this);
+	},	
+
+	_onAction_hoverExit: function() 
+	{
+		if(this._inputFlags > 0)
+		{
+			if(this._inputFlags & this.InputFlag.DRAGGED) {
+				this._action = "drag";
+			}
+			else if(this._inputFlags & this.InputFlag.PRESSED) {
+				this._action = "pressed";
+			}
+			else {
+				console.warn("[Entity.Geometry._onAction_hoverExit]:", "Unhandled action caught: " + this._inputFlags);
+				this._action = "";
+			}
+		}
+		else {
+			this._action = "";
+		}
+	
+		this._style.updateAction(this);
+	},			
 
 	/**
 	 * Callback if entity has been pressed.
@@ -1833,56 +1868,6 @@ Entity.Geometry = meta.Class.extend
 	},
 
 
-	updateState: function()
-	{
-		if(this._style) {
-			this._style.update(this);
-		}
-
-		this.isNeedState = false;
-		
-		// if(this._brushState) {
-		// 	brushState.discardState(this);
-		// }
-		// this._brushState = brushState;
-
-		// console.log("set", brushState.params.texture)
-		// this.setTexture(brushState.params.texture);
-
-		// this.setTexture(brushState.texture);
-		// brushState.applyState(this);
-	},
-
-	setState: function(name, texture, params)
-	{
-		if(!this._brush)
-		{
-			this._brush = new meta.Brush();
-			this._brushParams = {};
-
-			if(this._texture) {
-				this._brush.setState("default", this._texture, params);
-			}
-		}
-
-		this._brush.setState(name, texture);
-	},
-
-
-	set state(value)
-	{
-		this._state = value;
-		if(value === null) {
-			this.setTexture(null);
-		}
-		else {
-			this.isNeedState = true;
-		}
-	},
-
-	get state() { return this._state; },
-
-
 	/**
 	 * Print name and id of the entity.
 	 * @param str {*=} Debug string to output.
@@ -1973,34 +1958,80 @@ Entity.Geometry = meta.Class.extend
 	get depthIndex() { return this._z; },
 
 
-	set texture(texture) {
-		this.setTexture(texture);
+	/**
+	 * Set current texture.
+	 * @param texture {Resource.Texture} Texture to be set.
+	 */
+	set texture(texture)
+	{
+		if(typeof(texture) === "string")
+		{
+			if(this._texture && this._texture.name === texture) {
+				return;
+			}
+
+			var textureName = texture;
+			texture = meta.getTexture(textureName);
+			if(!texture) {
+				this._texture = textureName;
+				meta.subscribe(this, Resource.Event.ALL_LOADED, this._onResAllLoaded);
+				return;
+			}
+		}
+		else if(this._texture === texture) {
+			return;
+		}
+
+		if(this._texture) {
+			this._texture.unsubscribe(this);
+		}
+
+		if(texture)
+		{
+			if(!(texture instanceof Resource.Texture)) {
+				console.warn("[Entity.Geometry.texture]:", "Texture should extend Resource.Texture class.");
+				return null;
+			}
+
+			this._texture = texture;
+			this._texture.subscribe(this, this._onTextureEvent);
+
+			this.textureOffsetX = this._texture._offsetX;
+			this.textureOffsetY = this._texture._offsetY;
+
+			if(!this._texture._isLoaded) 
+			{
+				this.isLoaded = false;
+				if(!this._texture.isLoading) {
+					this._texture.load();
+				}
+			}
+			else {
+				this.isLoaded = true;
+				this.updateFromTexture();
+			}			
+
+			if(texture.isAnimated)
+			{
+				if(!this.isAnimating) {
+					this.isAnimating = texture.autoPlay;
+				}
+				if(texture.isEmulateReverse) {
+					this.isEmulateReverse = true;
+				}
+
+				this.isAnimReverse = texture.isAnimReverse;
+			}
+
+			return texture;
+		}
+		else {
+			this._texture = null;
+			this.isLoaded = false;
+		}
 	},
 
 	get texture() { return this._texture; },
-
-
-	set style(style)
-	{
-		if(style instanceof meta.Style) {
-			this._style = style;
-		}
-		else {
-			this._style = new meta.Style(style);
-		}
-	
-		this._styleParams = {};
-
-		if(style) {
-			this.isNeedState = true;
-		}
-		else {
-			this.isNeedState = false;
-		}
-	},
-
-	get style() { return this._style; },
-
 
 	set isNeedDraw(value)
 	{
@@ -2019,6 +2050,99 @@ Entity.Geometry = meta.Class.extend
 	},
 
 	get isNeedDraw() { return this._isNeedDraw; },
+
+	// Style.
+	updateStyle: function()
+	{
+		if(!this._style) { return; }
+ 			
+ 		this._style.update(this);
+	},
+
+	setState: function(name, texture, params)
+	{
+		if(texture)
+		{
+			if(!params) {
+				params = { texture: texture };
+			}
+		}
+
+		if(!this._style) 
+		{
+			name = "default";
+			this._style = new meta.Style();
+			this._styleParams = {};
+		}
+
+		this._style.setState(name, texture);
+	},
+
+	set style(style)
+	{
+		// If we have previous style.
+		if(this._style)
+		{
+			for(var key in this._styleParams) {
+				this[key] = this._styleParams[key];
+			}
+		}
+
+		if(style instanceof meta.Style) {
+			this._style = style;
+		}
+		else {
+			this._style = new meta.Style(style);
+		}
+	
+		this._styleParams = {};
+		if(this._style.haveActions) {
+			this._styleActionParams = {};
+			this._style._applyActions(this);
+		}
+		
+		if(style) {
+			this.isNeedStyle = true;
+		}
+		else {
+			this.isNeedStyle = false;
+		}
+	},
+
+	get style() { return this._style; },
+
+	set state(value)
+	{
+		if(this._state === value) { return; }
+		this._state = value;
+
+		if(this._style)
+		{
+			if(value === null) 
+			{
+				this._styleState = null;
+				this._styleAction = null;
+				this.isNeedStyle = false;
+				this.texture = null;
+			}
+			else {
+				this.isNeedStyle = true;
+			}
+		}
+	},
+
+	set action(value)
+	{
+		if(this._action === value) { return; }
+		this._action = value;
+		
+		if(this._style) {	
+			this._style.updateAction(this);
+		}
+	},	
+
+	get state() { return this._state; },
+	get action() { return this._action; },		
 
 	// Alpha.
 	updateAlpha: function()
@@ -2424,8 +2548,8 @@ Entity.Geometry = meta.Class.extend
 		var inputEvent = Input.ctrl.getEvent();
 		if(value) 
 		{	
-			if((this._flags & this.Flag.HOVER) === 0) {
-				this._flags |= this.Flag.HOVER;	
+			if((this._inputFlags & this.InputFlag.HOVER) === 0) {
+				this._inputFlags |= this.InputFlag.HOVER;	
 				this._onHoverEnter(inputEvent);
 				this.onHoverEnter(inputEvent);
 			}
@@ -2435,7 +2559,7 @@ Entity.Geometry = meta.Class.extend
 			}
 		}
 		else {
-			this._flags &= ~this.Flag.HOVER;
+			this._inputFlags &= ~this.InputFlag.HOVER;
 			this._onHoverExit(inputEvent);
 			this.onHoverExit(inputEvent);			
 		}
@@ -2443,17 +2567,17 @@ Entity.Geometry = meta.Class.extend
 
 	set pressed(value) 
 	{
-		if(!!(this._flags & this.Flag.PRESSED) === value) { return; }
+		if(!!(this._inputFlags & this.InputFlag.PRESSED) === value) { return; }
 
 		var inputEvent = Input.ctrl.getEvent();
 		if(value) 
 		{
-			this._flags |= this.Flag.PRESSED;
+			this._inputFlags |= this.InputFlag.PRESSED;
 			this._onDown(inputEvent);
 			this.onDown(inputEvent);	
 		}
 		else {
-			this._flags &= ~this.Flag.PRESSED;
+			this._inputFlags &= ~this.InputFlag.PRESSED;
 			this._onUp(inputEvent);
 			this.onUp(inputEvent);
 		}		
@@ -2464,8 +2588,8 @@ Entity.Geometry = meta.Class.extend
 		var inputEvent = Input.ctrl.getEvent();
 		if(value) 
 		{			
-			if((this._flags & this.Flag.DRAGGED) === 0) {
-				this._flags |= this.Flag.DRAGGED;	
+			if((this._inputFlags & this.InputFlag.DRAGGED) === 0) {
+				this._inputFlags |= this.InputFlag.DRAGGED;	
 				this._onDragStart(inputEvent);
 				this.onDragStart(inputEvent);
 			}
@@ -2475,15 +2599,15 @@ Entity.Geometry = meta.Class.extend
 			}
 		}
 		else {
-			this._flags &= ~this.Flag.DRAGGED;
+			this._inputFlags &= ~this.InputFlag.DRAGGED;
 			this._onDragEnd(inputEvent);
 			this.onDragEnd(inputEvent);			
 		}
 	},
 
-	get hover() { return !!(this._flags & this.Flag.HOVER); },
-	get pressed() { return !!(this._flags & this.Flag.PRESSED); },
-	get dragged() { return !!(this._flags & this.Flag.DRAGGED); },
+	get hover() { return !!(this._inputFlags & this.InputFlag.HOVER); },
+	get pressed() { return !!(this._inputFlags & this.InputFlag.PRESSED); },
+	get dragged() { return !!(this._inputFlags & this.InputFlag.DRAGGED); },
 
 	// Ignore zoom.
 	set ignoreZoom(value) 
@@ -2543,9 +2667,7 @@ Entity.Geometry = meta.Class.extend
 
 	// Flag Enum
 	Flag: {
-		HOVER: 16,
-		PRESSED: 32,
-		DRAGGED: 64,
+		REMOVED: 4,
 		ANCHOR: 128,
 		IGNORE_ZOOM: 256,
 		IGNORE_PARENT_ANGLE: 512,
@@ -2553,6 +2675,12 @@ Entity.Geometry = meta.Class.extend
 		IGNORE_PARENT_ALPHA: 2048,
 		SHOW_BOUNDS: 4096,
 		DISABLE_DEBUG: 16384
+	},
+
+	InputFlag: {
+		HOVER: 1,
+		PRESSED: 2,
+		DRAGGED: 4
 	},
 
 	//
@@ -2572,7 +2700,8 @@ Entity.Geometry = meta.Class.extend
 	_updateAnimNodeID: -1,
 	_removeFlag: 0,
 
-	_flags: 0,
+	_flags: 0, 
+	_inputFlags: 0,
 
 	_x: 0, _y: 0, _z: 0,
 	typeX: 0, typeY: 0,
@@ -2593,8 +2722,11 @@ Entity.Geometry = meta.Class.extend
 	cellX: 0, cellY: 0,
 	_cellIndex: 0,
 
-	_style: null, _styleState: null, _styleAction: null, _styleParams: null,
-	_state: "default",
+	_style: null, 
+	_styleState: null, _styleAction: null, 
+	_styleParams: null, _styleActionParams: null,
+	_state: "default", _action: "",
+
 	_tween: null,
 
 	volume: null,
@@ -2641,7 +2773,7 @@ Entity.Geometry = meta.Class.extend
 	isRemoved: false,
 	_isUpdating: false,
 	_isNeedDraw: false,
-	isNeedState: false,
+	isNeedStyle: false,
 	_isNeedOffset: false,
 	_cacheIndex: -1, // "-1" - it's cached. If more, it's considered as dynamic entity.
 

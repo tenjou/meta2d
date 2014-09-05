@@ -12,7 +12,7 @@ cat Engine.js \
 	Controller.js \
 	Timer.js \
 	Shader.js \
-	Brush.js \
+	Style.js \
 	Enum.js \
 	Macros.js \
 	utils/LinkedList.js \

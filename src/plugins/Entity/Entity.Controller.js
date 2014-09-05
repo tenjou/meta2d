@@ -18,7 +18,7 @@ Entity.Controller = meta.Controller.extend
 		var entityProto = Entity.Geometry.prototype;
 		entityProto._entityCtrl = this;
 		entityProto._parent = this;
-		this.EntityFlag = entityProto.Flag;
+		this.InputFlag = entityProto.InputFlag;
 
 		this.entities = new Entity.DepthList();
 		this.entitiesToAdd = [];
@@ -348,8 +348,8 @@ Entity.Controller = meta.Controller.extend
 			entity.isUpdating = true;
 		}
 
-		if(entity.isNeedState) {
-			entity.updateState();
+		if(entity.isNeedStyle) {
+			entity._style.update(entity);
 		}
 		if(entity._isLoaded && entity._texture) {
 			this.cacheEntity(entity);
@@ -565,7 +565,7 @@ Entity.Controller = meta.Controller.extend
 
 			data.entity = this.hoverEntity;
 			this.pressedEntity = this.hoverEntity;
-			this.pressedEntity._flags |= this.EntityFlag.PRESSED;
+			this.pressedEntity._inputFlags |= this.InputFlag.PRESSED;
 			this.pressedEntity._onDown.call(this.pressedEntity, data);
 			this.pressedEntity.onDown.call(this.pressedEntity, data);
 			this._chnOnDown.emit(data, Entity.Event.DOWN);
@@ -577,15 +577,15 @@ Entity.Controller = meta.Controller.extend
 			if(this.pressedEntity && this.pressedEntity.clickable) 
 			{
 				// Drag end?
-				if(this.pressedEntity._flags & this.EntityFlag.DRAGGED) {
-					this.pressedEntity._flags |= this.EntityFlag.DRAGGED;
+				if(this.pressedEntity._inputFlags & this.InputFlag.DRAGGED) {
+					this.pressedEntity._inputFlags |= this.InputFlag.DRAGGED;
 					this.pressedEntity._onDragEnd.call(this.pressedEntity, data);
 					this.pressedEntity.onDragEnd.call(this.pressedEntity, data);
 					this._chnOnDragEnd.emit(data, Entity.Event.DRAG_END);					
 				}
 
 				// Input Up.
-				this.pressedEntity._flag &= ~this.EntityFlag.PRESSED;
+				this.pressedEntity._inputFlags &= ~this.InputFlag.PRESSED;
 				this.pressedEntity._onUp.call(this.pressedEntity, event);
 				this.pressedEntity.onUp.call(this.pressedEntity, event);
 				this._chnOnUp.emit(this.pressedEntity, Entity.Event.UP);	
@@ -626,14 +626,14 @@ Entity.Controller = meta.Controller.extend
 						if(this.hoverEntity)
 						{
 							data.entity = this.hoverEntity;
-							this.hoverEntity._flags &= ~this.EntityFlag.HOVER;;
+							this.hoverEntity._inputFlags &= ~this.InputFlag.HOVER;;
 							this.hoverEntity._onHoverExit.call(this.hoverEntity, data);
 							this.hoverEntity.onHoverExit.call(this.hoverEntity, data);
 							this._chnOnHoverExit.emit(data, Entity.Event.HOVER_EXIT);
 						}
 
 						data.entity = entity;
-						entity._flags |= this.EntityFlag.HOVER;;
+						entity._inputFlags |= this.InputFlag.HOVER;;
 						entity._onHoverEnter.call(entity, data);
 						entity.onHoverEnter.call(entity, data);
 						this._chnOnHoverEnter.emit(data, Entity.Event.HOVER_ENTER);
@@ -657,7 +657,7 @@ Entity.Controller = meta.Controller.extend
 		if(this.hoverEntity)
 		{
 			data.entity = this.hoverEntity;
-			this.hoverEntity._flags &= ~this.EntityFlag.HOVER;;
+			this.hoverEntity._inputFlags &= ~this.InputFlag.HOVER;
 			this.hoverEntity._onHoverExit.call(this.hoverEntity, data);
 			this.hoverEntity.onHoverExit.call(this.hoverEntity, data);
 			this._chnOnHoverExit.emit(data, Entity.Event.HOVER_EXIT);
@@ -672,8 +672,8 @@ Entity.Controller = meta.Controller.extend
 		{
 			data.entity = this.pressedEntity;
 
-			if(!this.pressedEntity._flags & this.Entity.Flag.DRAGGED) {
-				this.pressedEntity._flags |= this.EntityFlag.DRAGGED;
+			if(!this.pressedEntity._inputFlags & this.InputFlag.DRAGGED) {
+				this.pressedEntity._inputFlags |= this.InputFlag.DRAGGED;
 				this.pressedEntity._onDragStart.call(this.pressedEntity, data);
 				this.pressedEntity.onDragStart.call(this.pressedEntity, data);
 				this._chnOnDragStart.emit(data, Entity.Event.DRAG_START);
@@ -760,7 +760,7 @@ Entity.Controller = meta.Controller.extend
 
 
 	//
-	EntityFlag: null,
+	InputFlag: null,
 
 	_x: 0, _y: 0, _z: 0,
 	totalAngleRad: 0.0,
