@@ -1473,55 +1473,14 @@ Entity.Geometry = meta.Class.extend
 	},
 
 
-	_onDown: meta.emptyFuncParam,
-	_onUp: meta.emptyFuncParam,
-	_onClick: meta.emptyFuncParam,
-	_onDrag: meta.emptyFuncParam,
-	_onDragStart: meta.emptyFuncParam,
-	_onDragEnd: meta.emptyFuncParam,
-	_onHover: meta.emptyFuncParam,
-	_onHoverEnter: meta.emptyFuncParam,
-	_onHoverExit: meta.emptyFuncParam,
-
-	set _pressed(value) 
+	// Style input.
+	_onDown: function(param)
 	{
-		if(value) {
-			this._onDown = this._onAction_down;
-			this._onUp = this._onAction_up;
-		}
-		else {
-			this._onDown = this._onUp = meta.emptyFuncParam;
-		}
-	},
-
-	set _drag(value) 
-	{
-		if(value) {
-			this._onDragStart = this._onAction_dragStart;
-			this._onDragEnd = this._onAction_dragEnd;
-		}
-		else {
-			this._onDragStart = this._onDragEnd = meta.emptyFuncParam;
-		};
-	},	
-
-	set _hover(value) 
-	{
-		if(value) {
-			this._onHoverEnter = this._onAction_hoverEnter;
-			this._onHoverExit = this._onAction_hoverExit;
-		}
-		else {
-			this._onHoverEnter = this._onHoverExit = meta.emptyFuncParam;
-		}
-	},
-
-	_onAction_down: function() {
 		this._action = "pressed";
 		this._style.updateAction(this);
 	},
 
-	_onAction_up: function() 
+	_onUp: function(param)
 	{
 		if(this._inputFlags > 0)
 		{
@@ -1543,12 +1502,12 @@ Entity.Geometry = meta.Class.extend
 		this._style.updateAction(this);
 	},
 
-	_onAction_dragStart: function() {
+	_onDragStart: function() {
 		this._action = "drag";
 		this._style.updateAction(this);
 	},
 
-	_onAction_dragEnd: function() 
+	_onDragEnd: function() 
 	{
 		if(this._inputFlags > 0)
 		{
@@ -1570,12 +1529,12 @@ Entity.Geometry = meta.Class.extend
 		this._style.updateAction(this);
 	},
 
-	_onAction_hoverEnter: function()  {
+	_onHoverEnter: function()  {
 		this._action = "hover";
 		this._style.updateAction(this);
-	},	
+	},
 
-	_onAction_hoverExit: function() 
+	_onHoverExit: function() 
 	{
 		if(this._inputFlags > 0)
 		{
@@ -1595,7 +1554,7 @@ Entity.Geometry = meta.Class.extend
 		}
 	
 		this._style.updateAction(this);
-	},			
+	},		
 
 	/**
 	 * Callback if entity has been pressed.
@@ -2111,12 +2070,6 @@ Entity.Geometry = meta.Class.extend
 		}
 		else {
 			this._style = new meta.Style(style);
-		}
-	
-		this._styleParams = {};
-		if(this._style.haveActions) {
-			this._styleActionParams = {};
-			this._style._applyActions(this);
 		}
 		
 		if(style) {
@@ -2748,7 +2701,7 @@ Entity.Geometry = meta.Class.extend
 	_style: null, 
 	_styleState: null, _styleAction: null, 
 	_styleParams: null, _styleActionParams: null,
-	_state: "*", _action: "",
+	_state: "default", _action: "",
 
 	_tween: null,
 

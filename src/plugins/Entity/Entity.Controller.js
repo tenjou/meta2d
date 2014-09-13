@@ -566,7 +566,9 @@ Entity.Controller = meta.Controller.extend
 			data.entity = this.hoverEntity;
 			this.pressedEntity = this.hoverEntity;
 			this.pressedEntity._inputFlags |= this.InputFlag.PRESSED;
-			this.pressedEntity._onDown.call(this.pressedEntity, data);
+			if(this.pressedEntity._style) {
+				this.pressedEntity._onDown.call(this.pressedEntity, data);
+			}
 			this.pressedEntity.onDown.call(this.pressedEntity, data);
 			this._chnOnDown.emit(data, Entity.Event.DOWN);
 		}
@@ -577,22 +579,26 @@ Entity.Controller = meta.Controller.extend
 			if(this.pressedEntity && this.pressedEntity.clickable) 
 			{
 				// Drag end?
-				if(this.pressedEntity._inputFlags & this.InputFlag.DRAGGED) {
+				if(this.pressedEntity._inputFlags & this.InputFlag.DRAGGED) 
+				{
 					this.pressedEntity._inputFlags |= this.InputFlag.DRAGGED;
-					this.pressedEntity._onDragEnd.call(this.pressedEntity, data);
+					if(this.pressedEntity._style) {
+						this.pressedEntity._onDragEnd.call(this.pressedEntity, data);
+					}
 					this.pressedEntity.onDragEnd.call(this.pressedEntity, data);
 					this._chnOnDragEnd.emit(data, Entity.Event.DRAG_END);					
 				}
 
 				// Input Up.
 				this.pressedEntity._inputFlags &= ~this.InputFlag.PRESSED;
-				this.pressedEntity._onUp.call(this.pressedEntity, event);
+				if(this.pressedEntity._style) {
+					this.pressedEntity._onUp.call(this.pressedEntity, event);
+				}
 				this.pressedEntity.onUp.call(this.pressedEntity, event);
 				this._chnOnUp.emit(this.pressedEntity, Entity.Event.UP);	
 
 				// Click.
 				if(this.pressedEntity === this.hoverEntity) {
-					this.pressedEntity._onClick.call(this.pressedEntity, data);
 					this.pressedEntity.onClick.call(this.pressedEntity, data);
 					this._chnOnClick.emit(data, Entity.Event.CLICK);
 				}	
@@ -626,15 +632,19 @@ Entity.Controller = meta.Controller.extend
 						if(this.hoverEntity)
 						{
 							data.entity = this.hoverEntity;
-							this.hoverEntity._inputFlags &= ~this.InputFlag.HOVER;;
-							this.hoverEntity._onHoverExit.call(this.hoverEntity, data);
+							this.hoverEntity._inputFlags &= ~this.InputFlag.HOVER;
+							if(this.hoverEntity._style) {
+								this.hoverEntity._onHoverExit.call(this.hoverEntity, data);
+							}
 							this.hoverEntity.onHoverExit.call(this.hoverEntity, data);
 							this._chnOnHoverExit.emit(data, Entity.Event.HOVER_EXIT);
 						}
 
 						data.entity = entity;
-						entity._inputFlags |= this.InputFlag.HOVER;;
-						entity._onHoverEnter.call(entity, data);
+						entity._inputFlags |= this.InputFlag.HOVER;
+						if(entity._style) {
+							entity._onHoverEnter.call(entity, data);
+						}
 						entity.onHoverEnter.call(entity, data);
 						this._chnOnHoverEnter.emit(data, Entity.Event.HOVER_ENTER);
 
@@ -643,7 +653,6 @@ Entity.Controller = meta.Controller.extend
 					else
 					{
 						data.entity = entity;
-						entity._onHover.call(entity, data);
 						entity.onHover.call(entity, data);
 						this._chnOnHover.emit(data, Entity.Event.HOVER);
 					}
@@ -658,7 +667,9 @@ Entity.Controller = meta.Controller.extend
 		{
 			data.entity = this.hoverEntity;
 			this.hoverEntity._inputFlags &= ~this.InputFlag.HOVER;
-			this.hoverEntity._onHoverExit.call(this.hoverEntity, data);
+			if(this.hoverEntity._style) {
+				this.hoverEntity._onHoverExit.call(this.hoverEntity, data);
+			}
 			this.hoverEntity.onHoverExit.call(this.hoverEntity, data);
 			this._chnOnHoverExit.emit(data, Entity.Event.HOVER_EXIT);
 		}
@@ -672,15 +683,17 @@ Entity.Controller = meta.Controller.extend
 		{
 			data.entity = this.pressedEntity;
 
-			if(!this.pressedEntity._inputFlags & this.InputFlag.DRAGGED) {
+			if(!this.pressedEntity._inputFlags & this.InputFlag.DRAGGED) 
+			{
 				this.pressedEntity._inputFlags |= this.InputFlag.DRAGGED;
-				this.pressedEntity._onDragStart.call(this.pressedEntity, data);
+				if(this.pressedEntity._style) {
+					this.pressedEntity._onDragStart.call(this.pressedEntity, data);
+				}
 				this.pressedEntity.onDragStart.call(this.pressedEntity, data);
 				this._chnOnDragStart.emit(data, Entity.Event.DRAG_START);
 				return false;			
 			}
 
-			this.pressedEntity._onDrag.call(this.pressedEntity, data);
 			this.pressedEntity.onDrag.call(this.pressedEntity, data);
 			this._chnOnDrag.emit(data, Entity.Event.DRAG);
 			return false;

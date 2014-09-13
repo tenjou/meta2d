@@ -30,11 +30,11 @@ UI.Controller = meta.Controller.extend
 					offsetY: 2
 				}
 			}
-		};
+		};		
 
 		this.style = 
 		{
-			button: new meta.Style({
+			button: {
 				"*": {
 					texture: buttonTex,
 				},
@@ -48,20 +48,11 @@ UI.Controller = meta.Controller.extend
 					offsetX: 2,
 					offsetY: 2
 				}
-			})
+			}
 		};
 	},
 
-
-	// setStyle: function(style) {
-	// 	this.style.setStyle(style);
-	// },
-
-	// getStyle: function(def) {
-	// 	return this.style.getStyle(def);
-	// },
-
-
 	//
+	coreStyle: null,
 	style: null
 });
