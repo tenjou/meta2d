@@ -238,9 +238,16 @@ meta.Style.prototype =
 			state = this.defaultState;
 		}
 
-		if(!state.actions) { return; }
-
-		var action = state.actions[entity._action];
+		var action
+		if(!state.actions)  
+		{ 
+			if(!this.defaultState.actions) { return; }
+			action = this.defaultState.actions[entity._action];
+		}
+		else {
+			action = state.actions[entity._action];
+		}
+		 
 		if(!action) { return; }
 
 		var params = action.params;
