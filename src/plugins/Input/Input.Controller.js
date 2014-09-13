@@ -83,7 +83,7 @@ Input.Controller = meta.Controller.extend
 
 		this.keys[event.keyCode] = true;
 
-		this._event.Event = event;
+		this._event.event = event;
 		this._event.prevScreenX = 0;
 		this._event.prevScreenY = 0;
 		this._event.screenX = 0;
@@ -135,7 +135,7 @@ Input.Controller = meta.Controller.extend
 
 		this.keys[event.keyCode] = false;
 
-		this._event.Event = event;
+		this._event.event = event;
 		this._event.prevScreenX = 0;
 		this._event.prevScreenY = 0;
 		this._event.prevX = 0;
@@ -169,7 +169,7 @@ Input.Controller = meta.Controller.extend
 		var x = ((screenX * camera.zoomRatio) - camera._x) | 0;
 		var y = ((screenY * camera.zoomRatio) - camera._y) | 0;
 
-		this._event.Event = event;
+		this._event.event = event;
 		this._event.prevScreenX = screenX;
 		this._event.prevScreenY = screenY;
 		this._event.screenX = screenX;
@@ -199,7 +199,7 @@ Input.Controller = meta.Controller.extend
 		var x = ((screenX * camera.zoomRatio) - camera._x) | 0;
 		var y = ((screenY * camera.zoomRatio) - camera._y) | 0;
 
-		this._event.Event = event;
+		this._event.event = event;
 		this._event.prevScreenX = this._event.screenX;
 		this._event.prevScreenY = this._event.screenY;
 		this._event.screenX = screenX;
@@ -229,7 +229,7 @@ Input.Controller = meta.Controller.extend
 		var x = ((screenX * camera.zoomRatio) - camera._x) | 0;
 		var y = ((screenY * camera.zoomRatio) - camera._y) | 0;
 
-		this._event.Event = event;
+		this._event.event = event;
 		this._event.prevScreenX = this._event.screenX;
 		this._event.prevScreenY = this._event.screenY;
 		this._event.screenX = screenX;
@@ -270,7 +270,7 @@ Input.Controller = meta.Controller.extend
 			x = ((screenX * camera.zoomRatio) - camera._x) | 0;
 			y = ((screenY * camera.zoomRatio) - camera._y) | 0;
 
-			this._event.Event = event;
+			this._event.event = event;
 			this._event.prevScreenX = screenX;
 			this._event.prevScreenY = screenY;
 			this._event.screenX = screenX;
@@ -312,7 +312,7 @@ Input.Controller = meta.Controller.extend
 			x = ((screenX * camera.zoomRatio) - camera._x) | 0;
 			y = ((screenY * camera.zoomRatio) - camera._y) | 0;
 
-			this._event.Event = event;
+			this._event.event = event;
 			if(id === 0) {
 				this._event.prevScreenX = this._event.screenX;
 				this._event.prevScreenY = this._event.screenY;
@@ -357,7 +357,7 @@ Input.Controller = meta.Controller.extend
 			x = ((screenX * camera.zoomRatio) - camera._x) | 0;
 			y = ((screenY * camera.zoomRatio) - camera._y) | 0;
 
-			this._event.Event = event;
+			this._event.event = event;
 			if(id === 0) {
 				this._event.prevScreenX = this._event.screenX;
 				this._event.prevScreenY = this._event.screenY;
@@ -482,7 +482,7 @@ Input.Controller = meta.Controller.extend
 	{
 		var i;
 
-		this._event.Event = null;
+		this._event.event = null;
 		this._event.prevX = 0;
 		this._event.prevY = 0;
 		this._event.x = 0;
@@ -527,7 +527,7 @@ Input.Controller = meta.Controller.extend
 
 	getEvent: function()
 	{
-		this._event.Event = null;
+		this._event.event = null;
 		this._event.prevScreenX = this._event.screenX;
 		this._event.prevScreenY = this._event.screenY;
 		this._event.screenX = this.screenX;
