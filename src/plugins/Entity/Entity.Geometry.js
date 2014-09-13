@@ -512,7 +512,7 @@ Entity.Geometry = meta.Class.extend
 	updateFromTexture: function()
 	{
 		var unitRatio = this.meta.unitRatio;			
-		this.volume.resizeInit(this._texture._width * unitRatio, this._texture._height * unitRatio);	
+		this.volume.resizeInit(this._texture.trueWidth * unitRatio, this._texture.trueHeight * unitRatio);	
 
 		this.updatePivot();
 		this.updatePosType();

@@ -108,9 +108,9 @@ Resource.Texture = Resource.Basic.extend
 
 			this._vertices = new Float32Array([
 				0.0, 0.0,
-				this._width, 0.0,
-				0.0, this._height,
-				this._width, this._height
+				this.trueWidth, 0.0,
+				0.0, this.trueHeight,
+				this.trueWidth, this.trueHeight
 			]);
 
 			this.vbo = gl.createBuffer();
@@ -121,8 +121,8 @@ Resource.Texture = Resource.Basic.extend
 		{
 			this.image = document.createElement("canvas");
 			this.ctx = this.image.getContext("2d");
-			this.image.width = this.fullWidth;
-			this.image.height = this.fullHeight;
+			this.image.width = this.trueFullWidth;
+			this.image.height = this.trueFullHeight;
 
 			this.textureType = Resource.TextureType.CANVAS;
 		}	
@@ -217,8 +217,8 @@ Resource.Texture = Resource.Basic.extend
 		if(this._cachedImg) { return; }
 
 		this._cachedImg = document.createElement("canvas");
-		this._cachedImg.width = this.fullWidth;
-		this._cachedImg.height = this.fullHeight;
+		this._cachedImg.width = this.trueFullWidth;
+		this._cachedImg.height = this.trueFullHeight;
 		this._cachedCtx = this._cachedImg.getContext("2d");
 	},
 
@@ -230,19 +230,27 @@ Resource.Texture = Resource.Basic.extend
 	 */
 	resize: function(width, height)
 	{
-		if(this.fullWidth === width && this.fullHeight === height) { return; }
+		if(this.trueFullWidth === width && this.trueFullHeight === height) { return; }
 
-		this.fullWidth = width;
-		this.fullHeight = height;
+		this.trueFullWidth = width;
+		this.trueFullHeight = height;
 
 		if(this.isAnimated) {
-			this._width = width / this.numFramesX;
-			this._height = height / this.numFramesY;
+			this.trueWidth = width / this.numFramesX;
+			this.trueHeight = height / this.numFramesY;
 		}
 		else {
-			this._width = width;
-			this._height = height;
+			this.trueWidth = width;
+			this.trueHeight = height;
 		}
+
+		var unitRatio = meta.unitRatio;
+		this.width = (this.trueWidth * unitRatio) + 0.5 | 0;
+		this.height = (this.trueHeight * unitRatio) + 0.5 | 0;
+		this.fullWidth = (this.trueFullWidth * unitRatio) + 0.5 | 0;
+		this.fullHeight = (this.trueFullHeight * unitRatio) + 0.5 | 0;	
+		this.halfWidth = this.width * 0.5;
+		this.halfHeight = this.height * 0.5;	
 
 		if(!this.textureType)
 		{
@@ -254,35 +262,35 @@ Resource.Texture = Resource.Basic.extend
 					this._tmpImg.height = this.image.height;
 					this._tmpCtx.drawImage(this.image, 0, 0);
 
-					this.image.width = this.fullWidth;
-					this.image.height = this.fullHeight;
+					this.image.width = this.trueFullWidth;
+					this.image.height = this.trueFullHeight;
 					this.ctx.drawImage(this._tmpImg, 0, 0);
 				}
 				else {
-					this.image.width = this.fullWidth;
-					this.image.height = this.fullHeight;					
+					this.image.width = this.trueFullWidth;
+					this.image.height = this.trueFullHeight;					
 				}
 			}
 			else {
-				this.image.width = this.fullWidth;
-				this.image.height = this.fullHeight;
+				this.image.width = this.trueFullWidth;
+				this.image.height = this.trueFullHeight;
 			}
 		}
 		else
 		{
 			var gl = meta.ctx;
 
-			this._vertices[2] = this._width;
-			this._vertices[5] = this._height;
-			this._vertices[6] = this._width;
-			this._vertices[7] = this._height;
+			this._vertices[2] = this.trueWidth;
+			this._vertices[5] = this.trueHeight;
+			this._vertices[6] = this.trueWidth;
+			this._vertices[7] = this.trueHeight;
 
 			this._xRatio = 1.0 / this.numFramesX;
 			this._yRatio = 1.0 / this.numFramesY;
 
 			if(this.fromAtlas) {
-				this._widthRatio = 1.0 / ((this.ptr.fullWidth / this._width) / this.numFramesX);
-				this._heightRatio = 1.0 / ((this.ptr.fullHeight / this._height) / this.numFramesY);
+				this._widthRatio = 1.0 / ((this.ptr.trueFullWidth / this.trueWidth) / this.numFramesX);
+				this._heightRatio = 1.0 / ((this.ptr.trueFullHeight / this.trueHeight) / this.numFramesY);
 			}
 			else {
 				this._widthRatio = 1.0 / this.numFramesX;
@@ -298,8 +306,8 @@ Resource.Texture = Resource.Basic.extend
 				this._tmpImg.height = this.image.height;
 				this._tmpCtx.drawImage(this._cachedImg, 0, 0);
 
-				this._cachedImg.width = this.fullWidth;
-				this._cachedImg.height = this.fullHeight;
+				this._cachedImg.width = this.trueFullWidth;
+				this._cachedImg.height = this.trueFullHeight;
 				this._cachedCtx.drawImage(this._cachedImg, 0, 0);
 
 				gl.bindTexture(gl.TEXTURE_2D, this.image);
@@ -314,11 +322,11 @@ Resource.Texture = Resource.Basic.extend
 
 	upResize: function(width, height)
 	{
-		if(width < this.fullWidth) {
-			width = this.fullWidth;
+		if(width < this.trueFullWidth) {
+			width = this.trueFullWidth;
 		}
-		if(height < this.fullHeight) {
-			height = this.fullHeight;
+		if(height < this.trueFullHeight) {
+			height = this.trueFullHeight;
 		}
 
 		this.resize(width, height);
@@ -328,7 +336,7 @@ Resource.Texture = Resource.Basic.extend
 	{
 		// If WebGL.
 		if(this.textureType) {
-			this.resize(this._width, this._height);
+			this.resize(this.trueWidth, this.trueHeight);
 		}
 	},
 
@@ -350,7 +358,7 @@ Resource.Texture = Resource.Basic.extend
 			ctx.drawImage(this.image, x, y);
 		}
 		else {
-			ctx.drawImage(this.ptr.image, this._x, this._y, this._width, this._height, x, y, this._width, this._height);
+			ctx.drawImage(this.ptr.image, this._x, this._y, this.trueWidth, this.trueHeight, x, y, this.trueWidth, this.trueHeight);
 		}
 	},
 
@@ -378,30 +386,30 @@ Resource.Texture = Resource.Basic.extend
 			{
 				var width = this._anim.fill * frame;
 				if(width === 0) { width = 0.01; }
-				else if(width > this.fullWidth) { width = this.fullWidth; }
+				else if(width > this.trueFullWidth) { width = this.trueFullWidth; }
 
 				if(isEmulateReverse)
 				{
-					ctx.drawImage(this.image, (this.fullWidth - width), 0, width,
-						this.fullHeight, (x + this.fullWidth - width), y, width, this.fullHeight);
+					ctx.drawImage(this.image, (this.trueFullWidth - width), 0, width,
+						this.trueFullHeight, (x + this.trueFullWidth - width), y, width, this.trueFullHeight);
 				}
 				else {
-					ctx.drawImage(this.image, 0, 0, width, this.fullHeight, x, y, width, this.fullHeight);
+					ctx.drawImage(this.image, 0, 0, width, this.trueFullHeight, x, y, width, this.trueFullHeight);
 				}
 			}
 			else if(this._anim.type === 2)
 			{
 				var height = this._anim.fill * frame;
 				if(height === 0) { height = 0.01; }
-				else if(height > this._height) { width = this._height; }
+				else if(height > this.trueHeight) { width = this.trueHeight; }
 
 				if(isEmulateReverse)
 				{
-					ctx.drawImage(this.image, 0, (this.fullHeight - height), this.fullWidth,
-						height, x, (y + this.fullHeight - height), this.fullWidth, height);
+					ctx.drawImage(this.image, 0, (this.trueFullHeight - height), this.trueFullWidth,
+						height, x, (y + this.trueFullHeight - height), this.trueFullWidth, height);
 				}
 				else {
-					ctx.drawImage(this.image, 0, 0, this.fullWidth, height, x, y, this.fullWidth, height);
+					ctx.drawImage(this.image, 0, 0, this.trueFullWidth, height, x, y, this.trueFullWidth, height);
 				}
 			}
 			else if(this._anim.type === 3)
@@ -419,7 +427,7 @@ Resource.Texture = Resource.Basic.extend
 					ctx.beginPath();
 					ctx.moveTo(x, y);
 					ctx.lineTo(cos, y + Math.sin(theta) * this._anim.length);
-					ctx.lineTo(cos + this.fullWidth, y);
+					ctx.lineTo(cos + this.trueFullWidth, y);
 					ctx.closePath();
 					ctx.clip();
 				}
@@ -432,8 +440,8 @@ Resource.Texture = Resource.Basic.extend
 					ctx.beginPath();
 					ctx.moveTo(x, y);
 					ctx.lineTo(cos, y + Math.sin(theta) * this._anim.length);
-					ctx.lineTo(cos, y + this.fullHeight);
-					ctx.lineTo(x, y + this.fullHeight);
+					ctx.lineTo(cos, y + this.trueFullHeight);
+					ctx.lineTo(x, y + this.trueFullHeight);
 					ctx.closePath();
 					ctx.clip();
 				}
@@ -446,13 +454,13 @@ Resource.Texture = Resource.Basic.extend
 				if(isEmulateReverse)
 				{
 					theta = this._anim.fill * (this.numFrames - frame - 1) + Math.PI / 2;
-					cos = x + Math.cos(theta) * this._anim.length + this.fullWidth;
+					cos = x + Math.cos(theta) * this._anim.length + this.trueFullWidth;
 
 					ctx.save();
 					ctx.beginPath();
-					ctx.moveTo(x + this.fullWidth, y);
+					ctx.moveTo(x + this.trueFullWidth, y);
 					ctx.lineTo(cos, y + Math.sin(theta) * this._anim.length);
-					ctx.lineTo(x, y + this.fullHeight);
+					ctx.lineTo(x, y + this.trueFullHeight);
 					ctx.lineTo(x, y);
 					ctx.closePath();
 					ctx.clip();
@@ -460,14 +468,14 @@ Resource.Texture = Resource.Basic.extend
 				else
 				{
 					theta = this._anim.fill * frame + Math.PI / 2;
-					cos = x + Math.cos(theta) * this._anim.length + this.fullWidth;
+					cos = x + Math.cos(theta) * this._anim.length + this.trueFullWidth;
 
 					ctx.save();
 					ctx.beginPath();
-					ctx.moveTo(x + this.fullWidth, y);
+					ctx.moveTo(x + this.trueFullWidth, y);
 					ctx.lineTo(cos, y + Math.sin(theta) * this._anim.length);
-					ctx.lineTo(cos, y + this.fullHeight);
-					ctx.lineTo(x + this.fullWidth, y + this.fullHeight);
+					ctx.lineTo(cos, y + this.trueFullHeight);
+					ctx.lineTo(x + this.trueFullWidth, y + this.trueFullHeight);
 					ctx.closePath();
 					ctx.clip();
 				}
@@ -484,9 +492,9 @@ Resource.Texture = Resource.Basic.extend
 
 					ctx.save();
 					ctx.beginPath();
-					ctx.moveTo(x, y + this.fullHeight);
-					ctx.lineTo(cos, y + Math.sin(theta) * this._anim.length + this.fullHeight);
-					ctx.lineTo(x + this.fullWidth, y);
+					ctx.moveTo(x, y + this.trueFullHeight);
+					ctx.lineTo(cos, y + Math.sin(theta) * this._anim.length + this.trueFullHeight);
+					ctx.lineTo(x + this.trueFullWidth, y);
 					ctx.lineTo(x, y);
 					ctx.closePath();
 					ctx.clip();
@@ -498,10 +506,10 @@ Resource.Texture = Resource.Basic.extend
 
 					ctx.save();
 					ctx.beginPath();
-					ctx.moveTo(x, y + this.fullHeight);
-					ctx.lineTo(cos, y + Math.sin(theta) * this._anim.length + this.fullHeight);
-					ctx.lineTo(x + this.fullWidth, y);
-					ctx.lineTo(x + this.fullWidth, y + this.fullHeight);
+					ctx.moveTo(x, y + this.trueFullHeight);
+					ctx.lineTo(cos, y + Math.sin(theta) * this._anim.length + this.trueFullHeight);
+					ctx.lineTo(x + this.trueFullWidth, y);
+					ctx.lineTo(x + this.trueFullWidth, y + this.trueFullHeight);
 					ctx.closePath();
 					ctx.clip();
 				}
@@ -518,7 +526,7 @@ Resource.Texture = Resource.Basic.extend
 
 					ctx.save();
 					ctx.beginPath();
-					ctx.moveTo(x + 64, y + this.fullHeight);
+					ctx.moveTo(x + 64, y + this.trueFullHeight);
 					ctx.lineTo(cos + 64, y + Math.sin(theta) * this._anim.length + 64);
 					ctx.lineTo(x, y);
 					ctx.lineTo(x + 64, y);
@@ -532,7 +540,7 @@ Resource.Texture = Resource.Basic.extend
 
 					ctx.save();
 					ctx.beginPath();
-					ctx.moveTo(x + 64, y + this.fullHeight);
+					ctx.moveTo(x + 64, y + this.trueFullHeight);
 					ctx.lineTo(cos + 64, y + Math.sin(theta) * this._anim.length + 64);
 					ctx.lineTo(x, y);
 					ctx.lineTo(x, y + 64);
@@ -547,9 +555,9 @@ Resource.Texture = Resource.Basic.extend
 		else
 		{
 			ctx.drawImage(this.image,
-				(this._width * (frame % this.numFramesX)),
-				(this._height * Math.floor(frame / this.numFramesX)),
-				this._width, this._height, x, y, this._width, this._height);
+				(this.trueWidth * (frame % this.numFramesX)),
+				(this.trueHeight * Math.floor(frame / this.numFramesX)),
+				this.trueWidth, this.trueHeight, x, y, this.trueWidth, this.trueHeight);
 		}
 	},
 
@@ -564,14 +572,14 @@ Resource.Texture = Resource.Basic.extend
 		{
 			if(!this._cachedCtx) { return; }
 
-			this._cachedCtx.clearRect(0, 0, this.fullWidth, this.fullHeight);
+			this._cachedCtx.clearRect(0, 0, this.trueFullWidth, this.trueFullHeight);
 
 			var gl = meta.ctx;
 			gl.bindTexture(gl.TEXTURE_2D, this.image);
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
 		}
 		else {
-			this.ctx.clearRect(0, 0, this.fullWidth, this.fullHeight);
+			this.ctx.clearRect(0, 0, this.trueFullWidth, this.trueFullHeight);
 		}
 
 		if(!this._isReloading) {
@@ -587,14 +595,14 @@ Resource.Texture = Resource.Basic.extend
 	{
 		if(this.textureType === Resource.TextureType.WEBGL)
 		{
-			this._tmpCtx.clearRect(0, 0, this.fullWidth, this.fullHeight);
+			this._tmpCtx.clearRect(0, 0, this.trueFullWidth, this.trueFullHeight);
 
 			var gl = meta.ctx;
 			gl.bindTexture(gl.TEXTURE_2D, this.image);
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
 		}
 		else {
-			this.ctx.clearRect(0, 0, this.fullWidth, this.fullHeight);
+			this.ctx.clearRect(0, 0, this.trueFullWidth, this.trueFullHeight);
 		}
 	},
 
@@ -694,8 +702,8 @@ Resource.Texture = Resource.Basic.extend
 
 		params.x = params.x || 0;
 		params.y = params.y || 0;
-		var width = (params.width || this.fullWidth || 1) + params.x;
-		var height = (params.height || this.fullHeight || 1) + params.y;
+		var width = (params.width || this.trueFullWidth || 1) + params.x;
+		var height = (params.height || this.trueFullHeight || 1) + params.y;
 
 		// if(meta.maxUnitSize > 1) 
 		// {
@@ -793,16 +801,16 @@ Resource.Texture = Resource.Basic.extend
 
 		params.x = params.x || 0;
 		params.y = params.y || 0;
-		params.width = params.width || this.fullWidth;
-		params.height = params.height || this.fullHeight;
+		params.width = params.width || this.trueFullWidth;
+		params.height = params.height || this.trueFullHeight;
 
 		if(!params.drawOver) {
 			this.resize(params.width, params.height);
 		}
 
 		if(params.center) {
-			params.x += (this.fullWidth & (texture.fullWidth - 1)) / 2;
-			params.y += (this.fullHeight & (texture.fullHeight - 1)) / 2;		
+			params.x += (this.trueFullWidth & (texture.trueFullWidth - 1)) / 2;
+			params.y += (this.trueFullHeight & (texture.trueFullHeight - 1)) / 2;		
 		}
 
 		var ctx = this.ctx;
@@ -813,16 +821,16 @@ Resource.Texture = Resource.Basic.extend
 
 		var posX = params.x;
 		var posY = params.y;
-		var numX = Math.ceil(this.fullWidth / texture.fullWidth);
-		var numY = Math.ceil(this.fullHeight/ texture.fullHeight);
+		var numX = Math.ceil(this.trueFullWidth / texture.trueFullWidth);
+		var numY = Math.ceil(this.trueFullHeight/ texture.trueFullHeight);
 
 		if(posX > 0) {
-			numX += Math.ceil(posX / texture.fullWidth);
-			posX -= texture.fullWidth;
+			numX += Math.ceil(posX / texture.trueFullWidth);
+			posX -= texture.trueFullWidth;
 		}
 		if(posY > 0) {
-			numY += Math.ceil(posY / texture.fullHeight);
-			posY -= texture.fullHeight;
+			numY += Math.ceil(posY / texture.trueFullHeight);
+			posY -= texture.trueFullHeight;
 		}
 
 		var origY = posY;
@@ -955,8 +963,8 @@ Resource.Texture = Resource.Basic.extend
 			return;
 		}
 
-		params.width = params.width || this.fullWidth;
-		params.height = params.height || this.fullHeight;
+		params.width = params.width || this.trueFullWidth;
+		params.height = params.height || this.trueFullHeight;
 
 		var lineWidth = 1;
 		if(params.borderWidth) {
@@ -1012,7 +1020,7 @@ Resource.Texture = Resource.Basic.extend
 
 		ctx.lineWidth = params.borderWidth;
 		
-		ctx.clearRect(0, 0, this.fullWidth, this.fullHeight);
+		ctx.clearRect(0, 0, this.trueFullWidth, this.trueFullHeight);
 		ctx.beginPath();
 		ctx.arc(params.x + params.radius + (params.borderWidth / 2), params.y + params.radius + (params.borderWidth / 2),
 			params.radius, params.startAngle, params.endAngle, false);
@@ -1233,16 +1241,16 @@ Resource.Texture = Resource.Basic.extend
 			this.numFrames = frames;
 
 			if(type === animType.LINEAR_H) {
-				this._anim.fill = this._width / (frames - 1);
+				this._anim.fill = this.trueWidth / (frames - 1);
 			}
 			else if(type === animType.LINEAR_V) {
-				this._anim.fill = this._height / (frames - 1);
+				this._anim.fill = this.trueHeight / (frames - 1);
 			}
 			else if(type === animType.RADIAL)
 			{
 				console.log("[Resource.Texture.emulateAnim]:", "RADIAL is currently unsupported type.");
-				this._anim.halfWidth = (this.fullWidth / 2);
-				this._anim.halfHeight = (this.fullHeight / 2);
+				this._anim.halfWidth = (this.trueFullWidth / 2);
+				this._anim.halfHeight = (this.trueFullHeight / 2);
 				this._anim.fill = (Math.PI * 2 / (frames - 1));
 				this._anim.length = Math.sqrt(this._anim.halfWidth * this._anim.halfWidth +
 					this._anim.halfHeight * this._anim.halfHeight) + 1 | 0;
@@ -1251,7 +1259,7 @@ Resource.Texture = Resource.Basic.extend
 				type === animType.RADIAL_BOTTOM_LEFT || type === animType.RADIAL_BOTTOM_RIGHT)
 			{
 				this._anim.fill = (Math.PI * 2 / ((frames - 1) * 4));
-				this._anim.length = Math.sqrt(this.fullWidth * this.fullWidth + this.fullHeight * this.fullHeight) + 1 | 0;
+				this._anim.length = Math.sqrt(this.trueFullWidth * this.trueFullWidth + this.trueFullHeight * this.trueFullHeight) + 1 | 0;
 			}
 		}
 
@@ -1274,8 +1282,8 @@ Resource.Texture = Resource.Basic.extend
 		var ctx = this.ctx;
 		data.dirX = data.dirX || 0;
 		data.dirY = data.dirY || 0;
-		data.width = data.width || this.fullWidth || 1;
-		data.height = data.height || this.fullHeight || 1;
+		data.width = data.width || this.trueFullWidth || 1;
+		data.height = data.height || this.trueFullHeight || 1;
 
 		if(!data.drawOver) {
 			this.resize(data.width, data.height);
@@ -1291,20 +1299,20 @@ Resource.Texture = Resource.Basic.extend
 
 		var x1, x2, y1, y2;
 		if(data.dirX < 0) {
-			x1 = this.fullWidth
+			x1 = this.trueFullWidth
 			x2 = 0;
 		}
 		else {
 			x1 = 0;
-			x2 = this.fullWidth * data.dirX;
+			x2 = this.trueFullWidth * data.dirX;
 		}
 		if(data.dirY < 0) {
-			y1 = this.fullHeight;
+			y1 = this.trueFullHeight;
 			y2 = 0;
 		}
 		else {
 			y1 = 0;
-			y2 = this.fullHeight * data.dirY;
+			y2 = this.trueFullHeight * data.dirY;
 		}
 
 		var gradient = ctx.createLinearGradient(x1, y1, x2, y2);
@@ -1314,8 +1322,8 @@ Resource.Texture = Resource.Basic.extend
 
 		ctx.fillStyle = gradient;
 
-		ctx.clearRect(0, 0, this.fullWidth, this.fullHeight);
-		ctx.fillRect(0, 0, this.fullWidth, this.fullHeight);
+		ctx.clearRect(0, 0, this.trueFullWidth, this.trueFullHeight);
+		ctx.fillRect(0, 0, this.trueFullWidth, this.trueFullHeight);
 
 		if(this.textureType) {
 			var gl = meta.ctx;
@@ -1421,10 +1429,10 @@ Resource.Texture = Resource.Basic.extend
 		this._constructTex(data, "left");
 		this._constructTex(data, "right");
 
-		data.width = data.width || this.fullWidth;
-		data.height = data.height || this.fullHeight;
+		data.width = data.width || this.trueFullWidth;
+		data.height = data.height || this.trueFullHeight;
 		this.resize(data.width, data.height);
-		console.log(this._width, this._height);
+		console.log(this.trueWidth, this.trueHeight);
 
 		var left = ((data.width / 2) - (data.center.width / 2)) | 0;
 		var top = ((data.height / 2) - (data.center.height / 2)) | 0;
@@ -1496,9 +1504,9 @@ Resource.Texture = Resource.Basic.extend
 		}
 
 		var alphaMask = new Resource.Texture(Resource.TextureType.CANVAS);
-		alphaMask.resize(this.fullWidth, this.fullHeight);
+		alphaMask.resize(this.trueFullWidth, this.trueFullHeight);
 
-		var imgData = this.ctx.getImageData(0, 0, this.fullWidth, this.fullHeight);
+		var imgData = this.ctx.getImageData(0, 0, this.trueFullWidth, this.trueFullHeight);
 		var data = imgData.data;
 		var numBytes = data.length;
 
@@ -1539,7 +1547,7 @@ Resource.Texture = Resource.Basic.extend
 		}
 
 		if(this.textureType) {
-			this._xRatio = 1.0 / this.ptr.fullWidth;
+			this._xRatio = 1.0 / this.ptr.trueFullWidth;
 			this._x = this._xRatio * value;
 		}
 		else {
@@ -1555,7 +1563,7 @@ Resource.Texture = Resource.Basic.extend
 		}
 
 		if(this.textureType) {
-			this._yRatio = 1.0 / this.ptr.fullHeight;
+			this._yRatio = 1.0 / this.ptr.trueFullHeight;
 			this._y = this._yRatio * value;
 		}
 		else {
@@ -1565,21 +1573,6 @@ Resource.Texture = Resource.Basic.extend
 
 	get x() { return this._x; },
 	get y() { return this._y; },
-
-
-	set width(value) {
-		this._width = value;
-		this.update();
-	},
-
-	set height(value) {
-		this._height = value;
-		this.update();
-	},
-
-	get width() { return this._width; },
-	get height() { return this._height; },
-
 
 	set offsetX(x)
 	{
