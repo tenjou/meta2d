@@ -5,10 +5,7 @@ UI.Button = Entity.Geometry.extend
 	_initParams: function(params) 
 	{		
 		if(params) {
-			console.log(params);
-			var style = meta.createStyle(params, UI.ctrl.coreStyle.button);
-			console.log(style);
-			this.style = style;
+			this.style = meta.createStyle(params, UI.ctrl.coreStyle.button);
 		}
 		else {
 			this.style = UI.ctrl.style.button;
