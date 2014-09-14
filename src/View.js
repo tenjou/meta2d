@@ -243,7 +243,7 @@ meta.View.prototype =
 
 		if(!this.views) {
 			this.views = [];
-		}
+		}		
 
 		this.views.push(view);
 		view.parentView = this;
@@ -302,7 +302,7 @@ meta.View.prototype =
 		}
 
 		view.isActive = false;
-		view.parentView = null;
+		view.parentView = null;		
 	},
 
 	detachAll: function()
@@ -440,6 +440,15 @@ meta.View.prototype =
 	},
 
 
+	onResize: function(data, event)
+	{
+		for(var i = 0; i < this.numEntities; i++) {
+			this.entities[i]._onResize(data);
+		}
+		console.log("onResize");
+	},
+
+
 	set bgColor(hex)
 	{
 		if(meta.engine.isWebGL)
@@ -482,10 +491,15 @@ meta.View.prototype =
 			}
 
 			this._isActive = value;
+			meta.subscribe(this, meta.Event.CAMERA_RESIZE, this.onResize);	
+
 			this._makeActive();				
 		}
-		else {
+		else 
+		{
 			this._isActive = value;
+			meta.unsubscribe(this, meta.Event.CAMERA_RESIZE, this.onResize);	
+
 			this._makeInactive();
 		}
 	},

@@ -39,12 +39,14 @@ cat Engine.js \
 	plugins/Entity/Entity.CanvasRenderer.js \
 	plugins/Entity/Entity.Geometry.js \
 	plugins/Entity/Entity.Text.js \
+	plugins/Entity/Entity.Grid.js \
 	plugins/Entity/Entity.DepthList.js \
 	plugins/Entity/Entity.CellArray.js \
 	plugins/Input/Input.Controller.js \
 	plugins/Input/Enum.js \
 	plugins/UI/UI.Controller.js \
 	plugins/UI/UI.Button.js \
+	plugins/UI/UI.Checkbox.js \
 	plugins/UI/UI.ProgressBar.js \
 	Loader.js \
-	| uglifyjs --output ../versions/meta.latest.js --mangle -c dead_code=false,unused=false,side_effects=false --screw-ie8
+	| uglifyjs --output ../versions/meta.nightly.latest.js --mangle -c dead_code=false,unused=false,side_effects=false --screw-ie8

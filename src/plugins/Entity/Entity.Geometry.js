@@ -436,14 +436,18 @@ Entity.Geometry = meta.Class.extend
 			this.drawSrcX += this._view._y;
 		}
 
+		if(this.id === 3) {
+			console.log(this.drawSrcX, this.drawSrcY);
+		}		
+
 		this.volume.set(this.drawSrcX + this.pivotX, this.drawSrcY + this.pivotY);
 		this.drawX = this.drawSrcX - this.volume.initHalfWidth + this.pivotSrcX;
 		this.drawY = this.drawSrcY - this.volume.initHalfHeight + this.pivotSrcY;
 
 		if(this.children)
 		{			
-			this.childOffsetX = this._x + this.childPivotX + this._anchorPosX;
-			this.childOffsetY = this._y + this.childPivotY + this._anchorPosY;
+			this.childOffsetX = this._x + this.childPivotX + this._anchorPosX + this._parent.childOffsetX;
+			this.childOffsetY = this._y + this.childPivotY + this._anchorPosY + this._parent.childOffsetY;
 
 			if(this._view) {
 				this.childOffsetX += this._view._x;
@@ -1091,19 +1095,14 @@ Entity.Geometry = meta.Class.extend
 
 		this._anchorX = x;
 		this._anchorY = y;
-
-		if(!(this._flags & this.Flag.ANCHOR)) {
-			this.isAnchor = true;
-			var self = this;
-			this._onResize_interal = function() { self.updateAnchor(); };
-			this.handleResizeFunc();
-		}
+		this._flags |= this.Flag.ANCHOR;
 
 		this.updateAnchor();
 	},
 
 	updateAnchor: function()
 	{
+		
 		if(this._flags & this.Flag.IGNORE_ZOOM) {
 			this._anchorPosX = (this._parent.volume.width * (1.0 / this._parent.volume.scaleX) * this._anchorX + 0.5) | 0;
 			this._anchorPosY = (this._parent.volume.height * (1.0 / this._parent.volume.scaleY) * this._anchorY + 0.5) | 0;				
@@ -1335,10 +1334,10 @@ Entity.Geometry = meta.Class.extend
 			this.children.push(entity);
 		}
 
-		if(entity.isAnchor) {
+		if(entity._flags & this.Flag.ANCHOR) {
 			entity.updateAnchor();
 		}
-		if(entity.ignoreZoom !== this.ignoreZoom) {
+		if(this._flags & this.Flag.IGNORE_ZOOM) {
 			entity.ignoreZoom = this.ignoreZoom;
 		}
 
@@ -2460,38 +2459,21 @@ Entity.Geometry = meta.Class.extend
 		return this._tween;
 	},
 
-
-	handleResizeFunc: function()
+	_onResize: function(data)
 	{
-		if(this._onResize_user || this._onResize_interal) {
-			meta.subscribe(this, meta.Event.RESIZE, this._onResize);
-			meta.subscribe(this, meta.Event.CAMERA_RESIZE, this._onResize);		
-		}	
-		else {
-			meta.unsubscribe(this, meta.Event.RESIZE, this._onResize);
-			meta.unsubscribe(this, meta.Event.CAMERA_RESIZE, this._onResize);		
+		if(this.onResize) {
+			this.onResize(data);
+		}
+		if(this._flags & this.Flag.ANCHOR) {
+			this._onResize_anchor(data);
 		}
 	},
 
-	_onResize: function(data, event)
-	{
-		if(this._onResize_user) {
-			this._onResize_user(data);
-		}
-		if(this._onResize_interal) {
-			this._onResize_interal(data);
-		}
+	onResize: null,
+
+	_onResize_anchor: function() {
+		this.updateAnchor();
 	},
-
-	_onResize_user: null,
-	_onResize_internal: null,
-
-	set onResize(func) {
-		this._onResize_user = func;
-		this.handleResizeFunc();
-	},
-
-	get onResize() { return this._onResize_user; },
 
 
 	set isCached(value)
