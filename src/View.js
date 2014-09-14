@@ -445,7 +445,6 @@ meta.View.prototype =
 		for(var i = 0; i < this.numEntities; i++) {
 			this.entities[i]._onResize(data);
 		}
-		console.log("onResize");
 	},
 
 

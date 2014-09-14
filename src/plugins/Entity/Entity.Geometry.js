@@ -434,11 +434,7 @@ Entity.Geometry = meta.Class.extend
 		if(this._view) {
 			this.drawSrcX += this._view._x;
 			this.drawSrcX += this._view._y;
-		}
-
-		if(this.id === 3) {
-			console.log(this.drawSrcX, this.drawSrcY);
-		}		
+		}	
 
 		this.volume.set(this.drawSrcX + this.pivotX, this.drawSrcY + this.pivotY);
 		this.drawX = this.drawSrcX - this.volume.initHalfWidth + this.pivotSrcX;
@@ -1102,7 +1098,6 @@ Entity.Geometry = meta.Class.extend
 
 	updateAnchor: function()
 	{
-		
 		if(this._flags & this.Flag.IGNORE_ZOOM) {
 			this._anchorPosX = (this._parent.volume.width * (1.0 / this._parent.volume.scaleX) * this._anchorX + 0.5) | 0;
 			this._anchorPosY = (this._parent.volume.height * (1.0 / this._parent.volume.scaleY) * this._anchorY + 0.5) | 0;				
@@ -1113,14 +1108,6 @@ Entity.Geometry = meta.Class.extend
 		}
 
 		this.updatePos();
-
-		if(this.children)
-		{
-			var numChildren = this.children.length;
-			for(var i = 0; i < numChildren; i++) {
-				this.children[i].updateAnchor();
-			}
-		}
 	},	
 
 
