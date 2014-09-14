@@ -10,6 +10,10 @@ Only requirement is to include library either from CDN or download and include l
 ```html
 <script src="http://infinite-games.com/meta.latest.js"></script>
 ```
+Nightly build (development build):
+```html
+<script src="http://infinite-games.com/meta.nightly.latest.js"></script>
+```
 
 
 * [Offical Website](http://meta.infinite-games.com/)
