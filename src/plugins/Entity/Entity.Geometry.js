@@ -439,7 +439,7 @@ Entity.Geometry = meta.Class.extend
 		this.volume.set(this._tmpX + this.pivotX, this._tmpY + this.pivotY);
 		this.drawX = this._tmpX - this.volume.initHalfWidth + this.pivotSrcX;
 		this.drawY = this._tmpY - this.volume.initHalfHeight + this.pivotSrcY;
-
+		
 		if(this.children)
 		{			
 			this.childOffsetX = this._tmpX + this.childPivotX;
@@ -1281,6 +1281,10 @@ Entity.Geometry = meta.Class.extend
 		entity.disableDebug = this.disableDebug;
 		entity._view = this._view;
 
+		if(this.clipVolume && !entity.clipVolume) {
+			entity.clip(this.clipVolume);
+		}
+
 		if(!this.pickable) {
 			entity.pickable = false;
 		}
@@ -1446,6 +1450,14 @@ Entity.Geometry = meta.Class.extend
 		}
 		else {
 			this.clipVolume = new meta.math.AdvAABB(minX, minY, maxX, maxY);
+		}
+
+		if(this.children)
+		{
+			var numChildren = this.children.length;
+			for(var i = 0; i < numChildren; i++) {
+				this.children[i].clip(this.clipVolume);
+			}
 		}
 
 		this.isNeedDraw = true;
@@ -2611,8 +2623,8 @@ Entity.Geometry = meta.Class.extend
 	get disableDebug() { return !!(this._flags & this.Flag.DISABLE_DEBUG); },
 
 	// Cursor.
-	set cursor(value) { document.body.style.cursor = value; },
-	get cursor() { return document.body.style.cursor; },
+	set cursor(value) { meta.engine.cursor = value; },
+	get cursor() { return meta.engine.cursor; },
 
 	// Flag Enum
 	Flag: {
