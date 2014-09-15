@@ -26,10 +26,20 @@ UI.Controller = meta.Controller.extend
 				},
 				"*:pressed": {
 					cursor: "pointer",
-					offsetX: 2,
-					offsetY: 2
+					offsetX: 1,
+					offsetY: 1
 				}
-			}
+			},
+			checkbox: {
+				"*:hover": {
+					cursor: "pointer"
+				},
+				"*:pressed": {
+					cursor: "pointer",
+					offsetX: 1,
+					offsetY: 1
+				}
+			}			
 		};		
 
 		this.style = 
@@ -45,8 +55,8 @@ UI.Controller = meta.Controller.extend
 				"*:pressed": {
 					texture: buttonOnHoverTex,
 					cursor: "pointer",
-					offsetX: 2,
-					offsetY: 2
+					offsetX: 1,
+					offsetY: 1
 				}
 			}
 		};

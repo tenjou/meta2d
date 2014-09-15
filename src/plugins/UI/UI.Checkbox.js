@@ -1,52 +1,53 @@
 "use strict";
 
-UI.Chekcbox = UI.Button.extend
+UI.Checkbox = Entity.Geometry.extend
 ({
-	init: function(obj) {
-		this.brush = this._style;
-		this.state = "default";
-	},
-
-	_updateState: function()
-	{
-		if(!this._style) { return; }
-
-		if(this.isHover && this._style.states.hover) {
-			this.state = "hover";
-			return;
+	_initParams: function(params) 
+	{		
+		if(params) {
+			this.style = meta.createStyle(params, UI.ctrl.coreStyle.checkbox);
+		}
+		else {
+			this.style = UI.ctrl.style.checkbox;
 		}
 
-		if(this._isActive && this._style.states.active) {
-			this.state = "active";
-			return;
-		}
+		var self = this;
+		var entity = new Entity.Geometry();
+		entity.style = this._style.childStyle;
+		entity.anchor(0.5);
+		entity.pickable = false;
+		entity.state = "on";
+		entity.onChange = function() { self._onChildChange(this); };
+		this.attach(entity);
 
-		this.state = "default";
+		this._onClick = this.toggle;
 	},
 
-
-	_onClick: function(event)
+	toggle: function()
 	{
-		if(!this._style) { return; }
-		if(!this._style.states.active) { return; }
+		var child = this.children[0];
 
-		this.isActive = !this._isActive;
-		this._updateState();
-		this.onActive(this._isActive);
+		if(child.state === "on") {
+			child.state = "off";
+		}
+		else {
+			child.state = "on";
+		}
 	},
 
+	_onChange: function() {
+		this.children[0].state = this._state;
+	}
 
-	onActive: meta.emptyFuncParam,
-
-
-	set isActive(value) {
-		this._isActive = value;
-		this._updateState();
+	_onChildChange: function(child) {
+		this._state = this.children[0]._state
 	},
 
-	get isActive() { return this._isActive; },
+	set checked(value) {
+		this.state = value ? "on" : "off";
+	},
 
-
-	//
-	_isActive: false
+	get checked() { 
+		return (this._state === "on");
+	}
 });
