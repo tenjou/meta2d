@@ -28,7 +28,22 @@ meta.Style.prototype =
 		var state, stateParams, stateName, key;
 		var tmpState;
 
-		// If action state.
+		if(typeof(params) === "string") {
+			params = { texture: params };
+		}
+
+		// If child style:
+		if(name.charAt(0) === "[") 
+		{
+			name = name.substr(1, name.length - 2);
+			if(!this.childStyle) {
+				this.childStyle = new meta.Style();
+			}
+			this.childStyle.setState(name, params);
+			return;
+		}
+
+		// If action state:
 		var actionIndex = name.indexOf(":");
 		if(actionIndex !== -1) 
 		{
@@ -286,7 +301,9 @@ meta.Style.prototype =
 	//
 	states: null,
 	defaultState: null,
-	haveActions: false
+	haveActions: false,
+
+	childStyle: null
 };
 
 /**
@@ -354,6 +371,9 @@ meta.createStyle = function(obj, extend)
 		for(itemKey in obj) 
 		{
 			item = obj[itemKey];
+			if(typeof(item) === "string") {
+				item = { texture: item };
+			}
 
 			// If Multiple styles defined.
 			if(itemKey.indexOf(",") !== -1)
