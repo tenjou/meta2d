@@ -1,0 +1,18 @@
+info face="C:\Users\DaveDee\Desktop	est-export" size=32 bold=0 italic=0 charset="" unicode=0 stretchH=100 smooth=1 aa=1 padding=0,0,0,0 spacing=1,1
+common lineHeight=195 base=26 scaleW=512 scaleH=512 pages=1 packed=0 alphaChnl=1 redChnl=0 greenChnl=0 blueChnl=0
+page id=0 file="C:\Users\DaveDee\Desktop	est-export.png"
+chars count=12
+char id=49 x=100 y=0 width=55 height=123 xoffset=22 yoffset=69 xadvance=64 page=0 chnl=0 letter="1"
+char id=50 x=95 y=264 width=91 height=131 xoffset=4 yoffset=65 xadvance=100 page=0 chnl=0 letter="2"
+char id=51 x=187 y=261 width=85 height=133 xoffset=7 yoffset=66 xadvance=94 page=0 chnl=0 letter="3"
+char id=52 x=0 y=0 width=99 height=129 xoffset=0 yoffset=66 xadvance=108 page=0 chnl=0 letter="4"
+char id=53 x=273 y=261 width=84 height=131 xoffset=7 yoffset=67 xadvance=93 page=0 chnl=0 letter="5"
+char id=54 x=95 y=130 width=91 height=133 xoffset=4 yoffset=67 xadvance=100 page=0 chnl=0 letter="6"
+char id=55 x=0 y=264 width=94 height=129 xoffset=2 yoffset=67 xadvance=103 page=0 chnl=0 letter="7"
+char id=56 x=187 y=0 width=90 height=133 xoffset=4 yoffset=62 xadvance=99 page=0 chnl=0 letter="8"
+char id=57 x=187 y=134 width=87 height=126 xoffset=6 yoffset=65 xadvance=96 page=0 chnl=0 letter="9"
+char id=48 x=0 y=130 width=94 height=133 xoffset=2 yoffset=62 xadvance=103 page=0 chnl=0 letter="0"
+char id=32 x=0 y=0 width=0 height=0 xoffset=0 yoffset=0 xadvance=60 page=0 chnl=0 letter=" "
+char id=9 x=0 y=0 width=0 height=0 xoffset=0 yoffset=0 xadvance=480 page=0 chnl=0 letter="	"
+
+kernings count=0
