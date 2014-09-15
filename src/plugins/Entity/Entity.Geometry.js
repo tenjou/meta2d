@@ -429,16 +429,14 @@ Entity.Geometry = meta.Class.extend
 	 */
 	updatePos: function()
 	{
-		this._tmpX = this._x + this.textureOffsetX + this._anchorPosX + this._parent.childOffsetX;
-		this._tmpY = this._y + this.textureOffsetY + this._anchorPosY + this._parent.childOffsetY;
+		this._tmpX = this._x + this.textureOffsetX + this.offsetX + this._anchorPosX + this._parent.childOffsetX;
+		this._tmpY = this._y + this.textureOffsetY + this.offsetY + this._anchorPosY + this._parent.childOffsetY;
 		if(this._view) {
 			this._tmpX += this._view._x;
 			this._tmpY += this._view._y;
 		}
 
 		this.volume.set(this._tmpX + this.pivotX, this._tmpY + this.pivotY);
-		this._tmpX += this._offsetX;
-		this._tmpY += this._offsetY;
 		this.drawX = this._tmpX - this.volume.initHalfWidth + this.pivotSrcX;
 		this.drawY = this._tmpY - this.volume.initHalfHeight + this.pivotSrcY;
 
@@ -1150,17 +1148,17 @@ Entity.Geometry = meta.Class.extend
 	 * @returns {Boolean} True if is inside entity.
 	 */
 	isInside: function(x, y) {
-		return this.volume.vsBorderPoint(x, y);
+		return this.volume.vsBorderPoint(x - this.offsetX, y - this.offsetY);
 	},
 
 	_isInsideDefault: function(x, y) {
-		return this.volume.vsBorderPoint(x, y);
+		return this.volume.vsBorderPoint(x - this.offsetX, y - this.offsetY);
 	},
 
 	_isInsideTransform: function(x, y)
 	{
-		var centerX = this._anchorPosX + this._parent.childOffsetX;
-		var centerY = this._anchorPosY + this._parent.childOffsetY;
+		var centerX = this._anchorPosX + this._parent.childOffsetX - this.offsetX;
+		var centerY = this._anchorPosY + this._parent.childOffsetY - this.offsetY;
 		if(!this.isChild) {
 			centerX += this._x;
 			centerY += this._y;
