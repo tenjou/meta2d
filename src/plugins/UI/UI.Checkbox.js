@@ -16,10 +16,10 @@ UI.Checkbox = Entity.Geometry.extend
 		entity.style = this._style.childStyle;
 		entity.anchor(0.5);
 		entity.pickable = false;
-		entity.state = "on";
 		entity.onChange = function() { self._onChildChange(this); };
 		this.attach(entity);
 
+		this.state = "on";
 		this._onClick = this.toggle;
 	},
 
@@ -37,7 +37,7 @@ UI.Checkbox = Entity.Geometry.extend
 
 	_onChange: function() {
 		this.children[0].state = this._state;
-	}
+	},
 
 	_onChildChange: function(child) {
 		this._state = this.children[0]._state
