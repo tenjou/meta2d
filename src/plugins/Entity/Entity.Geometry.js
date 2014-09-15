@@ -1455,6 +1455,8 @@ Entity.Geometry = meta.Class.extend
 
 
 	// Style input.
+	_onClick: meta.emptyFuncParam,
+
 	_onDown: function(param)
 	{
 		this._action = "pressed";

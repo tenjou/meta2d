@@ -599,6 +599,7 @@ Entity.Controller = meta.Controller.extend
 
 				// Click.
 				if(this.pressedEntity === this.hoverEntity) {
+					this.pressedEntity._onClick.call(this.pressedEntity, data);
 					this.pressedEntity.onClick.call(this.pressedEntity, data);
 					this._chnOnClick.emit(data, Entity.Event.CLICK);
 				}	
