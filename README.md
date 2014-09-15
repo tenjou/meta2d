@@ -1,4 +1,4 @@
-META v1.1.1
+META v1.1.2
 ====
 
 Meta is free and fast open source HTML5 game engine for making cross platform games, supports Canvas and WebGL rendering and Dopple for native compilation.

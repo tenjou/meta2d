@@ -429,14 +429,16 @@ Entity.Geometry = meta.Class.extend
 	 */
 	updatePos: function()
 	{
-		this._tmpX = this._x + this.textureOffsetX + this._offsetX + this._anchorPosX + this._parent.childOffsetX;
-		this._tmpY = this._y + this.textureOffsetY + this._offsetY + this._anchorPosY + this._parent.childOffsetY;
+		this._tmpX = this._x + this.textureOffsetX + this._anchorPosX + this._parent.childOffsetX;
+		this._tmpY = this._y + this.textureOffsetY + this._anchorPosY + this._parent.childOffsetY;
 		if(this._view) {
 			this._tmpX += this._view._x;
 			this._tmpY += this._view._y;
 		}
 
 		this.volume.set(this._tmpX + this.pivotX, this._tmpY + this.pivotY);
+		this._tmpX += this._offsetX;
+		this._tmpY += this._offsetY;
 		this.drawX = this._tmpX - this.volume.initHalfWidth + this.pivotSrcX;
 		this.drawY = this._tmpY - this.volume.initHalfHeight + this.pivotSrcY;
 
@@ -1619,6 +1621,11 @@ Entity.Geometry = meta.Class.extend
 	onParentRemoved: meta.emptyFuncParam,
 
 
+	_onChange: meta.emptyFunc,
+
+	onChange: meta.emptyFunc,
+
+
 	/**
 	 * Add component.
 	 * @param comp {String|Function} Name of the component or function pointer.
@@ -2071,6 +2078,8 @@ Entity.Geometry = meta.Class.extend
 		if(this._state === value) { return; }
 
 		this._state = value;
+		this._onChange();
+		this.onChange();		
 
 		if(this._style)
 		{
