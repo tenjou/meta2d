@@ -2265,22 +2265,24 @@ Entity.Geometry = meta.Class.extend
 
 		if(this.children)
 		{
+			var child;
 			var numChildren = this.children.length;
 			for(var i = 0; i < numChildren; i++)
 			{
-				var child = this.children[i];
+				child = this.children[i];
 				if(child._flag & this.Flag.IGNORE_PARENT_SCALE) { continue; }
 
 				child.updateScale();
 			}
 		}		
 
-		this.updatePos();
+		if(this._parent === this._entityCtrl) {
+			this.updatePos();
+			this.isNeedDraw = true;
+		}
 
 		this._draw = this._drawTransform;
 		this.isInside = this._isInsideTransform;
-
-		this.isNeedDraw = true;
 	},
 
 	scale: function(x, y) {
