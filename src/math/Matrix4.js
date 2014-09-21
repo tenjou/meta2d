@@ -29,6 +29,12 @@ meta.math.Matrix4.prototype =
 	},
 
 
+	/**
+	 * Scale matrix.
+	 * @param x {Number} Scale x axis.
+	 * @param y {Number} Scale y axis.
+	 * @param z {Number} Scale z axis.
+	 */
 	scale: function(x, y, z) {
 		this.m[0] = x;
 		this.m[5] = y;
