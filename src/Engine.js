@@ -828,6 +828,15 @@ meta.Engine.prototype =
 	},
 
 
+	set cursor(value) {
+		meta.element.style.cursor = value;
+	},
+
+	get cursor() {
+		return meta.element.style.cursor;
+	},
+
+
 	//
 	elementStyle: "padding:0; margin:0;",
 	canvasStyle: "position:absolute; overflow:hidden; translateZ(0); " +
