@@ -95,8 +95,7 @@ Entity.WebGLRenderer = Entity.Controller.extend
 		var camera = scope.camera;
 		var unitSize = scope.unitSize;
 		var texture;
-		var clipX, clipY;
-		var clipWidth, clipHeight;
+		var clipMinX, clipMinY, clipMaxX, clipMaxY;
 
 		this.clearScreen();		
 
@@ -127,22 +126,12 @@ Entity.WebGLRenderer = Entity.Controller.extend
 
 					//
 					this._clipVolume = entity.clipVolume;
-					clipX = (this._clipVolume.minX + camera._x) * camera._zoom | 0;
-					clipY = (camera.volume.height - (this._clipVolume.maxY))  | 0;
-					//clipY = camera.volume.height * camera._zoom - this._clipVolume.maxY;
-					clipWidth = this._clipVolume.width * camera._zoom;
-					clipHeight = this._clipVolume.height * camera._zoom;
+					clipMinX = (this._clipVolume.minX + camera._x) * camera._zoom;
+					clipMaxX = (this._clipVolume.maxX + camera._x) * camera._zoom;
+					clipMinY = (camera.volume.height - (this._clipVolume.maxY + camera._y)) * camera._zoom;
+					clipMaxY = (camera.volume.height - (this._clipVolume.minY + camera._y)) * camera._zoom;
 
-					if(clipX < 0) {
-						clipWidth += clipX;
-						clipX = 0;
-					}
-					if(clipY < 0) {
-						clipHeight += clipY;
-						clipY = 0;
-					}
-
-					gl.scissor(clipX, clipY, clipWidth, clipHeight);									
+					gl.scissor(clipMinX | 0, clipMinY | 0, Math.ceil(clipMaxX - clipMinX), Math.ceil(clipMaxY - clipMinY));									
 				}
 				else {
 					gl.disable(gl.SCISSOR_TEST);
