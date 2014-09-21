@@ -29,6 +29,13 @@ meta.math.Matrix4.prototype =
 	},
 
 
+	scale: function(x, y, z) {
+		this.m[0] = x;
+		this.m[5] = y;
+		this.m[10] = z;
+	},
+
+
 	/**
 	 * Creates orthographic projection matrix.
 	 * @param left {Number} Far left. Usually = 0.
