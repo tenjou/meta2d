@@ -17,6 +17,7 @@ meta.Tween.Link = function(tween, endValues, duration, onComplete)
 	this.tween = tween;
 	this.startValues = {};
 	this.endValues = endValues;
+	console.log(duration);
 	this.duration = duration;
 	this._onComplete = onComplete;
 };
@@ -86,6 +87,7 @@ meta.Tween.Link.prototype =
 	{
 		var value = this._easing(tElapsed);
 		var startValue, endValue, result;
+		var owner = this.tween.cache.owner;
 
 		for(var key in this.endValues)
 		{
@@ -101,7 +103,7 @@ meta.Tween.Link.prototype =
 				result = Math.round(result);
 			}
 
-			this.tween.owner[key] = result;
+			owner[key] = result;
 		}
 	},
 

@@ -8,20 +8,11 @@
  * @property linkIndex {Number} Current index of the link from the chain.
  * @property currLink {meta.Tween.Link} Current active link.
  * @property numRepeat {Number} Number of repeat times.
- * @property isPaused {Boolean} Flag if tween is paused.
- * @property doReverse {Boolean} Flag if play tween chain in reverse after it's complete.
  * @memberof! <global>
  */
-meta.Tween = function(owner)
-{
-	this.owner = owner;
+meta.Tween = function() {
+	this.cache = null;
 	this.chain = [];
-	this.linkIndex = 0;
-	this.currLink = null;
-
-	this._updateNodeID = -1;
-	this._tStart = 0;
-	this._tFrame = 0;
 };
 
 meta.Tween.prototype =
@@ -32,20 +23,29 @@ meta.Tween.prototype =
 	 */
 	play: function()
 	{
-		// If owner is removed or simply not set.
-		if(!this.owner) { return this; }
-		if(this.owner.isRemoved) { return this; }
+		if(!this.cache) {
+			this.autoPlay = true;
+		}
+		else
+		{
+			var cache = this.cache;
 
-		this.isPaused = false;
-		this.next();
-		this._play();
+			// If owner is removed or simply not set.
+			if(!cache.owner) { return this; }
+			if(cache.owner.isRemoved) { return this; }
+
+			cache.isPaused = false;
+			this.next();
+			this._play();
+			this.cache = null;
+		}
 
 		return this;
 	},
 
 	_play: function() 
 	{	
-		if(Entity.ctrl._addToUpdating(this) && this._group) {
+		if(Entity.ctrl._addToUpdating(this.cache) && this._group) {
 			this._group.activeUsers++;
 		}
 	},
@@ -56,17 +56,24 @@ meta.Tween.prototype =
 	 */
 	stop: function(callCB)
 	{
-		this.linkIndex = 0;
-		this._stop(callCB);
+		if(this.cache) {
+			this.autoPlay = false;
+		}
+		else {
+			this.linkIndex = 0;
+			this._stop(callCB);		
+			this.cache = null;	
+		}
+	
 		return this;
 	},
 
 	_stop: function(callCB) 
 	{
-		if(Entity.ctrl._removeFromUpdating(this)) 
+		if(Entity.ctrl._removeFromUpdating(this.cache)) 
 		{
 			if(callCB && this.currLink._onComplete) {
-				this.currLink._onComplete.call(this.owner);
+				this.currLink._onComplete.call(this.cache.owner);
 			}	
 
 			if(this._group)
@@ -90,7 +97,7 @@ meta.Tween.prototype =
 			value = true;
 		}
 
-		this.isPaused = value;
+		this.cache.isPaused = value;
 
 		return this;
 	},
@@ -100,7 +107,7 @@ meta.Tween.prototype =
 	 * @returns {meta.Tween}
 	 */
 	resume: function() {
-		this.isPaused = false;
+		this.cache.isPaused = false;
 		return this;
 	},
 
@@ -131,13 +138,14 @@ meta.Tween.prototype =
 	 */
 	reset: function()
 	{
-		this.linkIndex = 0;
-		this.currLink = this.chain[0];
+		var cache = this.cache;
+		cache.linkIndex = 0;
+		cache.currLink = this.chain[0];
 
-		if(!this.currLink) { return this; }
+		if(!cache.currLink) { return this; }
 
-		for(var key in this.currLink.startValues) {
-			this.owner[key] = this.currLink.startValues[key];
+		for(var key in cache.currLink.startValues) {
+			cache.owner[key] = cache.currLink.startValues[key];
 		}
 
 		this.stop(false);
@@ -152,8 +160,9 @@ meta.Tween.prototype =
 	next: function()
 	{
 		var isRepeating = false;
+		var cache = this.cache;
 
-		if(this.linkIndex === this.chain.length)
+		if(cache.linkIndex === this.chain.length)
 		{
 			if(this.numRepeat === 0) {
 				this.stop(true);
@@ -161,7 +170,7 @@ meta.Tween.prototype =
 			}
 			else
 			{
-				this.linkIndex = 0;
+				cache.linkIndex = 0;
 				if(this.numRepeat !== -1) {
 					this.numRepeat--;
 				}
@@ -169,26 +178,27 @@ meta.Tween.prototype =
 				isRepeating = true;
 			}
 
-			if(this.currLink._onComplete) {
-				this.currLink._onComplete.call(this.owner);
+			if(cache.currLink._onComplete) {
+				cache.currLink._onComplete.call(cache.owner);
 			}			
 		}
 
-		this._isLinkDone = false;
+		cache._isLinkDone = false;
 
 		var key;
-		var link = this.chain[this.linkIndex++];
+		var link = this.chain[cache.linkIndex++];
+		var owner = cache.owner;
 
 		if(!isRepeating)
 		{
 			for(key in link.endValues) {
-				link.startValues[key] = this.owner[key];
+				link.startValues[key] = owner[key];
 			}
 		}
 		else
 		{
 			for(key in link.startValues) {
-				this.owner[key] = link.startValues[key];
+				owner[key] = link.startValues[key];
 			}
 		}
 
@@ -196,8 +206,8 @@ meta.Tween.prototype =
 			link._onStart.call(this);
 		}
 
-		this._tStart = meta.engine.tNow;
-		this.currLink = link;
+		cache._tStart = meta.engine.tNow;
+		cache.currLink = link;
 
 		return this;
 	},
@@ -213,7 +223,7 @@ meta.Tween.prototype =
 			numRepeat = -1;
 		}
 
-		this.numRepeat = numRepeat;
+		this.cache.numRepeat = numRepeat;
 
 		return this;
 	},
@@ -223,15 +233,18 @@ meta.Tween.prototype =
 	 * @param value {Boolean}
 	 * @returns {meta.Tween}
 	 */
-	reverse: function(value)
+	set reverse(value)
 	{
 		if(value === void(0)) {
 			value = true;
 		}
 
-		this.doReverse = value;
-
+		this.cache.isReverse = value;
 		return this;
+	},
+
+	get reverse() {
+		return this.cache.isReverse;
 	},
 
 
@@ -241,43 +254,44 @@ meta.Tween.prototype =
 	 */
 	update: function(tDelta)
 	{
-		if(!this.currLink) {
+		var cache = this.cache;
+		if(!cache.currLink) {
 			this.stop(false);
 			return;
 		}
 
 		var tCurr = meta.engine.tNow;
-		var tFrameDelta = tCurr - this._tFrame;
+		var tFrameDelta = tCurr - cache._tFrame;
 
-		if(tFrameDelta < this.currLink.tFrameDelay) {
+		if(tFrameDelta < cache.currLink.tFrameDelay) {
 			return;
 		}
 
-		var tElapsed = (tCurr - this._tStart) / this.currLink.duration;
+		var tElapsed = (tCurr - cache._tStart) / cache.currLink.duration;
 		if(tElapsed > 1.0) {
 			tElapsed = 1.0;
 		}
 
-		if(this._isLinkDone)
+		if(cache._isLinkDone)
 		{
-			if(tFrameDelta < this.currLink.tDelay) {
+			if(tFrameDelta < cache.currLink.tDelay) {
 				return;
 			}
 		}
 		else
 		{
-			this._tFrame = tCurr;
-			this.currLink.update(tElapsed);
+			cache._tFrame = tCurr;
+			cache.currLink.update(tElapsed);
 
-			if(this.currLink._onTick) {
-				this.currLink._onTick.call(this);
+			if(cache.currLink._onTick) {
+				cache.currLink._onTick.call(this);
 			}
 		}
 
 		if(tElapsed === 1.0)
 		{
-			if(!this._isLinkDone && this.currLink.tDelay > 0) {
-				this._isLinkDone = true;
+			if(!cache._isLinkDone && cache.currLink.tDelay > 0) {
+				cache._isLinkDone = true;
 				return;
 			}
 
@@ -341,14 +355,41 @@ meta.Tween.prototype =
 
 
 	//
+	autoPlay: false,
 	numRepeat: 0,
-	isPaused: false,
-	isRemoved: false,
-	doReverse: false,
+
 	_group: null,
-	_isLinkDone: false,
 	_isReversing: false,
 	_removeFlag: 0
+};
+
+meta.Tween.Cache = function(owner) 
+{
+	this.owner = owner;
+	this.tween = null;
+
+	this.linkIndex = 0;
+	this.currLink = null;
+
+	this._updateNodeID = -1;
+	this._isLinkDone = false;
+	this._tStart = 0;
+	this._tFrame = 0;	
+};
+
+meta.Tween.Cache.prototype = 
+{
+	update: function(tDelta) {
+		this.tween.cache = this;
+		this.tween.update(tDelta);
+		this.tween.cache = null;
+	},
+
+	//
+	isPaused: false,
+	isRemoved: false,
+	reverse: false,
+	_flags: 0
 };
 
 meta.Tween.Group = function(name, callback) 

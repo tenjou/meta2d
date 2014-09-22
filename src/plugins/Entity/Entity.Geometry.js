@@ -2455,16 +2455,39 @@ Entity.Geometry = meta.Class.extend
 
 	get isAnimReverse() { return this._isAnimReverse; },
 
-	get tween()
+	set tween(obj)
 	{
-		if(!this._tween) {
-			this._tween = new meta.Tween(this);
-		}
-		else {
-			this._tween.clear();
+		if(!this._tweenCache) {
+			this._tweenCache = new meta.Tween.Cache(this);
 		}
 
-		return this._tween;
+		if(obj instanceof meta.Tween.Link) {
+			this._tweenCache.tween = obj.tween;
+		}
+		else if(obj instanceof meta.Tween) {
+			this._tweenCache.tween = obj;
+		}
+		else {
+			console.warn("[Entity.Geometry.set::tween]:", "Ivalid object! Should be meta.Tween or meta.Tween.Link object.");
+			return;
+		}
+
+		var tween = this._tweenCache.tween;
+		if(tween.autoPlay) {
+			tween.cache = this._tweenCache;
+			tween.play();
+		}
+	},
+
+	get tween()
+	{
+		if(!this._tweenCache) {
+			this._tweenCache = new meta.Tween.Cache(this);
+			this._tweenCache.tween = new meta.Tween();
+		}
+
+		this._tweenCache.tween.cache = this._tweenCache;
+		return this._tweenCache.tween;
 	},
 
 	_onResize: function(data)
@@ -2694,7 +2717,7 @@ Entity.Geometry = meta.Class.extend
 	_styleParams: null, _styleActionParams: null,
 	_state: "default", _action: "",
 
-	_tween: null,
+	_tweenCache: null,
 
 	volume: null,
 	clipVolume: null,

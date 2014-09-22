@@ -375,6 +375,11 @@ Entity.Controller = meta.Controller.extend
 
 	_addToUpdating: function(entity)
 	{
+		if(!entity) {
+			console.warn("[Entity.Controller._addToUpdating]:", "Invalid or object is null.");
+			return;
+		}
+
 		// Check if entity is marked for update removal.
 		if((entity._removeFlag & 4) === 4) {
 			entity._removeFlag &= ~4;
@@ -398,6 +403,11 @@ Entity.Controller = meta.Controller.extend
 
 	_removeFromUpdating: function(entity) 
 	{
+		if(!entity) {
+			console.warn("[Entity.Controller._addToUpdating]:", "Invalid or object is null.");
+			return;
+		}
+
 		// Check if already marked for update removal.
 		if(entity._updateNodeID === -1 || (entity._removeFlag & 4) === 4) {
 			return false;
