@@ -9,7 +9,8 @@ Entity.Event = {
 	DRAG_END: "dragEnd",
 	HOVER: "hover",
 	HOVER_ENTER: "hoverEnter",
-	HOVER_EXIT: "hoverExit"
+	HOVER_EXIT: "hoverExit",
+	STATE_CHANGE: "stateChange"
 };
 
 Entity.PositionType = {

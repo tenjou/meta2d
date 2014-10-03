@@ -86,6 +86,11 @@ Resource.Texture = Resource.Basic.extend
 		this.generate(this.textureType);
 	},
 
+	remove: function()
+	{
+
+	},
+
 	/**
 	 * Generate image object depending from type.
 	 * @param type {Resource.TextureType=} Texture type to generate.
@@ -799,14 +804,15 @@ Resource.Texture = Resource.Basic.extend
 			return;
 		}
 
+		var scope = meta;
 		params.x = params.x || 0;
 		params.y = params.y || 0;
-		params.width = params.width || this.trueFullWidth;
-		params.height = params.height || this.trueFullHeight;
+		params.width = params.width || texture.fullWidth;
+		params.height = params.height || texture.fullHeight;
+		params.width *= scope.unitSize;
+		params.height *= scope.unitSize;
 
-		if(!params.drawOver) {
-			this.resize(params.width, params.height);
-		}
+		this.resize(params.width, params.height);
 
 		if(params.center) {
 			params.x += (this.trueFullWidth & (texture.trueFullWidth - 1)) / 2;
@@ -821,8 +827,9 @@ Resource.Texture = Resource.Basic.extend
 
 		var posX = params.x;
 		var posY = params.y;
-		var numX = Math.ceil(this.trueFullWidth / texture.trueFullWidth);
-		var numY = Math.ceil(this.trueFullHeight/ texture.trueFullHeight);
+		var numX = Math.ceil(this.trueFullWidth / texture.trueFullWidth) || 1;
+		var numY = Math.ceil(this.trueFullHeight/ texture.trueFullHeight) || 1;
+
 
 		if(posX > 0) {
 			numX += Math.ceil(posX / texture.trueFullWidth);
@@ -838,16 +845,17 @@ Resource.Texture = Resource.Basic.extend
 		for(var x = 0; x < numX; x++)
 		{
 			for(var y = 0; y < numY; y++) {
+				console.log(posX, posY);
 				ctx.drawImage(texture.image, posX, posY);
-				posY += texture.height;
+				posY += texture.trueHeight;
 			}
 
-			posX += texture.width;
+			posX += texture.trueWidth;
 			posY = origY;
 		}
 
 		if(this.textureType) {
-			var gl = meta.ctx;
+			var gl = scope.ctx;
 			gl.bindTexture(gl.TEXTURE_2D, this.image);
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
 		}
