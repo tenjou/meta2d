@@ -48,5 +48,6 @@ cat Engine.js \
 	plugins/UI/UI.Button.js \
 	plugins/UI/UI.Checkbox.js \
 	plugins/UI/UI.ProgressBar.js \
+	plugins/UI/UI.Group.js \
 	Loader.js \
 	| uglifyjs --output ../versions/meta.nightly.latest.js --mangle -c dead_code=false,unused=false,side_effects=false --screw-ie8

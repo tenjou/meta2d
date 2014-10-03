@@ -19,7 +19,7 @@ UI.Checkbox = Entity.Geometry.extend
 		entity.onChange = function() { self._onChildChange(this); };
 		this.attach(entity);
 
-		this.state = "on";
+		this.state = "off";
 		this._onClick = this.toggle;
 	},
 
@@ -27,12 +27,19 @@ UI.Checkbox = Entity.Geometry.extend
 	{
 		var child = this.children[0];
 
-		if(child.state === "on") {
-			child.state = "off";
-		}
-		else {
+		if(this.group) {
 			child.state = "on";
+			this.group._onStateChange(this);	
 		}
+		else
+		{
+			if(child.state === "on") {
+				child.state = "off";
+			}
+			else {
+				child.state = "on";
+			}
+		}	
 	},
 
 	_onChange: function() {
@@ -40,8 +47,9 @@ UI.Checkbox = Entity.Geometry.extend
 	},
 
 	_onChildChange: function(child) {
-		this._state = this.children[0]._state
+		this._state = this.children[0]._state	
 	},
+
 
 	set checked(value) {
 		this.state = value ? "on" : "off";
@@ -49,5 +57,37 @@ UI.Checkbox = Entity.Geometry.extend
 
 	get checked() { 
 		return (this._state === "on");
-	}
+	},
+
+	set text(str)
+	{
+		if(!this._text)
+		{
+			this._text = new Entity.Text(str);
+			this._text.size = 14;
+			this._text.color = "#ffffff";
+			this.attach(this._text);
+
+			this._text.anchor(0.5);
+			this._text.pickable = false;		
+		}
+		else {
+			this._text.setText(str);
+		}
+	},
+
+	get text()
+	{
+		if(!this._text) {
+			return "";
+		}
+
+		return this._text._text;
+	},
+
+
+	//
+	_text: null,
+	group: null,
+	value: ""
 });

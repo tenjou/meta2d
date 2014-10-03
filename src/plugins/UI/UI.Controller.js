@@ -73,10 +73,10 @@ UI.Controller = meta.Controller.extend
 					offsetX: 1,
 					offsetY: 1
 				},
-				"[on]": {
+				"[off]": {
 					texture: buttonTex
 				},
-				"[off]": {
+				"[on]": {
 					texture: buttonOnHoverTex
 				}
 			}
