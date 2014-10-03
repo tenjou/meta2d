@@ -9,13 +9,13 @@ UI.Controller = meta.Controller.extend
 		var buttonTex = new Resource.Texture();
 		buttonTex.fillRect({
 			color: "#111",
-			width: 160, height: 40
+			width: 120, height: 30
 		});
 
 		var buttonOnHoverTex = new Resource.Texture();
 		buttonOnHoverTex.fillRect({
 			color: "#ff0000",
-			width: 160, height: 40
+			width: 120, height: 30
 		});		
 
 		this.coreStyle = 
@@ -46,7 +46,7 @@ UI.Controller = meta.Controller.extend
 		{
 			button: {
 				"*": {
-					texture: buttonTex,
+					texture: buttonTex
 				},
 				"*:hover": {
 					texture: buttonOnHoverTex,
@@ -57,6 +57,27 @@ UI.Controller = meta.Controller.extend
 					cursor: "pointer",
 					offsetX: 1,
 					offsetY: 1
+				}
+			},
+			checkbox: {
+				"*": {
+					texture: buttonTex
+				},
+				"*:hover": {
+					texture: buttonOnHoverTex,
+					cursor: "pointer"
+				},
+				"*:pressed": {
+					texture: buttonOnHoverTex,
+					cursor: "pointer",
+					offsetX: 1,
+					offsetY: 1
+				},
+				"[on]": {
+					texture: buttonTex
+				},
+				"[off]": {
+					texture: buttonOnHoverTex
 				}
 			}
 		};
