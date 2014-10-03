@@ -109,6 +109,8 @@ Entity.Geometry = meta.Class.extend
 			}
 		}
 
+		this.chn = null;
+
 		if(this._onResize) {
 			this.onResize = null;
 		}
@@ -1819,12 +1821,45 @@ Entity.Geometry = meta.Class.extend
 	},
 
 
-	on: function(event, func) {
-		meta.subscribe(this, event, func);
+	/**
+	 * Subscribe to entity events.
+	 * @param owner {*} Listener object.
+	 * @param func {Function} Listener callback function.
+	 */
+	subscribe: function(owner, func)
+	{
+		if(!this.chn) {
+			this.chn = meta.createChannel("__ent" + this.id);
+		}
+
+		this.chn.subscribe(owner, func);
 	},
 
-	emit: function(data, event) {
-		
+	/**
+	 * Unsubscribe from entity events.
+	 * @param owner {*} Listener object.
+	 */
+	unsubscribe: function(owner)
+	{
+		if(!this.chn) { return; }
+
+		this.chn.unsubscribe(owner);
+		if(this.chn.numSubs === 0) {
+			this.chn.remove();
+			this.chn = null;
+		}
+	},
+
+	/**
+	 * Emit an event to onrs.
+	 * @param data {*} Data linked with the event.
+	 * @param event {*} Type of the event.
+	 */
+	emit: function(data, event)
+	{
+		if(this.chn) {
+			this.chn.emit(data, event);
+		}
 	},
 
 
@@ -2091,7 +2126,10 @@ Entity.Geometry = meta.Class.extend
 
 		this._state = value;
 		this._onChange();
-		this.onChange();		
+		this.onChange();
+		if(this.chn) {
+			this.chn.emit(Entity.Event.STATE_CHANGE, this);
+		}	
 
 		if(this._style)
 		{
@@ -2692,6 +2730,7 @@ Entity.Geometry = meta.Class.extend
 
 	_flags: 0, 
 	_inputFlags: 0,
+	chn: null,
 
 	_x: 0, _y: 0, _z: 0,
 	typeX: 0, typeY: 0,
