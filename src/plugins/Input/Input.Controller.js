@@ -70,7 +70,7 @@ Input.Controller = meta.Controller.extend
 			this._numCmdKeys++;
 		}
 
-		if(this._ignoreKeys[event.keyCode] === void(0) && this._numCmdKeys <= 0) {
+		if(this._ignoreKeys[event.keyCode] !== void(0) && this._numCmdKeys <= 0) {
 			event.preventDefault();
 		}
 

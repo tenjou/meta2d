@@ -590,17 +590,6 @@ Entity.Controller = meta.Controller.extend
 
 			if(this.pressedEntity && this.pressedEntity.clickable) 
 			{
-				// Drag end?
-				if(this.pressedEntity._inputFlags & this.InputFlag.DRAGGED) 
-				{
-					this.pressedEntity._inputFlags &= ~this.InputFlag.DRAGGED;
-					if(this.pressedEntity._style) {
-						this.pressedEntity._onDragEnd.call(this.pressedEntity, data);
-					}
-					this.pressedEntity.onDragEnd.call(this.pressedEntity, data);
-					this._chnOnDragEnd.emit(data, Entity.Event.DRAG_END);					
-				}
-
 				// Input Up.
 				this.pressedEntity._inputFlags &= ~this.InputFlag.PRESSED;
 				if(this.pressedEntity._style) {
@@ -614,7 +603,18 @@ Entity.Controller = meta.Controller.extend
 					this.pressedEntity._onClick.call(this.pressedEntity, data);
 					this.pressedEntity.onClick.call(this.pressedEntity, data);
 					this._chnOnClick.emit(data, Entity.Event.CLICK);
-				}	
+				}
+
+				// Drag end?
+				if(this.pressedEntity._inputFlags & this.InputFlag.DRAGGED) 
+				{
+					this.pressedEntity._inputFlags &= ~this.InputFlag.DRAGGED;
+					if(this.pressedEntity._style) {
+						this.pressedEntity._onDragEnd.call(this.pressedEntity, data);
+					}
+					this.pressedEntity.onDragEnd.call(this.pressedEntity, data);
+					this._chnOnDragEnd.emit(data, Entity.Event.DRAG_END);					
+				}					
 
 				this.pressedEntity = null;				
 			}

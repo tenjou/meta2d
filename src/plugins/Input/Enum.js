@@ -56,6 +56,7 @@ Input.Key = {
 	NUM_8: 56,
 	NUM_9: 57,
 
+	DELETE: 127,
 	PLUS: 187,
 	MINUS: 189,
 
