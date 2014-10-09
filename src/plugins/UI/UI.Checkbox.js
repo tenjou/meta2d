@@ -28,8 +28,7 @@ UI.Checkbox = Entity.Geometry.extend
 		var child = this.children[0];
 
 		if(this.group) {
-			child.state = "on";
-			this.group._onStateChange(this);	
+			child.state = "on";	
 		}
 		else
 		{
@@ -42,12 +41,22 @@ UI.Checkbox = Entity.Geometry.extend
 		}	
 	},
 
-	_onChange: function() {
+	_onChange: function() 
+	{
 		this.children[0].state = this._state;
+
+		if(this.group && this._state === "on") {
+			this.group._onStateChange(this);	
+		}		
 	},
 
-	_onChildChange: function(child) {
-		this._state = this.children[0]._state	
+	_onChildChange: function(child) 
+	{
+		this._state = this.children[0]._state;
+
+		if(this.group && this._state === "on") {
+			this.group._onStateChange(this);	
+		}		
 	},
 
 
@@ -64,7 +73,7 @@ UI.Checkbox = Entity.Geometry.extend
 		if(!this._text)
 		{
 			this._text = new Entity.Text(str);
-			this._text.size = 14;
+			this._text.size = 12;
 			this._text.color = "#ffffff";
 			this.attach(this._text);
 
