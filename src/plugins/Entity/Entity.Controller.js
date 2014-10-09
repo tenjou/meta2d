@@ -593,7 +593,7 @@ Entity.Controller = meta.Controller.extend
 				// Drag end?
 				if(this.pressedEntity._inputFlags & this.InputFlag.DRAGGED) 
 				{
-					this.pressedEntity._inputFlags |= this.InputFlag.DRAGGED;
+					this.pressedEntity._inputFlags &= ~this.InputFlag.DRAGGED;
 					if(this.pressedEntity._style) {
 						this.pressedEntity._onDragEnd.call(this.pressedEntity, data);
 					}
@@ -696,7 +696,7 @@ Entity.Controller = meta.Controller.extend
 		{
 			data.entity = this.pressedEntity;
 
-			if(!this.pressedEntity._inputFlags & this.InputFlag.DRAGGED) 
+			if(!(this.pressedEntity._inputFlags & this.InputFlag.DRAGGED)) 
 			{
 				this.pressedEntity._inputFlags |= this.InputFlag.DRAGGED;
 				if(this.pressedEntity._style) {
@@ -704,6 +704,7 @@ Entity.Controller = meta.Controller.extend
 				}
 				this.pressedEntity.onDragStart.call(this.pressedEntity, data);
 				this._chnOnDragStart.emit(data, Entity.Event.DRAG_START);
+				console.log("drag_start");
 				return false;			
 			}
 

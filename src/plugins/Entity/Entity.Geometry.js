@@ -2754,7 +2754,7 @@ Entity.Geometry = meta.Class.extend
 	_style: null, 
 	_styleState: null, _styleAction: null, 
 	_styleParams: null, _styleActionParams: null,
-	_state: "default", _action: "",
+	_state: "*", _action: "",
 
 	_tweenCache: null,
 
