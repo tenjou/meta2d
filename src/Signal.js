@@ -60,8 +60,10 @@ meta.Channel.prototype =
 	 * @param owner {Object} Pointer to the owner object.
 	 * @param func {Function} Callback function.
 	 */
-	subscribe: function(owner, func)
+	subscribe: function(owner, func, priority)
 	{
+		priority = priority || 0;
+
 		if(!func) {
 			console.warn("[meta.Channel.subscribe]:", "No callback function passed.");
 			return;			
@@ -75,9 +77,17 @@ meta.Channel.prototype =
 			}
 		}
 
-		var newSub = new meta.Subscriber(owner, func);
+		var newSub = new meta.Subscriber(owner, func, priority);
 		this.subs.push(newSub);
 		this.numSubs++;
+
+		if(priority) {
+			this._havePriority = true;
+			this.subs.sort(this._sortFunc);
+		}
+		else if(this._havePriority) {
+			this.subs.sort(this._sortFunc);
+		}
 	},
 
 	/**
@@ -106,12 +116,25 @@ meta.Channel.prototype =
 				break;
 			}
 		}
-	}
+
+		if(this._havePriority) {
+			this.subs.sort(this._sortFunc);
+		}		
+	},
+
+	_sortFunc: function(a, b) {
+		return (a.priority > b.priority) ? -1 : 1
+	},
+
+
+	//
+	_havePriority: false
 };
 
-meta.Subscriber = function(owner, func) {
+meta.Subscriber = function(owner, func, priority) {
 	this.owner = owner;
 	this.func = func;
+	this.priority = priority;
 };
 
 /**
@@ -160,7 +183,7 @@ meta.releaseChannel = function(name)
  * @param func {Function} Callback function that will be called when emit arrives.
  * @memberof! <global>
  */
-meta.subscribe = function(owner, channel, func)
+meta.subscribe = function(owner, channel, func, priority)
 {
 	if(typeof(owner) !== "object") {
 		console.warn("[meta.subscribe]:", "No owner passed.");
@@ -189,7 +212,7 @@ meta.subscribe = function(owner, channel, func)
 	{
 		var numChannels = channel.length;
 		for(var i = 0; i < numChannels; i++) {
-			meta.subscribe(owner, channel[i], func);
+			meta.subscribe(owner, channel[i], func, priority);
 		}
 		return;
 	}
@@ -198,7 +221,7 @@ meta.subscribe = function(owner, channel, func)
 		return;
 	}
 
-	channel.subscribe(owner, func);
+	channel.subscribe(owner, func, priority);
 };
 
 /**

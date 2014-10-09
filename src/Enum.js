@@ -12,6 +12,12 @@ meta.Event = {
 	ADAPT: "adapt"
 };
 
+meta.Priority = {
+	LOW: 0,
+	MEDIUM: 5000,
+	HIGH: 10000
+};
+
 meta.Cursor = {
 	ALIAS: "alias",
 	ALL_SCROLL: "all-scroll",
