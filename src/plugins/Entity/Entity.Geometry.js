@@ -136,7 +136,7 @@ Entity.Geometry = meta.Class.extend
 	{
 		var numChildren = this.children.length;
 		for(var i = 0; i < numChildren; i++) {
-			this.children[i].remove()
+			this.children[i].remove();
 		}
 	},
 
@@ -1300,7 +1300,7 @@ Entity.Geometry = meta.Class.extend
 			entity.updateScale();
 		}
 
-		if(this._z !== 0) {
+		if(this._depthNode.depth !== 0) {
 			entity.z = entity._z;
 		}
 
@@ -1943,7 +1943,7 @@ Entity.Geometry = meta.Class.extend
 
 	set z(value)
 	{
-		var newZ = this._parent._z + value;
+		var newZ = this._parent._depthNode.depth + value + 1;
 		if(this._view) {
 			newZ += this._view._z;
 		}
@@ -1951,12 +1951,12 @@ Entity.Geometry = meta.Class.extend
 		if(this._depthNode.depth === newZ) { return; }
 
 		this._z = value;
-		this._depthNode.depth = newZ
+		this._depthNode.depth = newZ;
 
-		if(!this._depthNode.entity) { return; }
-
-		this._entityCtrl.entities.update(this._depthNode);
-		this.isNeedDraw = true;
+		if(this._depthNode.entity) {
+			this._entityCtrl.entities.update(this._depthNode);
+			this.isNeedDraw = true;
+		}
 
 		if(this.children)
 		{

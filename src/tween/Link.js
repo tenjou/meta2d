@@ -17,7 +17,6 @@ meta.Tween.Link = function(tween, endValues, duration, onComplete)
 	this.tween = tween;
 	this.startValues = {};
 	this.endValues = endValues;
-	console.log(duration);
 	this.duration = duration;
 	this._onComplete = onComplete;
 };

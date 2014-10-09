@@ -27,6 +27,8 @@ Entity.Controller = meta.Controller.extend
 		this.entitiesRemoveUpdate = [];
 		this.detachBuffer = [];
 
+		this._depthNode = new Entity.DepthList.Node();
+
 		this._centerTex = new Resource.Texture();
 		this._centerTex.fillRect({
 			color: "#ff0000",
@@ -34,8 +36,8 @@ Entity.Controller = meta.Controller.extend
 		});
 
 		var scope = meta;
-		this._chnOnDown = scope.createChannel(Entity.Event.DOWN);
-		this._chnOnUp = scope.createChannel(Entity.Event.UP);
+		this._chnOnDown = scope.createChannel(Entity.Event.INPUT_DOWN);
+		this._chnOnUp = scope.createChannel(Entity.Event.INPUT_UP);
 		this._chnOnClick = scope.createChannel(Entity.Event.CLICK);
 		this._chnOnDrag = scope.createChannel(Entity.Event.DRAG);
 		this._chnOnDragStart = scope.createChannel(Entity.Event.DRAG_START);
@@ -127,8 +129,8 @@ Entity.Controller = meta.Controller.extend
 			}
 		}
 
-		meta.subscribe(this, [ Input.Event.INPUT_DOWN, Input.Event.INPUT_UP ], this.onInput);
-		meta.subscribe(this, Input.Event.INPUT_MOVE, this.onInputMove);
+		meta.subscribe(this, [ Input.Event.INPUT_DOWN, Input.Event.INPUT_UP ], this.onInput, meta.Priority.HIGH);
+		meta.subscribe(this, Input.Event.INPUT_MOVE, this.onInputMove, meta.Priority.HIGH);
 	},
 
 	unload: function()
@@ -580,7 +582,7 @@ Entity.Controller = meta.Controller.extend
 				this.pressedEntity._onDown.call(this.pressedEntity, data);
 			}
 			this.pressedEntity.onDown.call(this.pressedEntity, data);
-			this._chnOnDown.emit(data, Entity.Event.DOWN);
+			this._chnOnDown.emit(data, Entity.Event.INPUT_DOWN);
 		}
 		else if(inputEvent.INPUT_UP === event)
 		{
@@ -605,7 +607,7 @@ Entity.Controller = meta.Controller.extend
 					this.pressedEntity._onUp.call(this.pressedEntity, event);
 				}
 				this.pressedEntity.onUp.call(this.pressedEntity, event);
-				this._chnOnUp.emit(this.pressedEntity, Entity.Event.UP);	
+				this._chnOnUp.emit(this.pressedEntity, Entity.Event.INPUT_UP);	
 
 				// Click.
 				if(this.pressedEntity === this.hoverEntity) {
@@ -786,7 +788,8 @@ Entity.Controller = meta.Controller.extend
 	//
 	InputFlag: null,
 
-	_x: 0, _y: 0, _z: 0,
+	_x: 0, _y: 0,
+	_depthNode: null,
 	totalAngleRad: 0.0,
 	totalAlpha: 1.0,
 	totalScaleX: 1.0, totalScaleY: 1.0,
