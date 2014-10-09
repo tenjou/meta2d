@@ -13,17 +13,35 @@ meta.Style = function(params)
 	
 	//
 	this.setStates(params);
+	if(!this.defaultState) {
+		this.setState("*", null);
+	}
 };
 
 meta.Style.prototype = 
 {
+	setState: function(name, params)
+	{
+		if(name.indexOf(",") !== -1)
+		{
+			var items = name.split(/[ ,]+/);
+			var numItems = items.length;
+			for(var i = 0; i < numItems; i++) {
+				this.defineState(items[i], params);
+			}
+		}
+		else {
+			this.defineState(name, params);
+		}
+	},
+
 	/**
 	 * Set or rewrite state.
 	 * @param name {String} Name of the state.
 	 * @param params {Object=} Parameters to set to entity while having state.
 	 * @return {meta.Style}
 	 */
-	setState: function(name, params)
+	defineState: function(name, params)
 	{
 		var state, stateParams, stateName, key;
 		var tmpState;
@@ -253,7 +271,6 @@ meta.Style.prototype =
 			state = this.defaultState;
 		}
 
-		var action
 		if(!state.actions)  
 		{ 
 			if(!this.defaultState.actions) { return; }
