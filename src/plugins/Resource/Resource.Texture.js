@@ -911,26 +911,22 @@ Resource.Texture = Resource.Basic.extend
 		var ctx = this.ctx;
 		params.addWidth = params.addWidth || 0;
 		params.addHeight = params.addHeight || 0;
-		params.borderWidth = params.borderWidth || 1;
+		params.lineWidth = params.lineWidth || 1;
 		if(!params.color && !params.borderColor) {
 			params.borderColor = "#000000"; 
 		}
 
-		var halfLineWidth = params.borderWidth / 2;
+		var halfLineWidth = params.lineWidth / 2;
 		var offsetX = -minX + halfLineWidth + (params.addWidth / 2);
-		var offsetY = -minY + halfLineWidth + (params.addHeight / 2);
-		if(!params.drawOver) 
-		{
-			this.resize(maxX - minX + params.borderWidth + params.addWidth, 
-				maxY - minY + params.borderWidth + params.addHeight);
-		}
+		this.resize(maxX - minX + params.lineWidth + params.addWidth, 
+			maxY - minY);
 
 		if(this.textureType) {
 			this._createCachedImg();
 			ctx = this._cachedCtx;
 		}
 
-		ctx.lineWidth = params.borderWidth;
+		ctx.lineWidth = params.lineWidth;
 		if(params.lineCap) {
 			ctx.lineCap = params.lineCap;
 		}
@@ -939,9 +935,9 @@ Resource.Texture = Resource.Basic.extend
 		}
 
 		ctx.beginPath();
-		ctx.moveTo(buffer[0] + offsetX, buffer[1] + offsetY);
+		ctx.moveTo(buffer[0] + offsetX, buffer[1]);
 		for(i = 2; i < numItems; i += 2) {
-			ctx.lineTo(buffer[i] + offsetX, buffer[i + 1] + offsetY);
+			ctx.lineTo(buffer[i] + offsetX, buffer[i + 1]);
 		}
 
 		if(params.color) {
