@@ -50,13 +50,8 @@ UI.Checkbox = Entity.Geometry.extend
 		}		
 	},
 
-	_onChildChange: function(child) 
-	{
-		this._state = this.children[0]._state;
-
-		if(this.group && this._state === "on") {
-			this.group._onStateChange(this);	
-		}		
+	_onChildChange: function(child) {
+		this.state = this.children[0]._state;	
 	},
 
 

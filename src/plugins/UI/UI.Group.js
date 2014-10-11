@@ -19,6 +19,7 @@ UI.Group = Entity.Geometry.extend
 
 	_onStateChange: function(entity)
 	{
+		this.prevValue = this._value;
 		this._value = entity.value;
 
 		var child;
@@ -53,5 +54,6 @@ UI.Group = Entity.Geometry.extend
 
 
 	//
+	prevValue: "",
 	_value: ""
 });
