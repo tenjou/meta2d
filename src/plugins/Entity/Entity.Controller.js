@@ -594,10 +594,10 @@ Entity.Controller = meta.Controller.extend
 		}
 		else if(inputEvent.INPUT_UP === event)
 		{
-			data.entity = this.pressedEntity;
-
 			if(this.pressedEntity && this.pressedEntity.clickable) 
 			{
+				data.entity = this.hoverEntity;
+
 				// Input Up.
 				this.pressedEntity._inputFlags &= ~this.InputFlag.PRESSED;
 				if(this.pressedEntity._style) {
@@ -616,12 +616,16 @@ Entity.Controller = meta.Controller.extend
 				// Drag end?
 				if(this.pressedEntity._inputFlags & this.InputFlag.DRAGGED) 
 				{
+					data.entity = this.pressedEntity;
+
 					this.pressedEntity._inputFlags &= ~this.InputFlag.DRAGGED;
 					if(this.pressedEntity._style) {
 						this.pressedEntity._onDragEnd.call(this.pressedEntity, data);
 					}
 					this.pressedEntity.onDragEnd.call(this.pressedEntity, data);
-					this._chnOnDragEnd.emit(data, Entity.Event.DRAG_END);					
+					this._chnOnDragEnd.emit(data, Entity.Event.DRAG_END);
+
+					data.entity = this.hoverEntity;				
 				}					
 
 				this.pressedEntity = null;				
@@ -732,8 +736,14 @@ Entity.Controller = meta.Controller.extend
 	{
 		if(!this.enablePicking) { return; }
 
-		if(!this._checkDrag(data)) { return; }
 		this._checkHover(data);
+		
+		if(!this._checkDrag(data)) { 
+			data.entity = this.hoverEntity;		
+			return; 
+		}
+
+		data.entity = this.hoverEntity;
 	},
 
 
