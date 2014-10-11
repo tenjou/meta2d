@@ -157,6 +157,13 @@ Entity.Controller = meta.Controller.extend
 		var i, n, entity;
 		var children, numChildren;
 
+		// Force update hover if is needed.
+		if(this._flags & this.Flag.UPDATE_HOVER) {
+			console.log("update_hover");
+			this._checkHover(Input.ctrl.getEvent());
+			this._flags &= ~this.Flag.UPDATE_HOVER;
+		}
+
 		for(i = 0; i < this.numEntitiesToUpdate; i++)
 		{
 			entity = this.entitiesToUpdate[i];
@@ -293,6 +300,8 @@ Entity.Controller = meta.Controller.extend
 				this.numEntitiesToAdd += numToAdd;
 			}
 		}
+
+		this._flags |= this.Flag.UPDATE_HOVER;
 	},
 
 	/**
@@ -785,6 +794,11 @@ Entity.Controller = meta.Controller.extend
 	get cellMagnitue() { return this._cellMagnitue; },
 
 
+	Flag: {
+		UPDATE_HOVER: 128
+	},
+
+
 	//
 	InputFlag: null,
 
@@ -795,6 +809,8 @@ Entity.Controller = meta.Controller.extend
 	totalScaleX: 1.0, totalScaleY: 1.0,
 	volume: null,
 	pivotX: 0, pivotY: 0,
+
+	_flags: 0,
 
 	cells: null,
 	_cellSizeX: 128, _cellSizeY: 128,
