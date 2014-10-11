@@ -159,7 +159,6 @@ Entity.Controller = meta.Controller.extend
 
 		// Force update hover if is needed.
 		if(this._flags & this.Flag.UPDATE_HOVER) {
-			console.log("update_hover");
 			this._checkHover(Input.ctrl.getEvent());
 			this._flags &= ~this.Flag.UPDATE_HOVER;
 		}
