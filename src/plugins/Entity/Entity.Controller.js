@@ -704,7 +704,6 @@ Entity.Controller = meta.Controller.extend
 				}
 				this.pressedEntity.onDragStart.call(this.pressedEntity, data);
 				this._chnOnDragStart.emit(data, Entity.Event.DRAG_START);
-				console.log("drag_start");
 				return false;			
 			}
 
