@@ -28,6 +28,12 @@ meta.math =
 		return (v == a) ? x : (v - a) * (y - x) / (b - a) + x;
 	},
 
+	length: function(x1, y1, x2, y2) {
+		var x = x2 - x1;
+		var y = y2 - y1;
+		return Math.sqrt(x * x + y * y);
+	},
+
 	length2: function(x, y) {
 		return Math.sqrt(x * x + y * y);
 	},
