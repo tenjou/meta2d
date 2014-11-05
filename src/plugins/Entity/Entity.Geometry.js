@@ -1158,8 +1158,8 @@ Entity.Geometry = meta.Class.extend
 
 	_isInsideTransform: function(x, y)
 	{
-		var centerX = this._anchorPosX + this._parent.childOffsetX - this.offsetX;
-		var centerY = this._anchorPosY + this._parent.childOffsetY - this.offsetY;
+		var centerX = this._anchorPosX + this._parent.childOffsetX;
+		var centerY = this._anchorPosY + this._parent.childOffsetY;
 		if(!this.isChild) {
 			centerX += this._x;
 			centerY += this._y;
@@ -1170,8 +1170,8 @@ Entity.Geometry = meta.Class.extend
 		var sin = Math.sin(-this._angleRad);
 		var cos = Math.cos(-this._angleRad);
 
-		var newX = offsetX * cos - offsetY * sin + centerX;
-		var newY = offsetY * cos + offsetX * sin + centerY;
+		var newX = offsetX * cos - offsetY * sin + centerX ;
+		var newY = offsetY * cos + offsetX * sin + centerY ;
 
 		return this.volume.vsBorderPoint(newX, newY);
 	},
@@ -1473,6 +1473,8 @@ Entity.Geometry = meta.Class.extend
 	// Style input.
 	_onClick: meta.emptyFuncParam,
 
+	_onDbClick: meta.emptyFuncParam,
+
 	_onDown: function(param)
 	{
 		this._action = "pressed";
@@ -1572,6 +1574,12 @@ Entity.Geometry = meta.Class.extend
 	 * @function
 	 */
 	onClick: meta.emptyFuncParam,	
+
+	/**
+	 * Callback if entity has been double clicked on.
+	 * @function
+	 */
+	onDbClick: meta.emptyFuncParam,		
 
 	/**
 	 * Callback if entity is being dragged.
@@ -1880,8 +1888,8 @@ Entity.Geometry = meta.Class.extend
 	set y(value) { this.position(this._x, value); },
 	get x() { return this._x; },
 	get y() { return this._y; },
-	get absoluteX() { return this.volume.x; },
-	get absoluteY() { return this.volume.y; },
+	get absX() { return this.volume.x; },
+	get absY() { return this.volume.y; },
 
 	get width() { return this.volume.width; },
 	get height() { return this.volume.height; },
@@ -2748,7 +2756,7 @@ Entity.Geometry = meta.Class.extend
 	childOffsetX: 0, childOffsetY: 0,
 	childPivotX: 0, childPivotY: 0,
 
-	cellX: 0, cellY: 0,
+	//cellX: 0, cellY: 0,
 	_cellIndex: 0,
 
 	_style: null, 

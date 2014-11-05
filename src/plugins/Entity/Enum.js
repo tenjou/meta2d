@@ -4,6 +4,7 @@ Entity.Event = {
 	INPUT_UP: "entityUp",
 	INPUT_DOWN: "entityDown",
 	CLICK: "entityClick",
+	DBCLICK: "entityDbClick",
 	DRAG: "drag",
 	DRAG_START: "dragStart",
 	DRAG_END: "dragEnd",

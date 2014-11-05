@@ -15,6 +15,7 @@ cat Engine.js \
 	Style.js \
 	Enum.js \
 	Macros.js \
+	utils/Ajax.js \
 	utils/LinkedList.js \
 	math/Math.js \
 	math/Vector2.js \

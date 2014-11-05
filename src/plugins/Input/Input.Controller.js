@@ -246,6 +246,36 @@ Input.Controller = meta.Controller.extend
 	},
 
 	/**
+	 * @description Callback onMouseDbClick.
+	 * @param event {Event} DOM event object.
+	 */
+	onMouseDbClick: function(event)
+	{
+		if(this.blockInput) { return; }
+
+		this.inputs[event.button] = false;
+
+		var scope = meta;
+		var camera = scope.camera;
+		var screenX = (event.pageX - scope.engine.unsubscribesetLeft) * window.devicePixelRatio;
+		var screenY = (event.pageY - scope.engine.unsubscribesetTop) * window.devicePixelRatio;
+		var x = ((screenX * camera.zoomRatio) - camera._x) | 0;
+		var y = ((screenY * camera.zoomRatio) - camera._y) | 0;
+
+		this._event.event = event;
+		this._event.prevScreenX = this._event.screenX;
+		this._event.prevScreenY = this._event.screenY;
+		this._event.screenX = screenX;
+		this._event.screenY = screenY;
+		this._event.x = x;
+		this._event.y = y;
+		this._event.keyCode = event.button;
+
+		this._chnInputDbClick.emit(this._event, Input.Event.INPUT_DBCLICK);
+		this._event.entity = null;
+	},
+
+	/**
 	 * @description Callback onTouchDown.
 	 * @param event {Event} DOM event object.
 	 */
@@ -422,11 +452,13 @@ Input.Controller = meta.Controller.extend
 		this._chnInputDown = meta.createChannel(Input.Event.INPUT_DOWN);
 		this._chnInputUp = meta.createChannel(Input.Event.INPUT_UP);
 		this._chnInputMove = meta.createChannel(Input.Event.INPUT_MOVE);
+		this._chnInputDbClick = meta.createChannel(Input.Event.INPUT_DBCLICK);
 
 		this._onKeyDown = function(event) { self.onKeyDown(event); };
 		this._onKeyUp = function(event) { self.onKeyUp(event); };
 		this._onMouseDown = function(event) { self.onMouseDown(event); };
 		this._onMouseUp = function(event) { self.onMouseUp(event); };
+		this._onMouseDbClick = function(event) { self.onMouseDbClick(event); };
 		this._onMouseMove = function(event) { self.onMouseMove(event); };
 		this._onTouchDown = function(event) { self.onTouchDown(event); };
 		this._onTouchUp = function(event) { self.onTouchUp(event); };
@@ -436,6 +468,7 @@ Input.Controller = meta.Controller.extend
 		window.addEventListener("mousedown", this._onMouseDown);
 		window.addEventListener("mouseup", this._onMouseUp);
 		window.addEventListener("mousemove", this._onMouseMove);
+		window.addEventListener("dblclick", this._onMouseDbClick);
 		window.addEventListener("touchstart", this._onTouchDown);
 		window.addEventListener("touchend", this._onTouchUp);
 		window.addEventListener("touchmove", this._onTouchMove);
@@ -459,6 +492,7 @@ Input.Controller = meta.Controller.extend
 		window.removeEventListener("mousedown", this._onMouseDown);
 		window.removeEventListener("mouseup", this._onMouseUp);
 		window.removeEventListener("mousemove", this._onMouseMove);
+		window.removeEventListener("dblclick", this._onMouseDbClick);
 		window.removeEventListener("touchstart", this._onTouchDown);
 		window.removeEventListener("touchend", this._onTouchUp);
 		window.removeEventListener("touchmove", this._onTouchMove);
@@ -614,6 +648,7 @@ Input.Controller = meta.Controller.extend
 	_onMouseDown: null,
 	_onMouseUp: null,
 	_onMouseMove: null,
+	_onMouseDbClick: null,
 	_onTouchDown: null,
 	_onTouchUp: null,
 	_onTouchMove: null,
@@ -624,6 +659,7 @@ Input.Controller = meta.Controller.extend
 	_chnInputDown: null,
 	_chnInputUp: null,
 	_chnInputMove: null,
+	_chnInputDbClick: null,
 
 	_ignoreKeys: null,
 	_cmdKeys: null,

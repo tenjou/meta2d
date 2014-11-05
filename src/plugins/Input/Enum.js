@@ -7,6 +7,7 @@ Input.Event = {
 	INPUT_UP: "inputUp",
 	INPUT_MOVE: "inputMove",
 	INPUT_CLICK: "click",
+	INPUT_DBCLICK: "dbClick"
 };
 
 Input.Key = {

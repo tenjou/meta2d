@@ -39,6 +39,7 @@ Entity.Controller = meta.Controller.extend
 		this._chnOnDown = scope.createChannel(Entity.Event.INPUT_DOWN);
 		this._chnOnUp = scope.createChannel(Entity.Event.INPUT_UP);
 		this._chnOnClick = scope.createChannel(Entity.Event.CLICK);
+		this._chnOnDbClick = scope.createChannel(Entity.Event.DBCLICK);
 		this._chnOnDrag = scope.createChannel(Entity.Event.DRAG);
 		this._chnOnDragStart = scope.createChannel(Entity.Event.DRAG_START);
 		this._chnOnDragEnd = scope.createChannel(Entity.Event.DRAG_END);
@@ -82,7 +83,8 @@ Entity.Controller = meta.Controller.extend
 		meta.unsubscribe(this, meta.Event.CAMERA_MOVE);
 		meta.unsubscribe(this, meta.Event.ADDED_TO_VIEW, this.onAddToView);
 		meta.unsubscribe(this, meta.Event.REMOVED_FROM_VIEW, this.onRemoveFromView);
-		meta.unsubscribe(this, [ Input.Event.INPUT_DOWN, Input.Event.INPUT_UP ], this.onInput)
+		meta.unsubscribe(this, [ Input.Event.INPUT_DOWN, Input.Event.INPUT_UP ], this.onInput);
+		meta.unsubscribe(this, Input.Event.INPUT_DBCLICK);
 		meta.unsubscribe(this, Input.Event.INPUT_MOVE);
 	},
 
@@ -130,6 +132,7 @@ Entity.Controller = meta.Controller.extend
 		}
 
 		meta.subscribe(this, [ Input.Event.INPUT_DOWN, Input.Event.INPUT_UP ], this.onInput, meta.Priority.HIGH);
+		meta.subscribe(this, Input.Event.INPUT_DBCLICK, this.onInputDbCLick, meta.Priority.HIGH);
 		meta.subscribe(this, Input.Event.INPUT_MOVE, this.onInputMove, meta.Priority.HIGH);
 	},
 
@@ -327,16 +330,16 @@ Entity.Controller = meta.Controller.extend
 		if(entity.isRemoved) { return; }
 		if(entity._depthNode.entity) { return; }
 
-		entity.cellX = Math.floor(entity._x / this._cellSizeX);
-		entity.cellY = Math.floor(entity._y / this._cellSizeY);
-		entity._cellIndex = entity.cellX | (entity.cellY << 16);
+		//entity.cellX = Math.floor(entity._x / this._cellSizeX);
+		//entity.cellY = Math.floor(entity._y / this._cellSizeY);
+		//entity._cellIndex = entity.cellX | (entity.cellY << 16);
 
-		var cell = this.cells[entity._cellIndex]; 
-		if(!cell) {
-			cell = new Entity.CellArray();
-			this.cells[entity._cellIndex] = cell;
-		}
-		cell.push(entity);
+		// var cell = this.cells[entity._cellIndex]; 
+		// if(!cell) {
+		// 	cell = new Entity.CellArray();
+		// 	this.cells[entity._cellIndex] = cell;
+		// }
+		// cell.push(entity);
 
 		//
 		entity._depthNode.entity = entity;
@@ -438,11 +441,12 @@ Entity.Controller = meta.Controller.extend
 	getFromVolume: function(volume)
 	{
 		var entity;
-		var currNode = this.entities.first.next;
-		var lastNode = this.entities.last;
-		for(; currNode !== lastNode; currNode = currNode.next)
+		var currNode = this.entities.last.prev;
+		var lastNode = this.entities.first;
+		for(; currNode !== lastNode; currNode = currNode.prev)
 		{
 			entity = currNode.entity;
+			if(!entity.pickable) { continue; }
 			if(entity.volume === volume) { continue; }
 
 			if(entity.volume.vsAABB(volume)) {
@@ -456,11 +460,12 @@ Entity.Controller = meta.Controller.extend
 	getFromPoint: function(x, y, exclude)
 	{
 		var entity;
-		var currNode = this.entities.first.next;
-		var lastNode = this.entities.last;
-		for(; currNode !== lastNode; currNode = currNode.next)
+		var currNode = this.entities.last.prev;
+		var lastNode = this.entities.first;
+		for(; currNode !== lastNode; currNode = currNode.prev)
 		{
 			entity = currNode.entity;
+			if(!entity.pickable) { continue; }
 			if(entity === exclude) { continue; }
 
 			if(entity.volume.vsPoint(x, y)) {
@@ -630,6 +635,23 @@ Entity.Controller = meta.Controller.extend
 
 				this.pressedEntity = null;				
 			}
+		}
+	},
+
+	onInputDbCLick: function(data, event) 
+	{
+		if(!this.enablePicking) { return; }
+
+		this._checkHover(data);
+
+		if(this.hoverEntity) {
+			this.hoverEntity._onDbClick.call(this.hoverEntity, data);
+			this.hoverEntity.onDbClick.call(this.hoverEntity, data);
+			this._chnOnDbClick.emit(data, Entity.Event.DBCLICK);
+			data.entity = this.hoverEntity;	
+		}
+		else {
+			data.entity = null;
 		}
 	},
 
@@ -866,6 +888,7 @@ Entity.Controller = meta.Controller.extend
 	_chnOnDown: null,
 	_chnOnUp: null,
 	_chnOnClick: null,
+	_chnOnDbClick: null,
 	_chnOnDrag: null,
 	_chnOnDragStart: null,
 	_chnOnDragEnd: null,
