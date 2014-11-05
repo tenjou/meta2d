@@ -240,10 +240,10 @@ meta.addCtrl = function(ctrl)
 	}
 
 	var ctrlScope = window[ctrl.name];
-	if(ctrlScope.ctrl) {
-		console.error("[meta.addCtrl]:", "Controller (" + ctrl.name + ") is already added in scope.");
-		return;
-	}	
+	// if(ctrlScope.ctrl) {
+	// 	console.error("[meta.addCtrl]:", "Controller (" + ctrl.name + ") is already added in scope.");
+	// 	return;
+	// }	
 
 	ctrlScope.ctrl = ctrl;
 	meta.engine.controllers.push(ctrl);
@@ -710,4 +710,16 @@ meta.adaptTo = function(width, height, path)
 	};
 
 	resolutions.push(newRes);
+};
+
+meta.removeFromArray = function(array, item) 
+{
+	var numItems = array.length;
+	for(var i = 0; i < numItems; i++) {
+		if(item === array[i]) {
+			array[i] = array[numItems - 1];
+			array.pop();
+			break;
+		}
+	}
 };
