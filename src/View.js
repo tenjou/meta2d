@@ -29,7 +29,6 @@ meta.View = function(name)
 	this._y = 0;
 	this._z = 0;
 	this._tween = null;
-	this.bgColor = this._bgColor;
 
 	this._isActive = false;
 };
@@ -377,6 +376,7 @@ meta.View.prototype =
 
 	_addEntities: function()
 	{
+		//console.log("addEntites", this.name);
 		if(this.numEntities > 0) {
 			this._chnAddedToView.emit(this.entities, meta.Event.ADDED_TO_VIEW);
 		}
@@ -384,7 +384,23 @@ meta.View.prototype =
 
 	_removeEntities: function()
 	{
-		if(this.numEntities > 0) {
+		//console.log("removeEntities", this.name);
+		if(this.numEntities > 0) 
+		{
+			var entities = [];
+			var num = this.entities.length;
+
+			// TODO: FIX THIS
+			var entity;
+			for(var i = 0; i < num; i++) {
+				entity = this.entities[i];
+				if(entity && !entity.isRemoved) {
+					entities.push(this.entities[i]);
+				}
+			}
+
+			this.entities = entities;
+
 			this._chnRemovedFromView.emit(this.entities, meta.Event.REMOVED_FROM_VIEW);
 		}
 	},
@@ -401,6 +417,9 @@ meta.View.prototype =
 				meta.addCtrl(this.controllers[n]);
 			}			
 		}
+
+		// Exit, if any of controllers set view as inactive.
+		if(!this._isActive) { return; }
 
 		// Add entities from the view.
 		this._addEntities();
@@ -467,7 +486,12 @@ meta.View.prototype =
 				color.b = color.b / 255;
 			}
 
-			meta.ctx.clearColor(color.r, color.g, color.b, 1.0);
+			if(this.bgTransparent) {
+				meta.ctx.clearColor(0, 0, 0, 0);
+			}
+			else {
+				meta.ctx.clearColor(color.r, color.g, color.b, 1.0);
+			}
 		}
 		else {
 			this._bgColor = hex;
@@ -492,7 +516,8 @@ meta.View.prototype =
 			this._isActive = value;
 			meta.subscribe(this, meta.Event.CAMERA_RESIZE, this.onResize);	
 
-			this._makeActive();				
+			this._makeActive();	
+			this.bgColor = this._bgColor;			
 		}
 		else 
 		{
@@ -613,8 +638,10 @@ meta.setView = function(view)
 
 	if(typeof(view) === "string") 
 	{
-		view = meta.views[view];
+		var name = view;
+		view = meta.views[name];
 		if(!view) {
+			console.warn("[meta.setView]:", "Creating empty view, could be unintended - " + name);
 			view = new meta.View(name);
 			meta.views[name] = view;
 		}
