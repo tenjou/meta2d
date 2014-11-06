@@ -1005,7 +1005,7 @@ Entity.Geometry = meta.Class.extend
 	 */
 	pivotTop: function(x, y)
 	{
-		if(this.pivotRatioX !== 0.0 && this.pivotRatioY !== -1.0) {
+		if(this.pivotRatioX !== 0.0 || this.pivotRatioY !== -1.0) {
 			this._x = x;
 			this._y = y;
 			this.pivot(0.0, -1.0);
