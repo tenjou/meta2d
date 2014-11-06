@@ -886,7 +886,10 @@ Resource.Texture = Resource.Basic.extend
 		if(!params.buffer) {
 			console.warn("[Resource.Texture.stroke]:", "No buffer defined.");
 			return;
-		}		
+		}	
+
+		var scope = meta;	
+		var unitSize = scope.unitSize;
 
 		// Calculate bounds.
 		var minX = Number.POSITIVE_INFINITY, minY = minX, maxX = Number.NEGATIVE_INFINITY, maxY = maxX;
@@ -896,8 +899,8 @@ Resource.Texture = Resource.Basic.extend
 		var numItems = buffer.length;
 		for(i = 0; i < numItems; i += 2)
 		{
-			x = buffer[i]; 
-			y = buffer[i + 1];
+			x = buffer[i] * unitSize; 
+			y = buffer[i + 1] * unitSize;
 
 			if(x < minX) { minX = x; }
 			if(y < minY) { minY = y; }
@@ -918,7 +921,7 @@ Resource.Texture = Resource.Basic.extend
 
 		var halfLineWidth = params.lineWidth / 2;
 		var offsetX = -minX + halfLineWidth + (params.addWidth / 2);
-		this.resize(maxX - minX + params.lineWidth + params.addWidth, 
+		this.resize((maxX - minX + params.lineWidth + params.addWidth), 
 			maxY - minY);
 
 		if(this.textureType) {
@@ -937,7 +940,7 @@ Resource.Texture = Resource.Basic.extend
 		ctx.beginPath();
 		ctx.moveTo(buffer[0] + offsetX, buffer[1]);
 		for(i = 2; i < numItems; i += 2) {
-			ctx.lineTo(buffer[i] + offsetX, buffer[i + 1]);
+			ctx.lineTo(buffer[i] * unitSize + offsetX, buffer[i + 1] * unitSize);
 		}
 
 		if(params.color) {
@@ -952,7 +955,7 @@ Resource.Texture = Resource.Basic.extend
 		}
 
 		if(this.textureType === Resource.TextureType.WEBGL) {
-			var gl = meta.ctx;
+			var gl = scope.ctx;
 			gl.bindTexture(gl.TEXTURE_2D, this.image);
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
 		}
