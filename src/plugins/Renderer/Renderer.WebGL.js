@@ -1,11 +1,13 @@
 "use strict";
 
+var Renderer = {};
+
 /**
  * @class Entity.WebGLRenderer
  * @extends Entity.Controller
  * @memberof! <global>
  */
-Entity.WebGLRenderer = Entity.Controller.extend
+Renderer.WebGL = Entity.Controller.extend
 ( /** @lends Entity.WebGLRenderer.prototype */ {
 
 	init: function()
@@ -153,15 +155,8 @@ Entity.WebGLRenderer = Entity.Controller.extend
 				this._position[1] = (entity.volume.minY + entity.volume.height) * unitSize | 0;
 			}
 
-			if(!entity.isChild) {
-				this._center[0] = (entity.volume.x - entity.pivotX) * unitSize;
-				this._center[1] = (entity.volume.y - entity.pivotY) * unitSize;
-			}
-			else {
-				this._center[0] = (entity._parent.volume.x - entity._parent.pivotX + entity.volume.x) * unitSize;
-				this._center[1] = (entity._parent.volume.y - entity._parent.pivotY + entity.volume.y) * unitSize;
-			}
-
+			this._center[0] = (entity.volume.x - entity.pivotX) * unitSize;
+			this._center[1] = (entity.volume.y - entity.pivotY) * unitSize;
 			this._scale[0] = entity.totalScaleX * entity._flipX;
 			this._scale[1] = entity.totalScaleY * entity._flipY;
 

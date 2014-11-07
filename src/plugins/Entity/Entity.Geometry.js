@@ -235,6 +235,51 @@ Entity.Geometry = meta.Class.extend
 		ctx.restore();
 	},
 
+	renderBounds: function(ctx)
+	{
+		if(isCached !== entity._isCached)
+		{
+			if(entity.isCached || entity.isHighlight) {
+				ctx.strokeStyle = "#339933";
+			}
+			else {
+				ctx.strokeStyle = "#ff0000";
+			}
+
+			isCached = !isCached;
+		}
+
+		ctx.save();
+		pivotOffsetX = entity.volume.x - entity.pivotX;
+		pivotOffsetY = entity.volume.y - entity.pivotY;	
+
+		if(!entity.isChild) {
+			ctx.translate(pivotOffsetX, pivotOffsetY);
+			ctx.rotate(entity._angleRad);
+			ctx.translate(-pivotOffsetX, -pivotOffsetY);
+		}
+		else 
+		{
+			parentOffsetX = entity._parent.volume.x - entity._parent.pivotX;
+			parentOffsetY = entity._parent.volume.y - entity._parent.pivotY;
+
+			ctx.translate(parentOffsetX, parentOffsetY);
+			ctx.rotate(entity._parent.totalAngleRad);
+			ctx.translate(-parentOffsetX, -parentOffsetY);
+
+			ctx.translate(pivotOffsetX, pivotOffsetY);
+			ctx.rotate(entity._angleRad);
+			ctx.translate(-pivotOffsetX, -pivotOffsetY);
+		}
+
+		this._centerTex.draw(ctx, pivotOffsetX - 3, pivotOffsetY - 3);
+		ctx.restore();
+	},
+
+	drawBounds: function(ctx) {
+		this.volume.draw(ctx);		
+	},
+
 	/**
 	 * Update function.
 	 * @param tDelta {Number} Delta time between frames.
@@ -2256,14 +2301,14 @@ Entity.Geometry = meta.Class.extend
 
 	set angle(value)
 	{
-		value = meta.math.toRadians(value);
+		value = meta.math.degToRad(value);
 		if(this._angleRad === value) { return; }
 
 		this._angleRad = value;
 		this.updateAngle();
 	},
 
-	get angle() { return meta.math.toDegree(this._angleRad); },
+	get angle() { return meta.math.radToDeg(this._angleRad); },
 
 	set angleRad(value)
 	{
@@ -2430,8 +2475,8 @@ Entity.Geometry = meta.Class.extend
 
 		if(value) 
 		{
-			if(this.load) {
-				this.load();
+			if(this.ready) {
+				this.ready();
 			}
 
 			if(this.components) 
@@ -2440,8 +2485,8 @@ Entity.Geometry = meta.Class.extend
 				for(var key in this.components) 
 				{
 					comp = this.components[key];
-					if(comp.load) {
-						comp.load();
+					if(comp.ready) {
+						comp.ready();
 					}
 				}
 			}

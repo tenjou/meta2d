@@ -429,7 +429,7 @@ meta.Engine.prototype =
 			this._fpsCounter = 0;
 		}
 
-		Entity.ctrl.render(tDeltaF);
+		Renderer.ctrl.render(tDeltaF);
 		if(meta.render) {
 			meta.render(tDeltaF);
 		}
@@ -780,10 +780,10 @@ meta.Engine.prototype =
 		meta.register("UI");
 
 		if(this.isWebGL) {
-			meta.register("Entity.WebGLRenderer");
+			meta.register("Renderer.WebGL");
 		}
 		else {
-			meta.register("Entity.CanvasRenderer");
+			meta.register("Renderer.Canvas");
 		}
 
 		meta.register("Input");

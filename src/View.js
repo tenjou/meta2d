@@ -118,7 +118,7 @@ meta.View.prototype =
 		}		
 
 		//
-		if(this._isActive && !entity._depthNode.entity && Entity.ctrl.isLoaded) {
+		if(this._isActive && !entity._depthNode.entity && Renderer.ctrl.isLoaded) {
 			this._chnAddedToView.emit(entity, meta.Event.ADDED_TO_VIEW);
 		}
 	},

@@ -5,7 +5,7 @@
  * @extends Entity.Controller
  * @memberof! <global>
  */
-Entity.CanvasRenderer = Entity.Controller.extend
+Renderer.Canvas = Entity.Controller.extend
 (/** @lends Entity.CanvasRenderer.prototype */ {
 
 	init: function()
@@ -322,7 +322,7 @@ Entity.CanvasRenderer = Entity.Controller.extend
 
 	_drawBounds: function()
 	{
-		// Draw bounds.
+		// Draw bounds:
 		if(this.numShowBounds > 0 || this.showBounds)
 		{
 			var isCached = false;
@@ -341,46 +341,8 @@ Entity.CanvasRenderer = Entity.Controller.extend
 			for(; currNode !== lastNode; currNode = currNode.next)
 			{
 				entity = currNode.entity;
-				if((entity.showBounds || this.showBounds) && !entity.disableDebug && entity.isVisible && entity.isLoaded)
-				{
-					if(isCached !== entity._isCached)
-					{
-						if(entity.isCached || entity.isHighlight) {
-							ctx.strokeStyle = "#339933";
-						}
-						else {
-							ctx.strokeStyle = "#ff0000";
-						}
-
-						isCached = !isCached;
-					}
-
-					ctx.save();
-					pivotOffsetX = entity.volume.x - entity.pivotX;
-					pivotOffsetY = entity.volume.y - entity.pivotY;	
-
-					if(!entity.isChild) {
-						ctx.translate(pivotOffsetX, pivotOffsetY);
-						ctx.rotate(entity._angleRad);
-						ctx.translate(-pivotOffsetX, -pivotOffsetY);
-					}
-					else 
-					{
-						parentOffsetX = entity._parent.volume.x - entity._parent.pivotX;
-						parentOffsetY = entity._parent.volume.y - entity._parent.pivotY;
-
-						ctx.translate(parentOffsetX, parentOffsetY);
-						ctx.rotate(entity._parent.totalAngleRad);
-						ctx.translate(-parentOffsetX, -parentOffsetY);
-
-						ctx.translate(pivotOffsetX, pivotOffsetY);
-						ctx.rotate(entity._angleRad);
-						ctx.translate(-pivotOffsetX, -pivotOffsetY);
-					}
-
-					entity.volume.draw(ctx);
-					this._centerTex.draw(ctx, pivotOffsetX - 3, pivotOffsetY - 3);
-					ctx.restore();
+				if((entity.showBounds || this.showBounds) && !entity.disableDebug && entity.isVisible && entity.isLoaded) {
+					entity.drawBounds(ctx);
 				}
 			}
 		}
