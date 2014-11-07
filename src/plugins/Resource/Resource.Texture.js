@@ -899,13 +899,16 @@ Resource.Texture = Resource.Basic.extend
 		var numItems = buffer.length;
 		for(i = 0; i < numItems; i += 2)
 		{
-			x = buffer[i] * unitSize; 
-			y = buffer[i + 1] * unitSize;
+			x = buffer[i] * unitSize | 0; 
+			y = buffer[i + 1] * unitSize | 0;
 
 			if(x < minX) { minX = x; }
 			if(y < minY) { minY = y; }
 			if(x > maxX) { maxX = x; }
 			if(y > maxY) { maxY = y; }
+
+			buffer[i] = x;
+			buffer[i + 1] = y;
 		}
 
 		if(minX > 0) { minX = 0; }
@@ -940,7 +943,7 @@ Resource.Texture = Resource.Basic.extend
 		ctx.beginPath();
 		ctx.moveTo(buffer[0] + offsetX, buffer[1]);
 		for(i = 2; i < numItems; i += 2) {
-			ctx.lineTo(buffer[i] * unitSize + offsetX, buffer[i + 1] * unitSize);
+			ctx.lineTo(buffer[i] + offsetX, buffer[i + 1]);
 		}
 
 		if(params.color) {
