@@ -4,11 +4,11 @@ meta.math = {};
 
 meta.math =
 {
-	toRadians: function(degree) {
+	degToRad: function(degree) {
 		return (degree * Math.PI) / 180;
 	},
 
-	toDegree: function(rad) {
+	radToDeg: function(rad) {
 		return (rad * 180) / Math.PI;
 	},
 
