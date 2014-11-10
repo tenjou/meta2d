@@ -45,7 +45,7 @@ meta.Tween.prototype =
 
 	_play: function() 
 	{	
-		if(Entity.ctrl._addToUpdating(this.cache) && this._group) {
+		if(Renderer.ctrl._addToUpdating(this.cache) && this._group) {
 			this._group.activeUsers++;
 		}
 	},
@@ -56,21 +56,20 @@ meta.Tween.prototype =
 	 */
 	stop: function(callCB)
 	{
+		this.linkIndex = 0;
+		this._stop(callCB);	
+
 		if(this.cache) {
 			this.autoPlay = false;
-		}
-		else {
-			this.linkIndex = 0;
-			this._stop(callCB);		
 			this.cache = null;	
-		}
+		}			
 	
 		return this;
 	},
 
 	_stop: function(callCB) 
 	{
-		if(Entity.ctrl._removeFromUpdating(this.cache)) 
+		if(Renderer.ctrl._removeFromUpdating(this.cache)) 
 		{
 			if(callCB && this.currLink._onComplete) {
 				this.currLink._onComplete.call(this.cache.owner);
@@ -164,23 +163,28 @@ meta.Tween.prototype =
 
 		if(cache.linkIndex === this.chain.length)
 		{
-			if(this.numRepeat === 0) {
-				this.stop(true);
+			if(cache.numRepeat === 0) {
+				this.stop();
 				return this;
 			}
 			else
 			{
 				cache.linkIndex = 0;
-				if(this.numRepeat !== -1) {
-					this.numRepeat--;
+				if(cache.numRepeat !== -1) 
+				{
+					cache.numRepeat--;
+					if(cache.numRepeat === 0) {
+						this.stop();
+						return this;
+					}
 				}
-
+				
 				isRepeating = true;
 			}
 
 			if(cache.currLink._onComplete) {
 				cache.currLink._onComplete.call(cache.owner);
-			}			
+			}
 		}
 
 		cache._isLinkDone = false;
