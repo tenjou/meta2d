@@ -570,7 +570,7 @@ Entity.Geometry = meta.Class.extend
 				}
 				child.updateAnchor();				
 			}
-		}					
+		}						
 	},	
 
 	/* 
@@ -1259,7 +1259,6 @@ Entity.Geometry = meta.Class.extend
 		}
 		else if(event === resEvent.CHANGED) {
 			this.updateFromTexture();
-
 		}
 
 		this.isNeedDraw = true;
@@ -1364,6 +1363,8 @@ Entity.Geometry = meta.Class.extend
 				this.childOffsetY += parent.childOffsetY;
 				parent = parent._parent;
 			}
+
+			this.updatePos();			
 		}
 		else {
 			this.children.push(entity);
@@ -2471,7 +2472,7 @@ Entity.Geometry = meta.Class.extend
 	set isLoaded(value)
 	{
 		if(this._isLoaded === value) { return; }
-		this._isLoaded = value;
+		this._isLoaded = value;	
 
 		if(value) 
 		{
@@ -2496,6 +2497,7 @@ Entity.Geometry = meta.Class.extend
 		else {
 			this._entityCtrl.uncacheEntity(this);
 		}
+
 	},
 
 	get isLoaded() { return this._isLoaded; },
