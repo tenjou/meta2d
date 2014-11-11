@@ -625,8 +625,6 @@ Resource.Texture = Resource.Basic.extend
 		x = x || 0;
 		y = y || 0;
 
-		console.log("here");
-
 		if(typeof(texture) === "string") 
 		{
 			var obj = meta.getTexture(texture);
@@ -710,15 +708,10 @@ Resource.Texture = Resource.Basic.extend
 		var width = (params.width || this.trueFullWidth || 1) + params.x;
 		var height = (params.height || this.trueFullHeight || 1) + params.y;
 
-		// if(meta.maxUnitSize > 1) 
-		// {
-		// 	width *= scope.maxUnitSize;
-		// 	height *= scope.maxUnitSize;
-
-		// 	this._maxResCanvasCache = document.createElement("canvas");
-		// 	this._maxResCanvasCache.width = width;
-		// 	this._maxResCanvasCache.height = height;
-		// 	this._maxResCtxCache = this._maxResCanvasCache("2d");
+		// if(meta.maxUnitSize > 1) {
+		// 	width *= Math.ceil(scope.maxUnitSize);
+		// 	height *= Math.ceil(scope.maxUnitSize);
+		// 	console.log(width, height, params);
 		// }
 
 		this.upResize(width, height);
@@ -1018,6 +1011,12 @@ Resource.Texture = Resource.Basic.extend
 			params.borderColor = params.borderColor || "#000000";
 		}
 
+		if(params.closePath === void(0)) {
+			params.closePath = true;
+		} else {
+			params.closePath = params.closePath;
+		}
+
 		var size = params.radius * 2 + params.borderWidth;
 		if(!params.drawOver) {
 			this.resize(params.x + size, params.y + size);
@@ -1031,10 +1030,19 @@ Resource.Texture = Resource.Basic.extend
 		ctx.lineWidth = params.borderWidth;
 		
 		ctx.clearRect(0, 0, this.trueFullWidth, this.trueFullHeight);
-		ctx.beginPath();
-		ctx.arc(params.x + params.radius + (params.borderWidth / 2), params.y + params.radius + (params.borderWidth / 2),
-			params.radius, params.startAngle, params.endAngle, false);
-		ctx.closePath();
+
+		if(params.closePath) 
+		{
+			ctx.beginPath();
+			ctx.arc(params.x + params.radius + (params.borderWidth / 2), params.y + params.radius + (params.borderWidth / 2),
+				params.radius, params.startAngle, params.endAngle, false);
+			ctx.closePath();
+		}
+		else
+		{
+			ctx.arc(params.x + params.radius + (params.borderWidth / 2), params.y + params.radius + (params.borderWidth / 2),
+				params.radius, params.startAngle, params.endAngle, false);
+		}		
 
 		if(params.color) {
 			ctx.fillStyle = params.color;
