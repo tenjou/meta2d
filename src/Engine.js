@@ -131,7 +131,8 @@ meta.Engine.prototype =
 		}
 
 		console.log("%c META v" + meta.version + " ", 
-			"background: #000; color: white; font-size: 12px; padding: 2px 0 1px 0;");
+			"background: #000; color: white; font-size: 12px; padding: 2px 0 1px 0;",
+			"http://infinite-games.com ");
 
 		console.log("%cBrowser: %c" + meta.device.name + " " + meta.device.version + "\t",
 			"font-weight: bold; padding: 2px 0 1px 0;",
@@ -844,40 +845,43 @@ meta.Engine.prototype =
 		"-webkit-touch-callout: none; -webkit-user-select: none;"
 }
 
-meta.__defineSetter__("init", function(func)
-{
-	meta._cache.init = func;
-	if(meta.engine && meta.engine.isInited) {
-		func();
+Object.defineProperty(meta, "init", {
+    set: function(func) 
+    {
+		meta._cache.init = func;
+		if(meta.engine && meta.engine.isInited) {
+			func();
+		}
+    },
+    get: function() {
+		return meta._cache.init;
 	}
 });
 
-meta.__defineSetter__("load", function(func)
-{
-	meta._cache.load = func;
-	if(meta.engine && meta.engine.isLoaded) {
-		func();
-	}
+Object.defineProperty(meta, "load", {
+    set: function(func) 
+    {
+		meta._cache.load = func;
+		if(meta.engine && meta.engine.isLoaded) {
+			func();
+		}
+    },
+    get: function() {
+		return meta._cache.load;
+	}    
 });
 
-meta.__defineSetter__("ready", function(func)
-{
-	meta._cache.ready = func;
-	if(meta.engine && meta.engine.isReady) {
-		func();
-	}
-});
-
-meta.__defineGetter__("init", function() {
-	return meta._cache.init;
-});
-
-meta.__defineGetter__("load", function() {
-	return meta._cache.load;
-});
-
-meta.__defineGetter__("ready", function() {
-	return meta._cache.ready;
+Object.defineProperty(meta, "ready", {
+    set: function(func) 
+    {
+		meta._cache.ready = func;
+		if(meta.engine && meta.engine.isReady) {
+			func();
+		}
+    },
+    get: function() {
+		return meta._cache.ready;
+	}    
 });
 
 /**
