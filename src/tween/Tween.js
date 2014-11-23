@@ -71,8 +71,11 @@ meta.Tween.prototype =
 	{
 		if(Renderer.ctrl._removeFromUpdating(this.cache)) 
 		{
-			if(callCB && this.currLink._onComplete) {
-				this.currLink._onComplete.call(this.cache.owner);
+			if(callCB) {
+				callCB(this.cache.owner);
+			}
+			if(this.cache.currLink._onDone) {
+				this.cache.currLink._onDone.call(this.cache.owner);
 			}	
 
 			if(this._group)
@@ -182,8 +185,8 @@ meta.Tween.prototype =
 				isRepeating = true;
 			}
 
-			if(cache.currLink._onComplete) {
-				cache.currLink._onComplete.call(cache.owner);
+			if(cache.currLink._onDone) {
+				cache.currLink._onDone.call(cache.owner);
 			}
 		}
 
@@ -308,12 +311,12 @@ meta.Tween.prototype =
 	 * Create tween animation from owner starValues to endValues.
 	 * @param endValues {Object} End values.
 	 * @param duration {Number} Duration of animation in milliseconds.
-	 * @param onComplete {Function} Callback function on complete.
+	 * @param onDone {Function} Callback function on complete.
 	 * @returns {meta.Link}
 	 */
-	to: function(endValues, duration, onComplete)
+	to: function(endValues, duration, onDone)
 	{
-		var link = new meta.Tween.Link(this, endValues, duration, onComplete);
+		var link = new meta.Tween.Link(this, endValues, duration, onDone);
 		this.chain.push(link);
 		return link;
 	},
@@ -360,7 +363,6 @@ meta.Tween.prototype =
 
 	//
 	autoPlay: false,
-	numRepeat: 0,
 
 	_group: null,
 	_isReversing: false,
@@ -374,6 +376,7 @@ meta.Tween.Cache = function(owner)
 
 	this.linkIndex = 0;
 	this.currLink = null;
+	this.numRepeat = 0;
 
 	this._updateNodeID = -1;
 	this._isLinkDone = false;

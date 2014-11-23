@@ -12,13 +12,13 @@
  * @property isRounding {Boolean} Flag if after tween frame value is rounded.
  * @memberof! <global>
  */
-meta.Tween.Link = function(tween, endValues, duration, onComplete)
+meta.Tween.Link = function(tween, endValues, duration, onDone)
 {
 	this.tween = tween;
 	this.startValues = {};
 	this.endValues = endValues;
 	this.duration = duration;
-	this._onComplete = onComplete;
+	this._onDone = onDone;
 };
 
 meta.Tween.Link.prototype =
@@ -208,8 +208,8 @@ meta.Tween.Link.prototype =
 	 * @param func {Function} Callback function.
 	 * @returns {meta.Tween.Link}
 	 */
-	onComplete: function(func) {
-		this._onComplete = func;
+	onDone: function(func) {
+		this._onDone = func;
 		return this;
 	},
 
@@ -228,11 +228,11 @@ meta.Tween.Link.prototype =
 	 * Create tween animation from entity starValues to endValues.
 	 * @param endValues {Object} End values.
 	 * @param duration {Number} Duration of animation in milliseconds.
-	 * @param onComplete {Function} Callback function on complete.
+	 * @param onDone {Function} Callback function on complete.
 	 * @returns {meta.Tween.Link}
 	 */
-	to: function(endValues, duration, onComplete) {
-		return this.tween.to(endValues, duration, onComplete);
+	to: function(endValues, duration, onDone) {
+		return this.tween.to(endValues, duration, onDone);
 	},
 
 
@@ -249,7 +249,7 @@ meta.Tween.Link.prototype =
 	//
 	_easing: meta.Tween.Easing.linear,
 	_onStart: null,
-	_onComplete: null,
+	_onDone: null,
 	_onTick: null,
 
 	tDelay: 0,
