@@ -1945,6 +1945,17 @@ Entity.Geometry = meta.Class.extend
 	get anchorX() { return this._anchorX; },
 	get anchorY() { return this._anchorY; },
 
+	offset: function(x, y) 
+	{
+		if(this._offsetX === x && this._offsetY === y) { 
+			return; 
+		}
+		
+		this._offsetX = x;
+		this._offsetY = y;
+		this.updatePos();
+	},
+
 	set offsetX(value) 
 	{
 		if(this._offsetX === value) { return; }
