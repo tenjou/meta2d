@@ -55,7 +55,8 @@ meta._cache = {
 	pendingScripts: null, // IE<10
 	numScriptsToLoad: 0,
 	resolutions: null,
-	currResolution: null
+	currResolution: null,
+	imageSmoothing: true
 };
 
 /**
@@ -300,7 +301,6 @@ meta.Engine.prototype =
 		}
 	},
 
-
 	update: function()
 	{
 		this.updateFrameID++;
@@ -539,13 +539,14 @@ meta.Engine.prototype =
 			height = scope.element.clientHeight;
 		}
 
-		var ratio = window.devicePixelRatio;
+		var ratio = (meta.device.isMobile) ? window.devicePixelRatio : 1.0;
 		this.width = (width * ratio) | 0;
 		this.height = (height * ratio) | 0;
 		this.canvas.width = this.width;
 		this.canvas.height = this.height;
 		this.canvas.style.width = width + "px";
 		this.canvas.style.height = height + "px";
+		this.ctx.imageSmoothingEnabled = meta._cache.imageSmoothing;
 		scope.width = this.width;
 		scope.height = this.height;
 
@@ -828,6 +829,17 @@ meta.Engine.prototype =
 		this.fullscreen(!meta.device.isFullScreen);
 	},
 
+    set imageSmoothing(value) 
+    {
+    	meta._cache.imageSmoothing = value;
+		if(this.isReady) {
+			this.onResize();
+		}
+    },
+
+    get imageSmoothing() {
+		return meta._cache.imageSmoothing;
+	},
 
 	set cursor(value) {
 		meta.element.style.cursor = value;
@@ -835,14 +847,14 @@ meta.Engine.prototype =
 
 	get cursor() {
 		return meta.element.style.cursor;
-	},
+	},	
 
 
 	//
 	elementStyle: "padding:0; margin:0;",
 	canvasStyle: "position:absolute; overflow:hidden; translateZ(0); " +
 		"-webkit-backface-visibility:hidden; -webkit-perspective: 1000; " +
-		"-webkit-touch-callout: none; -webkit-user-select: none;"
+		"-webkit-touch-callout: none; -webkit-user-select: none; zoom: 1;"
 }
 
 Object.defineProperty(meta, "init", {

@@ -586,7 +586,7 @@ meta.View.prototype =
 	//
 	controllers: null,
 
-	_bgColor: "#211f28",
+	_bgColor: "#ddd",
 	bgTransparent: false,
 };
 
