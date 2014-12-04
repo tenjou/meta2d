@@ -919,6 +919,7 @@ Resource.Texture = Resource.Basic.extend
 		var offsetX = -minX + halfLineWidth + (params.addWidth / 2);
 		this.resize((maxX - minX + params.lineWidth + params.addWidth), 
 			maxY - minY);
+		//this.resize(100, 100);
 
 		if(this.textureType) {
 			this._createCachedImg();
@@ -1019,8 +1020,8 @@ Resource.Texture = Resource.Basic.extend
 
 		var size = params.radius * 2 + params.borderWidth;
 		if(!params.drawOver) {
-			this.resize(params.x + size, params.y + size);
-		}		
+			this.resize(params.x + size + 1, params.y + size + 1);
+		}
 
 		if(this.textureType) {
 			this._createCachedImg();
@@ -1034,7 +1035,9 @@ Resource.Texture = Resource.Basic.extend
 		if(params.closePath) 
 		{
 			ctx.beginPath();
-			ctx.arc(params.x + params.radius + (params.borderWidth / 2), params.y + params.radius + (params.borderWidth / 2),
+			ctx.arc(
+				params.x + params.radius + (params.borderWidth / 2) + 0.5, 
+				params.y + params.radius + (params.borderWidth / 2) + 0.5,
 				params.radius, params.startAngle, params.endAngle, false);
 			ctx.closePath();
 		}
@@ -1047,7 +1050,7 @@ Resource.Texture = Resource.Basic.extend
 		if(params.color) {
 			ctx.fillStyle = params.color;
 			ctx.fill();
-		}
+		} 
 
 		if(params.borderColor) {
 			ctx.strokeStyle = params.borderColor;
