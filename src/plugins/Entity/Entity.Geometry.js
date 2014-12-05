@@ -478,11 +478,6 @@ Entity.Geometry = meta.Class.extend
 
 		if(this.children)
 		{			
-			// this.childOffsetX = this._tmpX - this.volume.halfWidth;
-			// this.childOffsetY = this._tmpY - this.volume.halfHeight - 95;
-			// this.childOffsetX = this._tmpX + this.childPivotX + this.volume.initHalfWidth * (1.0 - this._scaleX);
-			// this.childOffsetY = this._tmpY + this.childPivotY + this.volume.initHalfHeight * (1.0 - this._scaleY);
-
 			this.childOffsetX = this._x + this.childPivotX + this._anchorPosX;
 			this.childOffsetY = this._y + this.childPivotY + this._anchorPosY;
 
@@ -918,14 +913,10 @@ Entity.Geometry = meta.Class.extend
 		this.pivotX = this.pivotSrcX * this._scaleX;
 		this.pivotY = this.pivotSrcY * this._scaleY;
 
-		if(this.children) 
-		{
+		if(this.children) {
 			this.childPivotX = ((-this.pivotRatioX - 1.0) * this.volume.halfWidth);
 			this.childPivotY = ((-this.pivotRatioY - 1.0) * this.volume.halfHeight);
-			this.childOffsetX = this._x + this.childPivotX + this._anchorPosX;
-			this.childOffsetY = this._y + this.childPivotY + this._anchorPosY;
-			console.log(this.childPivotY, this.childOffsetY);
-		}		
+		}
 	},
 
 	/**
@@ -2385,6 +2376,7 @@ Entity.Geometry = meta.Class.extend
 		this._scaleX = x;
 		this._scaleY = y;
 		this.updateScale();
+		this.updatePos();
 	},
 
 	set scaleX(value) { 
