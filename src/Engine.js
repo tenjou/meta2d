@@ -539,7 +539,7 @@ meta.Engine.prototype =
 			height = scope.element.clientHeight;
 		}
 
-		var ratio = (meta.device.isMobile) ? window.devicePixelRatio : 1.0;
+		var ratio = window.devicePixelRatio;
 		this.width = (width * ratio) | 0;
 		this.height = (height * ratio) | 0;
 		this.canvas.width = this.width;
