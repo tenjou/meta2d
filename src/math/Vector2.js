@@ -155,13 +155,9 @@ meta.math.Vector2.prototype =
 	truncate: function(max)
 	{
 		var length = Math.sqrt((this.x * this.x) + (this.y * this.y));
-
-		if(length > max)
-		{
-			this.normalize();
-
-			this.x *= max;
-			this.y *= max;
+		if(length > max) {
+			this.x *= max / length;
+			this.y *= max / length;
 		}
 	},
 
@@ -185,6 +181,11 @@ meta.math.Vector2.prototype =
 	 */
 	lengthSq: function() {
 		return (this.x * this.x + this.y * this.y);
+	},
+
+	heading: function() {
+		var angle = Math.atan2(-this.y, this.x);
+		return -angle + Math.PI * 0.5;
 	},
 
 	/**

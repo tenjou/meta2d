@@ -911,14 +911,12 @@ Resource.Texture = Resource.Basic.extend
 		params.addWidth = params.addWidth || 0;
 		params.addHeight = params.addHeight || 0;
 		params.lineWidth = params.lineWidth || 1;
-		if(!params.color && !params.borderColor) {
-			params.borderColor = "#000000"; 
-		}
 
 		var halfLineWidth = params.lineWidth / 2;
-		var offsetX = -minX + halfLineWidth + (params.addWidth / 2);
+		var offsetX = -minX + halfLineWidth + (params.addWidth * 0.5);
+		var offsetY = -minY + halfLineWidth + (params.addHeight * 0.5);
 		this.resize((maxX - minX + params.lineWidth + params.addWidth), 
-			maxY - minY);
+			maxY - minY + params.lineWidth);
 		//this.resize(100, 100);
 
 		if(this.textureType) {
@@ -935,19 +933,19 @@ Resource.Texture = Resource.Basic.extend
 		}
 
 		ctx.beginPath();
-		ctx.moveTo(buffer[0] + offsetX, buffer[1]);
+		ctx.moveTo(buffer[0] + offsetX, buffer[1] + offsetY);
 		for(i = 2; i < numItems; i += 2) {
-			ctx.lineTo(buffer[i] + offsetX, buffer[i + 1]);
+			ctx.lineTo(buffer[i] + offsetX, buffer[i + 1] + offsetY);
 		}
 
-		if(params.color) {
-			ctx.fillStyle = params.color;
+		if(params.fillColor) {
+			ctx.fillStyle = params.fillColor;
 			ctx.closePath();
 			ctx.fill();
 		}
 
-		if(params.borderColor) {
-			ctx.strokeStyle = params.borderColor;
+		if(params.color) {
+			ctx.strokeStyle = params.color;
 			ctx.stroke();
 		}
 

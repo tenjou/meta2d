@@ -8,9 +8,6 @@
  * @param [x=0] {Number} Position on x axis.
  * @param [y=0] {Number} Position on y axis.
  * @param [texture=null] {Resource.Texture=} <b>Setter/Getter.</b> Set the current texture.
- * @param [components=null] {Object=} References to the added components.
- * @param componentBuffer {Array} References to the added components.
- * @param numComponents {Number} Number of components added.
  * @param [flipX=0] {Number=} <b>Setter/Getter.</b> Set flip by X axis. Valid inputs: -1.0 or 1.0.
  * @param [flipY=0] {Number=} <b>Setter/Getter.</b> Set flip by Y axis. Valid inputs: -1.0 or 1.0.
  * @param [isRemoved=false] {Boolean=} <b>Setter/Getter.</b> Flag that tells if entity is flagged as removed(or will be removed ASAP).
@@ -102,11 +99,8 @@ Entity.Geometry = meta.Class.extend
 				this.removeChilds();
 			}
 		}
-		else 
-		{
-			if(this.components) {
-				this.removeComponents();
-			}
+		else {
+			this.removeComponents();
 		}
 
 		this.chn = null;
@@ -123,10 +117,7 @@ Entity.Geometry = meta.Class.extend
 	{
 		this.isUpdating = false;
 		this._depthNode.entity = null;
-
-		if(this.components) {
-			this.removeComponents();
-		}	
+		this.removeComponents();	
 	},
 
 	/**
@@ -279,9 +270,10 @@ Entity.Geometry = meta.Class.extend
 	_updateComponents: function(tDelta)
 	{
 		var comp;
-		for(var n = 0; n < this.numComponents; n++)  
+		var numComponents = this.components.length;
+		for(var n = 0; n < numComponents; n++)  
 		{
-			comp = this.componentBuffer[n];
+			comp = this.components[n];
 			if(comp.update) {
 				comp.update(tDelta);
 			}
@@ -477,9 +469,9 @@ Entity.Geometry = meta.Class.extend
 		this.drawY = this._tmpY - this.volume.initHalfHeight + this.pivotSrcY;			
 
 		if(this.children)
-		{			
-			this.childOffsetX = this._x + this.childPivotX + this._anchorPosX;
-			this.childOffsetY = this._y + this.childPivotY + this._anchorPosY;
+		{
+			this.childOffsetX = this._x + this._parent.childOffsetX + this.childPivotX + this._anchorPosX + this.offsetX;
+			this.childOffsetY = this._y + this._parent.childOffsetY + this.childPivotY + this._anchorPosY + this.offsetY;
 
 			var numChildren = this.children.length;
 			for(var i = 0; i < numChildren; i++) {
@@ -908,8 +900,8 @@ Entity.Geometry = meta.Class.extend
 
 	updatePivot: function()
 	{
-		this.pivotSrcX = -this.pivotRatioX * this.volume.initHalfWidth;
-		this.pivotSrcY = -this.pivotRatioY * this.volume.initHalfHeight;
+		this.pivotSrcX = -this.pivotRatioX * this._flipX * this.volume.initHalfWidth;
+		this.pivotSrcY = -this.pivotRatioY * this._flipY * this.volume.initHalfHeight;
 		this.pivotX = this.pivotSrcX * this._scaleX;
 		this.pivotY = this.pivotSrcY * this._scaleY;
 
@@ -1723,20 +1715,15 @@ Entity.Geometry = meta.Class.extend
 			return null;
 		}
 
-		this.numComponents++;
-
 		if(!this.components) {
-			this.components = {};
-			this.componentBuffer = [];
+			this.components = [ newComp ];
 		}
-		if(this.numComponents > this.componentBuffer.length) {
-			this.componentBuffer.length = this.numComponents;
+		else {
+			this.components.push(newComp);
 		}
 
-		this.components[key] = newComp;
 		newComp.owner = this;
-		newComp.__id = this.numComponents - 1;
-		this.componentBuffer[newComp.__id] = newComp;
+		this[key] = newComp;		
 
 		if(params) 
 		{
@@ -1749,9 +1736,11 @@ Entity.Geometry = meta.Class.extend
 			newComp.load();
 		}
 
+		if(this.isReady)
+
 		if(newComp.update && !this._isUpdating) {
 			this.isUpdating = true;
-		}
+		}		
 
 		return newComp;
 	},
@@ -1768,51 +1757,51 @@ Entity.Geometry = meta.Class.extend
 		}
 
 		if(!this.components) {
+			console.warn("[Entity.Geometry.removeComponent]:", "No such component found:", comp);
 			return;
 		}
 
-		var component, compName;
+		var key;
+		var entityComp = null;
 		if(typeof(comp) === "string") 
 		{
-			component = this.components[comp];
-			compName = comp;
-			if(!component) {
-				console.warn("[Entity.Geometry.removeComponent]:", "No such component found - " + comp);
-				return;
+			for(key in this) 
+			{
+				if(this[key] === comp) {
+					entityComp = this[key];
+					this[key] = null;
+					break;
+				}
 			}
 		}
 		else 
 		{
-			for(var key in this.components) 
+			for(key in this) 
 			{
-				if(this.components[key] === comp) {
-					component = comp;
-					compName = key;
+				if(this[key] instanceof comp) {
+					entityComp = this[key];
+					this[key] = null;
 					break;
 				}
 			}
+		}
 
-			if(!component) {
-				console.warn("[Entity.Geometry.removeComponent]:", "No such component found - " + comp);
-				return;
+		if(!entityComp) {
+			console.warn("[Entity.Geometry.removeComponent]:", "No such component found:", comp);
+			return;
+		}		
+
+		if(entityComp.unload) {
+			entityComp.unload();
+		}
+
+		var numComponents = this.components.length;
+		for(var i = 0; i < numComponents; i++) {
+			if(this.components[i] === entityComp) {
+				this.components = this.components[numComponents - 1];
+				this.components.pop();
+				break;
 			}
-		}
-
-		if(component.unload) {
-			component.unload();
-		}
-
-		this.numComponents--;
-		if(this.numComponents <= 0) {
-			this.components = null;
-			this.componentBuffer = null;
-			this.numComponents = 0;
-		}
-		else {
-			this.componentBuffer[component.__id] = this.componentBuffer[this.numComponents];
-			this.componentBuffer[component.__id].__id = component.__id;
-			this.componentBuffer[this.numComponents] = null;
-			delete this.components[compName];
 		}
 	},
 
@@ -1822,17 +1811,23 @@ Entity.Geometry = meta.Class.extend
 	removeComponents: function()
 	{
 		var component;
-		for(var n = 0; n < this.numComponents; n++)
+		var numComponents = this.components.length;
+		for(var n = 0; n < numComponents; n++)
 		{
-			component = this.componentBuffer[n];
+			component = this.components[n];
 			if(component.unload) {
 				component.unload();
 			}
 		}
 
-		this.components = null;
-		this.componentBuffer = null;
-		this.numComponents = 0;
+		this.components.length = 0;
+	},
+
+
+	distanceToEntity: function(entity) {
+		var x = entity.volume.x - this.volume.x;
+		var y = entity.volume.y - this.volume.y;
+		return Math.sqrt(x * x + y * y);		
 	},
 
 
@@ -2365,10 +2360,9 @@ Entity.Geometry = meta.Class.extend
 		}		
 
 		this.updatePivot();
-		this.updatePos();
-		this.isNeedDraw = true;
 		this._draw = this._drawTransform;
 		this.isInside = this._isInsideTransform;
+		this.isNeedDraw = true;
 	},
 
 	scale: function(x, y) {
@@ -2382,11 +2376,13 @@ Entity.Geometry = meta.Class.extend
 	set scaleX(value) { 
 		this._scaleX = value; 
 		this.updateScale();
+		this.updatePos();
 	},
 
 	set scaleY(value) { 
 		this._scaleY = value; 
 		this.updateScale();
+		this.updatePos();
 	},
 
 	get scaleX() { return this._scaleX; },
@@ -2478,9 +2474,10 @@ Entity.Geometry = meta.Class.extend
 			if(this.components) 
 			{
 				var comp;
-				for(var key in this.components) 
+				var numComponents = this.components.length;
+				for(var i = 0; i < numComponents; i++)
 				{
-					comp = this.components[key];
+					comp = this.components[i];
 					if(comp.ready) {
 						comp.ready();
 					}
@@ -2824,8 +2821,6 @@ Entity.Geometry = meta.Class.extend
 	vbo: null, vertices: null,
 
 	components: null,
-	componentBuffer: null,
-	numComponents: 0,
 
 	children: null,
 
