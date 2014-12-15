@@ -1761,30 +1761,33 @@ Entity.Geometry = meta.Class.extend
 			return;
 		}
 
-		var key;
-		var entityComp = null;
-		if(typeof(comp) === "string") 
-		{
-			for(key in this) 
-			{
-				if(this[key] === comp) {
-					entityComp = this[key];
-					this[key] = null;
-					break;
-				}
-			}
-		}
-		else 
-		{
-			for(key in this) 
-			{
-				if(this[key] instanceof comp) {
-					entityComp = this[key];
-					this[key] = null;
-					break;
-				}
-			}
-		}
+		var entityComp = this[comp];
+		this[comp] = null;
+
+		// var key;
+		// var entityComp = null;
+		// if(typeof(comp) === "string") 
+		// {
+		// 	for(key in this) 
+		// 	{
+		// 		if(this[key] === comp) {
+		// 			entityComp = this[key];
+		// 			this[key] = null;
+		// 			break;
+		// 		}
+		// 	}
+		// }
+		// else 
+		// {
+		// 	for(key in this) 
+		// 	{
+		// 		if(this[key] instanceof comp) {
+		// 			entityComp = this[key];
+		// 			this[key] = null;
+		// 			break;
+		// 		}
+		// 	}
+		// }
 
 		if(!entityComp) {
 			console.warn("[Entity.Geometry.removeComponent]:", "No such component found:", comp);
@@ -1798,7 +1801,7 @@ Entity.Geometry = meta.Class.extend
 		var numComponents = this.components.length;
 		for(var i = 0; i < numComponents; i++) {
 			if(this.components[i] === entityComp) {
-				this.components = this.components[numComponents - 1];
+				this.components[i] = this.components[numComponents - 1];
 				this.components.pop();
 				break;
 			}
@@ -1810,6 +1813,8 @@ Entity.Geometry = meta.Class.extend
 	 */
 	removeComponents: function()
 	{
+		if(!this.components) { return; }
+
 		var component;
 		var numComponents = this.components.length;
 		for(var n = 0; n < numComponents; n++)
