@@ -94,6 +94,15 @@ Input.Controller = meta.Controller.extend
 
 		this._chnKeyDown.emit(this._event, Input.Event.KEY_DOWN);
 
+		if(this._callbacks && this._callbacks[event.keyCode]) 
+		{
+			var cbs = this._callbacks[event.keyCode];
+			var numCbs = cbs.length;
+			for(var i = 0; i < numCbs; i++) {
+				cbs[i]();
+			}
+		}
+
 		if(this.keyRepeat)
 		{
 			if(!this._inputTimer)
@@ -559,6 +568,24 @@ Input.Controller = meta.Controller.extend
 	},
 
 
+	onKey: function(key, cb) 
+	{
+		if(!this._callbacks) { 
+			this._callbacks = {};
+			this._callbacks[key] = [ cb ];
+		}
+		else
+		{
+			if(!this._callbacks[key]) {
+				this._callbacks[key] = [ cb ];
+			}
+			else {
+				this._callbacks[key].push(cb);
+			}
+		}
+	},
+
+
 	getEvent: function()
 	{
 		this._event.event = null;
@@ -664,5 +691,7 @@ Input.Controller = meta.Controller.extend
 	_ignoreKeys: null,
 	_cmdKeys: null,
 	_iFrameKeys: null,
-	_numCmdKeys: 0
+	_numCmdKeys: 0,
+
+	_callbacks: null
 });
