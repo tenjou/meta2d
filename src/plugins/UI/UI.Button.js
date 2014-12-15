@@ -18,7 +18,7 @@ UI.Button = Entity.Geometry.extend
 		if(!this._text)
 		{
 			this._text = new Entity.Text(str);
-			this._text.size = 20;
+			this._text.size = 12;
 			this._text.color = "#ffffff";
 			this.attach(this._text);
 
