@@ -911,6 +911,9 @@ Resource.Texture = Resource.Basic.extend
 		params.addWidth = params.addWidth || 0;
 		params.addHeight = params.addHeight || 0;
 		params.lineWidth = params.lineWidth || 1;
+		if(!params.color && !params.fillColor) {
+			params.color = "#000000";
+		}
 
 		var halfLineWidth = params.lineWidth / 2;
 		var offsetX = -minX + halfLineWidth + (params.addWidth * 0.5);
@@ -1029,7 +1032,7 @@ Resource.Texture = Resource.Basic.extend
 		ctx.lineWidth = params.borderWidth;
 		
 		ctx.clearRect(0, 0, this.trueFullWidth, this.trueFullHeight);
-
+		
 		if(params.closePath) 
 		{
 			ctx.beginPath();
