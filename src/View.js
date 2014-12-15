@@ -606,6 +606,10 @@ meta.setView = function(view)
 		}
 	}
 
+	if(view.isActive) { 
+		return;
+	}
+
 	meta.view.detachAll();
 	meta.view.attach(view);
 };
