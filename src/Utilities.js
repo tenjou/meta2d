@@ -527,7 +527,7 @@ meta._loadScript = function(obj)
 		script.src = obj.s;
 	}
 	else {
-		document.write("<script src='" + src + " defer></script>");
+		document.write("<script src='" + src + "' defer></script>");
 	}
 };
 
@@ -712,7 +712,7 @@ meta.adaptTo = function(width, height, path)
 	resolutions.push(newRes);
 };
 
-meta.removeFromArray = function(array, item) 
+meta.removeFromArray = function(item, array) 
 {
 	var numItems = array.length;
 	for(var i = 0; i < numItems; i++) {
@@ -724,7 +724,7 @@ meta.removeFromArray = function(array, item)
 	}
 };
 
-meta.shuffle = function(array) 
+meta.shuffleArray = function(array) 
 {
 	var length = array.length;
 	var temp, item;
@@ -739,5 +739,15 @@ meta.shuffle = function(array)
 	}
 
 	return array;
+};
+
+meta.rotateArray = function(array)
+{
+	var tmp = array[0];
+	var numItems = array.length - 1;
+	for(var i = 0; i < numItems; i++) {
+		array[i] = array[i + 1];
+	}
+	array[numItems] = tmp;
 };
 
