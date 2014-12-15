@@ -36,11 +36,10 @@ cat Engine.js \
 	plugins/Resource/Resource.Font.js \
 	plugins/Entity/Entity.Controller.js \
 	plugins/Entity/Enum.js \
-	plugins/Entity/Entity.WebGLRenderer.js \
-	plugins/Entity/Entity.CanvasRenderer.js \
+	plugins/Renderer/Renderer.WebGL.js \
+	plugins/Renderer/Renderer.Canvas.js \
 	plugins/Entity/Entity.Geometry.js \
 	plugins/Entity/Entity.Text.js \
-	plugins/Entity/Entity.Grid.js \
 	plugins/Entity/Entity.DepthList.js \
 	plugins/Entity/Entity.CellArray.js \
 	plugins/Input/Input.Controller.js \

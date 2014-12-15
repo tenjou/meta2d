@@ -11,7 +11,6 @@
  * @property x {Number} <b>Setter/Getter.</b> World position on x axis.
  * @property y {Number} <b>Setter/Getter.</b> World position on y axis.
  * @property z {Number} <b>Setter/Getter.</b> Depth index.
- * @property bgColor {String} Background color in Hex.
  * @property tween {meta.Tween} View tween.
  * @property numEntities {Number} Number of entities added to the view.
  * @memberof! <global>
@@ -467,42 +466,6 @@ meta.View.prototype =
 	},
 
 
-	set bgColor(hex)
-	{
-		if(meta.engine.isWebGL)
-		{
-			if(hex.length === 3) {
-				hex += hex.substr(1, 3);
-			}
-
-			var color = meta.hexToRgb(hex);
-			if(color.r > 0) {
-				color.r = color.r / 255;
-			}
-			if(color.g > 0) {
-				color.g = color.g / 255;
-			}
-			if(color.b > 0) {
-				color.b = color.b / 255;
-			}
-
-			if(this.bgTransparent) {
-				meta.ctx.clearColor(0, 0, 0, 0);
-			}
-			else {
-				meta.ctx.clearColor(color.r, color.g, color.b, 1.0);
-			}
-		}
-		else {
-			this._bgColor = hex;
-		}
-	},
-
-	get bgColor() {
-		return this._bgColor;
-	},
-
-
 	set isActive(value)
 	{
 		if(this._isActive === value) { return; }
@@ -516,8 +479,7 @@ meta.View.prototype =
 			this._isActive = value;
 			meta.subscribe(this, meta.Event.CAMERA_RESIZE, this.onResize);	
 
-			this._makeActive();	
-			this.bgColor = this._bgColor;			
+			this._makeActive();			
 		}
 		else 
 		{
@@ -584,10 +546,7 @@ meta.View.prototype =
 
 
 	//
-	controllers: null,
-
-	_bgColor: "#ddd",
-	bgTransparent: false,
+	controllers: null
 };
 
 /**

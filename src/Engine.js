@@ -116,6 +116,9 @@ meta.Engine = function()
 	this.updateFrameID = 0;
 
 	this.enablePauseOnBlur = true;
+
+	this._bgColor = "#ddd";
+	this._bgTransparent = false;
 };
 
 meta.Engine.prototype =
@@ -848,6 +851,47 @@ meta.Engine.prototype =
 	get cursor() {
 		return meta.element.style.cursor;
 	},	
+
+
+	set bgColor(hex)
+	{
+		if(meta.engine.isWebGL)
+		{
+			if(hex.length === 3) {
+				hex += hex.substr(1, 3);
+			}
+
+			var color = meta.hexToRgb(hex);
+			if(color.r > 0) {
+				color.r = color.r / 255;
+			}
+			if(color.g > 0) {
+				color.g = color.g / 255;
+			}
+			if(color.b > 0) {
+				color.b = color.b / 255;
+			}
+
+			if(this._bgTransparent) {
+				meta.ctx.clearColor(0, 0, 0, 0);
+			}
+			else {
+				meta.ctx.clearColor(color.r, color.g, color.b, 1.0);
+			}
+		}
+		else {
+			this._bgColor = hex;
+		}
+	},
+
+	get bgColor() { return this._bgColor; },
+
+	set bgTransparent(value) {
+		this._bgTransparent = value;
+		this.bgColor = this._bgColor;
+	},
+
+	get bgTransparent() { return this._bgTransparent; },
 
 
 	//
