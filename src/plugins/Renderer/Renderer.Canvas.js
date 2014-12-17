@@ -74,15 +74,14 @@ Renderer.Canvas = Entity.Controller.extend
 	 */
 	render: function(tDelta)
 	{
-		var currNode = this.entities.first.next;		
-
 		if(!this.isNeedRender)
 		{
 			var entity;
-			var lastNode = this.entities.last;
-			for(; currNode !== lastNode; currNode = currNode.next)
+			var numEntities = this.entities.length;
+			for(var i = 0; i < numEntities; i++)
 			{
-				entity = currNode.entity;
+				entity = this.entities[i];
+
 				if(entity.isNeedStyle) {
 					entity._style.update(entity);
 				}
@@ -119,10 +118,11 @@ Renderer.Canvas = Entity.Controller.extend
 		ctx.scale(camera._zoom * unitRatio, camera._zoom * unitRatio);	
 
 		var entity;
-		var currNode = this.entities.first.next;
-		for(; currNode !== untilNode; currNode = currNode.next)
+		var numEntities = this.entities.length;
+		for(var i = 0; i < numEntities; i++)
 		{
-			entity = currNode.entity;
+			entity = this.entities[i];
+			
 			if(entity._isCached || !entity.isVisible || !entity._isLoaded) { continue; }
 
 			if(this._clipVolume !== entity.clipVolume) 
@@ -237,10 +237,10 @@ Renderer.Canvas = Entity.Controller.extend
 		ctx.scale(camera._zoom * unitRatio, camera._zoom * unitRatio);		
 
 		var entity;
-		var lastNode = this.entities.last;
-		for(; currNode !== lastNode; currNode = currNode.next)
+		var numEntities = this.entities.length;
+		for(var i = 0; i < numEntities; i++)
 		{
-			entity = currNode.entity;
+			entity = this.entities[i];
 
 			if(entity.isNeedStyle) {
 				entity._style.update(entity);

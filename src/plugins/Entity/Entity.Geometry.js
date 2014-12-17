@@ -33,10 +33,9 @@ Entity.Geometry = meta.Class.extend
 	{
 		this.id = this._entityCtrl.getUniqueID();
 		this.name = "entity" + this.id;
+		this.core = new this.Core();
 		this.volume = new meta.math.AdvAABB(0, 0, 0, 0);
 		this._parent = this._entityCtrl;
-
-		this._depthNode = new Entity.DepthList.Node();
 
 		this._initParams(params);
 	},
@@ -71,63 +70,44 @@ Entity.Geometry = meta.Class.extend
 	 */
 	remove: function()
 	{
-		if(this.isRemoved) { return; }
-		this.isRemoved = true;
-
-		if(this._view)
-		{
-			if(this._parent === this._entityCtrl) {
-				this._view.remove(this);
-			}
-			else
-			{
-				if(this._view._isActive) {
-					this._entityCtrl.entitiesToRemove.push(this);
-					this._entityCtrl.numEntitiesToRemove++;
-				}
-				else {
-					this._view = null;
-				}
-			}
-
-			if(this._tween) {
-				this._tween.clear();
-				this._tween.owner = null;
-			}
-
-			if(this.children) {
-				this.removeChilds();
-			}
+		if(this._parent === this._entityCtrl) {
+			this._view.detach(this);
 		}
 		else {
-			this.removeComponents();
-		}
-
-		this.chn = null;
-
-		if(this._onResize) {
-			this.onResize = null;
+			this.removeCore();
 		}
 	},
 
 	/**
 	 * Remove all dependencies that are left.
 	 */
-	removeFully: function()
+	removeCore: function()
 	{
+		if(this.isRemoved) { return; }
+
 		this.isUpdating = false;
-		this._depthNode.entity = null;
-		this.removeComponents();	
+		this.isRemoved = true;
+		this._view = null;
+		
+		if(this._tween) {
+			this._tween.clear();
+			this._tween.owner = null;
+		}	
+		
+		this.removeChildren();
+		this.removeComponents();
 	},
 
 	/**
-	 * Remove all attached childs.
+	 * Remove all attached children.
 	 */
-	removeChilds: function()
+	removeChildren: function()
 	{
+		if(!this.children) { return; }
+
 		var numChildren = this.children.length;
 		for(var i = 0; i < numChildren; i++) {
-			this.children[i].remove();
+			this.children[i].removeCore();
 		}
 	},
 
@@ -1215,6 +1195,14 @@ Entity.Geometry = meta.Class.extend
 		if(height === void(0)) { height = this.volume.height; }
 
 		this.volume.resize(width, height);
+
+		if(this.children)
+		{
+			var numChildren = this.children.length;
+			for(var i = 0; i < numChildren; i++) {
+				this.children[i]._onResize(this);
+			}
+		}
 	},
 
 
@@ -1274,17 +1262,17 @@ Entity.Geometry = meta.Class.extend
 	attach: function(entity, isRelative)
 	{
 		if(!entity) {
-			console.error("[Entity.Geometry.attach]:", "Invalid child object passed.");
+			console.error("(Entity.Geometry.attach) Invalid child object passed.");
 			return;
 		}
 
 		if(entity.isChild) {
-			console.error("[Entity.Geometry.attach]:", "Entity is already a child of someone else.");
+			console.error("(Entity.Geometry.attach) Entity is already a child of someone else.");
 			return;
 		}
 
 		if(entity.isRemoved) {
-			console.error("[Entity.Geometry.attach]:", "Entity is marked as removed ro to be removed.");
+			console.error("(Entity.Geometry.attach) Entity is marked as removed ro to be removed.");
 			return;
 		}
 
@@ -1323,8 +1311,8 @@ Entity.Geometry = meta.Class.extend
 			entity.updateScale();
 		}
 
-		if(this._depthNode.depth !== 0) {
-			entity.z = entity._z;
+		if(this.totalZ !== 0) {
+			entity.updateZ();
 		}
 
 		if(!this.children)
@@ -1995,33 +1983,35 @@ Entity.Geometry = meta.Class.extend
 
 	set z(value)
 	{
-		var newZ = this._parent._depthNode.depth + value + 1;
+		this._z = value;
+
+		this.updateZ();
+
+		if(this._view) {
+			this._entityCtrl.needDepthSort = true;
+		}
+	},
+
+	get z() { return this._z; },
+
+	updateZ: function() 
+	{
+		var newZ = this._parent.totalZ + value + 1;
 		if(this._view) {
 			newZ += this._view._z;
 		}
 
-		if(this._depthNode.depth === newZ) { return; }
-
-		this._z = value;
-		this._depthNode.depth = newZ;
-
-		if(this._depthNode.entity) {
-			this._entityCtrl.entities.update(this._depthNode);
-			this.isNeedDraw = true;
-		}
+		if(this.totalZ === newZ) { return; }
+		this.totalZ = newZ;
 
 		if(this.children)
 		{
 			var numChildren = this.children.length;
 			for(var i = 0; i < numChildren; i++) {
-				this.children[i].z = value;
+				this.children[i].updateZ();
 			}
 		}
 	},
-
-	set depthIndex(value) { this.z = value; },
-	get z() { return this._z; },
-	get depthIndex() { return this._z; },
 
 
 	/**
@@ -2762,6 +2752,12 @@ Entity.Geometry = meta.Class.extend
 		DRAGGED: 4
 	},
 
+	Core: function()
+	{
+		this.index = -1;
+		this.viewIndex = -1;
+	},
+
 	//
 	meta: meta,
 	_entityCtrl: null,
@@ -2775,7 +2771,6 @@ Entity.Geometry = meta.Class.extend
 	_depthNode: null,
 
 	_checkID: -1,
-	_viewNodeID: -1,
 	_updateNodeID: -1,
 	_updateAnimNodeID: -1,
 	_removeFlag: 0,
@@ -2784,7 +2779,8 @@ Entity.Geometry = meta.Class.extend
 	_inputFlags: 0,
 	chn: null,
 
-	_x: 0, _y: 0, _z: 0,
+	_x: 0, _y: 0, 
+	_z: 0, totalZ: 0,
 	typeX: 0, typeY: 0,
 	_anchorX: 0, _anchorY: 0,
 	_anchorPosX: 0, _anchorPosY: 0,
@@ -2858,3 +2854,6 @@ Entity.Geometry = meta.Class.extend
 
 	_isHighlight: false
 });
+
+
+

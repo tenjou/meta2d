@@ -37,17 +37,22 @@ meta.View.prototype =
 	/**
 	 * Destroy view and all entities added, textures created (and is not added to resource controller).
 	 */
-	release: function()
+	remove: function()
 	{
+		if(this.name === "master") {
+			console.warn("(meta.View.remove) Master view can't be removed");
+			return;
+		}
+
 		if(this.parentView) {
-			this.parentView.detach(this);
+			this.parentView.detachView(this);
 		}
 
 		if(this.views)
 		{
 			var numViews = this.views.length;
 			for(var i = 0; i < numViews; i++) {
-				this.views[i].release();
+				this.views[i].remove();
 			}
 		}
 
@@ -66,30 +71,29 @@ meta.View.prototype =
 		this.numEntities = 0;
 	},
 
-
 	/**
 	 * Add entity to the view. If view is visible function will call plugin.onViewAdd() for every entity that has been added.
 	 * @param entity {Entity.Geometry} Entity to add to the view.
 	 */
-	add: function(entity)
+	attach: function(entity)
 	{
 		if(!(entity instanceof Entity.Geometry)) {
-			console.warn("[meta.View.add]:", "Object should have inherited Entity.Geometry class.");
+			console.warn("(meta.View.attach) Object should have inherited Entity.Geometry class.");
 			return;
 		}
 
 		if(entity.isRemoved) {
-			console.warn("[meta.View.add]:", "Removed entity can not be added to the view.");
+			console.warn("(meta.View.attach) Removed entity can not be added to the view.");
 			return;
 		}
 
 		if(entity._view)
 		{
 			if(entity._view === this) {
-				console.warn("[meta.View.add]:", "Entity is already added to this view.");
+				console.warn("(meta.View.attach) Entity is already added to this view.");
 			}
 			else {
-				console.warn("[meta.View.add]:", "Entity is already added to some other view.");
+				console.warn("(meta.View.attach) Entity is already added to some other view.");
 			}
 			return;
 		}
@@ -111,14 +115,10 @@ meta.View.prototype =
 
 		if(!entity.texture) {
 			entity.isLoaded = true;
-		}
-		if(entity._onResize) {
-			entity._onResize(meta.engine, null);
-		}		
+		}	
 
-		//
-		if(this._isActive && !entity._depthNode.entity && Renderer.ctrl.isLoaded) {
-			this._chnAddedToView.emit(entity, meta.Event.ADDED_TO_VIEW);
+		if(this._isActive && Renderer.ctrl.isLoaded) {
+			Renderer.ctrl.addEntities(entity);
 		}
 	},
 
@@ -132,10 +132,9 @@ meta.View.prototype =
 		{
 			child = children[i];
 			if(child.isRemoved) { continue; }
+			child._view = this;
 
 			this._attachChildren(child.children);
-
-			child._view = this;
 		}
 	},
 
@@ -143,99 +142,78 @@ meta.View.prototype =
 	 * Remove entity from the view.
 	 * @param entity {Entity.Geometry} Entity to remove.
 	 */
-	remove: function(entity)
+	detach: function(entity)
 	{
+		if(entity.isRemoved) { return; }
+
 		if(!entity._view) {
-			console.warn("[meta.View.remove]:", "Entity does not have view.");
+			console.warn("(meta.View.detach) Entity does not have view.");
 			return;
 		}
 
 		if(entity._view !== this) {
-			console.warn("[meta.View.remove]:", "Entity is part of other view: " + entity.view.name);
+			console.warn("(meta.View.detach) Entity is part of other view: " + entity.view.name);
 			return;
 		}
 
 		if(entity._parent !== entity._entityCtrl) {
-			console.warn("[meta.View.remove]:", "Entity children are not part of view.");
+			console.warn("(meta.View.detach) Entity children are not part of view.");
 			return;
 		}
 
-		this._removeFromBuffer(entity);
+		entity.isRemoved = true;
+		entity.removeCore();
+
+		this.numEntities--;
+		var replaceEntity = this.entities[this.numEntities];
+		replaceEntity.core.viewIndex = this.numEntities;
+		this.entities[this.numEntities] = replaceEntity;
+		this.entities.pop();
 
 		if(this._isActive) {
-			this._chnRemovedFromView.emit(entity, meta.Event.REMOVED_FROM_VIEW);
-		}
-		else {
-			entity.removeFully();
+			Renderer.ctrl.removeEntities(entity);
 		}
 	},
-
-	_removeFromBuffer: function(entity)
-	{
-		var replaceEntity = this.entities[this.numEntities - 1];
-		replaceEntity._viewNodeID = entity._viewNodeID;
-		this.entities[entity._viewNodeID] = replaceEntity;
-		this.entities.pop();
-		this.numEntities--;
-
-		entity._view = null;
-
-		this._removeChildren(entity.children);
-	},
-
-	_removeChildren: function(children)
-	{
-		if(!children) { return; }
-
-		var child;
-		var numChildren = children.length;
-		for(var i = 0; i < numChildren; i++) {
-			child = children[i];
-			this._removeChildren(child);
-			child._view = null;
-		}
-	},
-
 
 	/**
 	 * Attach view to this view
 	 * @param view {meta.View} View to attach.
 	 */
-	attach: function(view)
+	attachView: function(view)
 	{
 		if(!view) 
 		{
 			if(this.parentView) {
-				console.warn("[meta.View.attach]:", "No view was passed.");
+				console.warn("(meta.View.attach) No view was passed.");
 				return;
 			}
 
-			meta.view.attach(this);
+			meta._cache.view.attachView(this);
 			return;
 		}
 
 		if(typeof(view) === "string")
 		{
-			var srcView = meta.views[view];
+			var srcView = meta._cache.views[view];
 			if(!srcView) {
-				console.warn("[meta.View.attach]:", "No such view found: " + view);
+				console.warn("(meta.View.attach) No such view found: " + view);
 				return;
 			}
 
 			view = srcView;
 		}
 		else if(!(view instanceof meta.View)) {
-			console.warn("[meta.View.attach]:", "Trying to attach invalid view object.");
+			console.warn("(meta.View.attach) Trying to attach invalid view object.");
 			return;
 		}
 
 		if(view._isActive) {
-			console.warn("[meta.View.attach]:", "Can't attach an active view.");
+			console.warn("(meta.View.attach) Can't attach an active view.");
 			return;
 		}
 
 		if(view.parentView) {
-			console.warn("[meta.View.attach]:", "View is already part of other view.");
+			console.warn("(meta.View.attach) View is already part of other view.");
 			return;
 		}
 
@@ -255,24 +233,24 @@ meta.View.prototype =
 	 * Detach view from this view.
 	 * @param view {meta.View} View to detach.
 	 */
-	detach: function(view)
+	detachView: function(view)
 	{
 		if(!view) 
 		{
 			if(!this.parentView) {
-				console.warn("[meta.view.detach]:", "No view was passed.");
+				console.warn("(meta.View.detachView) No view was passed.");
 				return;
 			}
 
-			this.parentView.detach(this);
+			this.parentView.detachView(this);
 			return;
 		}
 
 		if(typeof(view) === "string")
 		{
-			var srcView = meta.views[view];
+			var srcView = meta._cache.views[view];
 			if(!srcView) {
-				console.warn("[meta.View.detach]:", "No such view found: \"" + view + "\"");
+				console.warn("(meta.View.detachView) No such view found: \"" + view + "\"");
 				return;
 			}
 
@@ -280,12 +258,12 @@ meta.View.prototype =
 		}
 
 		if(!view.parentView) {
-			console.warn("[meta.View.detach]:", "View has not parents to detach from.");
+			console.warn("(meta.View.detachView) View has not parents to detach from");
 			return;
 		}
 
 		if(view.parentView !== this) {
-			console.warn("[meta.View.detach]:", "Detaching from wrong parent.");
+			console.warn("(meta.View.detachView) Detaching from wrong parent");
 			return;
 		}
 
@@ -303,7 +281,7 @@ meta.View.prototype =
 		view.parentView = null;		
 	},
 
-	detachAll: function()
+	detachViews: function()
 	{
 		if(!this.views) { return; }
 
@@ -372,38 +350,6 @@ meta.View.prototype =
 		}
 	},
 
-
-	_addEntities: function()
-	{
-		//console.log("addEntites", this.name);
-		if(this.numEntities > 0) {
-			this._chnAddedToView.emit(this.entities, meta.Event.ADDED_TO_VIEW);
-		}
-	},
-
-	_removeEntities: function()
-	{
-		//console.log("removeEntities", this.name);
-		if(this.numEntities > 0) 
-		{
-			var entities = [];
-			var num = this.entities.length;
-
-			// TODO: FIX THIS
-			var entity;
-			for(var i = 0; i < num; i++) {
-				entity = this.entities[i];
-				if(entity && !entity.isRemoved) {
-					entities.push(this.entities[i]);
-				}
-			}
-
-			this.entities = entities;
-
-			this._chnRemovedFromView.emit(this.entities, meta.Event.REMOVED_FROM_VIEW);
-		}
-	},
-
 	_makeActive: function()
 	{
 		var n;
@@ -420,8 +366,7 @@ meta.View.prototype =
 		// Exit, if any of controllers set view as inactive.
 		if(!this._isActive) { return; }
 
-		// Add entities from the view.
-		this._addEntities();
+		Renderer.ctrl.addEntities(this.entities);
 
 		if(this.views)
 		{
@@ -445,8 +390,7 @@ meta.View.prototype =
 			}
 		}
 
-		// Remove entities from the view.
-		this._removeEntities();
+		Renderer.ctrl.removeEntities(this.entities);
 
 		if(this.views)
 		{
@@ -454,14 +398,6 @@ meta.View.prototype =
 			for(n = 0; n < numViews; n++) {
 				this.views[n].isActive = false;
 			}
-		}
-	},
-
-
-	onResize: function(data, event)
-	{
-		for(var i = 0; i < this.numEntities; i++) {
-			this.entities[i]._onResize(data);
 		}
 	},
 
@@ -477,15 +413,10 @@ meta.View.prototype =
 			}
 
 			this._isActive = value;
-			meta.subscribe(this, meta.Event.CAMERA_RESIZE, this.onResize);	
-
 			this._makeActive();			
 		}
-		else 
-		{
+		else {
 			this._isActive = value;
-			meta.unsubscribe(this, meta.Event.CAMERA_RESIZE, this.onResize);	
-
 			this._makeInactive();
 		}
 	},
@@ -557,18 +488,18 @@ meta.View.prototype =
 meta.createView = function(name, ctrls)
 {
 	if(!name || typeof(name) !== "string") {
-		console.error("[meta.createView]:", "Invalid name of the view.");
+		console.error("(meta.createView) Invalid name of the view");
 		return;
 	}
 
-	var view = meta.views[name];
+	var view = meta._cache.views[name];
 	if(view) {
-		console.error("[meta.createView]:", "View with a name - " + name + ", already exist!");
+		console.error("(meta.createView) View with a name - " + name + ", already exist");
 		return;		
 	}
 
 	view = new meta.View(name);
-	meta.views[name] = view;
+	meta._cache.views[name] = view;
 
 	if(!ctrls) { return; }
 
@@ -591,18 +522,20 @@ meta.createView = function(name, ctrls)
 meta.setView = function(view)
 {
 	if(!view) {
-		console.error("[meta.setView]:", "No view passed.");
+		console.error("(meta.setView) No view passed");
 		return;
 	}
+
+	var cache = meta._cache;
 
 	if(typeof(view) === "string") 
 	{
 		var name = view;
-		view = meta.views[name];
+		view = cache.views[name];
 		if(!view) {
-			console.warn("[meta.setView]:", "Creating empty view, could be unintended - " + name);
+			console.warn("(meta.setView) Creating empty view, could be unintended - " + name);
 			view = new meta.View(name);
-			meta.views[name] = view;
+			cache.views[name] = view;
 		}
 	}
 
@@ -610,8 +543,8 @@ meta.setView = function(view)
 		return;
 	}
 
-	meta.view.detachAll();
-	meta.view.attach(view);
+	cache.view.detachViews();
+	cache.view.attachView(view);
 };
 
 /**
@@ -622,14 +555,14 @@ meta.setView = function(view)
 meta.getView = function(name)
 {
 	if(!name) {
-		console.error("[meta.getView]:", "No name specified!");
+		console.error("(meta.getView) No name specified");
 		return null;
 	}
 
-	var view = meta.views[name];
+	var view = meta._cache.views[name];
 	if(!view) {
 		view = new meta.View(name);
-		meta.views[name] = view;
+		meta._cache.views[name] = view;
 	}
 
 	return view;
@@ -641,23 +574,23 @@ meta.getView = function(name)
  */
 meta.attachView = function(view)
 {
-	if(!meta.view) {
-		console.warn("[meta.attachView]:", "No current active view.");
+	if(!meta._cache.view) {
+		console.warn("(meta.attachView) No current active view");
 		return;
 	}
 
 	if(typeof(view) === "string")
 	{
-		var srcView = meta.views[view];
+		var srcView = meta._cache.views[view];
 		if(!srcView) {
-			console.warn("[meta.attachView]:", "No such view found: " + view);
+			console.warn("(meta.attachView) No such view found: " + view);
 			return;
 		}
 
 		view = srcView;
 	}
 
-	meta.view.attach(view);
+	meta._cache.view.attachView(view);
 };
 
 /**
@@ -666,21 +599,27 @@ meta.attachView = function(view)
  */
 meta.detachView = function(view)
 {
-	if(!meta.view) {
-		console.warn("[meta.detachView]:", "No current active view.");
+	if(!meta._cache.view) {
+		console.warn("(meta.detachView) No current active view.");
 		return;
 	}
 
 	if(typeof(view) === "string")
 	{
-		var srcView = meta.views[view];
+		var srcView = meta._cache.views[view];
 		if(!view) {
-			console.warn("[meta.detachView]:", "No such view found: " + view);
+			console.warn("(meta.detachView) No such view found: " + view);
 			return;
 		}
 
 		view = srcView;
 	}
 
-	meta.view.detach(view);
+	meta._cache.view.detachView(view);
 };
+
+Object.defineProperty(meta, "view", {
+    get: function() {
+		return meta._cache.view;
+	}    
+});

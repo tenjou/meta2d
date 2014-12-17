@@ -65,14 +65,14 @@ meta.Channel.prototype =
 		priority = priority || 0;
 
 		if(!func) {
-			console.warn("[meta.Channel.subscribe]:", "No callback function passed.");
+			console.warn("(meta.Channel.subscribe) No callback function passed.");
 			return;			
 		}
 
 		for(var i = 0; i < this.numSubs; i++)
 		{
 			if(this.subs[i].owner === owner) {
-				console.warn("[meta.Channel.subscribe]:", "Already subscribed to channel: " + this.name);
+				console.warn("(meta.Channel.subscribe) Already subscribed to channel: " + this.name);
 				return;
 			}
 		}
@@ -146,7 +146,7 @@ meta.Subscriber = function(owner, func, priority) {
 meta.createChannel = function(name)
 {
 	if(!name) {
-		console.warn("[meta.createChannel]:", "No name was specified!");
+		console.warn("(meta.createChannel) No name was specified!");
 		return null;
 	}
 
@@ -167,7 +167,7 @@ meta.createChannel = function(name)
 meta.releaseChannel = function(name)
 {
 	if(!name) {
-		console.warn("[meta.releaseChannel]:", "No name was specified!");
+		console.warn("(meta.releaseChannel) No name was specified!");
 		return;
 	}
 
@@ -186,11 +186,11 @@ meta.releaseChannel = function(name)
 meta.subscribe = function(owner, channel, func, priority)
 {
 	if(typeof(owner) !== "object") {
-		console.warn("[meta.subscribe]:", "No owner passed.");
+		console.warn("(meta.subscribe) No owner passed.");
 		return;
 	}
 	if(!func) {
-		console.warn("[meta.subscribe]:", "No callback function passed.");
+		console.warn("(meta.subscribe) No callback function passed.");
 		return;		
 	}
 
@@ -217,7 +217,7 @@ meta.subscribe = function(owner, channel, func, priority)
 		return;
 	}
 	else {
-		console.warn("[meta.subscribe]:", "Wrong type for channel object: " + typeof(channel));
+		console.warn("(meta.subscribe) Wrong type for channel object: " + typeof(channel));
 		return;
 	}
 
@@ -236,7 +236,7 @@ meta.unsubscribe = function(owner, channel)
 	{
 		channel = meta.channels[channel];
 		if(!channel) {
-			console.warn("[meta.unsubscribe]:", "No name was specified!");
+			console.warn("(meta.unsubscribe) No name was specified!");
 			return;
 		}
 	}
@@ -249,7 +249,7 @@ meta.unsubscribe = function(owner, channel)
 		return;
 	}
 	else {
-		console.warn("[meta.unsubscribe]:", "Wrong type for channel object.");
+		console.warn("(meta.unsubscribe) Wrong type for channel object.");
 		return;
 	}
 
@@ -268,7 +268,7 @@ meta.emit = function(channel, data, event)
 	{
 		channel = meta.channels[channel];
 		if(!channel) {
-			console.warn("[meta.emit]:", "No name was specified!");
+			console.warn("(meta.emit) No name was specified!");
 			return;
 		}
 	}

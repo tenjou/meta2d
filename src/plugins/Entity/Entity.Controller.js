@@ -20,14 +20,11 @@ Entity.Controller = meta.Controller.extend
 		entityProto._parent = this;
 		this.InputFlag = entityProto.InputFlag;
 
-		this.entities = new Entity.DepthList();
-		this.entitiesToAdd = [];
+		this.entities = new Array(this.numEntitiesSize);
 		this.entitiesToUpdate = [];
 		this.entitiesToRemove = [];
 		this.entitiesRemoveUpdate = [];
 		this.detachBuffer = [];
-
-		this._depthNode = new Entity.DepthList.Node();
 
 		this._centerTex = new Resource.Texture();
 		this._centerTex.fillRect({
@@ -50,112 +47,21 @@ Entity.Controller = meta.Controller.extend
 		scope.subscribe(this, scope.Event.RESIZE, this.onResize);
 		scope.subscribe(this, scope.Event.CAMERA_MOVE, this.onMove);
 		scope.subscribe(this, scope.Event.ADAPT, this.onAdapt);
-		scope.subscribe(this, scope.Event.ADDED_TO_VIEW, this.onAddToView);
-		scope.subscribe(this, scope.Event.REMOVED_FROM_VIEW, this.onRemoveFromView);
 
 		this.volume = scope.camera.volume;
 		this.onMove(scope.camera, null);
 	},
 
-	release: function()
-	{
-		Entity.Geometry.prototype._entityCtrl = null;
-		this.cells = null;
-		this.entities = null;
-		this.entitiesToAdd = null;
-		this.entitiesToUpdate = null;
-		this.entitiesToRemove = null;
-		this.entitiesRemoveUpdate = null;
-		this.detachBuffer = null;
-		this.dynamicEntities = null;
-
-		this._chnOnDown.remove();
-		this._chnOnUp.remove();
-		this._chnOnClick.remove();
-		this._chnOnDrag.remove();
-		this._chnOnDragStart.remove();
-		this._chnOnDragEnd.remove();
-		this._chnOnHover.remove();
-		this._chnOnHoverEnter.remove();
-		this._chnOnHoverExit.remove();
-
-		meta.unsubscribe(this, meta.Event.RESIZE);
-		meta.unsubscribe(this, meta.Event.CAMERA_MOVE);
-		meta.unsubscribe(this, meta.Event.ADDED_TO_VIEW, this.onAddToView);
-		meta.unsubscribe(this, meta.Event.REMOVED_FROM_VIEW, this.onRemoveFromView);
-		meta.unsubscribe(this, [ Input.Event.INPUT_DOWN, Input.Event.INPUT_UP ], this.onInput);
-		meta.unsubscribe(this, Input.Event.INPUT_DBCLICK);
-		meta.unsubscribe(this, Input.Event.INPUT_MOVE);
-	},
-
-
 	load: function()
 	{
-		this.cells = {};
-
-		var volume = meta.camera.volume;
-		this.startCellX = Math.floor(volume.minX / this._cellSizeX);
-		this.startCellY = Math.floor(volume.minY / this._cellSizeY);
-		this.endCellX = Math.floor(volume.maxX / this._cellSizeX);
-		this.endCellY = Math.floor(volume.maxY / this._cellSizeY);
-
-		if(this.entities.length > 0)
-		{
-			// Remove parent from previous entities.
-			var dummyParent = Entity.Geometry.prototype._dummyParent;
-			var currNode = this.entities.first.next;
-			var lastNode = this.entities.last;
-			for(; currNode !== lastNode; currNode = currNode.next) {
-				currNode.entity._parent = dummyParent;
-			}
-
-			this.entities.clear();
-		}
-
-		this.dynamicEntities = new Array(64);
-
-		// Fill new entities.
-		var entity;
-		var entities = meta.view.entities;
-		var numEntities = entities.length;
-
-		for(var i = 0; i < numEntities; i++)
-		{
-			entity = entities[i];
-			if(entity._showBounds) {
-				this.numShowBounds++;
-			}
-
-			if(entity._parent === dummyParent) {
-				entity._parent = this;
-			}
-		}
-
 		meta.subscribe(this, [ Input.Event.INPUT_DOWN, Input.Event.INPUT_UP ], this.onInput, meta.Priority.HIGH);
 		meta.subscribe(this, Input.Event.INPUT_DBCLICK, this.onInputDbCLick, meta.Priority.HIGH);
 		meta.subscribe(this, Input.Event.INPUT_MOVE, this.onInputMove, meta.Priority.HIGH);
 	},
 
-	unload: function()
-	{
-		var entity;
-		var numEntities = this.entities.length;
-		for(var i = 0; i < numEntities; i++)
-		{
-			entity = this.entities[i];
-			if(entity._parent === this) {
-				entity._parent = null;
-			}
-		}
-
-		this.numShowBounds = 0;
-		this.numEntitiesToUpdate = 0;
-	},
-
-
 	update: function(tDelta)
 	{
-		this._isUpdateTick = true;
+		this.updateFlag |= 0;
 
 		var i, n, entity;
 		var children, numChildren;
@@ -202,27 +108,9 @@ Entity.Controller = meta.Controller.extend
 			this.numDetachItems = 0;
 		}
 
-		if(this.numEntitiesToRemove)
-		{
-			for(i = 0; i < this.numEntitiesToRemove; i++) {
-				entity = this.entitiesToRemove[i];
-				this.entities.remove(entity._depthNode);
-				entity.removeFully();
-			}
-
+		if(this.entitiesToRemove.length) {
+			this._removeEntities(this.entitiesToRemove);
 			this.entitiesToRemove.length = 0;
-			this.numEntitiesToRemove = 0;
-			this.isNeedRender = true;
-		}
-
-		if(this.numEntitiesToAdd)
-		{
-			for(i = 0; i < this.numEntitiesToAdd; i++) {
-				this._addEntity(this.entitiesToAdd[i]);
-			}
-
-			this.entitiesToAdd.length = 0;
-			this.numEntitiesToAdd = 0;
 		}
 
 		if(this.numEntitiesRemoveUpdate) 
@@ -250,7 +138,12 @@ Entity.Controller = meta.Controller.extend
 			this.numEntitiesRemoveUpdate = 0;
 		}
 
-		this._isUpdateTick = false;
+		if(this.needDepthSort) {
+			this.entities.sort(this._sortEntities);
+			this.needDepthSort = false;
+		}
+
+		this.updateFlag &= ~1;
 	},
 
 
@@ -268,93 +161,51 @@ Entity.Controller = meta.Controller.extend
 	/**
 	 * Callback function which handles entities that are added from the view.
 	 * @param entities {Entity.Geometry} Entity or array with entities added to the view.
-	 * @param event {*} Event type.
 	 */
-	onAddToView: function(entities, event)
+	addEntities: function(entities)
 	{
-		var i, numEntities;
-
-		if(!this._isUpdateTick)
+		if(entities instanceof Array) 
 		{
-			if(entities instanceof Entity.Geometry) {
-				this._addEntity(entities);
+			var numEntities = entities.length;
+			if(this.numEntities + numEntities > this.numEntitiesSize) {
+				this.numEntitiesSize = meta.nextPowerOfTwo(this.numEntities + numEntities);
+				this.entities.length = this.numEntitiesSize;
 			}
-			else
-			{
-				numEntities = entities.length;
-				for(i = 0; i < numEntities; i++) {
-					this._addEntity(entities[i]);
-				}
+
+			for(var i = this.numEntities; i < numEntities; i++) {
+				this._addEntity(entities[i]);
 			}
 		}
-		else
+		else 
 		{
-			if(entities instanceof Entity.Geometry) {
-				this.entitiesToAdd.push(entities);
-				this.numEntitiesToAdd++;
-			}
-			else
+			if(entities instanceof Entity.Geometry) 
 			{
-				var numToAdd = entities.length;
-				for(i = 0; i < numToAdd; i++) {
-					this.entitiesToAdd.push(entities[i]);
+				if(this.numEntities + 1 > this.numEntitiesSize) {
+					this.numEntitiesSize++;
+					this.entities.length = this.numEntitiesSize;
 				}
-				this.numEntitiesToAdd += numToAdd;
+
+				this._addEntity(entities);
+			}
+			else {
+				console.warn("(Entity.Controller.addEntities) Invalid type for entities");
+				return;
 			}
 		}
 
 		this._flags |= this.Flag.UPDATE_HOVER;
-	},
-
-	/**
-	 * Callback function which handles entities that are removed from the view.
-	 * @param entities {Entity.Geometry} Entity or array with entities removed from the view.
-	 * @param event {*} Event type.
-	 */
-	onRemoveFromView: function(entities, event)
-	{
-		if(entities instanceof Entity.Geometry) {
-			this._removeEntity(entities);
-		}
-		else
-		{
-			var numEntities = entities.length;
-			for(var i = 0; i < numEntities; i++) {
-				this._removeEntity(entities[i]);
-			}
-		}
+		this.isNeedRender = true;
 	},
 
 	_addEntity: function(entity)
 	{
 		if(entity.isRemoved) { return; }
-		if(entity._depthNode.entity) { return; }
 
-		//entity.cellX = Math.floor(entity._x / this._cellSizeX);
-		//entity.cellY = Math.floor(entity._y / this._cellSizeY);
-		//entity._cellIndex = entity.cellX | (entity.cellY << 16);
-
-		// var cell = this.cells[entity._cellIndex]; 
-		// if(!cell) {
-		// 	cell = new Entity.CellArray();
-		// 	this.cells[entity._cellIndex] = cell;
-		// }
-		// cell.push(entity);
-
-		//
-		entity._depthNode.entity = entity;
-		this.entities.push(entity._depthNode);
+		entity.core.index = this.numEntities;
+		this.entities[this.numEntities++] = entity;
 
 		if(!entity.texture) {
 			entity.isLoaded = true;
-		}
-
-		if(entity.children)
-		{
-			var numChildren = entity.children.length;
-			for(var i = 0; i < numChildren; i++) {
-				this._addEntity(entity.children[i]);
-			}
 		}
 
 		if(entity.update) {
@@ -364,17 +215,95 @@ Entity.Controller = meta.Controller.extend
 		if(entity.isNeedStyle) {
 			entity._style.update(entity);
 		}
-		if(entity._isLoaded && entity._texture) {
-			this.cacheEntity(entity);
+
+		if(entity.totalZ !== 0) {
+			this.needDepthSort = true;
 		}
+
+		if(entity.children)
+		{
+			var numChildren = entity.children.length;
+			for(var i = 0; i < numChildren; i++) {
+				this._addEntity(entity.children[i]);
+			}
+		}		
+	},	
+
+	/**
+	 * Callback function which handles entities that are removed from the view.
+	 * @param entities {Entity.Geometry} Entity or array with entities removed from the view.
+	 */
+	removeEntities: function(entities)
+	{
+		if(entities instanceof Array)
+		{
+			if(this.updateFlag)
+			{
+				var numEntities = entities.length;
+				for(var i = 0; i < numEntities; i++) {
+					this._removeEntity(entities[i]);
+				}
+			}
+			else {
+				this._removeEntities(entities);	
+			}
+		}
+		else
+		{
+			if(entities instanceof Entity.Geometry) 
+			{
+				if(this.updateFlag) {
+					this._removeEntity(entities);
+				}
+				else 
+				{
+					this.numEntities--;
+					var tmpEntity = this.entities[this.numEntities];
+					tmpEntity.core.index = entities.core.index;
+					this.entities[tmpEntity.core.index] = tmpEntity;
+
+					entities.core.index = -1;	
+
+					if(entities.children) {
+						this._removeEntities(entities.children);
+					}												
+				}
+			}
+			else {
+				console.warn("(Entity.Controller.removeEntities) Invalid type for entities");
+				return;					
+			}
+		}
+
+		this._flags |= this.Flag.UPDATE_HOVER;
+		this.isNeedRender = true;
+		this.needDepthSort = true;	
+	},
+
+	_removeEntities: function(buffer)
+	{
+		var entity, tmpEntity;
+		var length = buffer.length;
+		for(var i = 0; i < length; i++) 
+		{
+			this.numEntities--;
+
+			entity = buffer[i];
+			tmpEntity = this.entities[this.numEntities];
+			tmpEntity.core.index = entity.core.index;
+			this.entities[tmpEntity.core.index] = tmpEntity;
+
+			entity.core.index = -1;
+
+			if(entity.children) {
+				this._removeEntities(entity.children);
+			}
+		}	
 	},
 
 	_removeEntity: function(entity)
 	{
-		if(!entity._depthNode.entity) { return; }
-
 		this.entitiesToRemove.push(entity);
-		this.numEntitiesToRemove++;
 
 		if(entity.children)
 		{
@@ -382,7 +311,7 @@ Entity.Controller = meta.Controller.extend
 			for(var i = 0; i < numChildren; i++) {
 				this._removeEntity(entity.children[i]);
 			}
-		}
+		}		
 	},
 
 
@@ -437,6 +366,9 @@ Entity.Controller = meta.Controller.extend
 		return true;
 	},
 
+	_sortEntities: function(a, b) {
+		return a.g - b.g;
+	},
 
 	getFromVolume: function(volume)
 	{
@@ -501,15 +433,9 @@ Entity.Controller = meta.Controller.extend
 	 */
 	onResize: function(data, event) 
 	{
-		var volume = meta.camera.volume;
-		this.prevStartCellX = this.startCellX;
-		this.prevStartCellY = this.startCellY;
-		this.prevEndCellX = this.endCellX;
-		this.prevEndCellY = this.endCellY;
-		this.startCellX = Math.floor(volume.minX / this._cellSizeX);
-		this.startCellY = Math.floor(volume.minY / this._cellSizeY);
-		this.endCellX = Math.floor(volume.maxX / this._cellSizeX);
-		this.endCellY = Math.floor(volume.maxY / this._cellSizeY);
+		for(var i = 0; i < this.numEntities; i++) {
+			this.entities[i]._onResize(this);
+		}
 
 		this.isNeedRender = true;
 	},
@@ -556,10 +482,8 @@ Entity.Controller = meta.Controller.extend
 	 */
 	onAdapt: function(data, event)
 	{
-		var entities = this.entities.buffer;
-		var numEntities = this.entities.length;
-		for(var i = 0; i < numEntities; i++) {
-			entities[i].adapt();
+		for(var i = 0; i < this.numEntities; i++) {
+			this.entities[i].adapt();
 		}
 	},
 
@@ -665,11 +589,10 @@ Entity.Controller = meta.Controller.extend
 		// if(cell)
 		// {
 			var entity;
-			var currNode = this.entities.last.prev;
-			var lastNode = this.entities.first;
-			for(; currNode !== lastNode; currNode = currNode.prev)
+			for(var i = 0; i < this.numEntities; i++)
 			{
-				entity = currNode.entity;
+				entity = this.entities[i];
+				
 				if(!entity.pickable) { continue; }
 
 				if(entity.isInside(data.x, data.y))
@@ -853,8 +776,12 @@ Entity.Controller = meta.Controller.extend
 	_numCellX: 0, _numCellY: 0,
 
 	entities: null,
+	numEntitiesSize: 4,
+	numEntities: 0,
+
+	updateFlag: 0,
+
 	entitiesToCheck: null,
-	entitiesToAdd: null,
 	entitiesToRemove: null,
 	entitiesToUpdate: null,
 	entitiesRemoveUpdate: null,
@@ -862,8 +789,6 @@ Entity.Controller = meta.Controller.extend
 	dynamicEntities: null,
 
 	numEntitiesToCheck: 0,
-	numEntitiesToAdd: 0,
-	numEntitiesToRemove: 0,
 	numEntitiesToUpdate: 0,
 	numEntitiesRemoveUpdate: 0,
 	numShowBounds: 0,
@@ -876,7 +801,7 @@ Entity.Controller = meta.Controller.extend
 	pressedEntity: null,
 
 	isNeedRender: true,
-	_isUpdateTick: false,
+	needDepthSort: false,
 	enablePicking: true,
 	showBounds: false,
 	showCells: false,

@@ -838,7 +838,6 @@ Resource.Texture = Resource.Basic.extend
 		for(var x = 0; x < numX; x++)
 		{
 			for(var y = 0; y < numY; y++) {
-				console.log(posX, posY);
 				ctx.drawImage(texture.image, posX, posY);
 				posY += texture.trueHeight;
 			}

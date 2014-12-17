@@ -28,7 +28,6 @@ meta.width = 0;
 meta.height = 0;
 meta.channels = {};
 meta.shaders = null;
-meta.view = null;
 meta.loadingView = null;
 meta.world = null;
 meta.camera = null;
@@ -51,6 +50,8 @@ meta._cache = {
 	init: null,
 	load: null,
 	ready: null,
+	view: null,
+	views: {},
 	scripts: null,
 	pendingScripts: null, // IE<10
 	numScriptsToLoad: 0,
@@ -147,16 +148,12 @@ meta.Engine.prototype =
 		}
 
 		meta.shaders = {};
-		meta.views = {};
 		meta.camera = new meta.Camera();		
 
 		this._chnResize = meta.createChannel(meta.Event.RESIZE);
 		this._chnFocus = meta.createChannel(meta.Event.FOCUS);
 		this._chnFullScreen = meta.createChannel(meta.Event.FULLSCREEN);
 		this._chnAdapt = meta.createChannel(meta.Event.ADAPT);
-
-		meta.View.prototype._chnAddedToView = meta.createChannel(meta.Event.ADDED_TO_VIEW);
-		meta.View.prototype._chnRemovedFromView = meta.createChannel(meta.Event.REMOVED_FROM_VIEW);
 
 		this._resolveElement();
 		this._createCanvas();
@@ -235,8 +232,6 @@ meta.Engine.prototype =
 		meta.removeAllControllers();
 		meta.channels = null;
 		meta.shaders = null;
-		meta.views = null;
-		meta.view = null;
 		meta.world = null;
 		meta.shader = null;
 
@@ -245,20 +240,22 @@ meta.Engine.prototype =
 
 	start: function()
 	{
+		var cache = meta._cache;
+
 		// Create master view.
 		var masterView = new meta.View("master");
-		meta.views["master"] = masterView;
-		meta.view = masterView;
+		cache.views["master"] = masterView;
+		cache.view = masterView;
 
-		// Create loading view.
-		var loadingView = new meta.View("loading");
-		//loadingView.bgColor = "#000000";
-		loadingView.z = 999999;
-		meta.view["loading"] = loadingView;
-		meta.loadingView = loadingView;
+		// // Create loading view.
+		// var loadingView = new meta.View("loading");
+		// //loadingView.bgColor = "#000000";
+		// loadingView.z = 999999;
+		// cache.views["loading"] = loadingView;
+		// cache.loadingView = loadingView;
 
-		if(meta._cache.init && typeof(meta._cache.init) === "function") {
-			meta._cache.init();
+		if(cache.init && typeof(cache.init) === "function") {
+			cache.init();
 		}
 
 		this._addCorePlugins();
@@ -296,7 +293,7 @@ meta.Engine.prototype =
 		}
 
 		this.isCtrlLoaded = true;
-		meta.view.isActive = true;
+		meta._cache.view.isActive = true;
 		this.isLoading = false;
 
 		if(Resource.ctrl.numToLoad === 0) {

@@ -2,13 +2,11 @@
 
 meta.Event = {
 	RESIZE: "resize",
-	WORLD_RESIZE: "worldResize",
-	CAMERA_MOVE: "cameraMove",
-	CAMERA_RESIZE: "cameraResize",
+	WORLD_RESIZE: "world-resize",
+	CAMERA_MOVE: "camera-move",
+	CAMERA_RESIZE: "camera-resize",
 	FOCUS: "focus",
-	FULLSCREEN: "fullScreen",
-	ADDED_TO_VIEW: "addedToView",
-	REMOVED_FROM_VIEW: "removedFromView",
+	FULLSCREEN: "fullscreen",
 	ADAPT: "adapt"
 };
 

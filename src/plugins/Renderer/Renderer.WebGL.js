@@ -75,12 +75,13 @@ Renderer.WebGL = Entity.Controller.extend
 
 	render: function(tDelta)
 	{
-		var entity;
-		var currNode = this.entities.first.next;
-		var lastNode = this.entities.last;
-		for(; currNode !== lastNode; currNode = currNode.next)
+		this.updateFlag |= 2;
+
+		var entity, i;
+		for(i = 0; i < this.numEntities; i++)
 		{
-			entity = currNode.entity;
+			entity = this.entities[i];
+			
 			if(entity.isNeedStyle) {
 				entity._style.update(entity);
 			}
@@ -89,7 +90,10 @@ Renderer.WebGL = Entity.Controller.extend
 			}
 		}
 
-		if(!this.isNeedRender) { return; }
+		if(!this.isNeedRender) { 
+			this.updateFlag &= ~2;
+			return; 
+		}
 
 		var scope = meta;
 		var gl = scope.ctx;
@@ -107,11 +111,10 @@ Renderer.WebGL = Entity.Controller.extend
 		gl.uniform1f(this.locZoom, meta.camera._zoom * meta.unitRatio);
 		gl.uniform1i(this.locSampler, 0);
 
-		currNode = this.entities.first.next;
-		lastNode = this.entities.last;
-		for(; currNode !== lastNode; currNode = currNode.next)
+		for(i = 0; i < this.numEntities; i++)
 		{
-			entity = currNode.entity;
+			entity = this.entities[i];
+
 			if(!entity.isVisible || !entity.isLoaded || !entity.texture) { continue; }
 
 			texture = entity._texture;
@@ -332,6 +335,7 @@ Renderer.WebGL = Entity.Controller.extend
 		}
 
 		this.isNeedRender = false;
+		this.updateFlag &= ~2;
 	},
 
 
