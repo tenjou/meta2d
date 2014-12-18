@@ -589,7 +589,7 @@ Entity.Controller = meta.Controller.extend
 		// if(cell)
 		// {
 			var entity;
-			for(var i = 0; i < this.numEntities; i++)
+			for(var i = this.numEntities - 1; i > 0; i--)
 			{
 				entity = this.entities[i];
 				
@@ -793,6 +793,8 @@ Entity.Controller = meta.Controller.extend
 	numEntitiesRemoveUpdate: 0,
 	numShowBounds: 0,
 	numDetachItems: 0,
+
+	isLoaded: true,
 
 	_parent: null,
 	childOffsetX: 0, childOffsetY: 0,

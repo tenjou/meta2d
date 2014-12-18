@@ -49,6 +49,9 @@ Entity.Geometry = meta.Class.extend
 				if(params instanceof Resource.Texture) {
 					this.texture = params;
 				}
+				else if(params instanceof Entity.Geometry) {
+					this.texture = params.texture;
+				}
 				else 
 				{
 					for(var key in params) {
@@ -88,6 +91,10 @@ Entity.Geometry = meta.Class.extend
 		this.isUpdating = false;
 		this.isRemoved = true;
 		this._view = null;
+
+		if(this._texture) {
+			this._texture.unsubscribe(this);
+		}
 		
 		if(this._tween) {
 			this._tween.clear();
@@ -1347,7 +1354,7 @@ Entity.Geometry = meta.Class.extend
 		entity.updatePos();
 
 		if(this._view && this._view._isActive) {
-			this._entityCtrl.onAddToView(entity, null);
+			this._entityCtrl.addEntities(entity);
 		}
 
 		this.onChildAdded(entity);
@@ -2466,16 +2473,25 @@ Entity.Geometry = meta.Class.extend
 				this.ready();
 			}
 
+			var i, num;
 			if(this.components) 
 			{
 				var comp;
-				var numComponents = this.components.length;
-				for(var i = 0; i < numComponents; i++)
+				num = this.components.length;
+				for(i = 0; i < num; i++)
 				{
 					comp = this.components[i];
 					if(comp.ready) {
 						comp.ready();
 					}
+				}
+			}
+
+			if(this.children) 
+			{
+				num = this.children.length;
+				for(i = 0; i < num; i++) {
+					this.children[i]._onResize(this);
 				}
 			}
 

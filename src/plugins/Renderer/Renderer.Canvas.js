@@ -77,8 +77,7 @@ Renderer.Canvas = Entity.Controller.extend
 		if(!this.isNeedRender)
 		{
 			var entity;
-			var numEntities = this.entities.length;
-			for(var i = 0; i < numEntities; i++)
+			for(var i = 0; i < this.numEntities; i++)
 			{
 				entity = this.entities[i];
 
@@ -98,12 +97,12 @@ Renderer.Canvas = Entity.Controller.extend
 			}
 		}
 		else {
-			this._renderAll(currNode, tDelta);
+			this._renderAll(i, tDelta);
 		}
 	},
 
 
-	_reRender: function(untilNode, tDelta)
+	_reRender: function(i, tDelta)
 	{
 		this.clearScreen();
 
@@ -118,8 +117,7 @@ Renderer.Canvas = Entity.Controller.extend
 		ctx.scale(camera._zoom * unitRatio, camera._zoom * unitRatio);	
 
 		var entity;
-		var numEntities = this.entities.length;
-		for(var i = 0; i < numEntities; i++)
+		for(var i = 0; i < this.numEntities; i++)
 		{
 			entity = this.entities[i];
 			
@@ -156,10 +154,9 @@ Renderer.Canvas = Entity.Controller.extend
 			entity._isNeedDraw = false;
 		}
 
-		var lastNode = this.entities.last;
-		for(; currNode !== lastNode; currNode = currNode.next)
+		for(; i < this.numEntities; i++)
 		{
-			entity = currNode.entity;
+			entity = this.entities[i];
 
 			if(entity.isNeedStyle) {
 				entity._style.update(entity);
@@ -237,8 +234,7 @@ Renderer.Canvas = Entity.Controller.extend
 		ctx.scale(camera._zoom * unitRatio, camera._zoom * unitRatio);		
 
 		var entity;
-		var numEntities = this.entities.length;
-		for(var i = 0; i < numEntities; i++)
+		for(var i = 0; i < this.numEntities; i++)
 		{
 			entity = this.entities[i];
 
@@ -314,7 +310,7 @@ Renderer.Canvas = Entity.Controller.extend
 			scope.ctx.clearRect(0, 0, scope.width, scope.height);
 		}
 		else {
-			scope.ctx.fillStyle = scope.view.bgColor;
+			scope.ctx.fillStyle = scope.engine.bgColor;
 			scope.ctx.fillRect(0, 0, scope.width, scope.height);
 		}
 	},
@@ -336,11 +332,9 @@ Renderer.Canvas = Entity.Controller.extend
 			var entity;
 			var pivotOffsetX, pivotOffsetY;
 			var parentOffsetX, parentOffsetY;
-			var currNode = this.entities.first.next;
-			var lastNode = this.entities.last;
-			for(; currNode !== lastNode; currNode = currNode.next)
+			for(var i = 0; i < this.numEntities; i++)
 			{
-				entity = currNode.entity;
+				entity = this.entities[i];
 				if((entity.showBounds || this.showBounds) && !entity.disableDebug && entity.isVisible && entity.isLoaded) {
 					entity.drawBounds(ctx);
 				}

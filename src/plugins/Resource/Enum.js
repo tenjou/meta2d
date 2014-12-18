@@ -10,27 +10,27 @@ Resource.Event = {
 	/**
 	 * Resource unloaded.
 	 */	
-	UNLOADED: "resUnloaded",
+	UNLOADED: "res-unloaded",
 	/**
 	 * Resource loaded
 	 */	
-	LOADED: "resLoaded",
+	LOADED: "res-loaded",
 	/**
 	 * Resource was resized. Used in Resource.Texture.
 	 */	
-	RESIZE: "resResize",
+	RESIZE: "res-resize",
 	/**
 	 * Resource changed.
 	 */	
-	CHANGED: "resChanged",
+	CHANGED: "res-changed",
 	/**
 	 * Resource added.
 	 */	
-	ADDED: "resAdded",
+	ADDED: "res-added",
 	/**
 	 * All resources are loaded.
 	 */	
-	ALL_LOADED: "resAllLoaded",	
+	ALL_LOADED: "res-all-loaded",	
 };
 
 /**

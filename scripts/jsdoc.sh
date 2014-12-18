@@ -38,8 +38,6 @@ jsdoc Engine.js \
 	plugins/Entity/Entity.CanvasRenderer.js \
 	plugins/Entity/Entity.Geometry.js \
 	plugins/Entity/Entity.Text.js \
-	plugins/Entity/Entity.DepthList.js \
-	plugins/Entity/Entity.CellArray.js \
 	plugins/Input/Input.Controller.js \
 	plugins/Input/Enum.js \
 	plugins/UI/UI.Controller.js \
