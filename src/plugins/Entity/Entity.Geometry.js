@@ -1318,9 +1318,7 @@ Entity.Geometry = meta.Class.extend
 			entity.updateScale();
 		}
 
-		if(this.totalZ !== 0) {
-			entity.updateZ();
-		}
+		entity.updateZ();
 
 		if(!this.children)
 		{
@@ -2003,7 +2001,7 @@ Entity.Geometry = meta.Class.extend
 
 	updateZ: function() 
 	{
-		var newZ = this._parent.totalZ + value + 1;
+		var newZ = this._parent.totalZ + this._z + 1;
 		if(this._view) {
 			newZ += this._view._z;
 		}
@@ -2770,7 +2768,6 @@ Entity.Geometry = meta.Class.extend
 
 	Core: function()
 	{
-		this.index = -1;
 		this.viewIndex = -1;
 	},
 
@@ -2870,6 +2867,3 @@ Entity.Geometry = meta.Class.extend
 
 	_isHighlight: false
 });
-
-
-

@@ -91,7 +91,7 @@ Renderer.Canvas = Entity.Controller.extend
 				if(!entity._isLoaded) { continue; }
 
 				if(entity.isNeedDraw) {
-					this._reRender(currNode.next, tDelta);
+					this._reRender(i, tDelta);
 					break;
 				}
 			}

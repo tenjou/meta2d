@@ -20,7 +20,7 @@ Entity.Controller = meta.Controller.extend
 		entityProto._parent = this;
 		this.InputFlag = entityProto.InputFlag;
 
-		this.entities = new Array(this.numEntitiesSize);
+		this.entities = [];
 		this.entitiesToUpdate = [];
 		this.entitiesToRemove = [];
 		this.entitiesRemoveUpdate = [];
@@ -167,24 +167,16 @@ Entity.Controller = meta.Controller.extend
 		if(entities instanceof Array) 
 		{
 			var numEntities = entities.length;
-			if(this.numEntities + numEntities > this.numEntitiesSize) {
-				this.numEntitiesSize = meta.nextPowerOfTwo(this.numEntities + numEntities);
-				this.entities.length = this.numEntitiesSize;
-			}
+			this.entities.length += numEntities;
 
-			for(var i = this.numEntities; i < numEntities; i++) {
+			for(var i = 0; i < numEntities; i++) {
 				this._addEntity(entities[i]);
 			}
 		}
 		else 
 		{
-			if(entities instanceof Entity.Geometry) 
-			{
-				if(this.numEntities + 1 > this.numEntitiesSize) {
-					this.numEntitiesSize++;
-					this.entities.length = this.numEntitiesSize;
-				}
-
+			if(entities instanceof Entity.Geometry) {
+				this.entities.length++;
 				this._addEntity(entities);
 			}
 			else {
@@ -201,7 +193,6 @@ Entity.Controller = meta.Controller.extend
 	{
 		if(entity.isRemoved) { return; }
 
-		entity.core.index = this.numEntities;
 		this.entities[this.numEntities++] = entity;
 
 		if(!entity.texture) {
@@ -218,6 +209,10 @@ Entity.Controller = meta.Controller.extend
 
 		if(entity.totalZ !== 0) {
 			this.needDepthSort = true;
+		}
+
+		if(entity.isLoaded) {
+			entity._onResize(this);
 		}
 
 		if(entity.children)
@@ -240,8 +235,10 @@ Entity.Controller = meta.Controller.extend
 			if(this.updateFlag)
 			{
 				var numEntities = entities.length;
+				this.entitiesToRemove.length += numEntities;
+
 				for(var i = 0; i < numEntities; i++) {
-					this._removeEntity(entities[i]);
+					this.entitiesToRemove.push(entities[i]);
 				}
 			}
 			else {
@@ -253,19 +250,23 @@ Entity.Controller = meta.Controller.extend
 			if(entities instanceof Entity.Geometry) 
 			{
 				if(this.updateFlag) {
-					this._removeEntity(entities);
+					this.entitiesToRemove.push(entities);
 				}
 				else 
 				{
-					this.numEntities--;
-					var tmpEntity = this.entities[this.numEntities];
-					tmpEntity.core.index = entities.core.index;
-					this.entities[tmpEntity.core.index] = tmpEntity;
+					for(var n = 0; n < this.numEntities; n++)
+					{
+						if(this.entities[n] === entities) 
+						{
+							this.numEntities--;
+							this.entities[n] = this.entities[this.numEntities];
+							this.entities.pop();
 
-					entities.core.index = -1;	
-
-					if(entities.children) {
-						this._removeEntities(entities.children);
+							if(entities.children) {
+								this._removeEntities(entities.children);
+							}
+							break;
+						}
 					}												
 				}
 			}
@@ -277,48 +278,37 @@ Entity.Controller = meta.Controller.extend
 
 		this._flags |= this.Flag.UPDATE_HOVER;
 		this.isNeedRender = true;
-		this.needDepthSort = true;	
+		this.needDepthSort = true;
 	},
 
 	_removeEntities: function(buffer)
 	{
-		var entity, tmpEntity;
-		var length = buffer.length;
-		for(var i = 0; i < length; i++) 
+		var entity, n;
+		var numItems = buffer.length;
+		for(var i = 0; i < numItems; i++)
 		{
-			this.numEntities--;
-
 			entity = buffer[i];
-			tmpEntity = this.entities[this.numEntities];
-			tmpEntity.core.index = entity.core.index;
-			this.entities[tmpEntity.core.index] = tmpEntity;
+			for(n = 0; n < this.numEntities; n++)
+			{
+				if(this.entities[n] === entity) 
+				{
+					this.numEntities--;
+					this.entities[n] = this.entities[this.numEntities];
+					this.entities.pop();
 
-			entity.core.index = -1;
-
-			if(entity.children) {
-				this._removeEntities(entity.children);
+					if(entity.children) {
+						this._removeEntities(entity.children);
+					}
+					break;
+				}
 			}
-		}	
+		}
 	},
-
-	_removeEntity: function(entity)
-	{
-		this.entitiesToRemove.push(entity);
-
-		if(entity.children)
-		{
-			var numChildren = entity.children.length;
-			for(var i = 0; i < numChildren; i++) {
-				this._removeEntity(entity.children[i]);
-			}
-		}		
-	},
-
 
 	_addToUpdating: function(entity)
 	{
 		if(!entity) {
-			console.warn("[Entity.Controller._addToUpdating]:", "Invalid or object is null.");
+			console.warn("(Entity.Controller._addToUpdating) Invalid or object is null.");
 			return;
 		}
 
@@ -367,7 +357,7 @@ Entity.Controller = meta.Controller.extend
 	},
 
 	_sortEntities: function(a, b) {
-		return a.g - b.g;
+		return a.totalZ - b.totalZ;
 	},
 
 	getFromVolume: function(volume)
@@ -589,7 +579,7 @@ Entity.Controller = meta.Controller.extend
 		// if(cell)
 		// {
 			var entity;
-			for(var i = this.numEntities - 1; i > 0; i--)
+			for(var i = this.numEntities - 1; i >= 0; i--)
 			{
 				entity = this.entities[i];
 				
@@ -756,7 +746,7 @@ Entity.Controller = meta.Controller.extend
 	//
 	InputFlag: null,
 
-	_x: 0, _y: 0,
+	_x: 0, _y: 0, totalZ: 0,
 	_depthNode: null,
 	totalAngleRad: 0.0,
 	totalAlpha: 1.0,
@@ -776,7 +766,6 @@ Entity.Controller = meta.Controller.extend
 	_numCellX: 0, _numCellY: 0,
 
 	entities: null,
-	numEntitiesSize: 4,
 	numEntities: 0,
 
 	updateFlag: 0,
