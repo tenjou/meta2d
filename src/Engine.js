@@ -52,6 +52,7 @@ meta._cache = {
 	ready: null,
 	view: null,
 	views: {},
+	queue: [],
 	scripts: null,
 	pendingScripts: null, // IE<10
 	numScriptsToLoad: 0,
@@ -290,6 +291,12 @@ meta.Engine.prototype =
 			ctrl = this.controllers[i];
 			ctrl.load();
 			ctrl.isLoaded = true;
+		}
+
+		var queue = meta._cache.queue;
+		var numQueue = queue.length;
+		for(var i = 0; i < numQueue; i++) {
+			queue[i]();
 		}
 
 		this.isCtrlLoaded = true;
@@ -688,6 +695,8 @@ meta.Engine.prototype =
 			console.log("%cRenderer: %cWebGL ", 
 				"font-weight: bold; padding: 2px 0 2px 0;", 
 				"padding: 2px 0 2px 0;");
+
+			this.bgColor = this._bgColor;
 		}
 		else 
 		{

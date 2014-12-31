@@ -24,7 +24,7 @@ UI.Controller = meta.Controller.extend
 				"*:hover": {
 					cursor: "pointer"
 				},
-				"*:pressed": {
+				"*:pressed, *:drag": {
 					cursor: "pointer",
 					offsetX: 1,
 					offsetY: 1
@@ -34,7 +34,7 @@ UI.Controller = meta.Controller.extend
 				"*:hover": {
 					cursor: "pointer"
 				},
-				"*:pressed": {
+				"*:pressed, *:drag": {
 					cursor: "pointer",
 					offsetX: 1,
 					offsetY: 1

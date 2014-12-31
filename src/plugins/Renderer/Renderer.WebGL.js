@@ -205,10 +205,9 @@ Renderer.WebGL = Entity.Controller.extend
 			gl.uniform1f(this.locAlpha, 1.0);
 			gl.lineWidth(2.0);
 
-			currNode = this.entities.first.next;
-			for(; currNode !== lastNode; currNode = currNode.next)
+			for(i = 0; i < this.numEntities; i++)
 			{
-				entity = currNode.entity;
+				entity = this.entities[i];
 				if((entity.showBounds || this.showBounds) && !entity.disableDebug && entity.isVisible && entity.isLoaded)
 				{
 					if(entity._flipX === 1.0) {

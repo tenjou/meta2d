@@ -58,7 +58,7 @@ Resource.SpriteSheet = Resource.Basic.extend
 		var self = this;
 		var atlasPath = this.path + "." + this.format;
 		this._request = new XMLHttpRequest();
-		this._request.open("GET", atlasPath, false);
+		this._request.open("GET", atlasPath, true);
 		this._request.onreadystatechange = function() {
 			self._onStateChange();
 		}	
@@ -138,30 +138,26 @@ Resource.SpriteSheet = Resource.Basic.extend
 	_loadXML_Starling: function(node)
 	{
 		var texture = new Resource.Texture();
+		texture.fromAtlas = true;
 		texture.ptr = this.texture;			
 		texture.name = node.getAttribute("name");
 		texture.x = node.getAttribute("x");
 		texture.y = node.getAttribute("y");
-		texture._width = node.getAttribute("width");
-		texture._height = node.getAttribute("height");
-		texture.fromAtlas = true;
+		texture.resize(node.getAttribute("width"), node.getAttribute("height"));
 		texture.isLoaded = true;
-		texture.update();
 		Resource.ctrl.add(texture);	
 	},
 
 	_loadXML_genericXML: function(node)
 	{
 		var texture = new Resource.Texture();
+		texture.fromAtlas = true;
 		texture.ptr = this.texture;			
 		texture.name = node.getAttribute("n");
 		texture.x = node.getAttribute("x");
 		texture.y = node.getAttribute("y");
-		texture._width = node.getAttribute("w");
-		texture._height = node.getAttribute("h");
-		texture.fromAtlas = true;
+		texture.resize(node.getAttribute("w"), node.getAttribute("h"));
 		texture.isLoaded = true;
-		texture.update();
 		Resource.ctrl.add(texture);	
 	},
 
@@ -227,6 +223,7 @@ Resource.SpriteSheet = Resource.Basic.extend
 	_loadPlist_frame: function(node, name)
 	{
 		var texture = new Resource.Texture();
+		texture.fromAtlas = true;
 		texture.ptr = this.texture;
 		texture.name = name;
 
@@ -246,11 +243,8 @@ Resource.SpriteSheet = Resource.Basic.extend
 					data = node.textContent.match(/[0-9]+/g);
 					texture.x = parseInt(data[0]);
 					texture.y = parseInt(data[1]);
-					texture._width = parseInt(data[2]);
-					texture._height = parseInt(data[3]);
-					texture.fromAtlas = true;
+					texture.resize(parseInt(data[2]), parseInt(data[3]))
 					texture.isLoaded = true;
-					texture.update();
 					Resource.ctrl.add(texture);						
 					return;
 				}
@@ -284,17 +278,15 @@ Resource.SpriteSheet = Resource.Basic.extend
 		{
 			frame = frames[i];
 			texture = new Resource.Texture();
+			texture.fromAtlas = true;
 			texture.ptr = this.texture;			
 			texture.name = frame.filename;
 
 			frame = frame.frame;
 			texture.x = frame.x;
 			texture.y = frame.y
-			texture._width = frame.w;
-			texture._height = frame.h;
-			texture.fromAtlas = true;
+			texture.resize(frame.w, frame.h);
 			texture.isLoaded = true;
-			texture.update();
 			Resource.ctrl.add(texture);	
 		}		
 	},
@@ -305,18 +297,16 @@ Resource.SpriteSheet = Resource.Basic.extend
 		var frames = json.frames;
 		for(var key in frames)
 		{
+			frame = frames[key].frame;
+
 			texture = new Resource.Texture();
+			texture.fromAtlas = true;
 			texture.ptr = this.texture;			
 			texture.name = key;
-
-			frame = frames[key].frame;
 			texture.x = frame.x;
 			texture.y = frame.y
-			texture._width = frame.w;
-			texture._height = frame.h;
-			texture.fromAtlas = true;
+			texture.resize(frame.w, frame.h);
 			texture.isLoaded = true;
-			texture.update();
 			Resource.ctrl.add(texture);	
 		}		
 	},
@@ -349,16 +339,14 @@ Resource.SpriteSheet = Resource.Basic.extend
 			frames.push(item);			
 
 			texture = new Resource.Texture();
+			texture.fromAtlas = true;
 			texture.ptr = this.texture;			
 			texture.name = name;
 			texture.x = item.x;
 			texture.y = item.y;
-			texture._width = item.width;
-			texture._height = item.height;
+			texture.resize(item.width, item.height);
 			texture.numFrames = item.numFrames || this.params.numFrames || 1;
-			texture.fromAtlas = true;
 			texture.isLoaded = true;
-			texture.update();
 			Resource.ctrl.add(texture);
 		}
 

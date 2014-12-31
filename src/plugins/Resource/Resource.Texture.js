@@ -337,14 +337,6 @@ Resource.Texture = Resource.Basic.extend
 		this.resize(width, height);
 	},
 
-	update: function()
-	{
-		// If WebGL.
-		if(this.textureType) {
-			this.resize(this.trueWidth, this.trueHeight);
-		}
-	},
-
 
 	/**
 	 * Draw texture onto context.

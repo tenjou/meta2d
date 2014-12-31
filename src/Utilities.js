@@ -679,7 +679,7 @@ meta.addDescription = function(text)
 	bg.isPickable = false;
 	bg.ignoreZoom = true;
 	bg.disableDebug = true;
-	meta.view.add(bg);
+	meta.view.attach(bg);
 
 	bg.attach(msg);
 };
@@ -763,4 +763,16 @@ meta.nextPowerOfTwo = function(value)
     value++;
 
     return value;	
-}
+};
+
+meta.queueLoadAction = function(func) 
+{	
+	var engine = meta.engine;
+	if(engine && engine.isLoaded) {
+		func();
+	}
+	else {
+		meta._cache.queue.push(func);
+	}
+};
+
