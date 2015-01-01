@@ -35,6 +35,7 @@ meta.Tween.prototype =
 			if(cache.owner.isRemoved) { return this; }
 
 			cache.isPaused = false;
+			cache.numRepeat = this.numRepeat;
 			this.next();
 			this._play();
 			this.cache = null;
@@ -184,10 +185,6 @@ meta.Tween.prototype =
 				
 				isRepeating = true;
 			}
-
-			if(cache.currLink._onDone) {
-				cache.currLink._onDone.call(cache.owner);
-			}
 		}
 
 		cache._isLinkDone = false;
@@ -230,7 +227,7 @@ meta.Tween.prototype =
 			numRepeat = -1;
 		}
 
-		this.cache.numRepeat = numRepeat;
+		this.numRepeat = numRepeat;
 
 		return this;
 	},
@@ -366,7 +363,8 @@ meta.Tween.prototype =
 
 	_group: null,
 	_isReversing: false,
-	_removeFlag: 0
+	_removeFlag: 0,
+	numRepeat: 0
 };
 
 meta.Tween.Cache = function(owner) 

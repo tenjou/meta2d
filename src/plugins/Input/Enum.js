@@ -3,11 +3,11 @@
 Input.Event = {
 	KEY_DOWN: "keyDown",
 	KEY_UP: "keyUp",
-	INPUT_DOWN: "inputDown",
-	INPUT_UP: "inputUp",
-	INPUT_MOVE: "inputMove",
-	INPUT_CLICK: "click",
-	INPUT_DBCLICK: "dbClick"
+	INPUT_DOWN: "onDown",
+	INPUT_UP: "onUp",
+	INPUT_MOVE: "onMove",
+	INPUT_CLICK: "onClick",
+	INPUT_DBCLICK: "onDbClick"
 };
 
 Input.Key = {

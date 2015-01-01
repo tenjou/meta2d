@@ -765,10 +765,10 @@ meta.nextPowerOfTwo = function(value)
     return value;	
 };
 
-meta.queueLoadAction = function(func) 
+meta.pluginLoad = function(func) 
 {	
 	var engine = meta.engine;
-	if(engine && engine.isLoaded) {
+	if(engine && engine.isInited) {
 		func();
 	}
 	else {

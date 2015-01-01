@@ -253,7 +253,7 @@ meta.Engine.prototype =
 		// //loadingView.bgColor = "#000000";
 		// loadingView.z = 999999;
 		// cache.views["loading"] = loadingView;
-		// cache.loadingView = loadingView;
+		// cache.loadingView = loadingView;	
 
 		if(cache.init && typeof(cache.init) === "function") {
 			cache.init();
@@ -280,23 +280,24 @@ meta.Engine.prototype =
 
 	_continueLoad: function()
 	{
+		var i;
+		var queue = meta._cache.queue;
+		var numQueue = queue.length;
+		for(i = 0; i < numQueue; i++) {
+			queue[i]();
+		}
+
 		if(meta._cache.load && typeof(meta._cache.load) === "function") {
 			meta._cache.load();
-		}
+		}		
 
 		var ctrl;
 		var numCtrl = this.controllers.length;
-		for(var i = 0; i < numCtrl; i++) 
+		for(i = 0; i < numCtrl; i++) 
 		{
 			ctrl = this.controllers[i];
 			ctrl.load();
 			ctrl.isLoaded = true;
-		}
-
-		var queue = meta._cache.queue;
-		var numQueue = queue.length;
-		for(var i = 0; i < numQueue; i++) {
-			queue[i]();
 		}
 
 		this.isCtrlLoaded = true;

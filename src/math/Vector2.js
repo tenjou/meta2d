@@ -133,8 +133,14 @@ meta.math.Vector2.prototype =
 	{
 		var length = Math.sqrt((this.x * this.x) + (this.y * this.y));
 
-		this.x /= length;
-		this.y /= length;
+		if(length > 0) {
+			this.x /= length;
+			this.y /= length;
+		}
+		else {
+			this.x = 0;
+			this.y = 0;
+		}
 	},
 
 	/**

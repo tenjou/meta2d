@@ -2043,9 +2043,9 @@ Entity.Geometry = meta.Class.extend
 			return;
 		}
 
-		// if(this._texture) {
-		// 	this._texture.unsubscribe(this);
-		// }
+		if(this._texture instanceof Resource.Texture) {
+			this._texture.unsubscribe(this);
+		}
 
 		if(texture)
 		{
