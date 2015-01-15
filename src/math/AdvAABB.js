@@ -235,7 +235,7 @@ meta.math.AdvAABB.prototype =
 			radius = this.initHalfHeight;
 		}
 
-		return meta.math.Circle(this.x, this.y, radius);
+		return new meta.math.Circle(this.x, this.y, radius);
 	},
 
 
