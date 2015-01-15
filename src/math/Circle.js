@@ -35,6 +35,12 @@ meta.math.Circle.prototype =
 		return 2;
 	},
 
+	genAABB: function() 
+	{
+		return meta.math.AABB(this.x - this.radius, this.y - this.radius, 
+			this.x + this.radius, this.y + this.radius);
+	},
+
 	print: function(str) 
 	{
 		if(str) {

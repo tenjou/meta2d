@@ -225,6 +225,20 @@ meta.math.AdvAABB.prototype =
 	},
 
 
+	genCircle: function() 
+	{
+		var radius;
+		if(this.initHalfWidth > this.initHalfHeight) {
+			radius = this.initHalfWidth;
+		}
+		else {
+			radius = this.initHalfHeight;
+		}
+
+		return meta.math.Circle(this.x, this.y, radius);
+	},
+
+
 	print: function(str)
 	{
 		if(str)

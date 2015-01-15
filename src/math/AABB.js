@@ -193,6 +193,23 @@ meta.math.AABB.prototype =
 	},
 
 
+	genCircle: function() 
+	{
+		var width = (this.maxX - this.minX);
+		var height = (this.maxY - this.minY);
+
+		var radius;
+		if(width > height) {
+			radius = width / 2;
+		}
+		else {
+			radius = height / 2;
+		}
+
+		return meta.math.Circle(this.x, this.y, radius);
+	},	
+
+
 	print: function(str)
 	{
 		if(str)
