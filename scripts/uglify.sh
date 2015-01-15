@@ -21,6 +21,7 @@ cat Engine.js \
 	math/Vector2.js \
 	math/AABB.js \
 	math/AdvAABB.js \
+	math/Circle.js \
 	math/Matrix4.js \
 	math/Random.js \
 	tween/Tween.js \
