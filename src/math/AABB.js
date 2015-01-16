@@ -46,33 +46,24 @@ meta.math.AABB.prototype =
 
 	vsAABB: function(src)
 	{
-		if(this.minX > src.maxX || this.maxX < src.minX ||
-			this.minY > src.maxY || this.maxY < src.minY)
-		{
-			return false;
-		}
+		if(this.maxX < src.minX || this.minX > src.maxX) { return false; }
+		if(this.maxY < src.minY || this.minY > src.maxY) { return false; }
 
 		return true;
 	},
 
 	vsBorderAABB: function(src)
 	{
-		if(this.minX >= src.maxX || this.maxX <= src.minX ||
-			this.minY >= src.maxY || this.maxY <= src.minY)
-		{
-			return false;
-		}
+		if(this.maxX <= src.minX || this.minX >= src.maxX) { return false; }
+		if(this.maxY <= src.minY || this.minY >= src.maxY) { return false; }
 
 		return true;
 	},
 
 	vsAABBIntersection: function(src)
 	{
-		if(this.minX > src.maxX || this.maxX < src.minX ||
-			this.minY > src.maxY || this.maxY < src.minY)
-		{
-			return 0;
-		}
+		if(this.maxX < src.minX || this.minX > src.maxX) { return 0; }
+		if(this.maxY < src.minY || this.minY > src.maxY) { return 0; }
 
 		if(this.minX > src.minX || this.minY > src.minY) { return 1; }
 		if(this.maxX < src.maxX || this.maxY < src.maxY) { return 1; }

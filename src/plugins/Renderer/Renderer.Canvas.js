@@ -90,7 +90,7 @@ Renderer.Canvas = Entity.Controller.extend
 
 				if(!entity._isLoaded) { continue; }
 
-				if(entity.isNeedDraw) {
+				if(entity.isNeedDraw && entity.isVisible) {
 					this._reRender(i, tDelta);
 					break;
 				}

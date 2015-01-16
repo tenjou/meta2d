@@ -320,6 +320,10 @@ meta.Engine.prototype =
 
 		var tDeltaF = tDelta / 1000;
 
+		if(meta.update) {
+			meta.update(tDeltaF);
+		}
+
 		// Update controllers.
 		var numCtrl = this.controllers.length;
 		for(var i = 0; i < numCtrl; i++) {
@@ -347,10 +351,6 @@ meta.Engine.prototype =
 			}
 
 			this.controllersToRemove.length = 0;
-		}
-
-		if(meta.update) {
-			meta.update(tDeltaF);
 		}
 
 		this._updateTimers(tDelta);
@@ -799,6 +799,7 @@ meta.Engine.prototype =
 		}
 
 		meta.register("Input");
+		meta.register("Physics");
 	},
 
 	_start: function()

@@ -453,7 +453,11 @@ Entity.Geometry = meta.Class.extend
 
 		this.volume.set(this._tmpX + this.pivotX, this._tmpY + this.pivotY);
 		this.drawX = this._tmpX - this.volume.initHalfWidth + this.pivotSrcX;
-		this.drawY = this._tmpY - this.volume.initHalfHeight + this.pivotSrcY;			
+		this.drawY = this._tmpY - this.volume.initHalfHeight + this.pivotSrcY;	
+
+		if(this.body) {
+			this.body.updateVolume();
+		}		
 
 		if(this.children)
 		{
@@ -1665,58 +1669,21 @@ Entity.Geometry = meta.Class.extend
 
 	onChange: meta.emptyFunc,
 
-
 	/**
 	 * Add component.
 	 * @param comp {String|Function} Name of the component or function pointer.
 	 * @param params {Object} Parameters to add to the component.
 	 */
-	addComponent: function(comp, params)
+	addComponent: function(name, comp, params)
 	{
-		if(!comp) {
+		if(!comp && typeof(comp) !== "Object") {
 			console.warn("[Entity.Geometry.addComponent]:", "No component specified.");
 			return null;
 		}
-
-		var scope = window.Component;
-		var newComp = null;
-		var key;
-
-		if(typeof(comp) === "string") 
-		{
-			for(key in scope) 
-			{
-				if(key === comp) {
-					newComp = new scope[key]();
-					break;
-				}
-			}
-		}
-		else 
-		{
-			for(key in scope) 
-			{
-				if(scope[key] === comp) {
-					newComp = new comp();
-					break;
-				}
-			}
-		}
-
-		if(!newComp) {
-			console.warn("[Entity.Geometry.addComponent]:", "Invalid component - " + comp);
-			return null;
-		}
-
-		if(!this.components) {
-			this.components = [ newComp ];
-		}
-		else {
-			this.components.push(newComp);
-		}
-
+	
+		var newComp = new comp();
 		newComp.owner = this;
-		this[key] = newComp;		
+		this[name] = newComp;		
 
 		if(params) 
 		{
@@ -1725,11 +1692,16 @@ Entity.Geometry = meta.Class.extend
 			}
 		}
 
-		if(this._isLoaded && newComp.load) {
+		if(!this.components) {
+			this.components = [ newComp ];
+		}
+		else {
+			this.components.push(newComp);
+		}		
+
+		if(newComp.load) {
 			newComp.load();
 		}
-
-		if(this.isReady)
 
 		if(newComp.update && !this._isUpdating) {
 			this.isUpdating = true;
@@ -2861,5 +2833,7 @@ Entity.Geometry = meta.Class.extend
 	_isNeedOffset: false,
 	_cacheIndex: -1, // "-1" - it's cached. If more, it's considered as dynamic entity.
 
-	_isHighlight: false
+	_isHighlight: false,
+
+	Body: null
 });

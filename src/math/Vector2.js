@@ -149,8 +149,8 @@ meta.math.Vector2.prototype =
 	 * @param y {Number} Point y position.
 	 * @function
 	 */
-	dot: function(x, y) {
-		return (this.x * x + this.y * y);
+	dot: function(vec) {
+		return (this.x * vec.x + this.y * vec.y);
 	},
 
 	/**

@@ -14,8 +14,15 @@ meta.math.Circle.prototype =
 
 	vsCircle: function(circle) 
 	{
-		var distance = Math.sqrt((this.x - circle.x) * (this.y - circle.y));
-		return distance > (this.radius + circle.radius);
+		var radius2 = this.radius + circle.radius;
+		radius2 *= radius2;
+
+		var x2 = (this.x + circle.x);
+		x2 *= x2;
+		var y2 = (this.y + circle.y);
+		y2 *= y2;
+
+		return radius2 < x2 + y2;
 	},
 
 	overlapCircle: function(circle) 
