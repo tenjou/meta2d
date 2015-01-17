@@ -44,15 +44,12 @@ meta.maxUnitSize = 1;
 meta.maxUnitRatio = 1;
 meta.utils = {};
 meta.modules = {};
-meta.importUrl = "http://infinite-games.com/store/";
+meta.importUrl = "http://meta.infinite-games.com/store/";
 meta._cache = {
 	ismetaAdded: false,
-	init: null,
-	load: null,
-	ready: null,
+	initBuffer: [], loadBuffer: [], readyBuffer: [],
 	view: null,
 	views: {},
-	queue: [],
 	scripts: null,
 	pendingScripts: null, // IE<10
 	numScriptsToLoad: 0,
@@ -255,8 +252,9 @@ meta.Engine.prototype =
 		// cache.views["loading"] = loadingView;
 		// cache.loadingView = loadingView;	
 
-		if(cache.init && typeof(cache.init) === "function") {
-			cache.init();
+		var numFuncs = cache.initBuffer.length;
+		for(var i = 0; i < numFuncs; i++) {
+			cache.initBuffer[i]();
 		}
 
 		this._addCorePlugins();
@@ -281,15 +279,12 @@ meta.Engine.prototype =
 	_continueLoad: function()
 	{
 		var i;
-		var queue = meta._cache.queue;
-		var numQueue = queue.length;
-		for(i = 0; i < numQueue; i++) {
-			queue[i]();
-		}
+		var cache = meta._cache;
 
-		if(meta._cache.load && typeof(meta._cache.load) === "function") {
-			meta._cache.load();
-		}		
+		var numFuncs = cache.loadBuffer.length;
+		for(i = 0; i < numFuncs; i++) {
+			cache.loadBuffer[i]();
+		}
 
 		var ctrl;
 		var numCtrl = this.controllers.length;
@@ -438,10 +433,11 @@ meta.Engine.prototype =
 			this._fpsCounter = 0;
 		}
 
-		Renderer.ctrl.render(tDeltaF);
 		if(meta.render) {
 			meta.render(tDeltaF);
 		}
+
+		Renderer.ctrl.render(tDeltaF);
 
 		this._fpsCounter++;
 		this.tRender = tNow;
@@ -470,7 +466,7 @@ meta.Engine.prototype =
 			prevReso = resolutions[i - 1];
 			reso = resolutions[i];
 			reso.unitSize = (reso.height / lowestResolution.height);
-			reso.zoomThreshold = prevReso.unitSize + ((reso.unitSize - prevReso.unitSize) / 100) * 33.3;
+			reso.zoomThreshold = prevReso.unitSize + ((reso.unitSize - prevReso.unitSize) / 100) * 33;
 		}
 
 		meta.maxUnitSize = resolutions[numResolutions - 1].unitSize;
@@ -527,8 +523,9 @@ meta.Engine.prototype =
 
 		this.isReady = true;
 
-		if(meta._cache.ready && typeof(meta._cache.ready) === "function") {
-			meta._cache.ready();
+		var numFuncs = meta._cache.readyBuffer.length;
+		for(var i = 0; i < numFuncs; i++) {
+			meta._cache.readyBuffer[i]();
 		}
 
 		this._start();
@@ -912,40 +909,31 @@ meta.Engine.prototype =
 Object.defineProperty(meta, "init", {
     set: function(func) 
     {
-		meta._cache.init = func;
+		meta._cache.initBuffer.push(func);
 		if(meta.engine && meta.engine.isInited) {
 			func();
 		}
-    },
-    get: function() {
-		return meta._cache.init;
-	}
+    }
 });
 
 Object.defineProperty(meta, "load", {
     set: function(func) 
     {
-		meta._cache.load = func;
+		meta._cache.loadBuffer.push(func);
 		if(meta.engine && meta.engine.isLoaded) {
 			func();
 		}
-    },
-    get: function() {
-		return meta._cache.load;
-	}    
+    }   
 });
 
 Object.defineProperty(meta, "ready", {
     set: function(func) 
     {
-		meta._cache.ready = func;
+		meta._cache.readyBuffer.push(func);
 		if(meta.engine && meta.engine.isReady) {
 			func();
 		}
-    },
-    get: function() {
-		return meta._cache.ready;
-	}    
+    }   
 });
 
 /**

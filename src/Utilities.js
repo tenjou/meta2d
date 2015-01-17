@@ -764,15 +764,3 @@ meta.nextPowerOfTwo = function(value)
 
     return value;	
 };
-
-meta.pluginLoad = function(func) 
-{	
-	var engine = meta.engine;
-	if(engine && engine.isInited) {
-		func();
-	}
-	else {
-		meta._cache.queue.push(func);
-	}
-};
-
