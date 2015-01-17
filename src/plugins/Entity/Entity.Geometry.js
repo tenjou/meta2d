@@ -2718,6 +2718,7 @@ Entity.Geometry = meta.Class.extend
 
 	// Flag Enum
 	Flag: {
+		ADDED: 2,
 		REMOVED: 4,
 		ANCHOR: 128,
 		IGNORE_ZOOM: 256,
@@ -2749,7 +2750,6 @@ Entity.Geometry = meta.Class.extend
 	name: "unknown",
 	_parent: null,
 	_view: null,
-	_depthNode: null,
 
 	_checkID: -1,
 	_updateNodeID: -1,

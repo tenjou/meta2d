@@ -363,9 +363,6 @@ meta.View.prototype =
 			}			
 		}
 
-		// Exit, if any of controllers set view as inactive.
-		if(!this._isActive) { return; }
-
 		Renderer.ctrl.addEntities(this.entities);
 
 		if(this.views)
@@ -406,19 +403,14 @@ meta.View.prototype =
 	{
 		if(this._isActive === value) { return; }
 		
-		if(value) 
-		{
-			if(this.parentView && !this.parentView._isActive) { 
-				return; 
-			}
-
-			this._isActive = value;
-			this._makeActive();			
+		if(value) {
+			this._makeActive();
 		}
 		else {
-			this._isActive = value;
 			this._makeInactive();
 		}
+
+		this._isActive = value;
 	},
 
 	get isActive() { return this._isActive; },

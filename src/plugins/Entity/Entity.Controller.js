@@ -192,8 +192,10 @@ Entity.Controller = meta.Controller.extend
 	_addEntity: function(entity)
 	{
 		if(entity.isRemoved) { return; }
+		if(entity._flags & entity.Flag.ADDED) { return; }
 
 		this.entities[this.numEntities++] = entity;
+		entity._flags |= entity.Flag.ADDED;
 
 		if(!entity.texture) {
 			entity.isLoaded = true;
@@ -290,12 +292,15 @@ Entity.Controller = meta.Controller.extend
 			entity = buffer[i];
 			for(n = 0; n < this.numEntities; n++)
 			{
+				if(!(entity._flags & entity.Flag.ADDED)) { continue; }
+
 				if(this.entities[n] === entity) 
 				{
 					this.numEntities--;
 					this.entities[n] = this.entities[this.numEntities];
 					this.entities.pop();
 
+					entity &= ~entity.Flag.ADDED;
 					if(entity.children) {
 						this._removeEntities(entity.children);
 					}
