@@ -196,15 +196,15 @@ meta.Camera.prototype =
 	{
 		var inputEvent = Input.Event;
 
-		if(event === inputEvent.INPUT_MOVE) {
+		if(event === inputEvent.MOVE) {
 			this._drag(data);
 		}
-		else if(event === inputEvent.INPUT_DOWN)
+		else if(event === inputEvent.DOWN)
 		{
 			if(data.keyCode !== 0) { return; }
 			this._startDrag(data);
 		}
-		else if(event === inputEvent.INPUT_UP)
+		else if(event === inputEvent.UP)
 		{
 			if(data.keyCode !== 0) { return; }
 			this._endDrag(data);
@@ -309,11 +309,13 @@ meta.Camera.prototype =
 
 		this._draggable = value;
 
+		var events = [ Input.Event.DOWN, Input.Event.UP, Input.Event.MOVE ];
+
 		if(value) {
-			meta.subscribe(this, [ Input.Event.INPUT_DOWN, Input.Event.INPUT_UP, Input.Event.INPUT_MOVE ], this._onInput);
+			meta.subscribe(this, events, this._onInput);
 		}
 		else {
-			meta.unsubscribe(this, [ Input.Event.INPUT_DOWN, Input.Event.INPUT_UP, Input.Event.INPUT_MOVE ]);
+			meta.unsubscribe(this, events);
 			this._isDraggable = false;
 		}
 	},

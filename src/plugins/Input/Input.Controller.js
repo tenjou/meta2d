@@ -187,7 +187,8 @@ Input.Controller = meta.Controller.extend
 		this._event.y = y;
 		this._event.keyCode = event.button;
 
-		this._chnInputDown.emit(this._event, Input.Event.INPUT_DOWN);
+		this._chnInputDown.emit(this._event, Input.Event.DOWN);
+		this._chnInputClick.emit(this._event, Input.Event.CLICK);
 		this._event.entity = null;
 	},
 
@@ -217,7 +218,7 @@ Input.Controller = meta.Controller.extend
 		this._event.y = y;
 		this._event.keyCode = event.button;
 
-		this._chnInputUp.emit(this._event, Input.Event.INPUT_UP);
+		this._chnInputUp.emit(this._event, Input.Event.UP);
 		this._event.entity = null;
 	},
 
@@ -250,7 +251,7 @@ Input.Controller = meta.Controller.extend
 		this.inputX = x;
 		this.inputY = y;
 
-		this._chnInputMove.emit(this._event, Input.Event.INPUT_MOVE);
+		this._chnInputMove.emit(this._event, Input.Event.MOVE);
 		this._event.entity = null;
 	},
 
@@ -280,7 +281,7 @@ Input.Controller = meta.Controller.extend
 		this._event.y = y;
 		this._event.keyCode = event.button;
 
-		this._chnInputDbClick.emit(this._event, Input.Event.INPUT_DBCLICK);
+		this._chnInputDbClick.emit(this._event, Input.Event.DBCLICK);
 		this._event.entity = null;
 	},
 
@@ -318,7 +319,7 @@ Input.Controller = meta.Controller.extend
 			this._event.y = y;
 			this._event.keyCode = this.numTouches-1;
 
-			this._chnInputDown.emit(this._event, Input.Event.INPUT_DOWN);
+			this._chnInputDown.emit(this._event, Input.Event.DOWN);
 			this._event.entity = null;
 		}
 	},
@@ -366,7 +367,7 @@ Input.Controller = meta.Controller.extend
 			this._event.y = y;
 			this._event.keyCode = id;
 
-			this._chnInputDown.emit(this._event, Input.Event.INPUT_UP);
+			this._chnInputDown.emit(this._event, Input.Event.UP);
 			this._event.entity = null;
 		}
 	},
@@ -413,7 +414,7 @@ Input.Controller = meta.Controller.extend
 			this._event.y = y;
 			this._event.keyCode = id;
 
-			this._chnInputMove.emit(this._event, Input.Event.INPUT_MOVE);
+			this._chnInputMove.emit(this._event, Input.Event.MOVE);
 			this._event.entity = null;
 		}
 	},
@@ -458,10 +459,11 @@ Input.Controller = meta.Controller.extend
 
 		this._chnKeyDown = meta.createChannel(Input.Event.KEY_DOWN);
 		this._chnKeyUp = meta.createChannel(Input.Event.KEY_UP);
-		this._chnInputDown = meta.createChannel(Input.Event.INPUT_DOWN);
-		this._chnInputUp = meta.createChannel(Input.Event.INPUT_UP);
-		this._chnInputMove = meta.createChannel(Input.Event.INPUT_MOVE);
-		this._chnInputDbClick = meta.createChannel(Input.Event.INPUT_DBCLICK);
+		this._chnInputDown = meta.createChannel(Input.Event.DOWN);
+		this._chnInputUp = meta.createChannel(Input.Event.UP);
+		this._chnInputMove = meta.createChannel(Input.Event.MOVE);
+		this._chnInputClick = meta.createChannel(Input.Event.CLICK);
+		this._chnInputDbClick = meta.createChannel(Input.Event.DBCLICK);
 
 		this._onKeyDown = function(event) { self.onKeyDown(event); };
 		this._onKeyUp = function(event) { self.onKeyUp(event); };
@@ -538,7 +540,7 @@ Input.Controller = meta.Controller.extend
 			if(this.keys[i]) {
 				this.keys[i] = false;
 				this._event.keyCode = i;
-				this._chnKeyUp.emit(this._event, Input.Event.KEY_UP);
+				this._chnKeyUp.emit(this._event, Input.Event.KEYUP);
 			}
 		}
 
@@ -548,7 +550,7 @@ Input.Controller = meta.Controller.extend
 			if(this.inputs[i]) {
 				this.inputs[i] = false;
 				this._event.keyCode = i;
-				this._chnInputUp.emit(this._event, Input.Event.INPUT_UP);
+				this._chnInputUp.emit(this._event, Input.Event.UP);
 			}
 		}
 
@@ -559,7 +561,7 @@ Input.Controller = meta.Controller.extend
 		{
 			for(i = 0; i < this.numTouches; i++) {
 				this._event.keyCode = i;
-				this._chnInputUp.emit(this._event, Input.Event.INPUT_UP);
+				this._chnInputUp.emit(this._event, Input.Event.UP);
 			}
 
 			this.touches.length = 0;

@@ -54,9 +54,9 @@ Entity.Controller = meta.Controller.extend
 
 	load: function()
 	{
-		meta.subscribe(this, [ Input.Event.INPUT_DOWN, Input.Event.INPUT_UP ], this.onInput, meta.Priority.HIGH);
-		meta.subscribe(this, Input.Event.INPUT_DBCLICK, this.onInputDbCLick, meta.Priority.HIGH);
-		meta.subscribe(this, Input.Event.INPUT_MOVE, this.onInputMove, meta.Priority.HIGH);
+		meta.subscribe(this, [ Input.Event.DOWN, Input.Event.UP ], this.onInput, meta.Priority.HIGH);
+		meta.subscribe(this, Input.Event.DBCLICK, this.onInputDbCLick, meta.Priority.HIGH);
+		meta.subscribe(this, Input.Event.MOVE, this.onInputMove, meta.Priority.HIGH);
 	},
 
 	update: function(tDelta)
@@ -503,7 +503,7 @@ Entity.Controller = meta.Controller.extend
 		this._checkHover(data);
 
 		var inputEvent = Input.Event;
-		if(inputEvent.INPUT_DOWN === event)
+		if(inputEvent.DOWN === event)
 		{
 			if(!this.hoverEntity || !this.hoverEntity.clickable) { return; }
 
@@ -516,7 +516,7 @@ Entity.Controller = meta.Controller.extend
 			this.pressedEntity.onDown.call(this.pressedEntity, data);
 			this._chnOnDown.emit(data, Entity.Event.INPUT_DOWN);
 		}
-		else if(inputEvent.INPUT_UP === event)
+		else if(inputEvent.UP === event)
 		{
 			if(this.pressedEntity && this.pressedEntity.clickable) 
 			{

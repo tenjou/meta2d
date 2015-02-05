@@ -2834,6 +2834,7 @@ Entity.Geometry = meta.Class.extend
 	_cacheIndex: -1, // "-1" - it's cached. If more, it's considered as dynamic entity.
 
 	_isHighlight: false,
+	__transformed: false,
 
-	Body: null
+	body: null
 });

@@ -18,15 +18,31 @@ Physics.Controller = meta.Controller.extend
 		for(var i = 0; i < numItems; i++)
 		{
 			item = this.items[i];
-			this.updateItem(item, tDelta);
+			item.updateItem(tDelta, this.manifold);
+
+			if(!item.owner.visible) { continue; }
 
 			for(n = i + 1; n < numItems; n++)
 			{
 				item2 = this.items[n];
+				if(!item2.owner.visible) { continue; }
 
-				result = this.overlapAABB(item.owner.volume, item2.owner.volume);
+				if(item.flag === item2.flag) { continue; }
+
+				result = this.overlapAABB(item.volume, item2.volume);
 				if(result) 
 				{
+					if(item.owner.onCollision) { 
+						this.manifold.a = item.owner;
+						this.manifold.b = item2.owner;
+						item.owner.onCollision(this.manifold); 
+					}
+					if(item2.owner.onCollision) { 
+						this.manifold.a = item2.owner;
+						this.manifold.b = item.owner;				
+						item2.owner.onCollision(this.manifold); 
+					}
+					//console.log("collision");
 					//this.resolveCollision(item, item2);
 					// item.owner.move(
 					// 	-this.manifold.penetration * this.manifold.normal.x,
@@ -34,41 +50,6 @@ Physics.Controller = meta.Controller.extend
 				}
 			}
 		}
-	},
-
-	updateItem: function(item, tDelta)
-	{
-		var newX = item.owner.left + (item.velocity.x * tDelta);
-		var newY = item.owner.top + (item.velocity.y * tDelta);
-
-		if(item.enableWorldBounds)
-		{
-			this.manifold.penetration = 0;
-
-			if(newX < 0) {
-				newX = 0;
-				item.velocity.x = -item.velocity.x;
-				this.manifold.normal.set(1, 0);
-			}
-			else if(newX + item.owner.width > meta.world.width) {
-				newX = meta.world.width - item.owner.width;
-				item.velocity.x = -item.velocity.x;
-				this.manifold.normal.set(-1, 0);
-			}
-
-			if(newY < 0) {
-				newY = 0;
-				item.velocity.y = -item.velocity.y;
-				this.manifold.normal.set(0, 1);
-			}
-			else if(newY + item.owner.height > meta.world.height) {
-				newY = meta.world.height - item.owner.height;
-				item.velocity.y = -item.velocity.y;
-				this.manifold.normal.set(0, -1);
-			}
-		}
-
-		item.owner.positionTopLeft(newX, newY);	
 	},
 
 	overlapAABB: function(a, b)
@@ -119,6 +100,11 @@ Physics.Controller = meta.Controller.extend
 
 	add: function(entity) 
 	{
+		if(!(entity instanceof Entity.Geometry)) {
+			console.warn("(Physics.Controller.add) Object should be a part of Entity.Geometry:", entity);
+			return;
+		}
+
 		this.items.push(
 			entity.addComponent("body", Physics.Body));
 	},

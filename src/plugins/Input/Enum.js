@@ -1,13 +1,13 @@
 "use strict";
 
 Input.Event = {
-	KEY_DOWN: "keyDown",
-	KEY_UP: "keyUp",
-	INPUT_DOWN: "onDown",
-	INPUT_UP: "onUp",
-	INPUT_MOVE: "onMove",
-	INPUT_CLICK: "onClick",
-	INPUT_DBCLICK: "onDbClick"
+	KEY_DOWN: "keydown",
+	KEY_UP: "keyup",
+	DOWN: "down",
+	UP: "up",
+	MOVE: "move",
+	CLICK: "click",
+	DBCLICK: "dbclick"
 };
 
 Input.Key = {

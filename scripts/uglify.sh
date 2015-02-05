@@ -43,7 +43,7 @@ cat meta.js \
 	plugins/Entity/Entity.Text.js \
 	plugins/Input/Input.Controller.js \
 	plugins/Input/Enum.js \
-	plugins/Physics/Physics.js \
+	plugins/Physics/Physics.Controller.js \
 	plugins/Physics/Physics.Body.js \
 	plugins/UI/UI.Controller.js \
 	plugins/UI/UI.Button.js \
