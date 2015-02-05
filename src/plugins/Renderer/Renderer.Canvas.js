@@ -306,12 +306,13 @@ Renderer.Canvas = Entity.Controller.extend
 	clearScreen: function()
 	{
 		var scope = meta;
+		var engine = meta.engine
 		if(scope.view.bgTransparent) {
-			scope.ctx.clearRect(0, 0, scope.width, scope.height);
+			engine.ctx.clearRect(0, 0, engine.width, engine.height);
 		}
 		else {
-			scope.ctx.fillStyle = scope.engine.bgColor;
-			scope.ctx.fillRect(0, 0, scope.width, scope.height);
+			engine.ctx.fillStyle = scope.engine.bgColor;
+			engine.ctx.fillRect(0, 0, engine.width, engine.height);
 		}
 	},
 

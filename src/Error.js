@@ -1,6 +1,6 @@
 "use strict";
 
-if(meta.device.isMobile)
+if(meta.device.mobile)
 {
 	window.onerror = function(message, file, lineNumber) {
 		alert(file + ": " + lineNumber + " " + message);

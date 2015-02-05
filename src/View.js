@@ -188,13 +188,13 @@ meta.View.prototype =
 				return;
 			}
 
-			meta._cache.view.attachView(this);
+			meta.cache.view.attachView(this);
 			return;
 		}
 
 		if(typeof(view) === "string")
 		{
-			var srcView = meta._cache.views[view];
+			var srcView = meta.cache.views[view];
 			if(!srcView) {
 				console.warn("(meta.View.attach) No such view found: " + view);
 				return;
@@ -248,7 +248,7 @@ meta.View.prototype =
 
 		if(typeof(view) === "string")
 		{
-			var srcView = meta._cache.views[view];
+			var srcView = meta.cache.views[view];
 			if(!srcView) {
 				console.warn("(meta.View.detachView) No such view found: \"" + view + "\"");
 				return;
@@ -484,14 +484,14 @@ meta.createView = function(name, ctrls)
 		return;
 	}
 
-	var view = meta._cache.views[name];
+	var view = meta.cache.views[name];
 	if(view) {
 		console.error("(meta.createView) View with a name - " + name + ", already exist");
 		return;		
 	}
 
 	view = new meta.View(name);
-	meta._cache.views[name] = view;
+	meta.cache.views[name] = view;
 
 	if(!ctrls) { return; }
 
@@ -518,7 +518,7 @@ meta.setView = function(view)
 		return;
 	}
 
-	var cache = meta._cache;
+	var cache = meta.cache;
 
 	if(typeof(view) === "string") 
 	{
@@ -551,10 +551,10 @@ meta.getView = function(name)
 		return null;
 	}
 
-	var view = meta._cache.views[name];
+	var view = meta.cache.views[name];
 	if(!view) {
 		view = new meta.View(name);
-		meta._cache.views[name] = view;
+		meta.cache.views[name] = view;
 	}
 
 	return view;
@@ -566,14 +566,14 @@ meta.getView = function(name)
  */
 meta.attachView = function(view)
 {
-	if(!meta._cache.view) {
+	if(!meta.cache.view) {
 		console.warn("(meta.attachView) No current active view");
 		return;
 	}
 
 	if(typeof(view) === "string")
 	{
-		var srcView = meta._cache.views[view];
+		var srcView = meta.cache.views[view];
 		if(!srcView) {
 			console.warn("(meta.attachView) No such view found: " + view);
 			return;
@@ -582,7 +582,7 @@ meta.attachView = function(view)
 		view = srcView;
 	}
 
-	meta._cache.view.attachView(view);
+	meta.cache.view.attachView(view);
 };
 
 /**
@@ -591,14 +591,14 @@ meta.attachView = function(view)
  */
 meta.detachView = function(view)
 {
-	if(!meta._cache.view) {
+	if(!meta.cache.view) {
 		console.warn("(meta.detachView) No current active view.");
 		return;
 	}
 
 	if(typeof(view) === "string")
 	{
-		var srcView = meta._cache.views[view];
+		var srcView = meta.cache.views[view];
 		if(!view) {
 			console.warn("(meta.detachView) No such view found: " + view);
 			return;
@@ -607,11 +607,11 @@ meta.detachView = function(view)
 		view = srcView;
 	}
 
-	meta._cache.view.detachView(view);
+	meta.cache.view.detachView(view);
 };
 
 Object.defineProperty(meta, "view", {
     get: function() {
-		return meta._cache.view;
+		return meta.cache.view;
 	}    
 });

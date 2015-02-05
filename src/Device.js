@@ -5,7 +5,7 @@
  * @constructor
  * @property vendors {Array} Buffer with vendors to perform check on.
  * @property support {Object} Dictionary of supported features.
- * @property isMobile {Boolean} Flag if it's mobile device.
+ * @property mobile {Boolean} Flag if it's mobile device.
  * @memberof! <global>
  */
 meta.Device = function()
@@ -19,7 +19,7 @@ meta.Device = function()
 
 	this.audioFormats = [];
 
-	this.isMobile = false;
+	this.mobile = false;
 	this.isPortrait = false;
 	this.isAudioAPI = false;
 
@@ -30,6 +30,8 @@ meta.Device = function()
 	this.fullScreenExit = null;
 	this.fullScreenOnChange = null;
 	this.isFullScreen = false;
+
+	this.load();
 };
 
 meta.Device.prototype =
@@ -42,6 +44,8 @@ meta.Device.prototype =
 		this.checkBrowser();
 
 		this.isMobile = this.isMobileAgent();
+
+		this.checkConsoleCSS();
 
 		this.support.onloadedmetadata = (typeof window.onloadedmetadata === "object");
 		this.support.onkeyup = (typeof window.onkeyup === "object");
@@ -97,6 +101,16 @@ meta.Device.prototype =
 		if(this.versionBuffer === null || this.name === "unknown") {
 			console.warn("[meta.Device.checkBrowser]:", "Could not detect browser.");
 		}				
+	},
+
+	checkConsoleCSS: function() 
+	{
+		if(!this.mobile && (this.name === "Chrome" || this.name === "Opera")) {
+			this.support.consoleCSS = true;
+		}
+		else {
+			this.support.consoleCSS = false;
+		}		
 	},
 
 	/**
@@ -314,7 +328,5 @@ meta.Device.prototype =
 	}
 };
 
-(function() {
-	meta.device = new meta.Device();
-	meta.device.load();
-})();
+meta.device = new meta.Device();
+

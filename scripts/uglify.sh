@@ -1,6 +1,7 @@
 #!/bin/bash
 cd ../src/
-cat Engine.js \
+cat meta.js \
+	Engine.js \
 	Device.js \
 	Error.js \
 	Utilities.js \
@@ -11,7 +12,6 @@ cat Engine.js \
 	Class.js \
 	Controller.js \
 	Timer.js \
-	Shader.js \
 	Style.js \
 	Enum.js \
 	Macros.js \
@@ -43,6 +43,8 @@ cat Engine.js \
 	plugins/Entity/Entity.Text.js \
 	plugins/Input/Input.Controller.js \
 	plugins/Input/Enum.js \
+	plugins/Physics/Physics.js \
+	plugins/Physics/Physics.Body.js \
 	plugins/UI/UI.Controller.js \
 	plugins/UI/UI.Button.js \
 	plugins/UI/UI.Checkbox.js \

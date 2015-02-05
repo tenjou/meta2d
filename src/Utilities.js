@@ -403,24 +403,6 @@ meta.onDomLoad = function(func)
 	window.addEventListener("DOMContentLoaded", cbFunc);
 };
 
-/**
- * Creates and initializes engine in scope.
- * @function
- */
-meta.createEngine = function()
-{
-	meta.onDomLoad(function()
-	{
-		if(meta.engine) {
-			meta.engine.release();
-			return;
-		}
-
-		meta.engine = new meta.Engine();
-		meta.engine.create();
-	});
-};
-
 
 /**
  * Get enum key as string.
@@ -495,10 +477,10 @@ meta.loadScript = function(src, onLoad)
 {
 	if(!meta.engine || !meta.engine.isLoaded) 
 	{
-		if(!meta._cache.scripts) {
-			meta._cache.scripts = [];
+		if(!meta.cache.scripts) {
+			meta.cache.scripts = [];
 		}
-		meta._cache.scripts.push({ s: src, c: onLoad });
+		meta.cache.scripts.push({ s: src, c: onLoad });
 	}
 	else {
 		meta._loadScript({ s: src, c: callback });
@@ -519,10 +501,10 @@ meta._loadScript = function(obj)
 	}
 	else if(firstScript.readyState) // IE<10
 	{
-		if(!meta._cache.pendingScripts) {
-			meta._cache.pendingScripts = [];
+		if(!meta.cache.pendingScripts) {
+			meta.cache.pendingScripts = [];
 		}
-		meta._cache.pendingScripts.push(script);
+		meta.cache.pendingScripts.push(script);
 
 		script.onreadystatechange = meta._onReadyStateChange;
 		script.src = obj.s;
@@ -536,7 +518,7 @@ meta._loadScript = function(obj)
 meta._onReadyStateChange = function() 
 {
 	var pendingScript;
-	var pendingScripts = meta._cache.pendingScripts;
+	var pendingScripts = meta.cache.pendingScripts;
 
 	while(pendingScripts[0] && pendingScripts[0].s.readyState === "loaded")
 	{
@@ -551,7 +533,7 @@ meta._onReadyStateChange = function()
 
 meta._loadAllScripts = function()
 {
-	var scripts = meta._cache.scripts;
+	var scripts = meta.cache.scripts;
 	if(!scripts) { return false; }
 
 	var numScripts = scripts.length;
@@ -559,10 +541,10 @@ meta._loadAllScripts = function()
 
 	var callback = function()
 	{
-		var cache = meta._cache;
+		var cache = meta.cache;
 		cache.numScriptsToLoad--;
 
-		var scripts = meta._cache.scripts;
+		var scripts = meta.cache.scripts;
 		var numScripts = scripts.length;
 		if(numScripts > 0)
 		{
@@ -584,7 +566,7 @@ meta._loadAllScripts = function()
 	}
 
 	var script;
-	var cache = meta._cache;
+	var cache = meta.cache;
 	cache.numScriptsToLoad += scripts.length;
 	cache.scripts = [];
 
@@ -691,10 +673,10 @@ meta.adaptTo = function(width, height, path)
 		return;
 	}
 
-	var resolutions = meta._cache.resolutions;
+	var resolutions = meta.cache.resolutions;
 	if(!resolutions) {
 		resolutions = [];
-		meta._cache.resolutions = resolutions;
+		meta.cache.resolutions = resolutions;
 	}
 
 	var lastChar = path.charAt(path.length - 1);

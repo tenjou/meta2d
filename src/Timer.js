@@ -1,12 +1,9 @@
 "use strict";
 
-meta._cache.timerIndex = 0;
-
-
 meta.Timer = function(owner, func, tDelta, numTimes)
 {
 	this.owner = owner;
-	this.id = meta._cache.timerIndex++;
+	this.id = meta.cache.timerIndex++;
 	this.func = func;
 	this.onRemove = null;
 

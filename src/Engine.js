@@ -16,25 +16,15 @@
  * @property importUrl {String} Default path from where modules are imported from.
  */
 
-var meta = {};
 
-meta.engine = null;
-meta.device = null;
-meta.element = null;
-meta.elementId = "";
-meta.canvas = null;
-meta.ctx = null;
 meta.width = 0;
 meta.height = 0;
 meta.channels = {};
 meta.shaders = null;
 meta.loadingView = null;
 meta.world = null;
-meta.camera = null;
 meta.shader = null;
-meta.version = "1.1.2";
-meta.enableDefault = true;
-meta.enablemeta = true;
+
 meta.enableWebGL = true;
 meta.enableAdaptive = true;
 meta.tUpdate = 1000 / 60;
@@ -45,82 +35,9 @@ meta.maxUnitRatio = 1;
 meta.utils = {};
 meta.modules = {};
 meta.importUrl = "http://meta.infinite-games.com/store/";
-meta._cache = {
-	ismetaAdded: false,
-	initBuffer: [], loadBuffer: [], readyBuffer: [],
-	view: null,
-	views: {},
-	scripts: null,
-	pendingScripts: null, // IE<10
-	numScriptsToLoad: 0,
-	resolutions: null,
-	currResolution: null,
-	imageSmoothing: true
-};
 
-/**
- * @description The meta core.
- * @constructor
- * @property elementStyle {String} Style that is applied to parent element.
- * @memberof! <global>
- */
-meta.Engine = function()
-{
-	this.controllers = [];
-	this.controllersToRemove = [];
 
-	this._timers = [];
-	this._timersToRemove = [];
-	this._numTimers = 0;
-
-	this.unsubscribesetLeft = 0;
-	this.unsubscribesetTop = 0;
-
-	this._onResizeCB = null;
-	this._onVisibilityChangeCB = null;
-	this._onFullScreenChangeCB = null;
-	this._onFocusCB = null;
-	this._onBlurCB = null;
-	this._onCtxLostCB = null;
-	this._onCtxRestoredCB = null;
-
-	this._chnResize = null;
-	this._chnFocus = null;
-	this._chnFullScreen = null;
-	this._chnAdapt = null;
-
-	this.isCreated = false;
-	this.isFocus = false;
-	this.isWebGL = false;
-	this.isInited = false;
-	this.isLoaded = false;
-	this.isLoading = false;
-	this.isCtrlLoaded = false;
-	this.isReady = false;
-
-	this.pause = false;
-
-	this.projection = null;
-
-	this._updateLoop = null;
-	this._renderLoop = null;
-	this.tUpdate = 0;
-	this.tRender = 0;
-	this.tFPS = 0;
-	this.tNow = 0;
-	this.fps = 0;
-	this._fpsCounter = 0;
-
-	this.frameID = 0;
-	this.updateFrameID = 0;
-
-	this.enablePauseOnBlur = true;
-
-	this._bgColor = "#ddd";
-	this._bgTransparent = false;
-};
-
-meta.Engine.prototype =
+meta.engine = 
 {
 	/**
 	 * @description Initialize engine instance.
@@ -128,21 +45,12 @@ meta.Engine.prototype =
 	 */
 	create: function()
 	{
-		if(this.isCreated) {
-			console.error("[meta.Engine.create]:", "Engine instance is already created.");
-			return;
-		}
+		this._container = document.body;
 
-		console.log("%c META v" + meta.version + " ", 
-			"background: #000; color: white; font-size: 12px; padding: 2px 0 1px 0;",
-			"http://infinite-games.com ");
+		this.printInfo();
 
-		console.log("%cBrowser: %c" + meta.device.name + " " + meta.device.version + "\t",
-			"font-weight: bold; padding: 2px 0 1px 0;",
-			"padding: 2px 0 1px 0;");
-
-		if(meta.enablemeta) {
-			this._createmeta();
+		if(meta.autoMetaTags) {
+			this._addMetaTags();
 		}
 
 		meta.shaders = {};
@@ -188,57 +96,11 @@ meta.Engine.prototype =
 
 		this.tNow = Date.now();
 		this.start();
-		this.isCreated = true;
-	},
-
-	/**
-	 * @description Release the engine instance.
-	 * @function
-	 */
-	release: function()
-	{
-		if(!this.isCreated)	{
-			console.error("[meta.Engine.release]:", "Can't release uninitialized engine instance.");
-			return;
-		}
-
-		this._chnFocus.remove();
-		this._chnResize.remove();
-		this._chnFullScreen.remove();
-		this._chnAdapt.remove();
-
-		window.removeEventListener("resize", this._onResizeCB);
-		window.removeEventListener("orientationchange", this._onResizeCB);
-
-		if(meta.device.hidden) {
-			document.removeEventListener(meta.device.visibilityChange, this._onVisibilityChangeCB);
-		}
-		else {
-			window.removeEventListener("focus", this._onFocusCB);
-			window.removeEventListener("blur", this._onBlurCB);
-		}
-
-		if(meta.device.support.fullScreen) {
-			document.removeEventListener(meta.device.visibilityChange, this._onVisibilityChangeCB);
-		}
-
-		if(this.isWebGL) {
-			window.removeEventListener("webglcontextlost", this._onCtxLostCB);
-			window.removeEventListener("webglcontextrestored", this._onCtxRestoredCB);
-		}
-
-		meta.removeAllControllers();
-		meta.channels = null;
-		meta.shaders = null;
-		meta.world = null;
-		meta.shader = null;
-
-		this.isCreated = false;
 	},
 
 	start: function()
 	{
-		var cache = meta._cache;
+		var cache = meta.cache;
 
 		// Create master view.
 		var masterView = new meta.View("master");
@@ -279,7 +141,7 @@ meta.Engine.prototype =
 	_continueLoad: function()
 	{
 		var i;
-		var cache = meta._cache;
+		var cache = meta.cache;
 
 		var numFuncs = cache.loadBuffer.length;
 		for(i = 0; i < numFuncs; i++) {
@@ -296,7 +158,7 @@ meta.Engine.prototype =
 		}
 
 		this.isCtrlLoaded = true;
-		meta._cache.view.isActive = true;
+		meta.cache.view.isActive = true;
 		this.isLoading = false;
 
 		if(Resource.ctrl.numToLoad === 0) {
@@ -448,7 +310,7 @@ meta.Engine.prototype =
 	sortAdaptions: function()
 	{
 		var scope = meta;
-		var resolutions = scope._cache.resolutions;
+		var resolutions = scope.cache.resolutions;
 		if(!resolutions) { return; }
 
 		var numResolutions = resolutions.length;
@@ -478,7 +340,7 @@ meta.Engine.prototype =
 	adapt: function()
 	{
 		var scope = meta;
-		var resolutions = scope._cache.resolutions;
+		var resolutions = scope.cache.resolutions;
 		if(!resolutions) { return false; }
 
 		var numResolutions = resolutions.length;
@@ -497,11 +359,11 @@ meta.Engine.prototype =
 			}
 		}		
 
-		if(newResolution === scope._cache.currResolution) {
+		if(newResolution === scope.cache.currResolution) {
 			return true;
 		}
 
-		scope._cache.currResolution = newResolution;
+		scope.cache.currResolution = newResolution;
 		scope.unitSize = newResolution.unitSize;	
 		scope.unitRatio = 1.0 / scope.unitSize;	
 		this._chnAdapt.emit(newResolution, meta.Event.ADAPT);
@@ -523,45 +385,59 @@ meta.Engine.prototype =
 
 		this.isReady = true;
 
-		var numFuncs = meta._cache.readyBuffer.length;
+		var numFuncs = meta.cache.readyBuffer.length;
 		for(var i = 0; i < numFuncs; i++) {
-			meta._cache.readyBuffer[i]();
+			meta.cache.readyBuffer[i]();
 		}
 
 		this._start();
 	},
 
-	onResize: function()
+	/* Resizing */
+	onResize: function() {
+		this._resize(this.meta.cache.width, this.meta.cache.height);
+	},
+
+	resize: function(width, height) 
 	{
-		var scope = meta;
-		var width, height;
-		if(scope.element === document.body) {
-			width = window.innerWidth;
-			height = window.innerHeight;
+		var cache = this.meta.cache;
+		cache.width = width || 0;
+		cache.height = height || 0;
+
+		this._resize(cache.width, cache.height);
+	},
+
+	_resize: function(width, height)
+	{
+		var container = this._container;
+		var ratio = window.devicePixelRatio;
+
+		if(container === document.body) 
+		{
+			if(width === 0) { width = window.innerWidth; }
+			if(height === 0) { height = window.innerHeight; }
 		}
-		else {
-			width = scope.element.clientWidth;
-			height = scope.element.clientHeight;
+		else 
+		{
+			if(width === 0 || width > container.clientWidth) { 
+				width = container.clientWidth; 
+			}
+			if(height === 0 || height > container.clientHeight) { 
+				height = container.clientHeight; 
+			}
 		}
 
-		var ratio = window.devicePixelRatio;
-		this.width = (width * ratio) | 0;
-		this.height = (height * ratio) | 0;
-		this.canvas.width = this.width;
-		this.canvas.height = this.height;
+		width = (width * ratio) | 0;
+		height = (height * ratio) | 0;
+		if(this.width === width && this.height === height) { return; }
+
+		this.width = width;
+		this.height = height;
+		this.canvas.width = width;
+		this.canvas.height = height;
 		this.canvas.style.width = width + "px";
 		this.canvas.style.height = height + "px";
-		this.ctx.imageSmoothingEnabled = meta._cache.imageSmoothing;
-		scope.width = this.width;
-		scope.height = this.height;
-
-		if(this.isWebGL)
-		{
-			this.projection.ortho(0, this.width, this.height, 0, 0, 100);
-			meta.shader.uniformMatrix("projection", this.projection);
-
-			this.ctx.viewport(0, 0, this.width, this.height);
-		}
+		this.ctx.imageSmoothingEnabled = meta.cache.imageSmoothing;
 
 		this._updateOffset();
 		this._chnResize.emit(this, meta.Event.RESIZE);
@@ -623,9 +499,9 @@ meta.Engine.prototype =
 		meta.element = this.element;
 	},
 
-	_createmeta: function()
+	_addMetaTags: function()
 	{
-		if(meta._cache.ismetaAdded) { return; }
+		if(meta.cache.metaTagsAdded) { return; }
 
 		var contentType = document.createElement("meta");
 		contentType.setAttribute("http-equiv", "Content-Type");
@@ -653,7 +529,7 @@ meta.Engine.prototype =
 		appleStatusBar.setAttribute("content", "black-translucent");
 		document.head.appendChild(appleStatusBar);
 
-		meta._cache.ismetaAdded = true;
+		meta.cache.metaTagsAdded = true;
 	},
 
 	_createCanvas: function()
@@ -661,107 +537,19 @@ meta.Engine.prototype =
 		this.canvas = document.createElement("canvas");
 		this.canvas.setAttribute("id", "meta-canvas");
 		this.canvas.style.cssText = this.canvasStyle;
-		this.element.appendChild(this.canvas);
+
+		this.ctx = this.canvas.getContext("2d");
+		
 		meta.canvas = this.canvas;
+		meta.ctx = this.ctx;	
 
-		var params = {
-		//	alpha: false,
-		};
-
-		if(meta.enableWebGL && meta.device.support.webgl)
-		{
-			//params.antialias = false;
-			params.stencil = true;
-			params.preserveDrawingBuffer = false;
-
-			this.ctx = this.canvas.getContext("experimental-webgl", params);
-			meta.ctx = this.ctx;
-			this.ctx.imageSmoothingEnabled = false;
-			this.ctx.webkitImageSmoothingEnabled = false;
-			this.ctx.mozImageSmoothingEnabled = false;
-
-			var self = this;
-			this._onCtxLostCB = function(event) { self.onCtxLost(); };
-			this._onCtxRestoredCB = function(event) { self.onCtxRestored(); };
-			window.addEventListener("webglcontextlost", this._onCtxLostCB);
-			window.addEventListener("webglcontextrestored", this._onCtxRestoredCB);
-
-			this._initShaders();
-
-			this.isWebGL = true;
-
-			console.log("%cRenderer: %cWebGL ", 
-				"font-weight: bold; padding: 2px 0 2px 0;", 
-				"padding: 2px 0 2px 0;");
-
-			this.bgColor = this._bgColor;
-		}
-		else 
-		{
-			this.ctx = this.canvas.getContext("2d", params);
-			meta.ctx = this.ctx;
-
-			console.log("%cRenderer: %cCanvas ", 
-				"font-weight: bold; padding: 2px 0 2px 0;", 
-				"padding: 2px 0 2px 0;");			
-		}
-	},
-
-	_initShaders: function()
-	{
-		this.projection = new meta.math.Matrix4();
-
-		var shader = new meta.Shader();
-		shader.vertexShader =
-			"precision mediump float; " +
-			"attribute vec2 vertexPos; " +
-			"attribute vec2 texCoord; " +
-			"uniform vec2 cameraPos; " +
-			"uniform float zoom; " +
-			"uniform vec2 pos; " +
-			"uniform vec2 center; " +
-			"uniform vec2 scale; " +
-			"uniform vec4 frameCoord; " +
-			"uniform float angle; " +
-			"uniform mat4 projection; " +
-			"varying highp vec2 frameTexCoord; " +
-
-			"void main(void) " +
-			"{ " +
-				"float rotX = sin(-angle);" +
-				"float rotY = cos(-angle);" +
-				"vec2 scaled = floor(vertexPos * scale);" +
-				"vec2 origin = vec2(scaled.x + floor(pos.x) - floor(center.x), scaled.y + floor(pos.y) - floor(center.y));" +
-				"vec2 newPos = vec2(origin.x * rotY + origin.y * rotX, origin.y * rotY - origin.x * rotX) + floor(center) + cameraPos;" +
-				"newPos *= zoom;" +
-
-				"gl_Position = projection * vec4(newPos, 0.0, 1.0);" +
-				"frameTexCoord = vec2(frameCoord.x + (texCoord.x * frameCoord.z), frameCoord.y + (texCoord.y * frameCoord.w)); " +
-			"}";
-
-		shader.fragmentShader = 
-			"precision mediump float; " +
-			"uniform sampler2D sampler; " +
-			"uniform float alpha; " +
-			"varying highp vec2 frameTexCoord; " +
-
-			"void main(void) " +
-			"{ " +
-				"vec4 color = texture2D(sampler, frameTexCoord); " +
-				"color.a *= alpha; gl_FragColor = color; " + 
-			"}";
-		meta.shaders.default = shader;
-
-		if(shader.compile()) {
-			meta.setShader("default");
+		var container = this.meta.cache.container;
+		if(!container) {
+			document.body.appendChild(this.canvas);	
 		}
 		else {
-			console.error("[meta.Engine._initShaders]:", "Could not compile shaders.");
-			return;
+			container.appendChild(this.canvas);	
 		}
-
-		shader.bindAttrib("vertexPos");
-		shader.bindAttrib("texCoord");
 	},
 
 	_updateOffset: function()
@@ -814,6 +602,30 @@ meta.Engine.prototype =
 		requestAnimationFrame(this._renderLoop);
 	},
 
+	printInfo: function()
+	{
+		if(meta.device.support.consoleCSS)
+		{
+			console.log("%c META v" + meta.version + " ", 
+				"background: #000; color: white; font-size: 12px; padding: 2px 0 1px 0;",
+				"http://infinite-games.com ");
+
+			console.log("%cBrowser: %c" + meta.device.name + " " + meta.device.version + "\t",
+				"font-weight: bold; padding: 2px 0 1px 0;",
+				"padding: 2px 0 1px 0;");
+
+			console.log("%cRenderer: %cCanvas ", 
+				"font-weight: bold; padding: 2px 0 2px 0;", 
+				"padding: 2px 0 2px 0;");				
+		}
+		else 
+		{
+			console.log("META v" + meta.version + " http://infinite-games.com ");
+			console.log("Browser: " + meta.device.name + " " + meta.device.version + "\t");
+			console.log("Renderer: Canvas ");				
+		}		
+	},	
+
 	fullscreen: function(value)
 	{
 		var device = meta.device;
@@ -837,16 +649,39 @@ meta.Engine.prototype =
 		this.fullscreen(!meta.device.isFullScreen);
 	},
 
+	/* Container */
+	set container(element) 
+	{
+		if(this._container === element) { return; }
+
+		if(this._container) {
+			this._container.removeChild(this.canvas);
+		}
+
+		if(!element) {
+			this._container = document.body;
+		}
+		else {
+			this._container = element;
+		}
+
+		this._container.appendChild(this.canvas);
+		this.onResize();
+	},
+
+	get container() { return this._container; },
+
+	/* Image smoothing */
     set imageSmoothing(value) 
     {
-    	meta._cache.imageSmoothing = value;
+    	meta.cache.imageSmoothing = value;
 		if(this.isReady) {
 			this.onResize();
 		}
     },
 
     get imageSmoothing() {
-		return meta._cache.imageSmoothing;
+		return meta.cache.imageSmoothing;
 	},
 
 	set cursor(value) {
@@ -903,13 +738,70 @@ meta.Engine.prototype =
 	elementStyle: "padding:0; margin:0;",
 	canvasStyle: "position:absolute; overflow:hidden; translateZ(0); " +
 		"-webkit-backface-visibility:hidden; -webkit-perspective: 1000; " +
-		"-webkit-touch-callout: none; -webkit-user-select: none; zoom: 1;"
+		"-webkit-touch-callout: none; -webkit-user-select: none; zoom: 1;",
+
+
+	meta: meta,
+
+	_container: null,
+
+	controllers: [],
+	controllersToRemove: [],
+
+	_timers: [],
+	_timersToRemove: [],
+	_numTimers: 0,
+
+	unsubscribesetLeft: 0,
+	unsubscribesetTop: 0,
+
+	_onResizeCB: null,
+	_onVisibilityChangeCB: null,
+	_onFullScreenChangeCB: null,
+	_onFocusCB: null,
+	_onBlurCB: null,
+	_onCtxLostCB: null,
+	_onCtxRestoredCB: null,
+
+	_chnResize: null,
+	_chnFocus: null,
+	_chnFullScreen: null,
+	_chnAdapt: null,
+
+	isFocus: false,
+	isWebGL: false,
+	isInited: false,
+	isLoaded: false,
+	isLoading: false,
+	isCtrlLoaded: false,
+	isReady: false,
+
+	pause: false,
+
+	projection: null,
+
+	_updateLoop: null,
+	_renderLoop: null,
+	tUpdate: 0,
+	tRender: 0,
+	tFPS: 0,
+	tNow: 0,
+	fps: 0,
+	_fpsCounter: 0,
+
+	frameID: 0,
+	updateFrameID: 0,
+
+	enablePauseOnBlur: true,
+
+	_bgColor: "#ddd",
+	_bgTransparent: false		
 }
 
 Object.defineProperty(meta, "init", {
     set: function(func) 
     {
-		meta._cache.initBuffer.push(func);
+		meta.cache.initBuffer.push(func);
 		if(meta.engine && meta.engine.isInited) {
 			func();
 		}
@@ -919,7 +811,7 @@ Object.defineProperty(meta, "init", {
 Object.defineProperty(meta, "load", {
     set: function(func) 
     {
-		meta._cache.loadBuffer.push(func);
+		meta.cache.loadBuffer.push(func);
 		if(meta.engine && meta.engine.isLoaded) {
 			func();
 		}
@@ -929,7 +821,7 @@ Object.defineProperty(meta, "load", {
 Object.defineProperty(meta, "ready", {
     set: function(func) 
     {
-		meta._cache.readyBuffer.push(func);
+		meta.cache.readyBuffer.push(func);
 		if(meta.engine && meta.engine.isReady) {
 			func();
 		}
