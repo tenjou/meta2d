@@ -1,8 +1,5 @@
 "use strict";
 
-// TODO: Create better bounding volume creation for shapes.
-// TODO: Use Image buffer instead of creating new Image in loading.
-
 /**
  * Class for handling Canvas/WebGL textures. Also used for SVG operations.
  * @class Resource.Texture
@@ -25,65 +22,20 @@
  * @memberof! <global>
  */
 Resource.Texture = Resource.Basic.extend
-( /** @lends Resource.Texture.prototype */ {
-
+({
 	/**
 	 * Constructor.
 	 * Will generate by default texture based on what rendering is used.
-	 * @param param {Object|Resource.TextureType|String=} Parameters, texture type or texture path.
 	 * @param path {String=} Texture path.
 	 * @function
 	 */
-	init: function(param, path)
+	init: function(path)
 	{
-		if(param !== void(0))
-		{
-			var paramType = typeof(param);
+		this.generate();
 
-			if(paramType === "object") 
-			{
-				for(var key in param) {
-					this[key] = param[key];
-				}
-			}
-			else if(paramType === "string") {
-				this.path = param;
-			}
-			else {
-				this.textureType = param;
-				if(path) { this.path = path; }
-			}
-
-			// If no wildcard specified, default it to png.
-			if(this.path)
-			{
-				var wildCardIndex = this.path.lastIndexOf(".");
-				if(wildCardIndex === -1 || this.path.length - wildCardIndex > 4) {
-					this.path += ".png";
-				}
-			}			
+		if(path) {
+			this.load(path);
 		}
-
-		if(this.textureType === -1)
-		{
-			if(meta.engine.isWebGL) {
-				this.textureType = Resource.TextureType.WEBGL;
-			}
-			else {
-				this.textureType = Resource.TextureType.CANVAS;
-			}
-		}
-
-		if(this.numFrames > 1) {
-			this.numFramesX = this.numFrames;
-			this.isAnimated = true;
-		}
-		else if(this.numFramesX > 1 || this.numFramesY > 1) {
-			this.numFrames = this.numFramesX * this.numFramesY;
-			this.isAnimated = true;
-		}	
-
-		this.generate(this.textureType);
 	},
 
 	remove: function()
@@ -93,44 +45,17 @@ Resource.Texture = Resource.Basic.extend
 
 	/**
 	 * Generate image object depending from type.
-	 * @param type {Resource.TextureType=} Texture type to generate.
 	 * @function
 	 */
-	generate: function(type)
+	generate: function()
 	{
-		this.isLoaded = false;
+		this.loaded = true;
 
-		if(type === Resource.TextureType.WEBGL)
-		{
-			var gl = meta.ctx;
-			this.image = gl.createTexture();
-			gl.bindTexture(gl.TEXTURE_2D, this.image);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			gl.bindTexture(gl.TEXTURE_2D, null);
+		this.canvas = document.createElement("canvas");
+		this.canvas.width = this.trueFullWidth;
+		this.canvas.height = this.trueFullHeight;
 
-			this._vertices = new Float32Array([
-				0.0, 0.0,
-				this.trueWidth, 0.0,
-				0.0, this.trueHeight,
-				this.trueWidth, this.trueHeight
-			]);
-
-			this.vbo = gl.createBuffer();
-			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
-			gl.bufferData(gl.ARRAY_BUFFER, this._vertices, gl.DYNAMIC_DRAW);
-		}
-		else
-		{
-			this.image = document.createElement("canvas");
-			this.ctx = this.image.getContext("2d");
-			this.image.width = this.trueFullWidth;
-			this.image.height = this.trueFullHeight;
-
-			this.textureType = Resource.TextureType.CANVAS;
-		}	
+		this.ctx = this.canvas.getContext("2d");
 	},
 
 	/**
@@ -140,35 +65,34 @@ Resource.Texture = Resource.Basic.extend
 	 */
 	load: function(path)
 	{
-		if(this.isLoading) { return; }
+		if(this.loading) { return; }
+		if(!path) { return; }
 
-		if(path) {
-			this.path = path;	
-		}
-		else if(!this.path) {
-			return;
+		this.path = path;
+
+		// Check if path is missing it's extension:
+		var wildCardIndex = this.path.lastIndexOf(".");
+		if(wildCardIndex === -1 || this.path.length - wildCardIndex > 4) {
+			this.path += ".png";
 		}
 
-		if(meta._cache.currResolution) {
-			this.fullPath = Resource.ctrl.rootPath + meta._cache.currResolution.path + this.path;
+		if(meta.cache.currResolution) {
+			this.fullPath = Resource.ctrl.rootPath + meta.cache.currResolution.path + this.path;
 		}
 		else {
 			this.fullPath = Resource.ctrl.rootPath + this.path;
 		}
 
-		Resource.ctrl.addToLoad(this);
-
 		var self = this;
 		var img = new Image();
 
-		if(meta.engine.isWebGL) {
-			img.crossOrigin = "anonymous";
-		}
-
 		img.onload = function()
 		{
+			// Check if still is relevant:
+			//if(!self.loading) { return; }
+
 			if(!img.complete) {
-				console.warn("[Resource.Texture.load]:", "Could not load texture from - " + img.src);
+				console.warn("(Resource.Texture.load) Could not load texture from - " + img.src);
 				Resource.ctrl.loadFailed(self);
 				return;
 			}
@@ -179,13 +103,25 @@ Resource.Texture = Resource.Basic.extend
 
 		img.onerror = function(event) {
 			Resource.ctrl.loadFailed(self);
-		};
-
-		if(this._isLoaded) {
-			this._isReloading = true;
-		}
+		};		
 
 		img.src = this.fullPath;
+
+		// Resource.ctrl.addToLoad(this);
+
+		// var self = this;
+		// var img = new Image();
+
+		// if(meta.engine.isWebGL) {
+		// 	img.crossOrigin = "anonymous";
+		// }
+
+
+		// if(this._isLoaded) {
+		// 	this._isReloading = true;
+		// }
+
+		// img.src = this.fullPath;
 	},
 
 	/**
@@ -195,22 +131,12 @@ Resource.Texture = Resource.Basic.extend
 	 */
 	createFromImg: function(img)
 	{
-		if(this._isLoaded) {
+		if(this._loaded) {
 			this.clear();
 		}
 
 		this.resize(img.width, img.height);
-
-		if(this.textureType !== Resource.TextureType.WEBGL) {
-			this.ctx.drawImage(img, 0, 0);
-		}
-		else
-		{
-			var gl = meta.ctx;
-			gl.bindTexture(gl.TEXTURE_2D, this.image);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-		}
-
+		this.ctx.drawImage(img, 0, 0);
 		this.unitRatio = meta.unitRatio;
 
 		this._isReloading = false;
@@ -257,70 +183,29 @@ Resource.Texture = Resource.Basic.extend
 		this.halfWidth = this.width * 0.5;
 		this.halfHeight = this.height * 0.5;	
 
-		if(!this.textureType)
+		if(this._isLoaded)
 		{
-			if(this._isLoaded)
+			if(this.canvas.width > 0 && this.canvas.height > 0)
 			{
-				if(this.image.width > 0 && this.image.height > 0)
-				{
-					this._tmpImg.width = this.image.width;
-					this._tmpImg.height = this.image.height;
-					this._tmpCtx.drawImage(this.image, 0, 0);
+				this._tmpImg.width = this.canvas.width;
+				this._tmpImg.height = this.canvas.height;
+				this._tmpCtx.drawImage(this.canvas, 0, 0);
 
-					this.image.width = this.trueFullWidth;
-					this.image.height = this.trueFullHeight;
-					this.ctx.drawImage(this._tmpImg, 0, 0);
-				}
-				else {
-					this.image.width = this.trueFullWidth;
-					this.image.height = this.trueFullHeight;					
-				}
+				this.canvas.width = this.trueFullWidth;
+				this.canvas.height = this.trueFullHeight;
+				this.ctx.drawImage(this._tmpImg, 0, 0);
 			}
 			else {
-				this.image.width = this.trueFullWidth;
-				this.image.height = this.trueFullHeight;
+				this.canvas.width = this.trueFullWidth;
+				this.canvas.height = this.trueFullHeight;					
 			}
 		}
-		else
-		{
-			var gl = meta.ctx;
-
-			this._vertices[2] = this.trueWidth;
-			this._vertices[5] = this.trueHeight;
-			this._vertices[6] = this.trueWidth;
-			this._vertices[7] = this.trueHeight;
-
-			this._xRatio = 1.0 / this.numFramesX;
-			this._yRatio = 1.0 / this.numFramesY;
-
-			if(this.fromAtlas) {
-				this._widthRatio = 1.0 / ((this.ptr.trueFullWidth / this.trueWidth) / this.numFramesX);
-				this._heightRatio = 1.0 / ((this.ptr.trueFullHeight / this.trueHeight) / this.numFramesY);
-			}
-			else {
-				this._widthRatio = 1.0 / this.numFramesX;
-				this._heightRatio = 1.0 / this.numFramesY;				
-			}
-
-			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
-			gl.bufferData(gl.ARRAY_BUFFER, this._vertices, gl.DYNAMIC_DRAW);
-
-			if(this._isLoaded && this._cachedImg)
-			{
-				this._tmpImg.width = this.image.width;
-				this._tmpImg.height = this.image.height;
-				this._tmpCtx.drawImage(this._cachedImg, 0, 0);
-
-				this._cachedImg.width = this.trueFullWidth;
-				this._cachedImg.height = this.trueFullHeight;
-				this._cachedCtx.drawImage(this._cachedImg, 0, 0);
-
-				gl.bindTexture(gl.TEXTURE_2D, this.image);
-				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
-			}
+		else {
+			this.canvas.width = this.trueFullWidth;
+			this.canvas.height = this.trueFullHeight;
 		}
 
-		if(this._isLoaded && !this._isReloading) {
+		if(this._loaded && !this._isReloading) {
 			this.emit(this, Resource.Event.RESIZE);
 		}
 	},
@@ -1627,9 +1512,8 @@ Resource.Texture = Resource.Basic.extend
 
 	//
 	type: Resource.Type.TEXTURE,
-	textureType: Resource.TextureType.UNKNOWN,
 
-	image: null,
+	canvas: null,
 	ctx: null,
 	_bgTexture: null,
 

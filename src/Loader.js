@@ -7,13 +7,9 @@
 meta.createEngine = function()
 {
 	meta.onDomLoad(function() {
+		if(!meta.autoInit) { return; }
 		meta.engine.create();
 	});
 };
 
-(function()
-{
-	if(!meta.autoInit) { return; }
-
-	meta.createEngine();
-})();
+meta.createEngine();

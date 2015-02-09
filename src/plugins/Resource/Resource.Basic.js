@@ -13,7 +13,7 @@
  * @memberof! <global>
  */
 Resource.Basic = meta.Class.extend
-( /** @lends Resource.Basic.prototype */ {
+({
 
 	_init: function() {
 		this.id = Resource.ctrl.getUniqueID();
@@ -62,29 +62,29 @@ Resource.Basic = meta.Class.extend
 	},
 
 
-	set isLoaded(value)
+	set loaded(value)
 	{
 		if(value)
 		{
-			if(!this._isLoaded) {
-				this._isLoaded = value;
+			if(!this._loaded) {
+				this._loaded = value;
 				this.emit(this, Resource.Event.LOADED);
 			}
 			else {
-				this._isLoaded = value;
+				this._loaded = value;
 				this.emit(this, Resource.Event.CHANGED);
 			}
 		}
 		else
 		{
-			if(this._isLoaded) {
-				this._isLoaded = value;
+			if(this._loaded) {
+				this._loaded = value;
 				this.emit(this, Resource.Event.UNLOADED);
 			}
 		}
 	},
 
-	get isLoaded() { return this._isLoaded; },
+	get loaded() { return this._loaded; },
 
 
 	//
@@ -96,7 +96,7 @@ Resource.Basic = meta.Class.extend
 
 	chn: null,
 
-	_isLoaded: false,
-	isLoading: false,
-	inUse: false
+	_loaded: false,
+	loading: false,
+	used: false
 });

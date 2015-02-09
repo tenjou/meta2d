@@ -5,8 +5,7 @@ var meta =
 	version: "1.2.0",
 
 	device: null,
-	canvas: null,
-	ctx: null,
+	renderer: null,
 	camera: null,
 
 	autoInit: true,
@@ -27,6 +26,23 @@ var meta =
 		numScriptsToLoad: 0,
 		resolutions: null,
 		currResolution: null,
-		imageSmoothing: true
-	}
+		imageSmoothing: true,
+
+		debug: false
+	},
+
+	set debug(value) 
+	{
+		if(this.cache.debug === value) { return; }
+		this.cache.debug = value;
+
+		if(value) {
+			meta.emit(meta.Event.DEBUG, value, meta.Event.DEBUG);
+		}
+		else {
+			meta.emit(meta.Event.DEBUG, value, meta.Event.DEBUG);
+		}
+	},
+
+	get debug() { return this.cache.debug; }
 };

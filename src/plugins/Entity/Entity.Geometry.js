@@ -31,9 +31,7 @@ Entity.Geometry = meta.Class.extend
 
 	_init: function(params)
 	{
-		this.id = this._entityCtrl.getUniqueID();
-		this.name = "entity" + this.id;
-		this.core = new this.Core();
+		//this.core = new meta.Core2D();
 		this.volume = new meta.math.AdvAABB(0, 0, 0, 0);
 		this._parent = this._entityCtrl;
 
@@ -444,31 +442,33 @@ Entity.Geometry = meta.Class.extend
 	 */
 	updatePos: function()
 	{
-		this._tmpX = this._x + this.textureOffsetX + this.offsetX + this._anchorPosX + this._parent.childOffsetX;
-		this._tmpY = this._y + this.textureOffsetY + this.offsetY + this._anchorPosY + this._parent.childOffsetY;
-		if(this._view) {
-			this._tmpX += this._view._x;
-			this._tmpY += this._view._y;
-		}
+		this.drawX = this.core.x;
+		this.drawY = this.core.y;
+		// this._tmpX = this._x + this.textureOffsetX + this.offsetX + this._anchorPosX + this._parent.childOffsetX;
+		// this._tmpY = this._y + this.textureOffsetY + this.offsetY + this._anchorPosY + this._parent.childOffsetY;
+		// if(this._view) {
+		// 	this._tmpX += this._view._x;
+		// 	this._tmpY += this._view._y;
+		// }
 
-		this.volume.set(this._tmpX + this.pivotX, this._tmpY + this.pivotY);
-		this.drawX = this._tmpX - this.volume.initHalfWidth + this.pivotSrcX;
-		this.drawY = this._tmpY - this.volume.initHalfHeight + this.pivotSrcY;	
+		// this.volume.set(this._tmpX + this.pivotX, this._tmpY + this.pivotY);
+		// this.drawX = this._tmpX - this.volume.initHalfWidth + this.pivotSrcX;
+		// this.drawY = this._tmpY - this.volume.initHalfHeight + this.pivotSrcY;	
 
-		if(this.body) {
-			this.body.updateVolume();
-		}		
+		// if(this.body) {
+		// 	this.body.updateVolume();
+		// }		
 
-		if(this.children)
-		{
-			this.childOffsetX = this._x + this._parent.childOffsetX + this.childPivotX + this._anchorPosX + this.offsetX;
-			this.childOffsetY = this._y + this._parent.childOffsetY + this.childPivotY + this._anchorPosY + this.offsetY;
+		// if(this.children)
+		// {
+		// 	this.childOffsetX = this._x + this._parent.childOffsetX + this.childPivotX + this._anchorPosX + this.offsetX;
+		// 	this.childOffsetY = this._y + this._parent.childOffsetY + this.childPivotY + this._anchorPosY + this.offsetY;
 
-			var numChildren = this.children.length;
-			for(var i = 0; i < numChildren; i++) {
-				this.children[i].updatePos();
-			}
-		}
+		// 	var numChildren = this.children.length;
+		// 	for(var i = 0; i < numChildren; i++) {
+		// 		this.children[i].updatePos();
+		// 	}
+		// }
 
 		this.isNeedDraw = true;
 	},
@@ -565,13 +565,15 @@ Entity.Geometry = meta.Class.extend
 	 */
 	position: function(x, y)
 	{
-		this.positionType = 0;
+		this.core.x = x;
+		this.core.y = y;
+		// this.positionType = 0;
 
-		if(this._x === x && this._y === y) { return; }
+		// if(this._x === x && this._y === y) { return; }
 
-		this._x = x;
-		this._y = y;
-		this.updatePos();
+		// this.core.x = x;
+		// this.core.y = y;
+		// this.updatePos();
 	},
 
 	/**
@@ -1878,10 +1880,10 @@ Entity.Geometry = meta.Class.extend
 	get view() { return this._view; },
 
 
-	set x(value) { this.position(value, this._y); },
-	set y(value) { this.position(this._x, value); },
-	get x() { return this._x; },
-	get y() { return this._y; },
+	// set x(value) { this.position(value, this._y); },
+	// set y(value) { this.position(this._x, value); },
+	// get x() { return this._x; },
+	// get y() { return this._y; },
 	get absX() { return this.volume.x; },
 	get absY() { return this.volume.y; },
 
@@ -2069,13 +2071,7 @@ Entity.Geometry = meta.Class.extend
 		this._isNeedDraw = value;
 		this._tChange = Date.now();
 
-		if(this._isCached) {
-			this._entityCtrl.uncacheEntity(this);
-		}
-
-		if(value) {
-			this._entityCtrl.isNeedRender = true;
-		}
+		meta.renderer.needRender = true;
 	},
 
 	get isNeedDraw() { return this._isNeedDraw; },
@@ -2460,11 +2456,6 @@ Entity.Geometry = meta.Class.extend
 					this.children[i]._onResize(this);
 				}
 			}
-
-			this._entityCtrl.cacheEntity(this);
-		}
-		else {
-			this._entityCtrl.uncacheEntity(this);
 		}
 
 	},
@@ -2742,6 +2733,10 @@ Entity.Geometry = meta.Class.extend
 
 	//
 	meta: meta,
+	core: null,
+
+	x:0, y:0,
+
 	_entityCtrl: null,
 	_tmpX: 0, _tmpY: 0,
 
@@ -2760,7 +2755,6 @@ Entity.Geometry = meta.Class.extend
 	_inputFlags: 0,
 	chn: null,
 
-	_x: 0, _y: 0, 
 	_z: 0, totalZ: 0,
 	typeX: 0, typeY: 0,
 	_anchorX: 0, _anchorY: 0,
@@ -2838,3 +2832,220 @@ Entity.Geometry = meta.Class.extend
 
 	body: null
 });
+
+Entity.New = meta.Class.extend
+({
+	init: function(texture) 
+	{
+		this.volume = new meta.math.AABB(0, 0, 0, 0);
+		
+		if(typeof(texture) === "string") 
+		{
+			var newTexture = Resource.ctrl.getTexture(texture);
+			if(!newTexture) {
+				console.warn("(Entity.Geometry) Could not apply texture with a name of - " + texture);
+			}
+			else {
+				this.texture = newTexture;
+			}
+		}
+		else {
+			this.texture = texture;
+		}
+	},
+
+	update: null,
+
+	updatePos: function()
+	{
+		meta.renderer.needRender = true;
+	},
+
+	position: function(x, y) { 
+		this.volume.set(x, y); 
+		this.updatePos();
+	},
+
+	move: function(x, y) { 
+		this.volume.set(this.volume.x + x, this.volume.y + y);
+		this.updatePos();
+	},
+
+	set x(x) { 
+		this.volume.set(x, this.volume.y); 
+		this.updatePos();
+	},
+	set y(y) { 
+		this.volume.set(this.volume.x, y); 
+		this.updatePos();
+	},
+	get x() { return this.volume.x; },
+	get y() { return this.volume.y; },
+
+	get left() { return this.volume.minX; },
+	get right() { return this.volume.maxY; },
+	get top() { return this.volume.minY; },
+	get bottom() { return this.volume.maxY; },
+
+	set z(z) 
+	{
+		if(this._z === z) { return; }
+		this._z = z;
+
+		meta.renderer.needSortDepth = true;
+	},
+
+	get z() {
+		return this._z;
+	},
+
+	pivot: function(x, y) { 
+		this.volume.pivot(x, y); 
+	},
+
+	set pivotX(x) { this.volume.pivot(x, this._pivotY); },
+	set pivotY(y) { this.volume.pivot(this._pivotX, y); },
+	get pivotX() { return this.volume.pivotX; },
+	get pivotY() { return this.volume.pivotY; },
+
+	updateAngle: function()
+	{
+		meta.renderer.needRender = true;
+	},
+
+	set angle(value)
+	{
+		value = (value * Math.PI) / 180;
+		if(this._angleRad === value) { return; }
+
+		this._angleRad = value;
+		this.__type = 1;
+		this.updateAngle();
+	},
+
+	get angle() { return (this._angleRad * 180) / Math.PI; },
+
+	set angleRad(value)
+	{
+		if(this._angleRad === value) { return; }
+
+		this._angleRad = value;
+		this.__type = 1;
+		this.updateAngle();
+	},
+
+	get angleRad() { return this._angleRad; },
+
+	/**
+	 * Flip entity. By default will flip horizontally.
+	 * @param x {Number=} Flip by X axis. Valid inputs: -1.0 or 1.0.
+	 * @param y {Number=} Flip by Y axis. Valid inputs: -1.0 or 1.0.
+	 */
+	flip: function(x, y) 
+	{
+		this.volume.flip(x, y);
+		this.__type = 1;
+		meta.renderer.needRender = true;		
+ 	},
+
+	set flipX(x) { this.flip(x, this.volume.scaleY); },
+	set flipY(y) { this.flip(this.volume.scaleX, y); },
+	get flipX() { return this.volume.scaleX > 0 ? 1.0 : -1.0; },
+	get flipY() { return this.volume.scaleY > 0 ? 1.0 : -1.0; },
+
+	set alpha(value) {
+		this._alpha = value;
+		this.__type = 1;
+		meta.renderer.needRender = true;
+	},
+
+	get alpha() { return this._alpha; },	
+
+	/**
+	 * Callback for texture events.
+	 * @param data {*} Data of the event.
+	 * @param event {*} Type of the event.
+	 */
+	onTextureEvent: function(data, event)
+	{
+		var resEvent = Resource.Event;
+		if(event === resEvent.LOADED) {
+			this.loaded = true;
+		}
+		else if(event === resEvent.UNLOADED) {
+			this.loaded = false;
+		}
+
+		this.updateFromTexture();
+	},
+
+	updateFromTexture: function()
+	{
+		if(this._texture) {
+			this.volume.resize(this._texture.width, this._texture.height)
+		}
+		else {
+			this.volume.resize(0, 0);
+		}
+	},	
+
+	set texture(tex)
+	{
+		if(this._texture) {
+			this._texture.unsubscribe(this);
+		}
+
+		this._texture = tex;
+
+		if(tex) 
+		{
+			tex.subscribe(this, this.onTextureEvent);
+
+			if(tex._loaded) {
+				this.updateFromTexture();
+				this.loaded = true;
+			}
+		}
+		else {
+			this.loaded = false;
+		}
+	},
+
+	get texture() { return this._texture; },
+
+	set needRender(value) 
+	{
+		this._needRender = value;
+
+		if(value) {
+			meta.renderer.needRender = true;
+		}	
+	},	
+
+	get needRender() { return this._needRender; },
+
+	set showBounds(value) 
+	{
+		//if(this._currBound)
+	},
+
+	get showBounds() { return !!this._currBound; },
+
+	//
+	_texture: null,
+	_angleRad: 0,
+	_alpha: 1,
+
+	loaded: true,
+
+	_body: null,
+
+	_showBounds: false,
+
+	__added: false,
+	__type: 0,
+	__updateIndex: -1
+});
+
+
+

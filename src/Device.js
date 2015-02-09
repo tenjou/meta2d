@@ -43,7 +43,7 @@ meta.Device.prototype =
 	{
 		this.checkBrowser();
 
-		this.isMobile = this.isMobileAgent();
+		this.mobile = this.isMobileAgent();
 
 		this.checkConsoleCSS();
 

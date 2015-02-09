@@ -37,8 +37,8 @@ cat meta.js \
 	plugins/Resource/Resource.Font.js \
 	plugins/Entity/Entity.Controller.js \
 	plugins/Entity/Enum.js \
-	plugins/Renderer/Renderer.WebGL.js \
-	plugins/Renderer/Renderer.Canvas.js \
+	plugins/Renderer/Renderer.js \
+	plugins/Renderer/CanvasRenderer.js \
 	plugins/Entity/Entity.Geometry.js \
 	plugins/Entity/Entity.Text.js \
 	plugins/Input/Input.Controller.js \
@@ -51,4 +51,4 @@ cat meta.js \
 	plugins/UI/UI.ProgressBar.js \
 	plugins/UI/UI.Group.js \
 	Loader.js \
-	| uglifyjs --output ../versions/meta.nightly.latest.js --mangle -c dead_code=false,unused=false,side_effects=false --screw-ie8
+	| uglifyjs --output ../versions/meta.nightly.latest.js -b

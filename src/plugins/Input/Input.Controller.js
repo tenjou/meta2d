@@ -25,6 +25,8 @@ Input.Controller = meta.Controller.extend
 	 */
 	init: function()
 	{
+		this.engine = meta.engine;
+
 		this.keys = new Array(this.numKeys);
 		this.inputs = new Array(this.numInputs);
 		this.touches = [];
@@ -173,8 +175,8 @@ Input.Controller = meta.Controller.extend
 
 		var scope = meta;
 		var camera = scope.camera;
-		var screenX = (event.pageX - scope.engine.unsubscribesetLeft) * window.devicePixelRatio;
-		var screenY = (event.pageY - scope.engine.unsubscribesetTop) * window.devicePixelRatio;
+		var screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
+		var screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
 		var x = ((screenX * camera.zoomRatio) - camera._x) | 0;
 		var y = ((screenY * camera.zoomRatio) - camera._y) | 0;
 
@@ -188,7 +190,6 @@ Input.Controller = meta.Controller.extend
 		this._event.keyCode = event.button;
 
 		this._chnInputDown.emit(this._event, Input.Event.DOWN);
-		this._chnInputClick.emit(this._event, Input.Event.CLICK);
 		this._event.entity = null;
 	},
 
@@ -204,8 +205,8 @@ Input.Controller = meta.Controller.extend
 
 		var scope = meta;
 		var camera = scope.camera;
-		var screenX = (event.pageX - scope.engine.unsubscribesetLeft) * window.devicePixelRatio;
-		var screenY = (event.pageY - scope.engine.unsubscribesetTop) * window.devicePixelRatio;
+		var screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
+		var screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
 		var x = ((screenX * camera.zoomRatio) - camera._x) | 0;
 		var y = ((screenY * camera.zoomRatio) - camera._y) | 0;
 
@@ -219,6 +220,7 @@ Input.Controller = meta.Controller.extend
 		this._event.keyCode = event.button;
 
 		this._chnInputUp.emit(this._event, Input.Event.UP);
+		this._chnInputClick.emit(this._event, Input.Event.CLICK);
 		this._event.entity = null;
 	},
 
@@ -234,8 +236,8 @@ Input.Controller = meta.Controller.extend
 
 		var scope = meta;
 		var camera = scope.camera;
-		var screenX = (event.pageX - scope.engine.unsubscribesetLeft) * window.devicePixelRatio;
-		var screenY = (event.pageY - scope.engine.unsubscribesetTop) * window.devicePixelRatio;
+		var screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
+		var screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
 		var x = ((screenX * camera.zoomRatio) - camera._x) | 0;
 		var y = ((screenY * camera.zoomRatio) - camera._y) | 0;
 
@@ -267,8 +269,8 @@ Input.Controller = meta.Controller.extend
 
 		var scope = meta;
 		var camera = scope.camera;
-		var screenX = (event.pageX - scope.engine.unsubscribesetLeft) * window.devicePixelRatio;
-		var screenY = (event.pageY - scope.engine.unsubscribesetTop) * window.devicePixelRatio;
+		var screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
+		var screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
 		var x = ((screenX * camera.zoomRatio) - camera._x) | 0;
 		var y = ((screenY * camera.zoomRatio) - camera._y) | 0;
 
@@ -305,8 +307,8 @@ Input.Controller = meta.Controller.extend
 			this.touches.push(touch.identifier);
 			this.numTouches++;
 
-			screenX = (touch.pageX - scope.engine.unsubscribesetLeft) * window.devicePixelRatio;
-			screenY = (touch.pageY - scope.engine.unsubscribesetTop) * window.devicePixelRatio;
+			screenX = ((touch.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
+			screenY = ((touch.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
 			x = ((screenX * camera.zoomRatio) - camera._x) | 0;
 			y = ((screenY * camera.zoomRatio) - camera._y) | 0;
 
@@ -347,8 +349,8 @@ Input.Controller = meta.Controller.extend
 			this.touches.splice(id, 1);
 			this.numTouches--;
 
-			screenX = (touch.pageX - scope.engine.unsubscribesetLeft) * window.devicePixelRatio;
-			screenY = (touch.pageY - scope.engine.unsubscribesetTop) * window.devicePixelRatio;
+			screenX = ((touch.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
+			screenY = ((touch.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
 			x = ((screenX * camera.zoomRatio) - camera._x) | 0;
 			y = ((screenY * camera.zoomRatio) - camera._y) | 0;
 
@@ -368,6 +370,7 @@ Input.Controller = meta.Controller.extend
 			this._event.keyCode = id;
 
 			this._chnInputDown.emit(this._event, Input.Event.UP);
+			this._chnInputClick.emit(this._event, Input.Event.CLICK);
 			this._event.entity = null;
 		}
 	},
@@ -392,8 +395,8 @@ Input.Controller = meta.Controller.extend
 			id = this._getTouchID(touch.identifier);
 			if(id === -1) { continue; }
 
-			screenX = (touch.pageX - scope.engine.unsubscribesetLeft) * window.devicePixelRatio;
-			screenY = (touch.pageY - scope.engine.unsubscribesetTop) * window.devicePixelRatio;
+			screenX = ((touch.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
+			screenY = ((touch.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
 			x = ((screenX * camera.zoomRatio) - camera._x) | 0;
 			y = ((screenY * camera.zoomRatio) - camera._y) | 0;
 
@@ -447,7 +450,7 @@ Input.Controller = meta.Controller.extend
 	 * @returns {boolean}
 	 */
 	isInputDown: function(keyCode) {
-		return this.inputs[keyCode];
+		return this.inputs[keyCode] || (this.numTouches - 1) === keyCode;
 	},
 
 	/**
@@ -653,6 +656,8 @@ Input.Controller = meta.Controller.extend
 
 
 	//
+	engine: null,
+
 	keys: null,
 	inputs: null,
 	touches: null,

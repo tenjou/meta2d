@@ -16,16 +16,10 @@
  * @property importUrl {String} Default path from where modules are imported from.
  */
 
-
-meta.width = 0;
-meta.height = 0;
 meta.channels = {};
-meta.shaders = null;
 meta.loadingView = null;
 meta.world = null;
-meta.shader = null;
 
-meta.enableWebGL = true;
 meta.enableAdaptive = true;
 meta.tUpdate = 1000 / 60;
 meta.unitSize = 1;
@@ -46,23 +40,24 @@ meta.engine =
 	create: function()
 	{
 		this._container = document.body;
+		this._container.style.cssText = this.elementStyle;
 
-		this.printInfo();
+		this._createRenderer();
+		this._printInfo();
 
 		if(meta.autoMetaTags) {
 			this._addMetaTags();
 		}
 
-		meta.shaders = {};
-		meta.camera = new meta.Camera();		
+		meta.camera = new meta.Camera();	
 
-		this._chnResize = meta.createChannel(meta.Event.RESIZE);
-		this._chnFocus = meta.createChannel(meta.Event.FOCUS);
-		this._chnFullScreen = meta.createChannel(meta.Event.FULLSCREEN);
-		this._chnAdapt = meta.createChannel(meta.Event.ADAPT);
-
-		this._resolveElement();
-		this._createCanvas();
+		this.chn = {
+			resize: meta.createChannel(meta.Event.RESIZE),
+			adapt: meta.createChannel(meta.Event.FULLSCREEN),
+			focus: meta.createChannel(meta.Event.FOCUS),
+			fullScreen: meta.createChannel(meta.Event.FULLSCREEN),
+			debug: meta.createChannel(meta.Event.DEBUG)
+		};
 
 		this.sortAdaptions();
 		this.onResize();
@@ -71,7 +66,7 @@ meta.engine =
 
 		//
 		var self = this;
-		this._onResizeCB = function(event) { self.onResize(); };
+		this._onResizeCB = function(event) { console.log("resize2"); self.onResize(); };
 		this._onFocusCB = function(event) { self.onFocusChange(true); };
 		this._onBlurCB = function(event) { self.onFocusChange(false); };
 
@@ -176,6 +171,8 @@ meta.engine =
 		if(tDelta > 250) { tDelta = 250; }
 
 		var tDeltaF = tDelta / 1000;
+
+		meta.renderer.update(tDeltaF);
 
 		if(meta.update) {
 			meta.update(tDeltaF);
@@ -295,11 +292,11 @@ meta.engine =
 			this._fpsCounter = 0;
 		}
 
+		meta.renderer.render(tDeltaF);
+
 		if(meta.render) {
 			meta.render(tDeltaF);
-		}
-
-		Renderer.ctrl.render(tDeltaF);
+		}		
 
 		this._fpsCounter++;
 		this.tRender = tNow;
@@ -366,7 +363,7 @@ meta.engine =
 		scope.cache.currResolution = newResolution;
 		scope.unitSize = newResolution.unitSize;	
 		scope.unitRatio = 1.0 / scope.unitSize;	
-		this._chnAdapt.emit(newResolution, meta.Event.ADAPT);
+		this.chn.adapt.emit(newResolution, meta.Event.ADAPT);
 
 		return true;
 	},
@@ -410,12 +407,15 @@ meta.engine =
 	_resize: function(width, height)
 	{
 		var container = this._container;
-		var ratio = window.devicePixelRatio;
 
 		if(container === document.body) 
 		{
-			if(width === 0) { width = window.innerWidth; }
-			if(height === 0) { height = window.innerHeight; }
+			if(width === 0 || width > window.innerWidth) { 
+				width = window.innerWidth; 
+			}
+			if(height === 0 || height > window.innerHeight) { 
+				height = window.innerHeight; 
+			}
 		}
 		else 
 		{
@@ -427,20 +427,29 @@ meta.engine =
 			}
 		}
 
-		width = (width * ratio) | 0;
-		height = (height * ratio) | 0;
-		if(this.width === width && this.height === height) { return; }
-
-		this.width = width;
-		this.height = height;
+		this.width = width | 0;
+		this.height = height | 0;
 		this.canvas.width = width;
 		this.canvas.height = height;
-		this.canvas.style.width = width + "px";
-		this.canvas.style.height = height + "px";
-		this.ctx.imageSmoothingEnabled = meta.cache.imageSmoothing;
+		this.canvas.style.width = (width * this.scaleX) + "px";
+		this.canvas.style.height = (height * this.scaleY) + "px";
+		//this.ctx.imageSmoothingEnabled = meta.cache.imageSmoothing;
+
+		// this.ctx.mozImageSmoothingEnabled = false
+		// this.ctx.webkitImageSmoothingEnabled = false;		
 
 		this._updateOffset();
-		this._chnResize.emit(this, meta.Event.RESIZE);
+		this.chn.resize.emit(this, meta.Event.RESIZE);
+		
+		meta.renderer.needRender = true;
+	},
+
+	scale: function(scaleX, scaleY)
+	{
+		this.scaleX = scaleX || 1.0;
+		this.scaleY = scaleY || this.scaleX;
+
+		this._resize(this.meta.cache.width, this.meta.cache.height);
 	},
 
 	onFocusChange: function(value)
@@ -450,7 +459,7 @@ meta.engine =
 			this.pause = !value;
 		}
 
-		this._chnFocus.emit(value, meta.Event.FOCUS);
+		this.chn.focus.emit(value, meta.Event.FOCUS);
 	},
 
 	onVisibilityChange: function()
@@ -478,25 +487,6 @@ meta.engine =
 	onCtxRestored: function()
 	{
 		console.log("(Context restored)");
-	},
-
-
-	_resolveElement: function()
-	{
-		if(meta.elementId)
-		{
-			this.element = document.getElementById(meta.elementId);
-			if(!this.element) {
-				console.warn("[meta.engine.create]:", "Could not find element with id - " + meta.elementId);
-				this.element = document.body;
-			}
-		}
-		else {
-			this.element = document.body;
-		}
-
-		this.element.style.cssText += this.elementStyle;
-		meta.element = this.element;
 	},
 
 	_addMetaTags: function()
@@ -532,16 +522,11 @@ meta.engine =
 		meta.cache.metaTagsAdded = true;
 	},
 
-	_createCanvas: function()
+	_createRenderer: function()
 	{
 		this.canvas = document.createElement("canvas");
 		this.canvas.setAttribute("id", "meta-canvas");
 		this.canvas.style.cssText = this.canvasStyle;
-
-		this.ctx = this.canvas.getContext("2d");
-		
-		meta.canvas = this.canvas;
-		meta.ctx = this.ctx;	
 
 		var container = this.meta.cache.container;
 		if(!container) {
@@ -549,40 +534,34 @@ meta.engine =
 		}
 		else {
 			container.appendChild(this.canvas);	
-		}
+		}	
+
+		meta.renderer = new meta.CanvasRenderer();	
 	},
 
 	_updateOffset: function()
 	{
-		this.unsubscribesetLeft = 0;
-		this.unsubscribesetTop = 0;
+		this.offsetLeft = 0;
+		this.offsetTop = 0;
 
-		var element = meta.element;
-		if(element.unsubscribesetParent)
+		var element = this._container;
+		if(element.offsetParent)
 		{
 			do {
-				this.unsubscribesetLeft += element.unsubscribesetLeft;
-				this.unsubscribesetTop += element.unsubscribesetTop;
-			} while(element = element.unsubscribesetParent);
+				this.offsetLeft += element.offsetLeft;
+				this.offsetTop += element.offsetTop;
+			} while(element = element.offsetParent);
 		}
 
-		var rect = meta.element.getBoundingClientRect();
-		this.unsubscribesetLeft += rect.left;
-		this.unsubscribesetTop += rect.top;
+		var rect = this._container.getBoundingClientRect();
+		this.offsetLeft += rect.left;
+		this.offsetTop += rect.top;
 	},
 
 	_addCorePlugins: function()
 	{
 		meta.register("Resource");
-		meta.register("UI");
-
-		if(this.isWebGL) {
-			meta.register("Renderer.WebGL");
-		}
-		else {
-			meta.register("Renderer.Canvas");
-		}
-
+		//meta.register("UI");
 		meta.register("Input");
 		meta.register("Physics");
 	},
@@ -602,7 +581,7 @@ meta.engine =
 		requestAnimationFrame(this._renderLoop);
 	},
 
-	printInfo: function()
+	_printInfo: function()
 	{
 		if(meta.device.support.consoleCSS)
 		{
@@ -744,6 +723,14 @@ meta.engine =
 	meta: meta,
 
 	_container: null,
+	width: 0, height: 0,
+	offsetLeft: 0, offsetTop: 0,
+	scaleX: 1.0, scaleY: 1.0,
+
+	canvas: null,
+	ctx: null,
+
+	chn: null,
 
 	controllers: [],
 	controllersToRemove: [],
@@ -752,9 +739,6 @@ meta.engine =
 	_timersToRemove: [],
 	_numTimers: 0,
 
-	unsubscribesetLeft: 0,
-	unsubscribesetTop: 0,
-
 	_onResizeCB: null,
 	_onVisibilityChangeCB: null,
 	_onFullScreenChangeCB: null,
@@ -762,11 +746,6 @@ meta.engine =
 	_onBlurCB: null,
 	_onCtxLostCB: null,
 	_onCtxRestoredCB: null,
-
-	_chnResize: null,
-	_chnFocus: null,
-	_chnFullScreen: null,
-	_chnAdapt: null,
 
 	isFocus: false,
 	isWebGL: false,

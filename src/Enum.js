@@ -7,7 +7,8 @@ meta.Event = {
 	CAMERA_RESIZE: "camera-resize",
 	FOCUS: "focus",
 	FULLSCREEN: "fullscreen",
-	ADAPT: "adapt"
+	ADAPT: "adapt",
+	DEBUG: "debug"
 };
 
 meta.Priority = {

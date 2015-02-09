@@ -1,6 +1,10129 @@
-"use strict";var meta={};meta.engine=null,meta.device=null,meta.element=null,meta.elementId="",meta.canvas=null,meta.ctx=null,meta.width=0,meta.height=0,meta.channels={},meta.shaders=null,meta.view=null,meta.loadingView=null,meta.world=null,meta.camera=null,meta.shader=null,meta.version="1.1.1",meta.enableDefault=!0,meta.enablemeta=!0,meta.enableWebGL=!0,meta.enableAdaptive=!0,meta.tUpdate=1e3/60,meta.unitSize=1,meta.unitRatio=1,meta.maxUnitSize=1,meta.maxUnitRatio=1,meta.utils={},meta.modules={},meta.importUrl="http://infinite-games.com/store/",meta._cache={ismetaAdded:!1,init:null,load:null,ready:null,scripts:null,pendingScripts:null,numScriptsToLoad:0,resolutions:null,currResolution:null},meta.Engine=function(){this.controllers=[],this.controllersToRemove=[],this._timers=[],this._timersToRemove=[],this._numTimers=0,this.unsubscribesetLeft=0,this.unsubscribesetTop=0,this._onResizeCB=null,this._onVisibilityChangeCB=null,this._onFullScreenChangeCB=null,this._onFocusCB=null,this._onBlurCB=null,this._onCtxLostCB=null,this._onCtxRestoredCB=null,this._chnResize=null,this._chnFocus=null,this._chnFullScreen=null,this._chnAdapt=null,this.isCreated=!1,this.isFocus=!1,this.isWebGL=!1,this.isInited=!1,this.isLoaded=!1,this.isLoading=!1,this.isCtrlLoaded=!1,this.isReady=!1,this.pause=!1,this.projection=null,this._updateLoop=null,this._renderLoop=null,this.tUpdate=0,this.tRender=0,this.tFPS=0,this.tNow=0,this.fps=0,this._fpsCounter=0,this.frameID=0,this.updateFrameID=0,this.enablePauseOnBlur=!0},meta.Engine.prototype={create:function(){if(this.isCreated)return console.error("[meta.Engine.create]:","Engine instance is already created."),void 0;console.log("%c META v"+meta.version+" ","background: #000; color: white; font-size: 12px; padding: 2px 0 1px 0;"),console.log("%cBrowser: %c"+meta.device.name+" "+meta.device.version+"	","font-weight: bold; padding: 2px 0 1px 0;","padding: 2px 0 1px 0;"),meta.enablemeta&&this._createmeta(),meta.shaders={},meta.views={},meta.camera=new meta.Camera,this._chnResize=meta.createChannel(meta.Event.RESIZE),this._chnFocus=meta.createChannel(meta.Event.FOCUS),this._chnFullScreen=meta.createChannel(meta.Event.FULLSCREEN),this._chnAdapt=meta.createChannel(meta.Event.ADAPT),meta.View.prototype._chnAddedToView=meta.createChannel(meta.Event.ADDED_TO_VIEW),meta.View.prototype._chnRemovedFromView=meta.createChannel(meta.Event.REMOVED_FROM_VIEW),this._resolveElement(),this._createCanvas(),this.sortAdaptions(),this.onResize(),meta.world=new meta.World(this.width,this.height);var t=this;this._onResizeCB=function(e){t.onResize()},this._onFocusCB=function(e){t.onFocusChange(!0)},this._onBlurCB=function(e){t.onFocusChange(!1)},window.addEventListener("resize",this._onResizeCB,!1),window.addEventListener("orientationchange",this._onResizeCB,!1),meta.device.hidden?(this._onVisibilityChangeCB=function(){t.onVisibilityChange()},document.addEventListener(meta.device.visibilityChange,this._onVisibilityChangeCB)):(window.addEventListener("focus",this._onFocusCB),window.addEventListener("blur",this._onBlurCB)),meta.device.support.fullScreen&&(this._onFullScreenChangeCB=function(){t.onFullScreenChangeCB()},document.addEventListener(meta.device.fullScreenOnChange,this._onFullScreenChangeCB)),this.tNow=Date.now(),this.start(),this.isCreated=!0},release:function(){return this.isCreated?(this._chnFocus.remove(),this._chnResize.remove(),this._chnFullScreen.remove(),this._chnAdapt.remove(),window.removeEventListener("resize",this._onResizeCB),window.removeEventListener("orientationchange",this._onResizeCB),meta.device.hidden?document.removeEventListener(meta.device.visibilityChange,this._onVisibilityChangeCB):(window.removeEventListener("focus",this._onFocusCB),window.removeEventListener("blur",this._onBlurCB)),meta.device.support.fullScreen&&document.removeEventListener(meta.device.visibilityChange,this._onVisibilityChangeCB),this.isWebGL&&(window.removeEventListener("webglcontextlost",this._onCtxLostCB),window.removeEventListener("webglcontextrestored",this._onCtxRestoredCB)),meta.removeAllControllers(),meta.channels=null,meta.shaders=null,meta.views=null,meta.view=null,meta.world=null,meta.shader=null,this.isCreated=!1,void 0):(console.error("[meta.Engine.release]:","Can't release uninitialized engine instance."),void 0)},start:function(){var t=new meta.View("master");meta.views.master=t,meta.view=t;var e=new meta.View("loading");e.z=999999,meta.view.loading=e,meta.loadingView=e,meta._cache.init&&"function"==typeof meta._cache.init&&meta._cache.init(),this._addCorePlugins(),this.isInited=!0,console.log(" "),this._load()},_load:function(){console.log("%c(Loading started)","background: #eee; font-weight: bold;"),this.isLoading=!0,meta._loadAllScripts()||this._continueLoad()},_continueLoad:function(){meta._cache.load&&"function"==typeof meta._cache.load&&meta._cache.load();for(var t,e=this.controllers.length,i=0;e>i;i++)t=this.controllers[i],t.load(),t.isLoaded=!0;this.isCtrlLoaded=!0,meta.view.isActive=!0,this.isLoading=!1,0===Resource.ctrl.numToLoad&&this.onResourcesLoaded()},update:function(){this.updateFrameID++,this.tNow=Date.now();var t=this.tNow-this.tUpdate;this.pause&&(t=0),t>250&&(t=250);for(var e=t/1e3,i=this.controllers.length,s=0;i>s;s++)this.controllers[s].update(e);if(this.controllersToRemove.length){for(var n,o=this.controllers.length,h=this.controllersToRemove.length,r=0;h>r;r++)for(n=this.controllersToRemove[r],s=0;o>s;s++)if(this.controllers[s]===n){this.controllers[s]=this.controllers[o-1],this.controllers.pop();break}this.controllersToRemove.length=0}meta.update&&meta.update(e),this._updateTimers(t),this.tUpdate=this.tNow;var a=Date.now(),u=Math.max(0,meta.tUpdate-(a-this.tNow));window.setTimeout(this._updateLoop,u)},_updateTimers:function(t){var e,i;for(i=0;i<this._numTimers;i++)if(e=this._timers[i],!e.isPaused)for(e.tAccumulator+=t;e.tAccumulator>=e.tDelta;)if(e.tAccumulator-=e.tDelta,0!==e.numTimes&&e.func.call(e.owner,e),e.tStart+=e.tDelta,-1!==e.numTimes&&(e.numTimes--,e.numTimes<=0)){this._timersToRemove.push(e);break}if(this._timersToRemove.length){var s,n=this._timersToRemove.length;for(i=0;n>i;i++){s=this._timersToRemove[i];for(var o=0;o<this._numTimers;o++)if(e=this._timers[o],e.id===s.id){e.onRemove&&e.onRemove(),this._timers[o]=this._timers[this._numTimers-1],this._timers.pop(),this._numTimers--;break}}}},render:function(){this.frameID++;var t=Date.now(),e=t-this.tRender;e>250&&(e=250);var i=e/1e3;t-this.tFPS>=1e3&&(this.tFPS=t,this.fps=this._fpsCounter,this._fpsCounter=0),Entity.ctrl.render(i),meta.render&&meta.render(i),this._fpsCounter++,this.tRender=t,requestAnimationFrame(this._renderLoop)},sortAdaptions:function(){var t=meta,e=t._cache.resolutions;if(e){var i=e.length;if(!(1>=i)){e.sort(function(e,i){var s=t.math.length2(e.width,e.height),n=t.math.length2(i.width,i.height);return s-n});for(var s=e[0],n,o,h=1;i>h;h++)o=e[h-1],n=e[h],n.unitSize=n.height/s.height,n.zoomThreshold=o.unitSize+(n.unitSize-o.unitSize)/100*33.3;meta.maxUnitSize=e[i-1].unitSize,meta.maxUnitRatio=1/meta.maxUnitSize,t.camera.bounds(s.width,s.height)}}},adapt:function(){var t=meta,e=t._cache.resolutions;if(!e)return!1;var i=e.length;if(1>i)return!1;for(var s,n=e[0],o=t.camera.zoom,h=i-1;h>=0;h--)if(s=e[h],o>=s.zoomThreshold){n=s;break}return n===t._cache.currResolution?!0:(t._cache.currResolution=n,t.unitSize=n.unitSize,t.unitRatio=1/t.unitSize,this._chnAdapt.emit(n,meta.Event.ADAPT),!0)},onResourcesLoaded:function(){this.isLoaded=!0,console.log("%c(Loading ended)","background: #eee; font-weight: bold;");for(var t=this.controllers.length,e=0;t>e;e++)this.controllers[e].ready();this.isReady=!0,meta._cache.ready&&"function"==typeof meta._cache.ready&&meta._cache.ready(),this._start()},onResize:function(){var t=meta,e,i;t.element===document.body?(e=window.innerWidth,i=window.innerHeight):(e=t.element.clientWidth,i=t.element.clientHeight);var s=window.devicePixelRatio;this.width=e*s|0,this.height=i*s|0,this.canvas.width=this.width,this.canvas.height=this.height,this.canvas.style.width=e+"px",this.canvas.style.height=i+"px",t.width=this.width,t.height=this.height,this.isWebGL&&(this.projection.ortho(0,this.width,this.height,0,0,100),meta.shader.uniformMatrix("projection",this.projection),this.ctx.viewport(0,0,this.width,this.height)),this._updateOffset(),this._chnResize.emit(this,meta.Event.RESIZE)},onFocusChange:function(t){this.isFocus=t,this.enablePauseOnBlur&&(this.pause=!t),this._chnFocus.emit(t,meta.Event.FOCUS)},onVisibilityChange:function(){this.onFocusChange(document[meta.device.hidden]?!1:!0)},onFullScreenChangeCB:function(){var t=document.fullscreenElement||document.webkitFullscreenElement||document.mozFullScreenElement||document.msFullscreenElement;meta.device.isFullScreen=!!t},onCtxLost:function(){console.log("(Context lost)")},onCtxRestored:function(){console.log("(Context restored)")},_resolveElement:function(){meta.elementId?(this.element=document.getElementById(meta.elementId),this.element||(console.warn("[meta.engine.create]:","Could not find element with id - "+meta.elementId),this.element=document.body)):this.element=document.body,this.element.style.cssText+=this.elementStyle,meta.element=this.element},_createmeta:function(){if(!meta._cache.ismetaAdded){var t=document.createElement("meta");t.setAttribute("http-equiv","Content-Type"),t.setAttribute("content","text/html; charset=utf-8"),document.head.appendChild(t);var e=document.createElement("meta");e.setAttribute("http-equiv","encoding"),e.setAttribute("content","utf-8"),document.head.appendChild(e);var i="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height",s=document.createElement("meta");s.setAttribute("name","viewport"),s.setAttribute("content",i),document.head.appendChild(s);var n=document.createElement("meta");n.setAttribute("name","apple-mobile-web-app-capable"),n.setAttribute("content","yes"),document.head.appendChild(n);var o=document.createElement("meta");o.setAttribute("name","apple-mobile-web-app-status-bar-style"),o.setAttribute("content","black-translucent"),document.head.appendChild(o),meta._cache.ismetaAdded=!0}},_createCanvas:function(){this.canvas=document.createElement("canvas"),this.canvas.setAttribute("id","meta-canvas"),this.canvas.style.cssText=this.canvasStyle,this.element.appendChild(this.canvas),meta.canvas=this.canvas;var t={};if(meta.enableWebGL&&meta.device.support.webgl){t.stencil=!0,t.preserveDrawingBuffer=!1,this.ctx=this.canvas.getContext("experimental-webgl",t),meta.ctx=this.ctx,this.ctx.imageSmoothingEnabled=!1,this.ctx.webkitImageSmoothingEnabled=!1,this.ctx.mozImageSmoothingEnabled=!1;var e=this;this._onCtxLostCB=function(t){e.onCtxLost()},this._onCtxRestoredCB=function(t){e.onCtxRestored()},window.addEventListener("webglcontextlost",this._onCtxLostCB),window.addEventListener("webglcontextrestored",this._onCtxRestoredCB),this._initShaders(),this.isWebGL=!0,console.log("%cRenderer: %cWebGL ","font-weight: bold; padding: 2px 0 2px 0;","padding: 2px 0 2px 0;")}else this.ctx=this.canvas.getContext("2d",t),meta.ctx=this.ctx,console.log("%cRenderer: %cCanvas ","font-weight: bold; padding: 2px 0 2px 0;","padding: 2px 0 2px 0;")},_initShaders:function(){this.projection=new meta.math.Matrix4;var t=new meta.Shader;return t.vertexShader="precision mediump float; attribute vec2 vertexPos; attribute vec2 texCoord; uniform vec2 cameraPos; uniform float zoom; uniform vec2 pos; uniform vec2 center; uniform vec2 scale; uniform vec4 frameCoord; uniform float angle; uniform mat4 projection; varying highp vec2 frameTexCoord; void main(void) { float rotX = sin(-angle);float rotY = cos(-angle);vec2 scaled = floor(vertexPos * scale);vec2 origin = vec2(scaled.x + floor(pos.x) - floor(center.x), scaled.y + floor(pos.y) - floor(center.y));vec2 newPos = vec2(origin.x * rotY + origin.y * rotX, origin.y * rotY - origin.x * rotX) + floor(center) + cameraPos;newPos *= zoom;gl_Position = projection * vec4(newPos, 0.0, 1.0);frameTexCoord = vec2(frameCoord.x + (texCoord.x * frameCoord.z), frameCoord.y + (texCoord.y * frameCoord.w)); }",t.fragmentShader="precision mediump float; uniform sampler2D sampler; uniform float alpha; varying highp vec2 frameTexCoord; void main(void) { vec4 color = texture2D(sampler, frameTexCoord); color.a *= alpha; gl_FragColor = color; }",meta.shaders.default=t,t.compile()?(meta.setShader("default"),t.bindAttrib("vertexPos"),t.bindAttrib("texCoord"),void 0):(console.error("[meta.Engine._initShaders]:","Could not compile shaders."),void 0)},_updateOffset:function(){this.unsubscribesetLeft=0,this.unsubscribesetTop=0;var t=meta.element;if(t.unsubscribesetParent)do this.unsubscribesetLeft+=t.unsubscribesetLeft,this.unsubscribesetTop+=t.unsubscribesetTop;while(t=t.unsubscribesetParent);var e=meta.element.getBoundingClientRect();this.unsubscribesetLeft+=e.left,this.unsubscribesetTop+=e.top},_addCorePlugins:function(){meta.register("Resource"),meta.register("UI"),meta.register(this.isWebGL?"Entity.WebGLRenderer":"Entity.CanvasRenderer"),meta.register("Input")},_start:function(){var t=this;this._updateLoop=function(){t.update()},this._renderLoop=function(){t.render()},this.tUpdate=Date.now(),this.tRender=this.tUpdate,this.tFPS=this.tUpdate,setTimeout(this._updateLoop),requestAnimationFrame(this._renderLoop)},fullscreen:function(t){var e=meta.device;if(e.isFulScreen!==t)if(t){if(!e.support.fullScreen)return console.warn("[meta.engine.enterFullScreen]:","Device does not support fullscreen."),void 0;document.documentElement[e.fullScreenRequest](Element.ALLOW_KEYBOARD_INPUT)}else document[meta.device.fullScreenExit]()},toggleFullscreen:function(){this.fullscreen(!meta.device.isFullScreen)},elementStyle:"padding:0; margin:0;",canvasStyle:"position:absolute; overflow:hidden; translateZ(0); -webkit-backface-visibility:hidden; -webkit-perspective: 1000; -webkit-touch-callout: none; -webkit-user-select: none;"},meta.__defineSetter__("init",function(t){meta._cache.init=t,meta.engine&&meta.engine.isInited&&t()}),meta.__defineSetter__("load",function(t){meta._cache.load=t,meta.engine&&meta.engine.isLoaded&&t()}),meta.__defineSetter__("ready",function(t){meta._cache.ready=t,meta.engine&&meta.engine.isReady&&t()}),meta.__defineGetter__("init",function(){return meta._cache.init}),meta.__defineGetter__("load",function(){return meta._cache.load}),meta.__defineGetter__("ready",function(){return meta._cache.ready}),meta.render=null,meta.update=null,"use strict",meta.Device=function(){this.name="unknown",this.version="0",this.versionBuffer=null,this.vendors=["","webkit","moz","ms","o"],this.support={},this.audioFormats=[],this.isMobile=!1,this.isPortrait=!1,this.isAudioAPI=!1,this.hidden=null,this.visibilityChange=null,this.fullScreenRequest=null,this.fullScreenExit=null,this.fullScreenOnChange=null,this.isFullScreen=!1},meta.Device.prototype={load:function(){this.checkBrowser(),this.isMobile=this.isMobileAgent(),this.support.onloadedmetadata="object"==typeof window.onloadedmetadata,this.support.onkeyup="object"==typeof window.onkeyup,this.support.onkeydown="object"==typeof window.onkeydown,this.support.canvas=this.isCanvasSupport(),this.support.webgl=this.isWebGLSupport(),this.modernize()},checkBrowser:function(){var t={Chrome:[/Chrome\/(\S+)/],Firefox:[/Firefox\/(\S+)/],MSIE:[/MSIE (\S+);/],Opera:[/OPR\/(\S+)/,/Opera\/.*?Version\/(\S+)/,/Opera\/(\S+)/],Safari:[/Version\/(\S+).*?Safari\//]},e=navigator.userAgent,i,s,n,o=2;for(i in t)for(;s=t[i].shift();)if(n=e.match(s)){this.version=n[1].match(new RegExp("[^.]+(?:.[^.]+){0,"+--o+"}"))[0],this.name=i,this.versionBuffer=this.version.split(".");for(var h=this.versionBuffer.length,r=0;h>r;r++)this.versionBuffer[r]=parseInt(this.versionBuffer[r]);break}(null===this.versionBuffer||"unknown"===this.name)&&console.warn("[meta.Device.checkBrowser]:","Could not detect browser.")},modernize:function(){this.supportConsole(),this.supportPageVisibility(),this.supportFullScreen(),this.supportRequestAnimFrame(),this.supportPerformanceNow(),this.supportAudioFormats(),this.supportAudioAPI()},isMobileAgent:function(){return/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)},isCanvasSupport:function(){return!!window.CanvasRenderingContext2D},isWebGLSupport:function(){var t=document.createElement("canvas"),e=t.getContext("webgl")||t.getContext("experimental-webgl");return!!e},supportConsole:function(){window.console||(window.console={},window.console.log=meta.emptyFuncParam,window.console.warn=meta.emptyFuncParam,window.console.error=meta.emptyFuncParam)},supportPageVisibility:function(){void 0!==document.hidden?(this.hidden="hidden",this.visibilityChange="visibilitychange"):void 0!==document.hidden?(this.hidden="webkitHidden",this.visibilityChange="webkitvisibilitychange"):void 0!==document.hidden?(this.hidden="mozhidden",this.visibilityChange="mozvisibilitychange"):void 0!==document.hidden&&(this.hidden="mshidden",this.visibilityChange="msvisibilitychange")},supportFullScreen:function(){this._fullScreenRequest(),this._fullScreenExit(),this._fullScreenOnChange(),this.support.fullScreen=document.fullscreenEnabled||document.mozFullScreenEnabled||document.webkitFullscreenEnabled||document.msFullscreenEnabled},_fullScreenRequest:function(){var t=document.documentElement;void 0!==t.requestFullscreen?this.fullScreenRequest="requestFullscreen":void 0!==t.webkitRequestFullscreen?this.fullScreenRequest="webkitRequestFullscreen":void 0!==t.mozRequestFullScreen?this.fullScreenRequest="mozRequestFullScreen":void 0!==t.msRequestFullscreen&&(this.fullScreenRequest="msRequestFullscreen")},_fullScreenExit:function(){void 0!==document.exitFullscreen?this.fullScreenExit="exitFullscreen":void 0!==document.webkitExitFullscreen?this.fullScreenExit="webkitExitFullscreen":void 0!==document.mozCancelFullScreen?this.fullScreenExit="mozCancelFullScreen":void 0!==document.msExitFullscreen&&(this.fullScreenExit="msExitFullscreen")},_fullScreenOnChange:function(){void 0!==document.onfullscreenchange?this.fullScreenOnChange="fullscreenchange":void 0!==document.onwebkitfullscreenchange?this.fullScreenOnChange="webkitfullscreenchange":void 0!==document.onmozfullscreenchange?this.fullScreenOnChange="mozfullscreenchange":void 0!==document.onmsfullscreenchange&&(this.fullScreenOnChange="msfullscreenchange")},supportRequestAnimFrame:function(){window.requestAnimationFrame||(window.requestAnimationFrame=function(){return window.webkitRequestAnimationFrame||window.mozRequestAnimationFrame||window.oRequestAnimationFrame||window.msRequestAnimationFrame||function(t,e){window.setTimeout(t,1e3/60)}}())},supportPerformanceNow:function(){void 0===window.performance&&(window.performance={}),void 0===window.performance.now&&(window.performance.now=Date.now)},supportAudioFormats:function(){var t=document.createElement("audio");""!=t.canPlayType('audio/mp4; codecs="mp4a.40.2"').replace(/no/i,"")&&this.audioFormats.push("m4a"),t.canPlayType('audio/ogg; codecs="vorbis"').replace(/no/,"")&&this.audioFormats.push("ogg"),t.canPlayType("audio/mpeg;").replace(/no/,"")&&this.audioFormats.push("mp3"),t.canPlayType('audio/wav; codecs="1"').replace(/no/,"")&&this.audioFormats.push("wav")},supportAudioAPI:function(){window.AudioContext||(window.AudioContext=window.webkitAudioContext||window.mozAudioContext||window.oAudioContext||window.msAudioContext)}},function(){meta.device=new meta.Device,meta.device.load()}(),"use strict",meta.device.isMobile&&(window.onerror=function(t,e,i){alert(e+": "+i+" "+t)}),"use strict",meta.emptyFunc=function(){},meta.emptyFuncParam=function(t){},meta.loadTexture=function(t,e,i){meta._loadResource("Texture",t,e,i)||console.warn("[meta.loadTexture]:","Unsupported parameter was passed.")},meta.preloadTexture=function(t,e,i){meta._preloadResource("Texture",t,e,i)||console.warn("[meta.preloadTexture]:","Unsupported parameter was passed.")},meta.loadSound=function(t,e){meta._loadResource("Sound",t,e)||console.warn("[meta.loadSound]:","Unsupported parameter was passed.")},meta.preloadSound=function(t,e){meta._preloadResource("Sound",t,e)||console.warn("[meta.preloadSound]:","Unsupported parameter was passed.")},meta.loadSpriteSheet=function(t,e){meta._preloadResource("SpriteSheet",t,e)||console.warn("[meta.loadSpriteSheet]:","Unsupported parameter was passed.")},meta.loadFont=function(t,e){meta._preloadResource("Font",t,e)||console.warn("[meta.loadFont]:","Unsupported parameter was passed.")},meta._loadResource=function(t,e,i){if(i){var s=i.lastIndexOf("/");0>=s&&(i+="/")}else i="";if(e instanceof Array)for(var n=e.length,o=0;n>o;o++)meta._addResource(t,e[o],i);else{if("object"!=typeof e&&"string"!=typeof e)return!1;meta._addResource(t,e,i)}return!0},meta._preloadResource=function(t,e,i){if(i){var s=i.lastIndexOf("/");s!==i.length-1&&(i+="/")}else i="";if(e instanceof Array)for(var n=e.length,o=0;n>o;o++)meta._addResource(t,e[o],i).load();else{if("object"!=typeof e&&"string"!=typeof e)return!1;meta._addResource(t,e,i).load()}return!0},meta._addResource=function(t,e,i){var s;return s="object"==typeof e?new Resource[t](e,i+e.path):new Resource[t](i+e),Resource.ctrl.add(s),s},meta.getTexture=function(t){return Resource.ctrl.getTexture(t)},meta.getSound=function(t){return Resource.ctrl.getSound(t)},meta.createCtrl=function(t,e){if(!t)return console.error("[meta.createCtrl]:","No controller name is defined."),null;var i=t.split(".");if(i.length>2)return console.error("[meta.createCtrl]:",'Name should be in format "MyScope.Controller".'),null;var s=i[0],n=window[s];if(!n)return console.error("[meta.createCtrl]:","No such scope defined: "+s),null;var o;if(o=1===i.length?"Controller":i[1],!n[o])return console.error("[meta.createCtrl]:","No Controller ("+o+") found in scope: "+s),null;e=e||meta.view;var h=new n[o](e);return h.name=s,h.view=e,h},meta.addCtrl=function(t){if(!t)return console.error("[meta.addCtrl]:","Invalid controller passed."),void 0;var e=window[t.name];return e.ctrl?(console.error("[meta.addCtrl]:","Controller ("+t.name+") is already added in scope."),void 0):(e.ctrl=t,meta.engine.controllers.push(t),meta.engine.isCtrlLoaded&&t.load(),meta.engine.isReady&&t.ready(),void 0)},meta.removeCtrl=function(t){if(!t)return console.error("[meta.addCtrl]:","Invalid controller passed."),void 0;var e=window[t.name];return e.ctrl?e.ctrl!==t?(console.error("[meta.removeCtrl]:","Controller ("+t.name+") is not the same what is already added to the scope."),void 0):(t.unload(),t.release(),meta.engine.controllersToRemove.push(t),void 0):(console.error("[meta.removeCtrl]:","No controller added to the scope."),void 0)},meta.register=function(t,e){var i=meta.createCtrl(t,e);if(i){var s=window[i.name];if(s.ctrl)return console.error("[meta.register]:","Controller ("+i.name+") is already added in scope."),null;s.ctrl=i,meta.engine.controllers.push(i),meta.engine.isCtrlLoaded&&i.load(),meta.engine.isReady&&i.ready()}},meta.unregister=function(t){if(!t)return console.error("[meta.unregister]:","No controller name is defined."),void 0;var e=t.split(".");if(e.length>2)return console.error("[meta.unregister]:",'Name should be in format "MyScope.Controller".'),void 0;var i=e[0],s=window[i];if(!s)return console.error("[meta.unregister]:","No such scope defined: "+i),void 0;if(s[i])return console.error("[meta.unregister]:","Controller ("+i+") is already added in scope."),void 0;var n;if(n=1===e.length?"Controller":e[1],!s[n])return console.error("[meta.unregister]:","No Controller ("+n+") found in scope: "+i),void 0;var o=s.ctrl;return o?(o.unload(),o.release(),meta.engine.controllersToRemove.push(o),void 0):(console.error("[meta.unregister]:","No Controller ("+n+") found in scope: "+i),void 0)},meta.unregisterAll=function(){for(var t,e=meta.engine.controllers,i=e.length,s=0;i>s;s++)t=window[e[s].name].ctrl,t.unload(),t.release(),window[e[s].name].ctrl=null;e.length=0},meta.onDomLoad=function(t){if(("interactive"===document.readyState||"complete"===document.readyState)&&!meta.debug)return t(),void 0;var e=function(i){t(),window.removeEventListener("DOMContentLoaded",e)};window.addEventListener("DOMContentLoaded",e)},meta.createEngine=function(){meta.onDomLoad(function(){return meta.engine?(meta.engine.release(),void 0):(meta.engine=new meta.Engine,meta.engine.create(),void 0)})},meta.enumToString=function(t,e){if(void 0===t)return"unknown";for(var i in t)if(t[i]===e)return i;return"unknown"},meta.hexToRgb=function(t){t.length<6&&(t+=t.substr(1,4));var e=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(t);return{r:parseInt(e[1],16),g:parseInt(e[2],16),b:parseInt(e[3],16)}},meta.isUrl=function(t){return-1!==t.indexOf("http://")||-1!==t.indexOf("https://")?!0:!1},meta.toUpperFirstChar=function(t){return t.charAt(0).toUpperCase()+t.slice(1)},meta.loadScript=function(t,e){meta.engine&&meta.engine.isLoaded?meta._loadScript({s:t,c:callback}):(meta._cache.scripts||(meta._cache.scripts=[]),meta._cache.scripts.push({s:t,c:e}))},meta._loadScript=function(t){var e=document.createElement("script"),i=document.scripts[0];"async"in i?(e.async=!1,e.onload=t.c,e.src=t.s,document.head.appendChild(e)):i.readyState?(meta._cache.pendingScripts||(meta._cache.pendingScripts=[]),meta._cache.pendingScripts.push(e),e.onreadystatechange=meta._onReadyStateChange,e.src=t.s):document.write("<script src='"+src+" defer></script>")},meta._onReadyStateChange=function(){for(var t,e=meta._cache.pendingScripts;e[0]&&"loaded"===e[0].s.readyState;)t=e.shift(),t.s.onreadystatechange=null,document.scripts[0].parentNode.insertBefore(t.s,firstScript),t.c&&t.c()},meta._loadAllScripts=function(){var t=meta._cache.scripts;if(!t)return!1;var e=t.length;if(0===e)return!1;var i=function(){var t=meta._cache;t.numScriptsToLoad--;var e=meta._cache.scripts,s=e.length;if(s>0){t.numScriptsToLoad+=s,t.scripts=[];for(var n,o=0;s>o;o++)n=e[o],n.c=i,meta._loadScript(n)}0===t.numScriptsToLoad&&(t.scripts=null,meta.engine._continueLoad())},s,n=meta._cache;n.numScriptsToLoad+=t.length,n.scripts=[];for(var o=0;e>o;o++)s=t[o],s.c=i,meta._loadScript(s);return!0},meta.import=function(t){if(t){var e=t.split("/"),i=e[0],s;1===e.length?(s="latest",t+="/latest"):s=e[e.length-1];var n=meta.modules[i];if(n)return n.version!==s&&console.error("[meta.loadPackage]:","There is already added module ["+n.name+"] but with different version: "+n.version),void 0;n={name:i,version:s},meta.modules[i]=n,meta.isUrl(t)||(t=meta.importUrl+t+"/module.js"),meta.loadScript(t,null)}},meta.serialize=function(t){var e=[];for(var i in t)e.push(encodeURIComponent(i)+"="+encodeURIComponent(t[i]));return e.join("&")},meta.addDescription=function(t){var e=new Entity.Text(t);e.color="#ffffff",e.anchor(.5);var i=new Resource.Texture;i.fillRect({width:e.width+10,height:e.height+10,color:"#000000"});var s=new Entity.Geometry(i);s.z=9999,s.anchor(.5,0),s.positionTop(0,10),s.isPickable=!1,s.ignoreZoom=!0,s.disableDebug=!0,meta.view.add(s),s.attach(e)},meta.adaptTo=function(t,e,i){var s=meta._cache.resolutions;s||(s=[],meta._cache.resolutions=s);var n=i.charAt(i.length-1);"/"!==n&&(i+="/");var o={width:t,height:e,path:i,unitSize:1,zoomThreshold:1};s.push(o)},"use strict",meta.Channel=function(t){this.name=t,this.subs=[],this.numSubs=0,this._isEmiting=!1,this._subsToRemove=null},meta.Channel.prototype={remove:function(){meta.channels[this.name]=null},emit:function(t,e){this._isEmiting=!0;for(var i,s=0;s<this.numSubs;s++)i=this.subs[s],i.func.call(i.owner,t,e);if(this._isEmiting=!1,this._subsToRemove){for(var n=this._subsToRemove.length,o=0;n>o;o++)this.unsubscribe(this._subsToRemove[o]);this._subsToRemove=null}},subscribe:function(t,e){if(!e)return console.warn("[meta.Channel.subscribe]:","No callback function passed."),void 0;for(var i=0;i<this.numSubs;i++)if(this.subs[i].owner===t)return console.warn("[meta.Channel.subscribe]:","Already subscribed to channel: "+this.name),void 0;var s=new meta.Subscriber(t,e);this.subs.push(s),this.numSubs++},unsubscribe:function(t){if(this._isEmiting)return this._subsToRemove||(this._subsToRemove=[]),this._subsToRemove.push(t),void 0;for(var e,i=0;i<this.numSubs;i++)if(e=this.subs[i],e.owner===t){this.subs[i]=this.subs[this.numSubs-1],this.subs.pop(),this.numSubs--;break}}},meta.Subscriber=function(t,e){this.owner=t,this.func=e},meta.createChannel=function(t){if(!t)return console.warn("[meta.createChannel]:","No name was specified!"),null;var e=meta.channels[t];return e||(e=new meta.Channel(t),meta.channels[t]=e),e},meta.releaseChannel=function(t){return t?(meta.channels[t]&&(meta.channels[t]=null),void 0):(console.warn("[meta.releaseChannel]:","No name was specified!"),void 0)},meta.subscribe=function(t,e,i){if("object"!=typeof t)return console.warn("[meta.subscribe]:","No owner passed."),void 0;if(!i)return console.warn("[meta.subscribe]:","No callback function passed."),void 0;if("string"!=typeof e){if("[object Array]"===Object.prototype.toString.call(e)){for(var s=e.length,n=0;s>n;n++)meta.subscribe(t,e[n],i);return}return console.warn("[meta.subscribe]:","Wrong type for channel object: "+typeof e),void 0}var o=meta.channels[e];if(o)e=o;else if(e=meta.createChannel(e),!e)return;e.subscribe(t,i)},meta.unsubscribe=function(t,e){if("string"!=typeof e){if("[object Array]"===Object.prototype.toString.call(e)){for(var i=e.length,s=0;i>s;s++)meta.unsubscribe(t,e[s]);return}return console.warn("[meta.unsubscribe]:","Wrong type for channel object."),void 0}return e=meta.channels[e],e?(e.unsubscribe(t),void 0):(console.warn("[meta.unsubscribe]:","No name was specified!"),void 0)},meta.emit=function(t,e,i){return"string"!=typeof t||(t=meta.channels[t],t)?(t.emit(e,i),void 0):(console.warn("[meta.emit]:","No name was specified!"),void 0)},"use strict",meta.View=function(t){this.name=t,this.entities=[],this.views=null,this.parentView=null,this.numEntities=0,this._x=0,this._y=0,this._z=0,this._tween=null,this.bgColor=this._bgColor,this._isActive=!1},meta.View.prototype={release:function(){if(this.parentView&&this.parentView.detach(this),this.views)for(var t=this.views.length,e=0;t>e;e++)this.views[e].release();this.isActive=!1,this._unregisterFromEngine();for(var i,s=this.entities.length,n=0;s>n;n++)i=this.entities[n],i._view=null,i.remove();this.entities.length=0,this.numEntities=0},add:function(t){return t instanceof Entity.Geometry?t.isRemoved?(console.warn("[meta.View.add]:","Removed entity can not be added to the view."),void 0):t._view?(t._view===this?console.warn("[meta.View.add]:","Entity is already added to this view."):console.warn("[meta.View.add]:","Entity is already added to some other view."),void 0):((0!==this._x||0!==this._y)&&t.updatePos(),this.entities.push(t),this.numEntities++,this._attachChildren(t.children),t._view=this,t._viewNodeID=this.numEntities,this._z&&(t.z=t._z),t.texture||(t.isLoaded=!0),t._onResize&&t._onResize(meta.engine,null),this._isActive&&!t._depthNode.entity&&Entity.ctrl.isLoaded&&this._chnAddedToView.emit(t,meta.Event.ADDED_TO_VIEW),void 0):(console.warn("[meta.View.add]:","Object should have inherited Entity.Geometry class."),void 0)},_attachChildren:function(t){if(t)for(var e,i=t.length,s=0;i>s;s++)e=t[s],e.isRemoved||(this._attachChildren(e.children),e._view=this)},remove:function(t){return t._view?t._view!==this?(console.warn("[meta.View.remove]:","Entity is part of other view: "+t.view.name),void 0):t._parent!==t._entityCtrl?(console.warn("[meta.View.remove]:","Entity children are not part of view."),void 0):(this._removeFromBuffer(t),this._isActive?this._chnRemovedFromView.emit(t,meta.Event.REMOVED_FROM_VIEW):t.removeFully(),void 0):(console.warn("[meta.View.remove]:","Entity does not have view."),void 0)},_removeFromBuffer:function(t){var e=this.entities[this.numEntities-1];e._viewNodeID=t._viewNodeID,this.entities[t._viewNodeID]=e,this.entities.pop(),this.numEntities--,t._view=null,this._removeChildren(t.children)},_removeChildren:function(t){if(t)for(var e,i=t.length,s=0;i>s;s++)e=t[s],this._removeChildren(e),e._view=null},attach:function(t){if(!t)return this.parentView?(console.warn("[meta.View.attach]:","No view was passed."),void 0):(meta.view.attach(this),void 0);
-if("string"==typeof t){var e=meta.views[t];if(!e)return console.warn("[meta.View.attach]:","No such view found: "+t),void 0;t=e}else if(!(t instanceof meta.View))return console.warn("[meta.View.attach]:","Trying to attach invalid view object."),void 0;return t._isActive?(console.warn("[meta.View.attach]:","Can't attach an active view."),void 0):t.parentView?(console.warn("[meta.View.attach]:","View is already part of other view."),void 0):(this.views||(this.views=[]),this.views.push(t),t.parentView=this,this._isActive&&(t.isActive=!0),void 0)},detach:function(t){if(!t)return this.parentView?(this.parentView.detach(this),void 0):(console.warn("[meta.view.detach]:","No view was passed."),void 0);if("string"==typeof t){var e=meta.views[t];if(!e)return console.warn("[meta.View.detach]:",'No such view found: "'+t+'"'),void 0;t=e}if(!t.parentView)return console.warn("[meta.View.detach]:","View has not parents to detach from."),void 0;if(t.parentView!==this)return console.warn("[meta.View.detach]:","Detaching from wrong parent."),void 0;for(var i=this.views.length,s=0;i>s;s++)if(this.views[s]===t){this.views[s]=this.views[i-1],this.views.pop();break}t.isActive=!1,t.parentView=null},detachAll:function(){if(this.views){for(var t,e=this.views.length,i=this.views.length,s=0;i>s;s++)t=this.views[s],t.isActive=!1,t.parentView=null;this.views.length=0}},register:function(t){var e=meta.createCtrl(t,this);this.controllers?this.controllers.push(e):this.controllers=[e],this._isActive&&(!this.parentView||this.parentView._isActive)&&meta.addCtrl(e)},unregister:function(t){for(var e=this.controllers.length,i=0;e>i;i++)this.controllers[i].name===t&&(this._isActive&&meta.unregister(t),this.controllers[i]=this.controllers[e-1],this.controllers.pop())},_unregisterFromEngine:function(){if(this.controllers)for(var t=this.controllers.length,e=0;t>e;e++)meta.unregister(this.controllers[e])},_addEntities:function(){this.numEntities>0&&this._chnAddedToView.emit(this.entities,meta.Event.ADDED_TO_VIEW)},_removeEntities:function(){this.numEntities>0&&this._chnRemovedFromView.emit(this.entities,meta.Event.REMOVED_FROM_VIEW)},_makeActive:function(){var t;if(this.controllers){var e=this.controllers.length;for(t=0;e>t;t++)meta.addCtrl(this.controllers[t])}if(this._addEntities(),this.views){var i=this.views.length;for(t=0;i>t;t++)this.views[t].isActive=!0}},_makeInactive:function(){var t;if(this.controllers){var e=this.controllers.length;for(t=0;e>t;t++)meta.removeCtrl(this.controllers[t])}if(this._removeEntities(),this.views){var i=this.views.length;for(t=0;i>t;t++)this.views[t].isActive=!1}},set bgColor(t){if(meta.engine.isWebGL){3===t.length&&(t+=t.substr(1,3));var e=meta.hexToRgb(t);e.r>0&&(e.r=e.r/255),e.g>0&&(e.g=e.g/255),e.b>0&&(e.b=e.b/255),meta.ctx.clearColor(e.r,e.g,e.b,1)}else this._bgColor=t},get bgColor(){return this._bgColor},set isActive(t){if(this._isActive!==t)if(t){if(this.parentView&&!this.parentView._isActive)return;this._isActive=t,this._makeActive()}else this._isActive=t,this._makeInactive()},get isActive(){return this._isActive},set x(t){if(this._x!==t){this._x=t;for(var e,i=this.entities.length,s=0;i>s;s++)e=this.entities[s],e.forcePosition(e._x,e._y)}},set y(t){if(this._y!==t){this._y=t;for(var e,i=this.entities.length,s=0;i>s;s++)e=this.entities[s],e.forcePosition(e._x,e._y)}},set z(t){this._z=t;for(var e=this.entities.length,i=0;e>i;i++)this.entities[i].z=this.entities[i]._z},get x(){return this._x},get y(){return this._y},get z(){return this._z},get tween(){return this._tween||(this._tween=new meta.Tween(this)),this._tween},controllers:null,_bgColor:"#888888",bgTransparent:!1},meta.createView=function(t,e){if(!t||"string"!=typeof t)return console.error("[meta.createView]:","Invalid name of the view."),void 0;var i=meta.views[t];if(i)return console.error("[meta.createView]:","View with a name - "+t+", already exist!"),void 0;if(i=new meta.View(t),meta.views[t]=i,e)if(e instanceof Array)for(var s=e.length,n=0;s>n;n++)i.register(e[n]);else i.register(e)},meta.setView=function(t){return t?("string"==typeof t&&(t=meta.views[t],t||(t=new meta.View(name),meta.views[name]=t)),meta.view.detachAll(),meta.view.attach(t),void 0):(console.error("[meta.setView]:","No view passed."),void 0)},meta.getView=function(t){if(!t)return console.error("[meta.getView]:","No name specified!"),null;var e=meta.views[t];return e||(e=new meta.View(t),meta.views[t]=e),e},meta.attachView=function(t){if(!meta.view)return console.warn("[meta.attachView]:","No current active view."),void 0;if("string"==typeof t){var e=meta.views[t];if(!e)return console.warn("[meta.attachView]:","No such view found: "+t),void 0;t=e}meta.view.attach(t)},meta.detachView=function(t){if(!meta.view)return console.warn("[meta.detachView]:","No current active view."),void 0;if("string"==typeof t){var e=meta.views[t];if(!t)return console.warn("[meta.detachView]:","No such view found: "+t),void 0;t=e}meta.view.detach(t)},"use strict",meta.Camera=function(){this._x=0,this._y=0,this.volume=new meta.math.AdvAABB(0,0,0,0),this.zoomBounds=null,this._zoom=1,this.prevZoom=1,this.zoomRatio=1,this._draggable=!1,this._isDraggable=!1,this._isAutoZoom=!1,this._enableBorderIgnore=!0,this._enableCentering=!1,this._enableCenteringX=!0,this._enableCenteringY=!0,this._chnMove=null,this._chnResize=null,this._wasMoved=!1,this.init()},meta.Camera.prototype={init:function(){this._chnMove=meta.createChannel(meta.Event.CAMERA_MOVE),this._chnResize=meta.createChannel(meta.Event.CAMERA_RESIZE),meta.subscribe(this,meta.Event.RESIZE,this._onResize),meta.subscribe(this,meta.Event.WORLD_RESIZE,this._onWorldResize),this.zoomBounds={width:-1,height:-1,minWidth:-1,minHeight:-1,maxWidth:-1,maxHeight:-1}},release:function(){this._chnMove.release(),meta.unsubscribe(this,meta.Event.RESIZE),meta.unsubscribe(this,meta.Event.WORLD_RESIZE)},updateView:function(){if(this._isAutoZoom?this.updateAutoZoom():this.updateZoom(),!this._wasMoved){if(this._enableCentering){var t=meta.world;this._x=this._enableCenteringX?Math.floor((this.volume.width-t.width)/2):0,this._y=this._enableCenteringY?Math.floor((this.volume.height-t.height)/2):0}else this._x=0,this._y=0;this.volume.move(this._x,this._y)}this._chnMove.emit(this,meta.Event.CAMERA_MOVE)},updateZoom:function(){this.prevZoom!==this._zoom&&(this.zoomRatio=1/this._zoom,this.volume.scale(this.zoomRatio,this.zoomRatio),this._chnResize.emit(this,meta.Event.CAMERA_RESIZE))},updateAutoZoom:function(){var t=meta,e=this.zoomBounds.width,i=this.zoomBounds.height,s=t.width/e,n=t.height/i;this.prevZoom=this._zoom,this._zoom=s,s>n&&(this._zoom=n),t.engine.adapt()&&(e=this.zoomBounds.width,i=this.zoomBounds.height,s=t.width/e,n=t.height/i,this._zoom=s,s>n&&(this._zoom=n),this.volume.resize(t.width,t.height)),this.updateZoom()},bounds:function(t,e){this._isAutoZoom=!0,this.zoomBounds.width=t,this.zoomBounds.height=e,(0!==this.width||0!==this.height)&&this.updateView()},minBounds:function(t,e){this._isAutoZoom=!0,this.zoomBounds.minWidth=t,this.zoomBounds.minHeight=e,this.updateView()},maxBounds:function(t,e){this._isAutoZoom=!0,this.zoomBounds.maxWidth=t,this.zoomBounds.maxHeight=e,this.updateView()},_onInput:function(t,e){var i=Input.Event;if(e===i.INPUT_MOVE)this._drag(t);else if(e===i.INPUT_DOWN){if(0!==t.keyCode)return;this._startDrag(t)}else if(e===i.INPUT_UP){if(0!==t.keyCode)return;this._endDrag(t)}},_onResize:function(t,e){this.volume.resize(t.width,t.height),this.updateView(),this._chnResize.emit(this,meta.Event.CAMERA_RESIZE)},_onWorldResize:function(t,e){},_startDrag:function(t){this._draggable&&(this._isDraggable=!0)},_endDrag:function(t){this._isDraggable=!1},_drag:function(t){if(this._isDraggable){var e=meta,i=(t.screenX-t.prevScreenX)*this.zoomRatio,s=(t.screenY-t.prevScreenY)*this.zoomRatio;this._x+=i,this._y+=s,this.volume.move(-i,-s),this._wasMoved=!0,this.enableBorderIgnore||(-this._x<0&&(this._x=0),-this._y<0&&(this._y=0)),this._chnMove.emit(this,e.Event.CAMERA_MOVE)}},set x(t){this._x!==t&&(this._x=t,this._wasMoved=!0,this.updateView())},set y(t){this._y!==t&&(this._y=t,this._wasMoved=!0,this.updateView())},get x(){return this._x},get y(){return this._y},get width(){return this.volume.width},get height(){return this.volume.height},set zoom(t){this._zoom!==t&&(this.prevZoom=this._zoom,this._zoom=t,this.updateView())},get zoom(){return this._zoom},set enableBorderIgnore(t){this._enableBorderIgnore=t,this.updateView()},get enableBorderIgnore(){return this._enableBorderIgnore},set draggable(t){this._draggable!==t&&(this._draggable=t,t?meta.subscribe(this,[Input.Event.INPUT_DOWN,Input.Event.INPUT_UP,Input.Event.INPUT_MOVE],this._onInput):(meta.unsubscribe(this,[Input.Event.INPUT_DOWN,Input.Event.INPUT_UP,Input.Event.INPUT_MOVE]),this._isDraggable=!1))},get draggable(){return this._draggable},set isAutoZoom(t){this._isAutoZoom!==t&&(this._isAutoZoom=t,this.updateView())},get isAutoZoom(){return this._isAutoZoom},set enableCentering(t){this._enableCentering=t,this.updateView()},set enableCenteringX(t){this._enableCenteringX=t,this.updateView()},set enableCenteringY(t){this._enableCenteringY=t,this.updateView()},get enableCentering(){return this._enableCentering},get enableCenteringX(){return this._enableCenteringX},get enableCenteringY(){return this._enableCenteringY}},"use strict",meta.World=function(t,e){this.chn=null,this.volume=new meta.math.AdvAABB(0,0,0,0),this.minWidth=-1,this.minHeight=-1,this.maxHeight=-1,this.maxHeight=-1,this.centerX=0,this.centerY=0,this.gridX=0,this.gridY=0,this.gridWidth=0,this.gridHeight=0,this.numGridX=0,this.numGridY=0,this.haveGrid=!1,this._discardUnusedSpace=!1,this.lockGrid=!1,this.showBounds=!1,this.init(t,e)},meta.World.prototype={init:function(t,e){this.bounds(t,e),this.chn=meta.createChannel(meta.Event.WORLD_RESIZE),meta.subscribe(this,meta.Event.CAMERA_RESIZE,this.onCameraResize)},updateVolume:function(){var t=meta,e=t.camera.width+.5|0,i=t.camera.height+.5|0;this.centerX=e/2,this.centerY=i/2,this.volume.resize(e,i),this.chn&&this.chn.emit(t.Event.WORLD_RESIZE,this)},bounds:function(t,e){this.volume.resize(t,e),this.updateVolume()},minBounds:function(t,e){this.minWidth=t,this.minHeight=e,this.updateVolume()},maxBounds:function(t,e){this.maxWidth=t,this.maxHeight=e,this.updateVolume()},setGrid:function(t){t.x=t.x||0,t.y=t.y||0,t.width=t.width||16,t.height=t.height||16,t.sizeX=t.sizeX||1,t.sizeY=t.sizeY||1,this.setGridPosition(t.x,t.y),this.setGridResolution(t.width,t.height),this.setGridSize(t.sizeX,t.sizeY)},setGridResolution:function(t,e){this.gridWidth=t,this.gridHeight=e,this.haveGrid=t||e,this.lockGrid||(this.numGridX=Math.floor(this.width/t),this.numGridY=Math.floor(this.height/e)),this.haveGrid&&this._discardUnusedSpace&&this.setBounds(this.numGridX*this.gridWidth,this.numGridY*this.gridHeight)},setGridSize:function(t,e){if(this.numGridX=t,this.numGridY=e,this.lockGrid=t||e,this.haveGrid){var i=this.numGridX*this.gridWidth,s=this.numGridY*this.gridHeight;this.width>i&&(i=this.width),this.height>s&&(s=this.height),this.setBounds(i,s),this.lockGrid||(this.numGridX=Math.floor(this.width/this.gridWidth),this.numGridY=Math.floor(this.height/this.gridHeight))}},setGridPosition:function(t,e){this.gridX=t,this.gridY=e},getGridPosX:function(t){return this.gridX+this.gridWidth*t},getGridPosY:function(t){return this.gridY+this.gridHeight*t},getGridFromWorldX:function(t){var e=Math.floor((t-this.gridX)/this.gridWidth);return-1>e?e=-1:e>=this.numGridX&&(e=-1),e},getGridFromWorldY:function(t){var e=Math.floor((t-this.gridY)/this.gridHeight);return-1>e?e=-1:e>=this.numGridY&&(e=-1),e},get randX(){return meta.random.number(0,this.volume.width)},get randY(){return meta.random.number(0,this.volume.height)},onCameraResize:function(t,e){this.updateVolume()},set discardUnusedSpace(t){this._discardUnusedSpace=t,t&&this.haveGrid&&this.setBounds(this.gridX+this.numGridX*this.gridWidth,this.gridY+this.numGridY*this.gridHeight)},get discardUnusedSpace(){return this._discardUnusedSpace},get left(){return this.volume.minX},get right(){return this.volume.maxX},get top(){return this.volume.minY},get bottom(){return this.volume.maxY},get width(){return this.volume.width},get height(){return this.volume.height}},"use strict",function(t){var e=!1,i=/\b_super\b/;t.meta.Class=function(){},t.meta.Class.extend=function(t){function s(t,i,s,n,o,h){e||(this._init&&this._init(t,i,s,n,o,h),this.init&&this.init(t,i,s,n,o,h))}var n=this.prototype;e=!0;var o=new this;e=!1;for(var h in t){var r=Object.getOwnPropertyDescriptor(t,h);r.get||r.set?Object.defineProperty(o,h,r):o[h]="function"==typeof t[h]&&"function"==typeof n[h]&&i.test(t[h])?function(t,e){return function(i,s,o,h,r,a){var u=this._super;this._super=n[t],this._fn=e;var c=this._fn(i,s,o,h,r,a);return this._super=u,c}}(h,t[h]):t[h]}return s.prototype=o,s.prototype.constructor=o.init,s.extend=this.extend,s},t.meta.Class=t.meta.Class}(void 0!==typeof window?window:global),"use strict",meta.Controller=meta.Class.extend({init:meta.emptyFunc,_init:function(t){this.view=t},release:meta.emptyFunc,load:meta.emptyFunc,unload:meta.emptyFunc,ready:meta.emptyFunc,update:meta.emptyFuncParam,view:null,name:"unknown",isLoaded:!1}),"use strict",meta._cache.timerIndex=0,meta.Timer=function(t,e,i,s){this.owner=t,this.id=meta._cache.timerIndex++,this.func=e,this.onRemove=null,this.tDelta=i,this.numTimes=s,void 0===this.numTimes&&(this.numTimes=-1),this.tAccumulator=0,this.tStart=Date.now()},meta.Timer.prototype={remove:function(){this.numTimes=0},pause:function(){this.isPaused=!0},resume:function(){this.isPaused=!1,this.tStart=Date.now()},onRemove:null,isPaused:!1},meta.addTimer=function(t,e,i,s){"function"==typeof t&&(s=i,i=e,e=t,t=window);var n=new meta.Timer(t,e,i,s);return meta.engine._timers.push(n),meta.engine._numTimers++,n},"use strict",meta.shaders={},meta.Shader=function(){this.program=null,this.attrib={},this.uniform={},this._vertexShader=null,this._fragmentShader=null},meta.Shader.prototype={compile:function(){var t=meta.ctx;return this.program=t.createProgram(),t.attachShader(this.program,this._vertexShader),t.attachShader(this.program,this._fragmentShader),t.linkProgram(this.program),t.getProgramParameter(this.program,t.LINK_STATUS)?!0:(console.error("[meta.Shader.compile]:","Unable to initialize the shader program."),!1)},use:function(){meta.ctx.useProgram(this.program)},bindAttrib:function(t){if(!t)return console.error("[meta.Shader.bindAttrib]:","No name specified!"),void 0;var e=meta.ctx;this.attrib[t]=e.getAttribLocation(this.program,t),e.enableVertexAttribArray(this.attrib[t])},bindBuffer2f:function(t,e){var i=meta.ctx;i.bindBuffer(i.ARRAY_BUFFER,e),i.vertexAttribPointer(this.attrib[t],2,i.FLOAT,!1,0,0)},bindBuffer3f:function(t,e){var i=meta.ctx;i.bindBuffer(i.ARRAY_BUFFER,e),i.vertexAttribPointer(this.attrib[t],3,i.FLOAT,!1,0,0)},uniformMatrix:function(t,e){var i=meta.ctx,s=this.uniform[t];s||(s=i.getUniformLocation(this.program,t),this.uniform[t]=s),i.uniformMatrix4fv(s,!1,e.m)},set vertexShader(t){var e=meta.ctx;this._vertexShader=e.createShader(e.VERTEX_SHADER),e.shaderSource(this._vertexShader,t),e.compileShader(this._vertexShader),e.getShaderParameter(this._vertexShader,e.COMPILE_STATUS)||console.error("[meta.Shader.vetexShader]:",e.getShaderInfoLog(this._vertexShader))},get vertexShader(){return this._vertexShader},set fragmentShader(t){var e=meta.ctx;this._fragmentShader=e.createShader(e.FRAGMENT_SHADER),e.shaderSource(this._fragmentShader,t),e.compileShader(this._fragmentShader),e.getShaderParameter(this._fragmentShader,e.COMPILE_STATUS)||console.error("[meta.Shader.fragmentShader]:","An error occurred compiling the shaders: "+e.getShaderInfoLog(this._fragmentShader))},get fragmentShader(){return this._fragmentShader}},meta.setShader=function(t){if(!t)return console.error("[meta.setShader]:","No name specified."),null;var e=meta.shaders[t];return e?(meta.shader=e,e.use(),e):(console.error("[meta.setShader]:","No shader found with a name: "+t),null)},meta.getShader=function(t){if(!t)return console.error("[meta.getShader]:","No name specified."),null;var e=meta.shaders[t];return e?e:(console.error("[meta.getShader]:","No shader found with a name: "+t),null)},"use strict",meta.Brush=meta.Class.extend({_init:function(){this.states={}},setState:function(t,e,i){if("string"==typeof e){var s=meta.getTexture(e);if(!s)return console.warn("[meta.Brush.setState]:","Could not get texture from texture name: "+e),null;e=s}void 0===typeof i&&(i=null);var n=new meta.BrushState(t,e,i);return this.states[t]=n,this.defaultState||(this.defaultState=n),n},setHiddenState:function(t,e,i){var s=this.setState(t,e,i);return s&&(s.isHidden=!0),s},removeState:function(t){return this.states[t]?(delete this.states[t],void 0):(console.warn("[meta.Brush.removeState]:","No such state: "+t),void 0)},getState:function(t){return this.states?this.states[t._state]:null},getRandomState:function(){if(!this.states)return null;var t=null,e=0;for(var i in this.states)this.states[i].isHidden||Math.random()<1/++e&&(t=i);return t},states:null,defaultState:null}),meta.BrushState=function(t,e,i){this.name=t,this.texture=e,this.params=i,this.isHidden=!1},meta.BrushState.prototype={applyState:function(t){if(this.params)for(var e in this.params)t._brushParams[e]=t[e],t[e]=this.params[e]},discardState:function(t){var e=t._brushParams;for(var i in e)t[i]=e[i]}},"use strict",meta.Event={RESIZE:"resize",WORLD_RESIZE:"worldResize",CAMERA_MOVE:"cameraMove",CAMERA_RESIZE:"cameraResize",FOCUS:"focus",FULLSCREEN:"fullScreen",ADDED_TO_VIEW:"addedToView",REMOVED_FROM_VIEW:"removedFromView",ADAPT:"adapt"},"use strict",meta.getTexture=function(t){return Resource.ctrl.getTexture(t)},"use strict",meta.utils.LinkedList=function(){this.length=0,this.first=new meta.utils.LinkedListNode(null),this.last=new meta.utils.LinkedListNode(null),this.first.next=this.last,this.last.prev=this.first},meta.utils.LinkedList.prototype={push:function(t){this.last.prev.next=t,this.last.prev=t,t.prev=this.last.prev,t.next=this.last,this.length++},remove:function(t){t.prev.next=t.next,t.next.prev=t.prev,t.prev=null,t.next=null,this.length--}},meta.utils.LinkedListNode=function(t){this.data=t,this.prev=null,this.next=null},"use strict",meta.math={},meta.math={toRadians:function(t){return t*Math.PI/180},toDegree:function(t){return 180*t/Math.PI},radiansToPoint:function(t,e,i,s){var n=i-t,o=s-e;return Math.atan(n/o)},clamp:function(t,e,i){return e>t?e:t>i?i:t},map:function(t,e,i,s,n){return t==e?s:(t-e)*(n-s)/(i-e)+s},length2:function(t,e){return Math.sqrt(t*t+e*e)},limit:function(t,e){return t>e?e:-e>t?-e:t},lerp:function(t,e,i){return t+(e-t)*i},lookAt:function(t,e,i,s){return Math.atan2(i-t,e-s)},lookAtEntity:function(t,e){return meta.math.lookAt(t.x,t.y,e.x,e.y)}},"use strict",meta.math.Vector2=function(t,e){this.x=t,this.y=e},meta.math.Vector2.prototype={reset:function(){this.x=0,this.y=0},set:function(t,e){this.x=t,this.y=e},add:function(t){this.x+=t,this.y+=t},sub:function(t){this.x-=t,this.y-=t},mul:function(t){this.x*=t,this.y*=t},div:function(t){this.x/=t,this.y/=t},addVec2:function(t){this.x+=t.x,this.y+=t.y},subVec2:function(t){this.x-=t.x,this.y-=t.y},mulVec2:function(t){this.x*=t.x,this.y*=t.y},divVec2:function(t){this.x/=t.x,this.y/=t.y},length:function(){return Math.sqrt(this.x*this.x+this.y*this.y)},normalize:function(){var t=Math.sqrt(this.x*this.x+this.y*this.y);this.x/=t,this.y/=t},dot:function(t,e){return this.x*t+this.y*e},truncate:function(t){var e=Math.sqrt(this.x*this.x+this.y*this.y);e>t&&(this.normalize(),this.x*=t,this.y*=t)},limit:function(t){this.x>t?this.x=t:this.x<-t&&(this.x=-t),this.y>t?this.y=t:this.y<-t&&(this.y=-t)},lengthSq:function(){return this.x*this.x+this.y*this.y},perp:function(){var t=this.x;this.x=-this.y,this.y=t},print:function(t){console.log(t?'[vec "'+t+'"] x: '+this.x+" y: "+this.y:"[vec] x: "+this.x+" y: "+this.y)}},"use strict",meta.math.AABB=function(t,e,i,s){this.minX=t,this.minY=e,this.maxX=i,this.maxY=s},meta.math.AABB.prototype={move:function(t,e){this.minX+=t,this.minY+=e,this.maxX+=t,this.maxY+=e},set:function(t,e){var i=this.maxX-this.minX,s=this.maxY-this.minY;this.minX=t,this.minY=e,this.maxX=t+i,this.maxY=e+s},resize:function(t,e){this.maxX=this.minX+t,this.maxY=this.minY+e},copy:function(t){this.minX=t.minX,this.minY=t.minY,this.maxX=t.maxX,this.maxY=t.maxY},vsAABB:function(t){return this.minX>t.maxX||this.maxX<t.minX||this.minY>t.maxY||this.maxY<t.minY?!1:!0},vsBorderAABB:function(t){return this.minX>=t.maxX||this.maxX<=t.minX||this.minY>=t.maxY||this.maxY<=t.minY?!1:!0},vsAABBIntersection:function(t){return this.minX>t.maxX||this.maxX<t.minX||this.minY>t.maxY||this.maxY<t.minY?0:this.minX>t.minX||this.minY>t.minY?1:this.maxX<t.maxX||this.maxY<t.maxY?1:2},vsPoint:function(t,e){return this.minX>t||this.maxX<t?!1:this.minY>e||this.maxY<e?!1:!0},vsBorderPoint:function(t,e){return this.minX>=t||this.maxX<=t?!1:this.minY>=e||this.maxY<=e?!1:!0},getSqrDistance:function(t,e){var i,s=0;return t<this.minX&&(i=this.minX-t,s+=i*i),t>this.maxX&&(i=t-this.maxX,s+=i*i),e<this.minY&&(i=this.minY-e,s+=i*i),e>this.maxY&&(i=e-this.maxY,s+=i*i),s},getDistanceVsAABB:function(t){var e=this.minX+(this.maxX-this.minX)/2,i=this.minY+(this.maxY-this.minY)/2,s=t.minX+(t.maxY-t.minY)/2,n=t.minY+(t.maxY-t.minY)/2,o=s-e,h=n-i;return Math.sqrt(o*o+h*h)},get width(){return this.maxX-this.minX},get height(){return this.maxY-this.minY},isUndefined:function(){return void 0===this.maxY},draw:function(t){var e=meta.unitSize,i,s,n,o;1===e?(i=Math.floor(this.minX),s=Math.floor(this.minY),n=Math.ceil(this.maxX),o=Math.ceil(this.maxY)):(i=Math.floor(this.minX)*e-this.halfWidth*e,s=Math.floor(this.minY)*e-this.halfHeight*e,n=Math.ceil(this.maxX)*e-this.halfWidth*e,o=Math.ceil(this.maxY)*e-this.halfHeight*e),t.beginPath(),t.moveTo(i,s),t.lineTo(n,s),t.lineTo(n,o),t.lineTo(i,o),t.lineTo(i,s),t.stroke()},drawTranslated:function(t,e){var i,s;e?(i=e.x,s=e.y):(i=0,s=0),this.translate(i,s),this.draw(t),this.translate(-i,-s)},print:function(t){console.log(t?"(AABB) "+t+" minX: "+this.minX+" minY: "+this.minY+" maxX: "+this.maxX+" maxY: "+this.maxY:"(AABB) minX: "+this.minX+" minY: "+this.minY+" maxX: "+this.maxX+" maxY: "+this.maxY)}},"use strict",meta.math.AdvAABB=function(t,e,i,s){this.minX=t,this.minY=e,this.maxX=i,this.maxY=s,this.initWidth=i-t,this.initHeight=s-e,this.initHalfWidth=.5*this.initWidth,this.initHalfHeight=.5*this.initHeight,this.width=this.initWidth,this.height=this.initHeight,this.halfWidth=this.initHalfWidth,this.halfHeight=this.initHalfHeight,this.x=t+this.halfWidth|0,this.y=e+this.halfHeight|0,this.scaleX=1,this.scaleY=1},meta.math.AdvAABB.prototype={move:function(t,e){this.x+=t,this.y+=e,this.minX+=t,this.minY+=e,this.maxX+=t,this.maxY+=e},set:function(t,e){this.x=t,this.y=e,this.minX=this.x-this.halfWidth,this.minY=this.y-this.halfHeight,this.maxX=this.x+this.halfWidth,this.maxY=this.y+this.halfHeight},resize:function(t,e){this.initWidth=t,this.initHeight=e,this.initHalfWidth=.5*t,this.initHalfHeight=.5*e,this.width=t*this.scaleX,this.height=e*this.scaleY,this.halfWidth=.5*this.width,this.halfHeight=.5*this.height,this.maxX=this.minX+this.width,this.maxY=this.minY+this.height},resizeInit:function(t,e){this.initWidth=t,this.initHeight=e,this.initHalfWidth=.5*t,this.initHalfHeight=.5*e,this.width=this.initWidth,this.height=this.initHeight,this.halfWidth=this.initHalfWidth,this.halfHeight=this.initHalfHeight},scale:function(t,e){this.scaleX=t,this.scaleY=e,this.width=this.initWidth*this.scaleX,this.height=this.initHeight*this.scaleY,this.halfWidth=this.width/2,this.halfHeight=this.height/2,this.minX=this.x-this.halfWidth,this.minY=this.y-this.halfHeight,this.maxX=this.minX+this.width,this.maxY=this.minY+this.height},scalePivoted:function(t,e,i,s){this.scaleX=t,this.scaleY=e,this.width=this.initWidth*this.scaleX,this.height=this.initHeight*this.scaleY,this.halfWidth=this.width/2,this.halfHeight=this.height/2,this.x=i,this.y=s,this.minX=this.x-this.halfWidth,this.minY=this.y-this.halfHeight,this.maxX=this.minX+this.width,this.maxY=this.minY+this.height},vsAABB:function(t){return this.minX>t.maxX||this.maxX<t.minX||this.minY>t.maxY||this.maxY<t.minY?!1:!0},vsBorderAABB:function(t){return this.minX>=t.maxX||this.maxX<=t.minX||this.minY>=t.maxY||this.maxY<=t.minY?!1:!0},vsAABBIntersection:function(t){return this.minX>t.maxX||this.maxX<t.minX||this.minY>t.maxY||this.maxY<t.minY?0:this.minX>t.minX||this.minY>t.minY?1:this.maxX<t.maxX||this.maxY<t.maxY?1:2},vsPoint:function(t,e){return this.minX>t||this.maxX<t?!1:this.minY>e||this.maxY<e?!1:!0},vsBorderPoint:function(t,e){return this.minX>=t||this.maxX<=t?!1:this.minY>=e||this.maxY<=e?!1:!0},getSqrDistance:function(t,e){var i,s=0;return t<this.minX&&(i=this.minX-t,s+=i*i),t>this.maxX&&(i=t-this.maxX,s+=i*i),e<this.minY&&(i=this.minY-e,s+=i*i),e>this.maxY&&(i=e-this.maxY,s+=i*i),s},getDistanceVsAABB:function(t){var e=this.minX+.5*(this.maxX-this.minX),i=this.minY+.5*(this.maxY-this.minY),s=t.minX+.5*(t.maxY-t.minY),n=t.minY+.5*(t.maxY-t.minY),o=s-e,h=n-i;return Math.sqrt(o*o+h*h)},isUndefined:function(){return void 0===this.maxY},draw:function(t){var e=meta.unitSize,i,s,n,o;i=0|this.minX,s=0|this.minY,n=this.maxX+.5|0,o=this.maxY+.5|0,t.beginPath(),t.moveTo(i,s),t.lineTo(n,s),t.lineTo(n,o),t.lineTo(i,o),t.lineTo(i,s),t.stroke()},drawTranslated:function(t){var e=meta.camera;this.translate(e._x,e._y),this.draw(t),this.translate(-e._x,-e._y)},print:function(t){console.log(t?"(AABB) "+t+" minX: "+this.minX+" minY: "+this.minY+" maxX: "+this.maxX+" maxY: "+this.maxY:"(AABB) minX: "+this.minX+" minY: "+this.minY+" maxX: "+this.maxX+" maxY: "+this.maxY)}},"use strict",meta.math.Matrix4=function(){this.m=new Float32Array(16),this.m[0]=1,this.m[5]=1,this.m[10]=1,this.m[15]=1},meta.math.Matrix4.prototype={reset:function(){this.m[0]=1,this.m[1]=0,this.m[2]=0,this.m[3]=0,this.m[4]=0,this.m[5]=1,this.m[6]=0,this.m[7]=0,this.m[8]=0,this.m[9]=0,this.m[10]=1,this.m[11]=0,this.m[12]=0,this.m[13]=0,this.m[14]=0,this.m[15]=1},ortho:function(t,e,i,s,n,o){this.m[0]=2/(e-t),this.m[1]=0,this.m[2]=0,this.m[3]=0,this.m[4]=0,this.m[5]=2/(s-i),this.m[6]=0,this.m[7]=0,this.m[8]=0,this.m[9]=0,this.m[10]=-2/(o-n),this.m[11]=0,this.m[12]=-(e+t)/(e-t),this.m[13]=-(s+i)/(s-i),this.m[14]=-(o+n)/(o-n),this.m[15]=1}},"use strict",meta.math.Random=function(){this.seed=0,this.a=0,this.m=0,this.q=0,this.r=0,this.oneOverM=0,this.init()},meta.math.Random.prototype={init:function(){this.setSeed(3456789012,!0)},generate:function(){var t=Math.floor(this.seed/this.q),e=this.seed%this.q,i=this.a*e-this.r*t;return this.seed=i>0?i:i+this.m,this.seed*this.oneOverM},number:function(t,e){var i=this.generate();return Math.round((e-t)*i+t)},numberF:function(t,e){var i=this.generate();return(e-t)*i+t},setSeed:function(t,e){if(void 0!==e&&(e=!0),e===!0){var i=new Date;this.seed=t+16777215*i.getSeconds()+65535*i.getMinutes()}else this.seed=t;this.a=48271,this.m=2147483647,this.q=Math.floor(this.m/this.a),this.r=this.m%this.a,this.oneOverM=1/this.m}},meta.random=new meta.math.Random,"use strict",meta.Tween=function(t){this.owner=t,this.chain=[],this.linkIndex=0,this.currLink=null,this._updateNodeID=-1,this._tStart=0,this._tFrame=0},meta.Tween.prototype={play:function(){return this.owner?this.owner.isRemoved?this:(this.isPaused=!1,this.next(),this._play(),this):this},_play:function(){Entity.ctrl._addToUpdating(this)&&this._group&&this._group.activeUsers++},stop:function(t){return this.linkIndex=0,this._stop(t),this},_stop:function(t){Entity.ctrl._removeFromUpdating(this)&&(t&&this.currLink._onComplete&&this.currLink._onComplete.call(this.owner),this._group&&(this._group.activeUsers--,0===this._group.activeUsers&&this._group.callback&&this._group.callback()))},paused:function(t){return void 0===t&&(t=!0),this.isPaused=t,this},resume:function(){return this.isPaused=!1,this},clear:function(){return this.stop(),this._tStart=0,this.chain.length=0,this.linkIndex=0,this.currLink=null,this._group&&(this._group.users--,this._group=null),this},reset:function(){if(this.linkIndex=0,this.currLink=this.chain[0],!this.currLink)return this;for(var t in this.currLink.startValues)this.owner[t]=this.currLink.startValues[t];return this.stop(!1),this},next:function(){var t=!1;if(this.linkIndex===this.chain.length){if(0===this.numRepeat)return this.stop(!0),this;this.linkIndex=0,-1!==this.numRepeat&&this.numRepeat--,t=!0,this.currLink._onComplete&&this.currLink._onComplete.call(this.owner)}this._isLinkDone=!1;var e,i=this.chain[this.linkIndex++];if(t)for(e in i.startValues)this.owner[e]=i.startValues[e];else for(e in i.endValues)i.startValues[e]=this.owner[e];return i._onStart&&i._onStart.call(this),this._tStart=meta.engine.tNow,this.currLink=i,this},repeat:function(t){return void 0===t&&(t=-1),this.numRepeat=t,this},reverse:function(t){return void 0===t&&(t=!0),this.doReverse=t,this},update:function(t){if(!this.currLink)return this.stop(!1),void 0;var e=meta.engine.tNow,i=e-this._tFrame;if(!(i<this.currLink.tFrameDelay)){var s=(e-this._tStart)/this.currLink.duration;if(s>1&&(s=1),this._isLinkDone){if(i<this.currLink.tDelay)return}else this._tFrame=e,this.currLink.update(s),this.currLink._onTick&&this.currLink._onTick.call(this);if(1===s){if(!this._isLinkDone&&this.currLink.tDelay>0)return this._isLinkDone=!0,void 0;this.next()}}},to:function(t,e,i){var s=new meta.Tween.Link(this,t,e,i);return this.chain.push(s),s},wait:function(t){var e=this.to(null,0,null);return e.wait(t),e},group:function(t){return t?this._group?(console.warn("[meta.Tween.group]:","Tween already is part of a group."),this):("object"==typeof t&&(this._group=t),this._group.users++,this):(console.warn("[meta.Tween.group]:","No group name specified."),this)},numRepeat:0,isPaused:!1,isRemoved:!1,doReverse:!1,_group:null,_isLinkDone:!1,_isReversing:!1,_removeFlag:0},meta.Tween.Group=function(t,e){"function"==typeof t&&(e=t,t=""),this.name=t,this.users=0,this.activeUsers=0,this.callback=e||null},"use strict",meta.Tween.Easing={linear:function(t){return t},quadIn:function(t){return t*t},quadOut:function(t){return t*(2-t)},quadInOut:function(t){return(t*=2)<1?.5*t*t:-.5*(--t*(t-2)-1)},cubicIn:function(t){return t*t*t},cubicOut:function(t){return--t*t*t+1},cubicInOut:function(t){return(t*=2)<1?.5*t*t*t:.5*((t-=2)*t*t+2)},quartIn:function(t){return t*t*t*t},quartOut:function(t){return 1- --t*t*t*t},quartInOut:function(t){return(t*=2)<1?.5*t*t*t*t:-.5*((t-=2)*t*t*t-2)},quintIn:function(t){return t*t*t*t*t},quintOut:function(t){return--t*t*t*t*t+1},quintIntOut:function(t){return(t*=2)<1?.5*t*t*t*t*t:.5*((t-=2)*t*t*t*t+2)},sineIn:function(t){return 1-Math.cos(t*Math.PI/2)},sineOut:function(t){return Math.sin(t*Math.PI/2)},sineIntOut:function(t){return.5*(1-Math.cos(Math.PI*t))},expoIn:function(t){return 0===t?0:Math.pow(1024,t-1)},expoOut:function(t){return 1===t?1:1-Math.pow(2,-10*t)},expoInOut:function(t){return 0===t?0:1===t?1:(t*=2)<1?.5*Math.pow(1024,t-1):.5*(-Math.pow(2,-10*(t-1))+2)},circIn:function(t){return 1-Math.sqrt(1-t*t)},circOut:function(t){return Math.sqrt(1- --t*t)},circInOut:function(t){return(t*=2)<1?-.5*(Math.sqrt(1-t*t)-1):.5*(Math.sqrt(1-(t-=2)*t)+1)},elasticIn:function(t){var e,i=.1,s=.4;return 0===t?0:1===t?1:(!i||1>i?(i=1,e=s/4):e=s*Math.asin(1/i)/(2*Math.PI),-(i*Math.pow(2,10*(t-=1))*Math.sin(2*(t-e)*Math.PI/s)))},elasticOut:function(t){var e,i=.1,s=.4;return 0===t?0:1===t?1:(!i||1>i?(i=1,e=s/4):e=s*Math.asin(1/i)/(2*Math.PI),i*Math.pow(2,-10*t)*Math.sin(2*(t-e)*Math.PI/s)+1)},elasticInOut:function(t){var e,i=.1,s=.4;return 0===t?0:1===t?1:(!i||1>i?(i=1,e=s/4):e=s*Math.asin(1/i)/(2*Math.PI),(t*=2)<1?-.5*i*Math.pow(2,10*(t-=1))*Math.sin(2*(t-e)*Math.PI/s):i*Math.pow(2,-10*(t-=1))*Math.sin(2*(t-e)*Math.PI/s)*.5+1)},backIn:function(t){var e=1.70158;return t*t*((e+1)*t-e)},backOut:function(t){var e=1.70158;return--t*t*((e+1)*t+e)+1},backInOut:function(t){var e=2.5949095;return(t*=2)<1?.5*t*t*((e+1)*t-e):.5*((t-=2)*t*((e+1)*t+e)+2)},bounceIn:function(t){return 1-meta.Tween.Easing.bounceOut(1-t)
-},bounceOut:function(t){return 1/2.75>t?7.5625*t*t:2/2.75>t?7.5625*(t-=1.5/2.75)*t+.75:2.5/2.75>t?7.5625*(t-=2.25/2.75)*t+.9375:7.5625*(t-=2.625/2.75)*t+.984375},bounceInOut:function(t){return.5>t?.5*meta.Tween.Easing.bounceIn(2*t):.5*meta.Tween.Easing.bounceOut(2*t-1)+.5}},"use strict",meta.Tween.Link=function(t,e,i,s){this.tween=t,this.startValues={},this.endValues=e,this.duration=i,this._onComplete=s},meta.Tween.Link.prototype={play:function(){return this.tween.play(),this},stop:function(){return this.tween.stop(),this},paused:function(t){return this.tween.paused(t),this},resume:function(){return this.tween.resume(),this},clear:function(){return this.tween.clear(),this},reset:function(){return this.tween.reset(),this},update:function(t){var e=this._easing(t),i,s,n;for(var o in this.endValues)i=this.startValues[o],s=this.endValues[o],"string"==typeof i&&(s=i+parseFloat(s,4)),n=i+(s-i)*e,this.isRounding&&(n=Math.round(n)),this.tween.owner[o]=n},next:function(){return this.tween.next(),this},wait:function(t){return this.tDelay=t,this},frameDelay:function(t){return this.tFrameDelay=t,this},round:function(t){return void 0===t&&(t=!0),this.isRounding=t,this},repeat:function(t){return this.tween.repeat(t),this},reverse:function(t){return this.tween.reverse(t),this},easing:function(t){return this._easing="function"==typeof t?t:meta.Tween.Easing[t],void 0===this._easing&&(this._easing=meta.Tween.Easing.linear),this},onStart:function(t){return this._onStart=t,this},onComplete:function(t){return this._onComplete=t,this},onTick:function(t){return this._onTick=t,this},to:function(t,e,i){return this.tween.to(t,e,i)},group:function(t){return this.tween.group(t)},_easing:meta.Tween.Easing.linear,_onStart:null,_onComplete:null,_onTick:null,tDelay:0,tFrameDelay:0,isRounding:!1},"use strict",window.Component={},"use strict";var Resource={};Resource.Controller=meta.Controller.extend({init:function(){this.resources={},this.resourcesInUse={},this._chn_added=meta.createChannel(Resource.Event.ADDED),this._chn_allLoaded=meta.createChannel(Resource.Event.ALL_LOADED);var t=document.createElement("canvas");Resource.Texture.prototype._tmpImg=t,Resource.Texture.prototype._tmpCtx=t.getContext("2d"),meta.subscribe(this,meta.Event.ADAPT,this.onAdapt);var e=Resource.Sound.prototype;meta.device.isAudioAPI?(e._context=new AudioContext,console.log("%cAudio: %cWebAudio ","font-weight: bold; padding: 2px 0 2px 0;","padding: 2px 0 2px 0;")):(e._loadFromUrl=e._loadFromUrl_legacy,e._clear=e._clear_legacy,e._createInstance=e._createInstance_legacy,e._syncLoading=!0,console.log("%cAudio: %c<audio> ","font-weight: bold; padding: 2px 0 1px 0; width: 500px;","padding: 2px 0 1px 0;"))},add:function(t){var e=this.resources[t.type];e||(e={},this.resources[t.type]=e);var i=t.path;if("unknown"===t.name&&i){var s=i.lastIndexOf("."),n=i.lastIndexOf("/");t.name=0>s||i.length-s>5?i.slice(n+1):i.slice(n+1,s)}return e[t.name]?(console.warn("[Resource.Manager.add]:","There is already a resource("+meta.enumToString(Resource.Type,t.type)+") added with a name: "+t.name),null):(e[t.name]=t,this._chn_added.emit(t,Resource.Event.ADDED),t)},remove:function(t){var e=this.resources[t.type];return e&&e[t.name]?(e[t.name]=null,void 0):(console.warn("[Resource.Manager.remove]:","Resource("+meta.enumToString(Resource.Type,t.type)+")("+t.name+") is not added to the manager."),void 0)},addToLoad:function(t){t.isLoading=!0,meta.engine.isReady||this.numToLoad++},loadSuccess:function(t){var e=this.resourcesInUse[t.type];e||(e=[],this.resourcesInUse[t.type]=e),e.push(t),t.isLoading=!1,t.inUse=!0,meta.engine.isReady||(this.numToLoad--,this.numLoaded++,0!==this.numToLoad||meta.engine.isLoading||(meta.engine.onResourcesLoaded(),this._chn_allLoaded.emit(this,Resource.Event.ALL_LOADED)))},loadFailed:function(t){t.isLoading=!1,meta.engine.isReady||(this.numToLoad--,0!==this.numToLoad||meta.engine.isLoading||(meta.engine.onResourcesLoaded(),this._chn_allLoaded.emit(this,Resource.Event.ALL_LOADED)))},getTexture:function(t){if(!t)return console.warn("[Resource.Manager.getTexture]:","No name specified."),null;var e=this.resources[Resource.Type.TEXTURE];if(!e)return null;var i=e[t];return i?i:null},getSound:function(t){if(!t)return console.warn("[Resource.Manager.getSound]:","No name specified."),null;var e=this.resources[Resource.Type.SOUND];if(!e)return null;var i=e[t];return i?i:null},addToQueue:function(t){this._syncQueue||(this._syncQueue=[]),this._syncQueue.push(t)},loadNextFromQueue:function(){this.isSyncLoading=!1,this._syncQueue&&this._syncQueue.length&&(this._syncQueue[this._syncQueue.length-1].forceLoad(!0),this._syncQueue.pop())},onAdapt:function(t,e){var i=meta.unitRatio,s,n=this.resources[Resource.Type.TEXTURE];for(var o in n)s=n[o],s.unitRatio=i,s.load()},getUniqueID:function(){return++this._uniqueID},resources:null,resourcesInUse:null,rootPath:"",numLoaded:0,numToLoad:0,_syncQueue:null,isSyncLoading:!1,_chn_added:null,_chn_allLoaded:null,_uniqueID:0}),"use strict",Resource.Event={UNLOADED:"resUnloaded",LOADED:"resLoaded",RESIZE:"resResize",CHANGED:"resChanged",ADDED:"resAdded",ALL_LOADED:"resAllLoaded"},Resource.Type={BASIC:0,TEXTURE:1,SOUND:2,SPRITE_SHEET:3,FONT:4},Resource.TextureType={UNKNOWN:-1,CANVAS:0,WEBGL:1},Resource.AnimType={NONE:0,LINEAR_H:1,LINEAR_V:2,RADIAL:3,RADIAL_TOP_LEFT:4,RADIAL_TOP_RIGHT:5,RADIAL_BOTTOM_LEFT:6,RADIAL_BOTTOM_RIGHT:7},"use strict",Resource.Basic=meta.Class.extend({_init:function(){this.id=Resource.ctrl.getUniqueID()},subscribe:function(t,e){this.chn||(this.chn=meta.createChannel("__res"+this.id)),this.chn.subscribe(t,e)},unsubscribe:function(t){this.chn&&(this.chn.unsubscribe(t),0===this.chn.numSubs&&(this.chn.remove(),this.chn=null))},emit:function(t,e){this.chn&&this.chn.emit(t,e)},set isLoaded(t){t?this._isLoaded?(this._isLoaded=t,this.emit(this,Resource.Event.CHANGED)):(this._isLoaded=t,this.emit(this,Resource.Event.LOADED)):this._isLoaded&&(this._isLoaded=t,this.emit(this,Resource.Event.UNLOADED))},get isLoaded(){return this._isLoaded},id:0,type:Resource.Type.BASIC,name:"unknown",path:"",fullPath:"",chn:null,_isLoaded:!1,isLoading:!1,inUse:!1}),"use strict",Resource.Texture=Resource.Basic.extend({init:function(t,e){if(void 0!==t){var i=typeof t;if("object"===i)for(var s in t)this[s]=t[s];else"string"===i?this.path=t:(this.textureType=t,e&&(this.path=e));if(this.path){var n=this.path.lastIndexOf(".");(-1===n||this.path.length-n>4)&&(this.path+=".png")}}-1===this.textureType&&(this.textureType=meta.engine.isWebGL?Resource.TextureType.WEBGL:Resource.TextureType.CANVAS),this.numFrames>1?(this.numFramesX=this.numFrames,this.isAnimated=!0):(this.numFramesX>1||this.numFramesY>1)&&(this.numFrames=this.numFramesX*this.numFramesY,this.isAnimated=!0),this.generate(this.textureType)},generate:function(t){if(this.isLoaded=!1,t===Resource.TextureType.WEBGL){var e=meta.ctx;this.image=e.createTexture(),e.bindTexture(e.TEXTURE_2D,this.image),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_MIN_FILTER,e.LINEAR),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_MAG_FILTER,e.LINEAR),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_WRAP_S,e.CLAMP_TO_EDGE),e.texParameteri(e.TEXTURE_2D,e.TEXTURE_WRAP_T,e.CLAMP_TO_EDGE),e.bindTexture(e.TEXTURE_2D,null),this._vertices=new Float32Array([0,0,this._width,0,0,this._height,this._width,this._height]),this.vbo=e.createBuffer(),e.bindBuffer(e.ARRAY_BUFFER,this.vbo),e.bufferData(e.ARRAY_BUFFER,this._vertices,e.DYNAMIC_DRAW)}else this.image=document.createElement("canvas"),this.ctx=this.image.getContext("2d"),this.image.width=this.fullWidth,this.image.height=this.fullHeight,this.textureType=Resource.TextureType.CANVAS},load:function(t){if(!this.isLoading){if(t)this.path=t;else if(!this.path)return;this.fullPath=meta._cache.currResolution?Resource.ctrl.rootPath+meta._cache.currResolution.path+this.path:Resource.ctrl.rootPath+this.path,Resource.ctrl.addToLoad(this);var e=this,i=new Image;meta.engine.isWebGL&&(i.crossOrigin="anonymous"),i.onload=function(){return i.complete?(e.createFromImg(i),Resource.ctrl.loadSuccess(e),void 0):(console.warn("[Resource.Texture.load]:","Could not load texture from - "+i.src),Resource.ctrl.loadFailed(e),void 0)},i.onerror=function(t){Resource.ctrl.loadFailed(e)},this._isLoaded&&(this._isReloading=!0),i.src=this.fullPath}},createFromImg:function(t){if(this._isLoaded&&this.clear(),this.resize(t.width,t.height),this.textureType!==Resource.TextureType.WEBGL)this.ctx.drawImage(t,0,0);else{var e=meta.ctx;e.bindTexture(e.TEXTURE_2D,this.image),e.texImage2D(e.TEXTURE_2D,0,e.RGBA,e.RGBA,e.UNSIGNED_BYTE,t)}this.unitRatio=meta.unitRatio,this._isReloading=!1,this.isLoaded=!0},_createCachedImg:function(){this._cachedImg||(this._cachedImg=document.createElement("canvas"),this._cachedImg.width=this.fullWidth,this._cachedImg.height=this.fullHeight,this._cachedCtx=this._cachedImg.getContext("2d"))},resize:function(t,e){if(this.fullWidth!==t||this.fullHeight!==e){if(this.fullWidth=t,this.fullHeight=e,this.isAnimated?(this._width=t/this.numFramesX,this._height=e/this.numFramesY):(this._width=t,this._height=e),this.textureType){var i=meta.ctx;this._vertices[2]=this._width,this._vertices[5]=this._height,this._vertices[6]=this._width,this._vertices[7]=this._height,this._xRatio=1/this.numFramesX,this._yRatio=1/this.numFramesY,this.fromAtlas?(this._widthRatio=1/(this.ptr.fullWidth/this._width/this.numFramesX),this._heightRatio=1/(this.ptr.fullHeight/this._height/this.numFramesY)):(this._widthRatio=1/this.numFramesX,this._heightRatio=1/this.numFramesY),i.bindBuffer(i.ARRAY_BUFFER,this.vbo),i.bufferData(i.ARRAY_BUFFER,this._vertices,i.DYNAMIC_DRAW),this._isLoaded&&this._cachedImg&&(this._tmpImg.width=this.image.width,this._tmpImg.height=this.image.height,this._tmpCtx.drawImage(this._cachedImg,0,0),this._cachedImg.width=this.fullWidth,this._cachedImg.height=this.fullHeight,this._cachedCtx.drawImage(this._cachedImg,0,0),i.bindTexture(i.TEXTURE_2D,this.image),i.texImage2D(i.TEXTURE_2D,0,i.RGBA,i.RGBA,i.UNSIGNED_BYTE,this._cachedImg))}else this._isLoaded&&this.image.width>0&&this.image.height>0?(this._tmpImg.width=this.image.width,this._tmpImg.height=this.image.height,this._tmpCtx.drawImage(this.image,0,0),this.image.width=this.fullWidth,this.image.height=this.fullHeight,this.ctx.drawImage(this._tmpImg,0,0)):(this.image.width=this.fullWidth,this.image.height=this.fullHeight);this._isLoaded&&!this._isReloading&&this.emit(this,Resource.Event.RESIZE)}},upResize:function(t,e){t>this.fullWidth&&(e>this.fullHeight?this.resize(t,e):this.resize(t,this.fullHeight))},update:function(){this.textureType&&this.resize(this._width,this._height)},draw:function(t,e,i){this._bgTexture&&this._bgTexture.draw(t,e,i),this.fromAtlas?t.drawImage(this.ptr.image,this._x,this._y,this._width,this._height,e,i,this._width,this._height):t.drawImage(this.image,e,i)},drawFrame:function(t,e,i,s,n){if(this._bgTexture&&t.drawImage(this._bgTexture.image,e,i),this._anim){var o,h;if(1===this._anim.type){var r=this._anim.fill*s;0===r?r=.01:r>this.fullWidth&&(r=this.fullWidth),n?t.drawImage(this.image,this.fullWidth-r,0,r,this.fullHeight,e+this.fullWidth-r,i,r,this.fullHeight):t.drawImage(this.image,0,0,r,this.fullHeight,e,i,r,this.fullHeight)}else if(2===this._anim.type){var a=this._anim.fill*s;0===a?a=.01:a>this._height&&(r=this._height),n?t.drawImage(this.image,0,this.fullHeight-a,this.fullWidth,a,e,i+this.fullHeight-a,this.fullWidth,a):t.drawImage(this.image,0,0,this.fullWidth,a,e,i,this.fullWidth,a)}else 3===this._anim.type||(4===this._anim.type?(n?(o=this._anim.fill*(-this.numFrames+s+1)+Math.PI/2,h=e+Math.cos(o)*this._anim.length,t.save(),t.beginPath(),t.moveTo(e,i),t.lineTo(h,i+Math.sin(o)*this._anim.length),t.lineTo(h+this.fullWidth,i),t.closePath(),t.clip()):(o=this._anim.fill*-s+Math.PI/2,h=e+Math.cos(o)*this._anim.length,t.save(),t.beginPath(),t.moveTo(e,i),t.lineTo(h,i+Math.sin(o)*this._anim.length),t.lineTo(h,i+this.fullHeight),t.lineTo(e,i+this.fullHeight),t.closePath(),t.clip()),t.drawImage(this.image,e,i),t.restore()):5===this._anim.type?(n?(o=this._anim.fill*(this.numFrames-s-1)+Math.PI/2,h=e+Math.cos(o)*this._anim.length+this.fullWidth,t.save(),t.beginPath(),t.moveTo(e+this.fullWidth,i),t.lineTo(h,i+Math.sin(o)*this._anim.length),t.lineTo(e,i+this.fullHeight),t.lineTo(e,i),t.closePath(),t.clip()):(o=this._anim.fill*s+Math.PI/2,h=e+Math.cos(o)*this._anim.length+this.fullWidth,t.save(),t.beginPath(),t.moveTo(e+this.fullWidth,i),t.lineTo(h,i+Math.sin(o)*this._anim.length),t.lineTo(h,i+this.fullHeight),t.lineTo(e+this.fullWidth,i+this.fullHeight),t.closePath(),t.clip()),t.drawImage(this.image,e,i),t.restore()):6===this._anim.type?(n?(o=this._anim.fill*(-this.numFrames+s+1),h=e+Math.cos(o)*this._anim.length,t.save(),t.beginPath(),t.moveTo(e,i+this.fullHeight),t.lineTo(h,i+Math.sin(o)*this._anim.length+this.fullHeight),t.lineTo(e+this.fullWidth,i),t.lineTo(e,i),t.closePath(),t.clip()):(o=this._anim.fill*-s,h=e+Math.cos(o)*this._anim.length,t.save(),t.beginPath(),t.moveTo(e,i+this.fullHeight),t.lineTo(h,i+Math.sin(o)*this._anim.length+this.fullHeight),t.lineTo(e+this.fullWidth,i),t.lineTo(e+this.fullWidth,i+this.fullHeight),t.closePath(),t.clip()),t.drawImage(this.image,e,i),t.restore()):7===this._anim.type&&(n?(o=this._anim.fill*(this.numFrames-1-s)+Math.PI,h=e+Math.cos(o)*this._anim.length,t.save(),t.beginPath(),t.moveTo(e+64,i+this.fullHeight),t.lineTo(h+64,i+Math.sin(o)*this._anim.length+64),t.lineTo(e,i),t.lineTo(e+64,i),t.closePath(),t.clip()):(o=this._anim.fill*s+Math.PI,h=e+Math.cos(o)*this._anim.length,t.save(),t.beginPath(),t.moveTo(e+64,i+this.fullHeight),t.lineTo(h+64,i+Math.sin(o)*this._anim.length+64),t.lineTo(e,i),t.lineTo(e,i+64),t.closePath(),t.clip()),t.drawImage(this.image,e,i),t.restore()))}else t.drawImage(this.image,this._width*(s%this.numFramesX),this._height*Math.floor(s/this.numFramesX),this._width,this._height,e,i,this._width,this._height)},clear:function(){if(this.textureType===Resource.TextureType.WEBGL){if(!this._cachedCtx)return;this._cachedCtx.clearRect(0,0,this.fullWidth,this.fullHeight);var t=meta.ctx;t.bindTexture(t.TEXTURE_2D,this.image),t.texImage2D(t.TEXTURE_2D,0,t.RGBA,t.RGBA,t.UNSIGNED_BYTE,this._cachedImg)}else this.ctx.clearRect(0,0,this.fullWidth,this.fullHeight);this._isReloading||(this.isLoaded=!0)},clearSilent:function(){if(this.textureType===Resource.TextureType.WEBGL){this._tmpCtx.clearRect(0,0,this.fullWidth,this.fullHeight);var t=meta.ctx;t.bindTexture(t.TEXTURE_2D,this.image),t.texImage2D(t.TEXTURE_2D,0,t.RGBA,t.RGBA,t.UNSIGNED_BYTE,this._cachedImg)}else this.ctx.clearRect(0,0,this.fullWidth,this.fullHeight)},drawOver:function(t,e,i){if(!t)return console.warn("[Resource.Texture.drawOver]:","No texture specified."),void 0;if(e=e||0,i=i||0,console.log("here"),"string"==typeof t){var s=meta.getTexture(t);if(!s)return console.warn("[Resource.Texture.drawOver]:","No such texture with name - "+t),void 0;t=s}if(t.textureType===Resource.TextureType.WEBGL){if(!t._canvasCache)return t._canvasCache=new Resource.Texture(Resource.TextureType.CANVAS,t.path),t._canvasCache.load(),t=t._canvasCache,this._loadCache={name:"drawOver",texture:t,x:e,y:i},this.isLoaded=!1,t.subscribe(this,this.onTextureCacheEvent),void 0;t=t._canvasCache}var n=this.ctx;if(this.textureType&&(this._createCachedImg(),n=this._cachedCtx),n.drawImage(t.image,e,i),this.textureType){var o=meta.ctx;o.bindTexture(o.TEXTURE_2D,this.image),o.texImage2D(o.TEXTURE_2D,0,o.RGBA,o.RGBA,o.UNSIGNED_BYTE,this._cachedImg)}this.isLoaded=!0},fillRect:function(t,e,i){if(!t)return console.warn("[Resource.Texture.fillRect]:","No parameters specified."),void 0;if("number"==typeof t)return this.fillRect({width:t,height:e,color:i}),void 0;var s=this.ctx;if(t.x=t.x||0,t.y=t.y||0,t.color=t.color||"#000000",t.width=t.width||this.fullWidth||1,t.height=t.height||this.fullHeight||1,t.drawOver||this.resize(t.width+t.x,t.height+t.y),this.textureType&&(this._createCachedImg(),s=this._cachedCtx),s.fillStyle=t.color,s.fillRect(t.x,t.y,t.width,t.height),this.textureType){var n=meta.ctx;n.bindTexture(n.TEXTURE_2D,this.image),n.texImage2D(n.TEXTURE_2D,0,n.RGBA,n.RGBA,n.UNSIGNED_BYTE,this._cachedImg)}this.isLoaded=!0},tile:function(t,e,i){if("number"==typeof t)return this.tile({width:t,height:e,texture:i}),void 0;if(!t)return console.warn("[Resource.Texture.tile]:","No parameters specified."),void 0;if("string"==typeof t.texture&&(t.texture=Resource.ctrl.getTexture(t.texture)),!t.texture)return console.warn("[Resource.Texture.tile]:","Undefined texture."),void 0;var i=t.texture;if(i.textureType===Resource.TextureType.WEBGL){if(!i._canvasCache)return i._canvasCache=new Resource.Texture(Resource.TextureType.CANVAS,i.path),i._canvasCache.load(),i=i._canvasCache,this._loadCache={name:"tile",data:t},this.isLoaded=!1,i.subscribe(this,this.onTextureCacheEvent),void 0;i=i._canvasCache}if(!i._isLoaded)return i._isLoading||i.load(),this._loadCache={name:"tile",data:t},this.isLoaded=!1,i.subscribe(this,this.onTextureCacheEvent),void 0;t.x=t.x||0,t.y=t.y||0,t.width=t.width||this.fullWidth,t.height=t.height||this.fullHeight,t.drawOver||this.resize(t.width,t.height),t.center&&(t.x+=(this.fullWidth&i.fullWidth-1)/2,t.y+=(this.fullHeight&i.fullHeight-1)/2);var s=this.ctx;this.textureType&&(this._createCachedImg(),s=this._cachedCtx);var n=t.x,o=t.y,h=Math.ceil(this.fullWidth/i.fullWidth),r=Math.ceil(this.fullHeight/i.fullHeight);n>0&&(h+=Math.ceil(n/i.fullWidth),n-=i.fullWidth),o>0&&(r+=Math.ceil(o/i.fullHeight),o-=i.fullHeight);for(var a=o,u=0;h>u;u++){for(var c=0;r>c;c++)s.drawImage(i.image,n,o),o+=i.height;n+=i.width,o=a}if(this.textureType){var l=meta.ctx;l.bindTexture(l.TEXTURE_2D,this.image),l.texImage2D(l.TEXTURE_2D,0,l.RGBA,l.RGBA,l.UNSIGNED_BYTE,this._cachedImg)}this.isLoaded=!0},stroke:function(t){if(!t)return console.warn("[Resource.Texture.stroke]:","No parameters specified."),void 0;if(!t.buffer)return console.warn("[Resource.Texture.stroke]:","No buffer defined."),void 0;var e=Number.POSITIVE_INFINITY,i=e,s=Number.NEGATIVE_INFINITY,n=s,o,h,r,a,u=t.buffer,c=u.length;for(h=0;c>h;h+=2)r=u[h],a=u[h+1],e>r&&(e=r),i>a&&(i=a),r>s&&(s=r),a>n&&(n=a);e>0&&(e=0),i>0&&(i=0);var l=this.ctx;t.addWidth=t.addWidth||0,t.addHeight=t.addHeight||0,t.borderWidth=t.borderWidth||1,t.color||t.borderColor||(t.borderColor="#000000");var d=t.borderWidth/2,m=-e+d+t.addWidth/2,_=-i+d+t.addHeight/2;for(t.drawOver||this.resize(s-e+t.borderWidth+t.addWidth,n-i+t.borderWidth+t.addHeight),this.textureType&&(this._createCachedImg(),l=this._cachedCtx),l.lineWidth=t.borderWidth,t.lineCap&&(l.lineCap=t.lineCap),t.lineDash&&l.setLineDash(t.lineDash),l.beginPath(),l.moveTo(u[0]+m,u[1]+_),h=2;c>h;h+=2)l.lineTo(u[h]+m,u[h+1]+_);if(t.color&&(l.fillStyle=t.color,l.closePath(),l.fill()),t.borderColor&&(l.strokeStyle=t.borderColor,l.stroke()),this.textureType===Resource.TextureType.WEBGL){var f=meta.ctx;f.bindTexture(f.TEXTURE_2D,this.image),f.texImage2D(f.TEXTURE_2D,0,f.RGBA,f.RGBA,f.UNSIGNED_BYTE,this._cachedImg)}this.isLoaded=!0},border:function(t){if(!t)return console.warn("[Resource.Texture.strokeBorder]:","No parameters specified."),void 0;t.width=t.width||this.fullWidth,t.height=t.height||this.fullHeight;var e=1;t.borderWidth&&(e=t.borderWidth),t.buffer=[0,0,t.width-e,0,t.width-e,t.height-e,0,t.height-e,0,0],this.stroke(t)},arc:function(t){if(!t)return console.warn("[Resource.Texture.arc]:","No parameters specified."),void 0;var e=this.ctx;t.x=t.x||0,t.y=t.y||0,t.radius=t.radius||5,t.startAngle=t.startAngle||0,t.endAngle=t.endAngle||2*Math.PI,t.borderWidth=t.borderWidth||1,t.color||t.borderColor||(t.borderColor=t.borderColor||"#000000");var i=2*t.radius+t.borderWidth;if(t.drawOver||this.resize(t.x+i,t.y+i),this.textureType&&(this._createCachedImg(),e=this._cachedCtx),e.lineWidth=t.borderWidth,e.clearRect(0,0,this.fullWidth,this.fullHeight),e.beginPath(),e.arc(t.x+t.radius+t.borderWidth/2,t.y+t.radius+t.borderWidth/2,t.radius,t.startAngle,t.endAngle,!1),e.closePath(),t.color&&(e.fillStyle=t.color,e.fill()),t.borderColor&&(e.strokeStyle=t.borderColor,e.stroke()),this.textureType===Resource.TextureType.WEBGL){var s=meta.ctx;s.bindTexture(s.TEXTURE_2D,this.image),s.texImage2D(s.TEXTURE_2D,0,s.RGBA,s.RGBA,s.UNSIGNED_BYTE,this._cachedImg)}this.isLoaded=!0},rect:function(t,e,i,s){if("object"!=typeof t)return this.rect({width:t,height:e,color:i,borderWidth:s}),void 0;if(!t)return console.warn("[Resource.Texture.rect]:","No parameters specified."),void 0;var n=this.ctx,o=t.width||1,e=t.height||1;t.color=t.color||"#0000000";var s=t.borderWidth||1;t.drawOver||this.resize(o,e),this.textureType&&(this._createCachedImg(),n=this._cachedCtx),n.strokeStyle=t.color,n.lineWidth=s;var h=Math.ceil(s/2);if(s%2===1?(n.save(),n.translate(.5,.5),n.beginPath(),n.moveTo(h,h),n.lineTo(o-h-1,h),n.lineTo(o-h-1,e-h-1),n.lineTo(h,e-h-1),n.closePath(),n.stroke(),n.restore()):(n.beginPath(),n.moveTo(h,h),n.lineTo(o-h,h),n.lineTo(o-h,e-h),n.lineTo(h,e-h),n.closePath(),n.stroke()),t.fillColor&&(n.fillStyle=t.fillColor,n.fill()),this.textureType===Resource.TextureType.WEBGL){var r=meta.ctx;r.bindTexture(r.TEXTURE_2D,this.image),r.texImage2D(r.TEXTURE_2D,0,r.RGBA,r.RGBA,r.UNSIGNED_BYTE,this._cachedImg)}this.isLoaded=!0},roundRect:function(t,e,i,s,n){if("object"!=typeof t)return this.roundRect({width:t,height:e,radius:i,color:s,borderWidth:n}),void 0;if(!t)return console.warn("[Resource.Texture.rect]:","No parameters specified."),void 0;var o=this.ctx,h=t.width||1,e=t.height||1;t.color=t.color||"#0000000";var i=t.radius||1,n=t.borderWidth||3;t.drawOver||this.resize(h,e),this.textureType&&(this._createCachedImg(),o=this._cachedCtx),o.strokeStyle=t.color,o.lineWidth=n;var r=Math.ceil(n/2);if(n%2===1?(o.save(),o.translate(.5,.5),o.beginPath(),o.moveTo(r+i,r),o.lineTo(h-r-i,r),o.quadraticCurveTo(h-r,r,h-r,r+i),o.lineTo(h-r,e-r-i),o.quadraticCurveTo(h-r,e-r,h-r-i,e-r),o.lineTo(r+i,e-r),o.quadraticCurveTo(r,e-r,r,e-r-i),o.lineTo(r,i+r),o.quadraticCurveTo(r,r,r+i,r),o.closePath(),o.stroke(),o.restore()):(o.beginPath(),o.moveTo(r+i,r),o.lineTo(h-r-i,r),o.quadraticCurveTo(h-r,r,h-r,r+i),o.lineTo(h-r,e-r-i),o.quadraticCurveTo(h-r,e-r,h-r-i,e-r),o.lineTo(r+i,e-r),o.quadraticCurveTo(r,e-r,r,e-r-i),o.lineTo(r,i+r),o.quadraticCurveTo(r,r,r+i,r),o.closePath(),o.stroke()),t.fillColor&&(o.fillStyle=t.fillColor,o.fill()),this.textureType===Resource.TextureType.WEBGL){var a=meta.ctx;a.bindTexture(a.TEXTURE_2D,this.image),a.texImage2D(a.TEXTURE_2D,0,a.RGBA,a.RGBA,a.UNSIGNED_BYTE,this._cachedImg)}this.isLoaded=!0},bazier:function(t,e,i){this.isLoaded=!0},emulateAnim:function(t,e){if(!this._isLoaded)return console.warn("[Resource.Texture.emulateAnim]:","Texture is not loaded yet."),void 0;var i=Resource.AnimType;t===i.NONE?this._anim=null:(this._anim={type:t},this.isAnimated=!0,this.numFrames=e,t===i.LINEAR_H?this._anim.fill=this._width/(e-1):t===i.LINEAR_V?this._anim.fill=this._height/(e-1):t===i.RADIAL?(console.log("[Resource.Texture.emulateAnim]:","RADIAL is currently unsupported type."),this._anim.halfWidth=this.fullWidth/2,this._anim.halfHeight=this.fullHeight/2,this._anim.fill=2*Math.PI/(e-1),this._anim.length=Math.sqrt(this._anim.halfWidth*this._anim.halfWidth+this._anim.halfHeight*this._anim.halfHeight)+1|0):(t===i.RADIAL_TOP_LEFT||t===i.RADIAL_TOP_RIGHT||t===i.RADIAL_BOTTOM_LEFT||t===i.RADIAL_BOTTOM_RIGHT)&&(this._anim.fill=2*Math.PI/(4*(e-1)),this._anim.length=Math.sqrt(this.fullWidth*this.fullWidth+this.fullHeight*this.fullHeight)+1|0)),this.isLoaded=!0},gradient:function(t){if(!t)return console.warn("[Resource.Texture.gradient]:","No data specified."),void 0;if(!t.colors||!t.colors.length)return console.warn("[Resource.Texture.gradient]:","No data.colors specified."),void 0;var e=this.ctx;t.dirX=t.dirX||0,t.dirY=t.dirY||0,t.width=t.width||this.fullWidth||1,t.height=t.height||this.fullHeight||1,t.drawOver||this.resize(t.width,t.height),this.textureType&&(this._createCachedImg(),e=this._cachedCtx);var i=t.colors,s=i.length,n,o,h,r;t.dirX<0?(n=this.fullWidth,o=0):(n=0,o=this.fullWidth*t.dirX),t.dirY<0?(h=this.fullHeight,r=0):(h=0,r=this.fullHeight*t.dirY);for(var a=e.createLinearGradient(n,h,o,r),u=0;s>u;u++)a.addColorStop(i[u][0],i[u][1]);if(e.fillStyle=a,e.clearRect(0,0,this.fullWidth,this.fullHeight),e.fillRect(0,0,this.fullWidth,this.fullHeight),this.textureType){var c=meta.ctx;c.bindTexture(c.TEXTURE_2D,this.image),c.texImage2D(c.TEXTURE_2D,0,c.RGBA,c.RGBA,c.UNSIGNED_BYTE,this._cachedImg)}this.isLoaded=!0},grid:function(t,e,i,s){if("number"==typeof t)return this.grid({cellWidth:t,cellHeight:e,numCellsX:i,numCellsY:s}),void 0;if(!t)return console.warn("[Resource.Texture.grid]:","No params specified."),void 0;var n=t.cellWidth||1,e=t.cellHeight||1,i=t.numCellsX||1,s=t.numCellsY||1;t.x=t.x||0,t.y=t.y||0,t.color=t.color||"#000000",t.borderWidth=t.borderWidth||1,t.drawOver=t.drawOver||!1;var o=t.x+t.cellWidth*t.numCellsX+1,h=t.y+t.cellHeight*t.numCellsY+1;t.drawOver||this.resize(o,h);var r=this.ctx;this.textureType&&(this._createCachedImg(),r=this._cachedCtx),r.strokeStyle=t.color,r.lineWidth=t.borderWidth,r.save(),r.translate(.5,.5);for(var a=0;i+1>a;a++)r.moveTo(a*e,0),r.lineTo(a*e,h);for(var u=0;s+1>u;u++)r.moveTo(0,u*e),r.lineTo(o,u*e);if(r.stroke(),r.restore(),this.textureType){var c=meta.ctx;c.bindTexture(c.TEXTURE_2D,this.image),c.texImage2D(c.TEXTURE_2D,0,c.RGBA,c.RGBA,c.UNSIGNED_BYTE,this._cachedImg)}this.isLoaded=!0},onTextureEvent:function(t,e){t===Resource.Event.LOADED&&(this.tile(e),e.unsubscribe(this))},construct:function(t){if(!t)return console.warn("[Resource.Texture.buildMatrix]:","No parameters specified."),void 0;this._constructTex(t,"center"),this._constructTex(t,"left"),this._constructTex(t,"right"),t.width=t.width||this.fullWidth,t.height=t.height||this.fullHeight,this.resize(t.width,t.height),console.log(this._width,this._height);var e=t.width/2-t.center.width/2|0,i=t.height/2-t.center.height/2|0;console.log(e);var s=this.ctx;if(s.drawImage(t.center,e,i),this.textureType){var n=meta.ctx;n.bindTexture(n.TEXTURE_2D,this.image),n.texImage2D(n.TEXTURE_2D,0,n.RGBA,n.RGBA,n.UNSIGNED_BYTE,this._cachedImg)}this.isLoaded=!0},_constructTex:function(t,e){if(t[e]&&"string"==typeof t[e]){if(t[e]=Resource.ctrl.getTexture(t[e]),!t[e])return console.warn("[Resource.Texture.buildMatrix]:","Undefined texture for: "+e),void 0;t[e]=t[e].image}},generateAlphaMask:function(){if(!this._isLoaded)return console.warn("[Resource.Texture.generateMask]:","Texture is not loaded yet."),void 0;if(0!==this.textureType)return console.warn("[Resource.Texture.generateMask]:","Only canvas textures are supported currently."),void 0;var t=new Resource.Texture(Resource.TextureType.CANVAS);t.resize(this.fullWidth,this.fullHeight);for(var e=this.ctx.getImageData(0,0,this.fullWidth,this.fullHeight),i=e.data,s=i.length,n=0;s>n;n+=4)i[n]=255,i[n+1]=255,i[n+2]=255;return t.ctx.putImageData(e,0,0),t.isLoaded=!0,t},onTextureCacheEvent:function(t,e){e===Resource.Event.LOADED&&(t.unsubscribe(this),"drawOver"===this._loadCache.name?this.drawOver(this._loadCache.texture,this._loadCache.x,this._loadCache.y):this[this._loadCache.name](this._loadCache.data),this._loadCache=null)},set x(t){return this.ptr?(this.textureType?(this._xRatio=1/this.ptr.fullWidth,this._x=this._xRatio*t):this._x=t,void 0):(this._x=0,void 0)},set y(t){return this.ptr?(this.textureType?(this._yRatio=1/this.ptr.fullHeight,this._y=this._yRatio*t):this._y=t,void 0):(this._y=0,void 0)},get x(){return this._x},get y(){return this._y},set width(t){this._width=t,this.update()},set height(t){this._height=t,this.update()},get width(){return this._width},get height(){return this._height},set offsetX(t){this._offsetX=t,this._isLoaded&&this.emit(this,Resource.Event.CHANGED)},set offsetY(t){this._offsetY=t,this._isLoaded&&this.emit(this,Resource.Event.CHANGED)},get offsetX(){return this._offsetX},get offsetY(){return this._offsetY},set bgTexture(t){if("string"==typeof t){var e=Resource.ctrl.getTexture(t);if(!e)return console.warn("[Resource.Texture.bgTexture]:","No such texture found: "+t),void 0;t=e}this._bgTexture=t,this.isLoaded=!0},get bgTexture(){return this._bgTexture},type:Resource.Type.TEXTURE,textureType:Resource.TextureType.UNKNOWN,image:null,ctx:null,_bgTexture:null,vbo:null,_vertices:null,_x:0,_y:0,_xRatio:0,_yRatio:0,_width:0,_height:0,fullWidth:0,fullHeight:0,_widthRatio:0,_heightRatio:0,_offsetX:0,_offsetY:0,unitRatio:1,fps:0,numFrames:1,numFramesX:1,numFramesY:1,isAnimated:!1,isLoop:!1,autoPlay:!0,isAnimReverse:!1,isEmulateReverse:!1,fromAtlas:!1,isReloading:!1,_tmpImg:null,_tmpCtx:null,_cachedImg:null,_cachedCtx:null,_anim:null,_frames:null,_loadCache:null,_canvasCache:null,_history:null}),"use strict",Resource.Sound=Resource.Basic.extend({init:function(t,e){if("string"==typeof t&&(e=t,t=void 0),e){var i=e.lastIndexOf(".");-1!==i&&e.length-i<=5&&(this.format=e.substr(i+1,e.length-i-1),e=e.substr(0,i)),this.path=Resource.ctrl.rootPath+e}this._instances=[];var s=this;meta.device.isAudioAPI?(this._request=new XMLHttpRequest,this._request.responseType="arraybuffer",this._request.onreadystatechange=function(){s._onStateChange()}):(this._context=this._getInstance(),this._context.audio.addEventListener("error",function(){s.format?s._onLoadFailed():s._loadNextExtension()}),this._numInstancesUsed=0)},load:function(){if(!this.isLoading){this.isLoading=!0,this.isLoaded=!1,Resource.ctrl.addToLoad(this);var t=Resource.ctrl;t.isSyncLoading?t.addToQueue(this):(this.syncLoading||(t.isSyncLoading=!0),this._loadNextExtension())}},forceLoad:function(){this._loadNextExtension()},_loadNextExtension:function(){var t;if(this.format)t=this.path;else{var e=meta.device.audioFormats;if(this._requestFormat++,this._requestFormat>e.length)return this._onLoadFailed(),void 0;t=this.path+"."+meta.device.audioFormats[this._requestFormat-1]}this._loadFromUrl(t)},_loadFromUrl:function(t){this._request.open("GET",t,!0),this._request.send()},_loadFromUrl_legacy:function(t){this._context.audio.src=t,this._context.audio.load()},_clear:function(){this._request.onreadystatechange=null,this._request=null},_clear_legacy:function(){},_onStateChange:function(){if(4===this._request.readyState)if(200===this._request.status){var t=this;this._context.decodeAudioData(this._request.response,function(e){t._onDecodeSuccess(e)},function(){t._onDecodeError()}),this._request=null}else this.format?this._onLoadFailed():this._loadNextExtension()},_onDecodeSuccess:function(t){this.format||(this.path+="."+meta.device.audioFormats[this._requestFormat-1]),this._buffer=t,this._isLoading=!1,this._clear(),this.isLoaded=!0,Resource.ctrl.loadSuccess(this);for(var e=this._instances.length,i=0;e>i;i++)this._createSource(this._instances[i])},_onDecodeError:function(){this.format||(this.path+="."+meta.device.audioFormats[this._requestFormat-1]),console.warn("[Resource.Sound.load]:","Error decoding file: "+this.path),this._isLoading=!1,this._clear(),Resource.ctrl.loadFailed(this)},_onLoadFailed:function(){if(!this.format){var t=meta.device.audioFormats[this._requestFormat-1];t&&(this.path+="."+t)}console.warn("[Resource.Sound.load]:","Error loading file: "+this.path),this._isLoading=!1,this._clear(),Resource.ctrl.loadFailed(this)},play:function(t,e){var i=this._getInstance();i.isLoop=t||!1,i.play(e)},stop:function(){for(var t=0;t<this._numInstancesUsed;t++)this._instances[t]._stop();this._numInstancesUsed=0},pause:function(){for(var t=0;t<this._numInstancesUsed;t++)this._instances[t].pause()},resume:function(){for(var t=0;t<this._numInstancesUsed;t++)this._instances[t].resume()},_createSource:function(t){var e=this._context.createGain();e.connect(this._context.destination);var i=this._context.createBufferSource();i.buffer=this._buffer,i.loop=t._isLoop,i.connect(e),i.start||(i.start=i.noteOn),i.stop||(i.stop=i.noteOff);var s=this;return i.onended=function(){s._clearInstance(t)},t.source=i,t.gainNode=e,i},_createInstance:function(){return new Resource.AudioInstance},_createInstance_legacy:function(){return new Resource.AudioInstance_legacy(this)},_getInstance:function(){this._instances.length===this._numInstancesUsed&&(this._instances.length+=1,this._instances[this._numInstancesUsed]=this._createInstance());
-var t=this._instances[this._numInstancesUsed];return t.id=this._numInstancesUsed,this._numInstancesUsed++,t},_clearInstance:function(t){this._numInstancesUsed--;var e=this._instances[this._numInstancesUsed];e.id=t.id,this._instances[t.id]=e},set volume(t){if(this._volume!==t){this._volume=t;for(var e=this._instances.length,i=0;e>i;i++)this._instances[i].volume=t}},get volume(){return this._volume},get isPlaying(){return this._numInstancesUsed>0?!0:!1},type:Resource.Type.SOUND,format:"",_instances:null,_numInstancesUsed:0,_autoIsLoop:!1,_autoTime:0,_context:null,_buffer:null,_request:null,_requestFormat:0,_volume:1,_isInQueue:!1,_syncLoading:!1}),Resource.AudioInstance=function(){this.id=-1,this.source=null,this.gainNode=null,this.auto,this._volume=1,this._mixedVolume=1},Resource.AudioInstance.prototype={set volume(t){this._mixedVolume=this._volume*t,this.gainNode.gain.value=this._mixedVolume},get volume(){return this._volume},get mixedVolume(){return this._mixedVolume}},Resource.AudioInstance_legacy=function(t){this.id=-1,this.parent=t,this.isPlaying=!1,this.isLoop=!1,this._canPlay=!1,this._metaLoaded=!1,this._isLoaded=!1,this._volume=1,this._mixedVolume=1,this.audio=new Audio,this.audio.preload="auto",this._addEvents(t)},Resource.AudioInstance_legacy.prototype={play:function(t){this.isPlaying=!0,this._isLoaded?(this.audio.currentTime=t||0,this.audio.play()):this._autoPlay=!0},stop:function(){this.isPlaying=!1,this.isLoop=!1,this.audio.pause(),this.parent._clearInstance(this)},_stop:function(){this.isPlaying=!1,this.isLoop=!1,this.audio.pause()},pause:function(){this.isPlaying=!1,this.audio.pause()},resume:function(){this.isPlaying=!0,this.audio.play()},_addEvents:function(){var t=this,e=function(){t.audio.removeEventListener("canplaythrough",e),t._canPlay=!0,meta.device.support.onloadedmetadata&&t._metaLoaded&&t._onLoaded()};if(this.audio.addEventListener("canplaythrough",e,!1),meta.device.support.onloadedmetadata){var i=function(){t.audio.removeEventListener("loadedmetadata",i),t._metaLoaded=!0,t._canPlay&&t._onLoaded()};this.audio.addEventListener("loadedmetadata",i,!1)}this.audio.addEventListener("ended",function(){t._onEnd()},!1),this.parent._isLoaded&&(this.audio.src=this.parent.path,this.audio.load())},_onLoaded:function(){if(!this.parent._isLoaded){this.parent.format||(this.parent.path+="."+meta.device.audioFormats[this.parent._requestFormat-1]),this.parent._isLoading=!1,this.parent.isLoaded=!0;for(var t,e=this.parent._instances,i=this.parent._instances.length,s=1;i>s;s++)t=e[s],t.audio.src=this.parent.path,t.audio.load();Resource.ctrl.loadSuccess(parent),Resource.ctrl.loadNextFromQueue()}this._isLoaded=!0,this._autoPlay&&this.audio.play()},_onEnd:function(){this.isLoop?(this.audio.play(),this.audio.currentTime=0):this.isPlaying&&(this.isPlaying=!1,this.parent._clearInstance(this))},set currentTime(t){this.isPlaying?this.audio.currentTime=t||0:(this.audio.play(),this.audio.currentTime=t||0,this.audio.pause())},get currentTime(){return this.audio.currentTime},set volume(t){t>1?t=1:0>t&&(t=0),this._mixedVolume=this._volume*t,this.audio.volume=this._mixedVolume},get volume(){return this._volume},get mixedVolume(){return this._mixedVolume},_autoPlay:!1},"use strict",Resource.SpriteSheet=Resource.Basic.extend({init:function(t,e){if("string"==typeof t)e=t,t=void 0;else for(var i in t)this[i]=t[i];if(e){var s=e.lastIndexOf(".");-1!==s&&e.length-s<=5&&(this.format=e.substr(s+1,e.length-s-1),e=e.substr(0,s)),this.path=Resource.ctrl.rootPath+e,this.format||(this.format="xml")}},load:function(){if(!this.isLoading){this.isLoading=!0,this.isLoaded=!1,this._isAtlasLoaded=!1,this.texture?"string"==typeof this.texture&&(this.texture=new Resource.Texture(this.texture)):this.texture=new Resource.Texture(this.path),this.texture._isLoaded||(this.texture.subscribe(this,this._onTextureEvent),this.texture._isLoading||this.texture.load());var t=this,e=this.path+"."+this.format;this._request=new XMLHttpRequest,this._request.open("GET",e,!1),this._request.onreadystatechange=function(){t._onStateChange()},this._request.send(),Resource.ctrl.addToLoad(this)}},loadData:function(t,e){if(e=e||this.format,e||(e="xml"),this.format=e,this.isLoaded=!0,"xml"===e){var i=new DOMParser,s=i.parseFromString(t,"text/xml");return this.loadXML(s)}if("json"===e){var n=JSON.parse(t);return this.loadJSON(n)}if("plist"===e){var i=new DOMParser,o=i.parseFromString(t,"text/xml");return this.loadPlist(o)}return console.warn("[Resource.SpriteSheet.loadData]:","Trying to load an unsupported format - "+this.format),!1},loadXML:function(t){if(!t)return console.warn("[Resource.SpriteSheet.loadXML]:","Invalid XML file."),!1;for(var e=t.documentElement.childNodes,i=e.length,s,n=0;i>n;n++)if(s=e[n],"SubTexture"===s.nodeName)this._loadXML_Starling(s);else if("sprite"===s.nodeName)this._loadXML_genericXML(s);else if("dict"===s.nodeName)return this.loadPlist(t);return!0},_loadXML_Starling:function(t){var e=new Resource.Texture;e.ptr=this.texture,e.name=t.getAttribute("name"),e.x=t.getAttribute("x"),e.y=t.getAttribute("y"),e._width=t.getAttribute("width"),e._height=t.getAttribute("height"),e.fromAtlas=!0,e.isLoaded=!0,e.update(),Resource.ctrl.add(e)},_loadXML_genericXML:function(t){var e=new Resource.Texture;e.ptr=this.texture,e.name=t.getAttribute("n"),e.x=t.getAttribute("x"),e.y=t.getAttribute("y"),e._width=t.getAttribute("w"),e._height=t.getAttribute("h"),e.fromAtlas=!0,e.isLoaded=!0,e.update(),Resource.ctrl.add(e)},loadPlist:function(t){if(!t)return console.warn("[Resource.SpriteSheet.loadPlist]:","Invalid Plist file."),!1;for(var e=t.documentElement.childNodes,i=e.length,s,n=0;i>n;n++)if(s=e[n],"dict"===s.nodeName)return this._loadPlist_dict(s)},_loadPlist_dict:function(t){for(var e=t.childNodes,i=e.length,s="",n=0;i>n;n++)if(t=e[n],"key"===t.nodeName)s=t.textContent;else if("dict"===t.nodeName){if(!s)continue;"frames"===s&&this._loadPlist_frames(t)}},_loadPlist_frames:function(t){for(var e=t.childNodes,i=e.length,s="",n=0;i>n;n++)t=e[n],"key"===t.nodeName?s=t.textContent:"dict"===t.nodeName&&this._loadPlist_frame(t,s)},_loadPlist_frame:function(t,e){var i=new Resource.Texture;i.ptr=this.texture,i.name=e;for(var s=t.childNodes,n=s.length,o="",h,r=0;n>r;r++)if(t=s[r],"key"===t.nodeName)o=t.textContent;else if("string"===t.nodeName&&"frame"===o)return h=t.textContent.match(/[0-9]+/g),i.x=parseInt(h[0]),i.y=parseInt(h[1]),i._width=parseInt(h[2]),i._height=parseInt(h[3]),i.fromAtlas=!0,i.isLoaded=!0,i.update(),Resource.ctrl.add(i),void 0},loadJSON:function(t){return t?(t.frames instanceof Array?this._loadJSON_array(t):this._loadJSON_hash(t),!0):(console.warn("[Resource.SpriteSheet.loadFromJSON]:","Invalid JSON file."),!1)},_loadJSON_array:function(t){for(var e,i,s=t.frames,n=s.length,o=0;n>o;o++)e=s[o],i=new Resource.Texture,i.ptr=this.texture,i.name=e.filename,e=e.frame,i.x=e.x,i.y=e.y,i._width=e.w,i._height=e.h,i.fromAtlas=!0,i.isLoaded=!0,i.update(),Resource.ctrl.add(i)},_loadJSON_hash:function(t){var e,i,s=t.frames;for(var n in s)i=new Resource.Texture,i.ptr=this.texture,i.name=n,e=s[n].frame,i.x=e.x,i.y=e.y,i._width=e.w,i._height=e.h,i.fromAtlas=!0,i.isLoaded=!0,i.update(),Resource.ctrl.add(i)},loadAtlas:function(){if("object"!=typeof this.atlas)return console.warn("[Resource.SpriteSheet.loadFromAtlas]:","Incorrect atlas object, expected to be an Array."),!1;for(var t=[],e,i,s,n=this.atlas.length,o=0;n>o;o++)e=this.atlas[o],s=e.name||this.params,s?(e.x=e.x||this.params.x||0,e.y=e.y||this.params.y||0,e.width=e.width||this.params.width||1,e.height=e.height||this.params.height||1,t.push(e),i=new Resource.Texture,i.ptr=this.texture,i.name=s,i.x=e.x,i.y=e.y,i._width=e.width,i._height=e.height,i.numFrames=e.numFrames||this.params.numFrames||1,i.fromAtlas=!0,i.isLoaded=!0,i.update(),Resource.ctrl.add(i)):console.warn("[Resource.SpriteSheet.loadFromAtlas]:","No name defined for atlas item in "+this.name+" spritesheet.");return this.texture._frames=t,this.atlas=null,this.isLoaded=!0,!0},_onTextureEvent:function(t,e){e===Resource.Event.LOADED&&(this.texture.unsubscribe(this),this._isAtlasLoaded&&(this.loadData(this._response,this.format),Resource.ctrl.loadSuccess(this),this._response=null))},_onStateChange:function(){4===this._request.readyState&&(200===this._request.status?(this._isAtlasLoaded=!0,this._response=this._request.response,this._request=null,this.texture._isLoaded&&(this.loadData(this._response,this.format),Resource.ctrl.loadSuccess(this),this._response=null)):(this._isLoading=!1,this._request.onreadystatechange=null,this._request=null,Resource.ctrl.loadFailed(this)))},type:Resource.Type.SPRITE_SHEET,format:"",atlas:null,params:null,texture:null,_request:null,_response:null,_isAtlasLoaded:!1}),"use strict",Resource.Font=Resource.Basic.extend({init:function(t,e){if("string"==typeof t)e=t,t=void 0;else for(var i in t)this[i]=t[i];if(e){var s=e.lastIndexOf(".");-1!==s&&e.length-s<=5&&(this.format=e.substr(s+1,e.length-s-1),e=e.substr(0,s)),this.path=Resource.ctrl.rootPath+e,this.format||(this.format="fnt")}},load:function(){console.log("load")},type:Resource.Type.FONT,format:""}),"use strict",window.Entity={},Entity.Controller=meta.Controller.extend({init:function(){Entity.Geometry.prototype._entityCtrl=this,Entity.Geometry.prototype._parent=this,this.entities=new Entity.DepthList,this.entitiesToAdd=[],this.entitiesToUpdate=[],this.entitiesToRemove=[],this.entitiesRemoveUpdate=[],this.detachBuffer=[],this._centerTex=new Resource.Texture,this._centerTex.fillRect({color:"#ff0000",width:6,height:6});var t=meta;this._chnOnDown=t.createChannel(Entity.Event.DOWN),this._chnOnUp=t.createChannel(Entity.Event.UP),this._chnOnClick=t.createChannel(Entity.Event.CLICK),this._chnOnDrag=t.createChannel(Entity.Event.DRAG),this._chnOnDragStart=t.createChannel(Entity.Event.DRAG_START),this._chnOnDragEnd=t.createChannel(Entity.Event.DRAG_END),this._chnOnHover=t.createChannel(Entity.Event.HOVER),this._chnOnHoverEnter=t.createChannel(Entity.Event.HOVER_ENTER),this._chnOnHoverExit=t.createChannel(Entity.Event.HOVER_EXIT),t.subscribe(this,t.Event.RESIZE,this.onResize),t.subscribe(this,t.Event.CAMERA_MOVE,this.onMove),t.subscribe(this,t.Event.ADAPT,this.onAdapt),t.subscribe(this,t.Event.ADDED_TO_VIEW,this.onAddToView),t.subscribe(this,t.Event.REMOVED_FROM_VIEW,this.onRemoveFromView),this.volume=t.camera.volume,this.onMove(t.camera,null)},release:function(){Entity.Geometry.prototype._entityCtrl=null,this.cells=null,this.entities=null,this.entitiesToAdd=null,this.entitiesToUpdate=null,this.entitiesToRemove=null,this.entitiesRemoveUpdate=null,this.detachBuffer=null,this.dynamicEntities=null,this._chnOnDown.remove(),this._chnOnUp.remove(),this._chnOnClick.remove(),this._chnOnDrag.remove(),this._chnOnDragStart.remove(),this._chnOnDragEnd.remove(),this._chnOnHover.remove(),this._chnOnHoverEnter.remove(),this._chnOnHoverExit.remove(),meta.unsubscribe(this,meta.Event.RESIZE),meta.unsubscribe(this,meta.Event.CAMERA_MOVE),meta.unsubscribe(this,meta.Event.ADDED_TO_VIEW,this.onAddToView),meta.unsubscribe(this,meta.Event.REMOVED_FROM_VIEW,this.onRemoveFromView),meta.unsubscribe(this,[Input.Event.INPUT_DOWN,Input.Event.INPUT_UP],this.onInput),meta.unsubscribe(this,Input.Event.INPUT_MOVE)},load:function(){this.cells={};var t=meta.camera.volume;if(this.startCellX=Math.floor(t.minX/this._cellSizeX),this.startCellY=Math.floor(t.minY/this._cellSizeY),this.endCellX=Math.floor(t.maxX/this._cellSizeX),this.endCellY=Math.floor(t.maxY/this._cellSizeY),this.entities.length>0){for(var e=Entity.Geometry.prototype._dummyParent,i=this.entities.first.next,s=this.entities.last;i!==s;i=i.next)i.entity._parent=e;this.entities.clear()}this.dynamicEntities=new Array(64);for(var n,o=meta.view.entities,h=o.length,r=0;h>r;r++)n=o[r],n._showBounds&&this.numShowBounds++,n._parent===e&&(n._parent=this);meta.subscribe(this,[Input.Event.INPUT_DOWN,Input.Event.INPUT_UP],this.onInput),meta.subscribe(this,Input.Event.INPUT_MOVE,this.onInputMove)},unload:function(){for(var t,e=this.entities.length,i=0;e>i;i++)t=this.entities[i],t._parent===this&&(t._parent=null);this.numShowBounds=0,this.numEntitiesToUpdate=0},update:function(t){this._isUpdateTick=!0;var e,i,s,n,o;for(e=0;e<this.numEntitiesToUpdate;e++)s=this.entitiesToUpdate[e],s.isPaused||s.isRemoved||(s.update&&s.update(t),s.components&&s._updateComponents(t));if(this.numDetachItems){for(e=0;e<this.numDetachItems;e++)if(s=this.detachBuffer[e],n=s._parent.children,o=n.length,0!==o)for(i=0;o>i;i++)if(n[i]===s){n[i]=n[o-1],n.pop();break}this.detachBuffer.length=0,this.numDetachItems=0}if(this.numEntitiesToRemove){for(e=0;e<this.numEntitiesToRemove;e++)s=this.entitiesToRemove[e],this.entities.remove(s._depthNode),s.removeFully();this.entitiesToRemove.length=0,this.numEntitiesToRemove=0,this.isNeedRender=!0}if(this.numEntitiesToAdd){for(e=0;e<this.numEntitiesToAdd;e++)this._addEntity(this.entitiesToAdd[e]);this.entitiesToAdd.length=0,this.numEntitiesToAdd=0}if(this.numEntitiesRemoveUpdate){var h;for(e=0;e<this.numEntitiesRemoveUpdate;e++)s=this.entitiesRemoveUpdate[e],this.entitiesRemoveUpdate[e]=null,4===(4&s._removeFlag)&&(this.numEntitiesToUpdate--,h=this.entitiesToUpdate[this.numEntitiesToUpdate],h._updateNodeID=s._updateNodeID,this.entitiesToUpdate[s._updateNodeID]=h,this.entitiesToUpdate[this.numEntitiesToUpdate]=null,s._removeFlag&=-5,s._updateNodeID=-1);this.numEntitiesRemoveUpdate=0}this._isUpdateTick=!1},_addToDrawBounds:function(){this.numShowBounds++,this.isNeedRender=!0},_removeToDrawBounds:function(){this.numShowBounds--,this.isNeedRender=!0},onAddToView:function(t,e){var i,s;if(this._isUpdateTick)if(t instanceof Entity.Geometry)this.entitiesToAdd.push(t),this.numEntitiesToAdd++;else{var n=t.length;for(i=0;n>i;i++)this.entitiesToAdd.push(t[i]);this.numEntitiesToAdd+=n}else if(t instanceof Entity.Geometry)this._addEntity(t);else for(s=t.length,i=0;s>i;i++)this._addEntity(t[i])},onRemoveFromView:function(t,e){if(t instanceof Entity.Geometry)this._removeEntity(t);else for(var i=t.length,s=0;i>s;s++)this._removeEntity(t[s])},_addEntity:function(t){if(!t.isRemoved&&!t._depthNode.entity){t.cellX=Math.floor(t._x/this._cellSizeX),t.cellY=Math.floor(t._y/this._cellSizeY),t._cellIndex=t.cellX|t.cellY<<16;var e=this.cells[t._cellIndex];if(e||(e=new Entity.CellArray,this.cells[t._cellIndex]=e),e.push(t),t._depthNode.entity=t,this.entities.push(t._depthNode),t.texture||(t.isLoaded=!0),t.children)for(var i=t.children.length,s=0;i>s;s++)this._addEntity(t.children[s]);t.update&&(t.isUpdating=!0),t.isNeedState&&t.updateState(),t._isLoaded&&t._texture&&this.cacheEntity(t)}},_removeEntity:function(t){if(t._depthNode.entity&&(this.entitiesToRemove.push(t),this.numEntitiesToRemove++,t.children))for(var e=t.children.length,i=0;e>i;i++)this._removeEntity(t.children[i])},_addToUpdating:function(t){return 4===(4&t._removeFlag)?(t._removeFlag&=-5,!0):-1!==t._updateNodeID?!1:(t._updateNodeID=this.numEntitiesToUpdate,this.entitiesToUpdate.length===this.numEntitiesToUpdate&&(this.entitiesToUpdate.length+=8),this.entitiesToUpdate[this.numEntitiesToUpdate]=t,this.numEntitiesToUpdate++,!0)},_removeFromUpdating:function(t){return-1===t._updateNodeID||4===(4&t._removeFlag)?!1:(this.entitiesRemoveUpdate.length===this.numEntitiesRemoveUpdate&&(this.entitiesRemoveUpdate.length+=4),t._removeFlag|=4,this.entitiesRemoveUpdate[this.numEntitiesRemoveUpdate]=t,this.numEntitiesRemoveUpdate++,!0)},getFromVolume:function(t){for(var e,i=this.entities.first.next,s=this.entities.last;i!==s;i=i.next)if(e=i.entity,e.volume!==t&&e.volume.vsAABB(t))return e;return null},getFromPoint:function(t,e,i){for(var s,n=this.entities.first.next,o=this.entities.last;n!==o;n=n.next)if(s=n.entity,s!==i&&s.volume.vsPoint(t,e))return s;return null},getFromEntity:function(t){return this.getFromVolume(t.volume)},cacheEntity:meta.emptyFuncParam,uncacheEntity:meta.emptyFuncParam,onResize:function(t,e){var i=meta.camera.volume;this.prevStartCellX=this.startCellX,this.prevStartCellY=this.startCellY,this.prevEndCellX=this.endCellX,this.prevEndCellY=this.endCellY,this.startCellX=Math.floor(i.minX/this._cellSizeX),this.startCellY=Math.floor(i.minY/this._cellSizeY),this.endCellX=Math.floor(i.maxX/this._cellSizeX),this.endCellY=Math.floor(i.maxY/this._cellSizeY),this.isNeedRender=!0},onMove:function(t,e){var i=t.volume;this.prevStartCellX=this.startCellX,this.prevStartCellY=this.startCellY,this.prevEndCellX=this.endCellX,this.prevEndCellY=this.endCellY,this.startCellX=Math.floor(i.minX/this._cellSizeX),this.startCellY=Math.floor(i.minY/this._cellSizeY),this.endCellX=Math.floor(i.maxX/this._cellSizeX),this.endCellY=Math.floor(i.maxY/this._cellSizeY);for(var s=Math.min(this.prevStartCellX,this.startCellX),n=Math.min(this.prevStartCellY,this.startCellY),o=Math.max(this.prevEndCellX,this.endCellX),h=Math.max(this.prevEndCellY,this.endCellY),r,a,u=n;h>u;u++)for(var c=s;o>c;c++)r=c|u<<16;this.x=0|t._x,this.y=0|t._y,this.isNeedRender=!0},onAdapt:function(t,e){for(var i=this.entities.buffer,s=this.entities.length,n=0;s>n;n++)i[n].adapt()},onInput:function(t,e){if(this.enablePicking){this._checkHover(t);var i=Input.Event;if(i.INPUT_DOWN===e){if(!this.hoverEntity||!this.hoverEntity.clickable)return;t.entity=this.hoverEntity,this.pressedEntity=this.hoverEntity,this.pressedEntity.isPressed=!0,this.pressedEntity._onDown.call(this.pressedEntity,t),this.pressedEntity.onDown.call(this.pressedEntity,t),this._chnOnDown.emit(t,Entity.Event.DOWN)}else i.INPUT_UP===e&&(t.entity=this.pressedEntity,this.pressedEntity&&this.pressedEntity.clickable&&(this.pressedEntity.isDragged&&(this.pressedEntity.isDragged=!1,this.pressedEntity._onDragEnd.call(this.pressedEntity,t),this.pressedEntity.onDragEnd.call(this.pressedEntity,t),this._chnOnDragEnd.emit(t,Entity.Event.DRAG_END)),this.pressedEntity.isPressed=!1,this.pressedEntity._onUp.call(this.pressedEntity,e),this.pressedEntity.onUp.call(this.pressedEntity,e),this._chnOnUp.emit(this.pressedEntity,Entity.Event.UP),this.pressedEntity===this.hoverEntity&&(this.pressedEntity._onClick.call(this.pressedEntity,t),this.pressedEntity.onClick.call(this.pressedEntity,t),this._chnOnClick.emit(t,Entity.Event.CLICK)),this.pressedEntity=null))}},_checkHover:function(t){for(var e,i=this.entities.last.prev,s=this.entities.first;i!==s;i=i.prev)if(e=i.entity,e.pickable&&e.isInside(t.x,t.y))return this.hoverEntity!==e?(this.hoverEntity&&(t.entity=this.hoverEntity,this.hoverEntity.isHover=!1,this.hoverEntity._onHoverExit.call(this.hoverEntity,t),this.hoverEntity.onHoverExit.call(this.hoverEntity,t),this._chnOnHoverExit.emit(t,Entity.Event.HOVER_EXIT)),t.entity=e,e.isHover=!0,e._onHoverEnter.call(e,t),e.onHoverEnter.call(e,t),this._chnOnHoverEnter.emit(t,Entity.Event.HOVER_ENTER),this.hoverEntity=e):(t.entity=e,e._onHover.call(e,t),e.onHover.call(e,t),this._chnOnHover.emit(t,Entity.Event.HOVER)),t.entity=null,void 0;this.hoverEntity&&(t.entity=this.hoverEntity,this.hoverEntity.isHover=!1,this.hoverEntity._onHoverExit.call(this.hoverEntity,t),this.hoverEntity.onHoverExit.call(this.hoverEntity,t),this._chnOnHoverExit.emit(t,Entity.Event.HOVER_EXIT)),this.hoverEntity=null},_checkDrag:function(t){return this.pressedEntity&&this.pressedEntity.clickable?(t.entity=this.pressedEntity,this.pressedEntity.isDragged?(this.pressedEntity._onDrag.call(this.pressedEntity,t),this.pressedEntity.onDrag.call(this.pressedEntity,t),this._chnOnDrag.emit(t,Entity.Event.DRAG),!1):(this.pressedEntity.isDragged=!0,this.pressedEntity._onDragStart.call(this.pressedEntity,t),this.pressedEntity.onDragStart.call(this.pressedEntity,t),this._chnOnDragStart.emit(t,Entity.Event.DRAG_START),!1)):!0},onInputMove:function(t,e){this.enablePicking&&this._checkDrag(t)&&this._checkHover(t)},getByID:function(t){for(var e=this.entities.buffer,i=this.entities.length,s=0;i>s;s++)if(t===e[s].id)return e[s]},getByName:function(t){for(var e=this.entities.buffer,i=this.entities.length,s=0;i>s;s++)if(t===e[s].name)return e[s]},getUniqueID:function(){return++this._uniqueID},set cellMagnitue(t){this._cellMagnitue!==t&&(this._cellMagnitue=t,this._cellSizeX=128*t,this._cellSizeY=128*t,this.isNeedRender=!0)},get cellMagnitue(){return this._cellMagnitue},_x:0,_y:0,_z:0,totalAngleRad:0,totalAlpha:1,totalScaleX:1,totalScaleY:1,volume:null,pivotX:0,pivotY:0,cells:null,_cellSizeX:128,_cellSizeY:128,_cellMagnitue:1,startCellX:0,startCellY:0,endCellX:0,endCellY:0,prevStartCellX:0,prevStartCellY:0,prevEndCellX:0,prevEndCellY:0,_numCellX:0,_numCellY:0,entities:null,entitiesToCheck:null,entitiesToAdd:null,entitiesToRemove:null,entitiesToUpdate:null,entitiesRemoveUpdate:null,detachBuffer:null,dynamicEntities:null,numEntitiesToCheck:0,numEntitiesToAdd:0,numEntitiesToRemove:0,numEntitiesToUpdate:0,numEntitiesRemoveUpdate:0,numShowBounds:0,numDetachItems:0,_parent:null,childOffsetX:0,childOffsetY:0,hoverEntity:null,pressedEntity:null,isNeedRender:!0,_isUpdateTick:!1,enablePicking:!0,showBounds:!1,showCells:!1,_uniqueID:0,_centerTex:null,_chnOnDown:null,_chnOnUp:null,_chnOnClick:null,_chnOnDrag:null,_chnOnDragStart:null,_chnOnDragEnd:null,_chnOnHover:null,_chnOnHoverEnter:null,_chnOnHoverExit:null}),"use strict",Entity.Event={UP:"up",DOWN:"down",CLICK:"click",DRAG:"drag",DRAG_START:"dragStart",DRAG_END:"dragEnd",HOVER:"hover",HOVER_ENTER:"hoverEnter",HOVER_EXIT:"hoverExit"},Entity.PositionType={CENTER:0,TOP_LEFT:1,TOP_RIGHT:2,BOTTOM_LEFT:3,BOTTOM_RIGHT:4,TOP:5,BOTTOM:6,LEFT:7,RIGHT:8},"use strict",Entity.WebGLRenderer=Entity.Controller.extend({init:function(){this._super();var t=meta.ctx;this._worldTex=new Resource.Texture,this._worldTex.fillRect({color:"#7AA3CC",width:1,height:1}),this._highlightTex=new Resource.Texture,this._highlightTex.fillRect({color:"#339933",width:6,height:6}),this._position=new Float32Array([0,0]),this._center=new Float32Array([0,0]),this._scale=new Float32Array([0,0]),this.cameraPos=new Float32Array([0,0]);var e=[0,0,1,0,0,1,1,1];this.texCoord=t.createBuffer(),t.bindBuffer(t.ARRAY_BUFFER,this.texCoord),t.bufferData(t.ARRAY_BUFFER,new Float32Array(e),t.STATIC_DRAW);var i=[0,1,3,2,0];this._lineIndices=t.createBuffer(),t.bindBuffer(t.ELEMENT_ARRAY_BUFFER,this._lineIndices),t.bufferData(t.ELEMENT_ARRAY_BUFFER,new Uint16Array(i),t.STATIC_DRAW),this._frameCoord=new Float32Array(4),t.clearDepth(1),t.enable(t.DEPTH_TEST),t.depthFunc(t.LEQUAL),t.pixelStorei(t.UNPACK_PREMULTIPLY_ALPHA_WEBGL,!1),t.blendFuncSeparate(t.SRC_ALPHA,t.ONE_MINUS_SRC_ALPHA,t.ONE,t.ONE_MINUS_SRC_ALPHA),t.activeTexture(t.TEXTURE0),t.enable(t.BLEND);var s=meta.shader;this.locCameraPos=t.getUniformLocation(s.program,"cameraPos"),this.locZoom=t.getUniformLocation(s.program,"zoom"),this.locSampler=t.getUniformLocation(s.program,"sampler"),this.locAlpha=t.getUniformLocation(s.program,"alpha"),this.locPos=t.getUniformLocation(s.program,"pos"),this.locCenter=t.getUniformLocation(s.program,"center"),this.locScale=t.getUniformLocation(s.program,"scale"),this.locFrameCoord=t.getUniformLocation(s.program,"frameCoord"),this.locAngle=t.getUniformLocation(s.program,"angle")},ready:function(){meta.shader.bindBuffer2f("texCoord",this.texCoord)},render:function(t){for(var e,i=this.entities.first.next,s=this.entities.last;i!==s;i=i.next)e=i.entity,e.isNeedState&&e.updateState(),e._texture&&e.isAnimating&&e._updateAnim(t);if(this.isNeedRender){var n=meta,o=n.ctx,h=n.shader,r=n.camera,a=n.unitSize,u,c,l,d,m;for(this.clearScreen(),this.cameraPos[0]=r._x*meta.unitSize|0,this.cameraPos[1]=r._y*meta.unitSize|0,o.uniform2fv(this.locCameraPos,this.cameraPos),o.uniform1f(this.locZoom,meta.camera._zoom*meta.unitRatio),o.uniform1i(this.locSampler,0),i=this.entities.first.next,s=this.entities.last;i!==s;i=i.next)e=i.entity,e.isVisible&&e.isLoaded&&e.texture&&(u=e._texture,h.bindBuffer2f("vertexPos",u.vbo),this._clipVolume!==e.clipVolume&&(e.clipVolume?(this._clipVolume||o.enable(o.SCISSOR_TEST),this._clipVolume=e.clipVolume,c=(this._clipVolume.minX+r._x)*r._zoom|0,l=r.volume.height-this._clipVolume.maxY|0,d=this._clipVolume.width*r._zoom,m=this._clipVolume.height*r._zoom,0>c&&(d+=c,c=0),0>l&&(m+=l,l=0),o.scissor(c,l,d,m)):(o.disable(o.SCISSOR_TEST),this._clipVolume=null)),this._position[0]=1===e._flipX?e.volume.minX*a|0:(e.volume.minX+e.volume.width)*a|0,this._position[1]=1===e._flipY?e.volume.minY*a|0:(e.volume.minY+e.volume.height)*a|0,e.isChild?(this._center[0]=(e._parent.volume.x-e._parent.pivotX+e.volume.x)*a,this._center[1]=(e._parent.volume.y-e._parent.pivotY+e.volume.y)*a):(this._center[0]=(e.volume.x-e.pivotX)*a,this._center[1]=(e.volume.y-e.pivotY)*a),this._scale[0]=e.totalScaleX*e._flipX,this._scale[1]=e.totalScaleY*e._flipY,this._frameCoord[0]=u._x+e.currFrame%e._texture.numFramesX*u._xRatio,this._frameCoord[1]=u._y+Math.floor(e.currFrame/e._texture.numFramesX)*u._yRatio,this._frameCoord[2]=u._widthRatio,this._frameCoord[3]=u._heightRatio,o.uniform1f(this.locAlpha,e.totalAlpha),o.uniform2fv(this.locPos,this._position),o.uniform2fv(this.locCenter,this._center),o.uniform2fv(this.locScale,this._scale),o.uniform4fv(this.locFrameCoord,this._frameCoord),o.uniform1f(this.locAngle,e.totalAngleRad),u.fromAtlas?o.bindTexture(o.TEXTURE_2D,u.ptr.image):o.bindTexture(o.TEXTURE_2D,u.image),e.ignoreZoom?(o.uniform1f(this.locZoom,1),o.drawArrays(o.TRIANGLE_STRIP,0,4),o.uniform1f(this.locZoom,meta.camera._zoom)):o.drawArrays(o.TRIANGLE_STRIP,0,4),e._isNeedDraw=!1);if(this._clipVolume&&o.disable(o.SCISSOR_TEST),this.numShowBounds>0||this.showBounds){for(o.disable(o.BLEND),o.uniform1f(this.locAlpha,1),o.lineWidth(2),i=this.entities.first.next;i!==s;i=i.next)e=i.entity,(e.showBounds||this.showBounds)&&!e.disableDebug&&e.isVisible&&e.isLoaded&&(this._position[0]=1===e._flipX?e.volume.minX*a|0:(e.volume.minX+e.volume.width)*a|0,this._position[1]=1===e._flipY?e.volume.minY*a|0:(e.volume.minY+e.volume.height)*a|0,e.isChild?(this._center[0]=(e._parent.volume.x-e._parent.pivotX+e.volume.x)*a,this._center[1]=(e._parent.volume.y-e._parent.pivotY+e.volume.y)*a):(this._center[0]=(e.volume.x-e.pivotX)*a,this._center[1]=(e.volume.y-e.pivotY)*a),this._scale[0]=e.totalScaleX*e._flipX,this._scale[1]=e.totalScaleY*e._flipY,e.isHighlight?o.bindTexture(o.TEXTURE_2D,this._highlightTex.image):o.bindTexture(o.TEXTURE_2D,this._centerTex.image),o.uniform2fv(this.locPos,this._position),o.uniform2fv(this.locCenter,this._center),o.uniform2fv(this.locScale,this._scale),o.uniform1f(this.locAngle,e.totalAngleRad),h.bindBuffer2f("vertexPos",e.texture.vbo),o.bindBuffer(o.ELEMENT_ARRAY_BUFFER,this._lineIndices),o.drawElements(o.LINE_STRIP,5,o.UNSIGNED_SHORT,0),o.bindBuffer(o.ELEMENT_ARRAY_BUFFER,null),h.bindBuffer2f("vertexPos",this._centerTex.vbo),e.isHighlight?o.bindTexture(o.TEXTURE_2D,this._highlightTex.image):o.bindTexture(o.TEXTURE_2D,this._centerTex.image),o.lineWidth(2),this._position[0]=(e.volume.x-e.pivotX-3)*a,this._position[1]=(e.volume.y-e.pivotY-3)*a,this._scale[0]=a,this._scale[1]=a,o.uniform2fv(this.locPos,this._position),o.uniform2fv(this.locScale,this._scale),e.ignoreZoom?(o.uniform1f(this.locZoom,1),o.drawArrays(o.TRIANGLE_STRIP,0,4),o.uniform1f(this.locZoom,meta.camera._zoom)):o.drawArrays(o.TRIANGLE_STRIP,0,4));o.enable(o.BLEND)}var _=meta.world;if(_.showBounds){if(h.bindBuffer2f("vertexPos",this._worldTex.vbo),o.bindTexture(o.TEXTURE_2D,this._worldTex.image),this._scale[0]=_.width,this._scale[1]=_.height,o.uniform2fv(this.locScale,this._scale),this._position[0]=0,this._position[1]=0,o.uniform2fv(this.locPos,this._position),this._center[0]=0,this._center[1]=0,o.uniform2fv(this.locCenter,this._center),o.uniform1f(this.locAngle,0),o.uniform1f(this.locAlpha,1),o.bindBuffer(o.ELEMENT_ARRAY_BUFFER,this._lineIndices),o.lineWidth(2),o.drawElements(o.LINE_STRIP,5,o.UNSIGNED_SHORT,0),_.haveGrid){var f=_.numGridX,p=_.numGridY;this._scale[0]=_.gridWidth,this._scale[1]=_.gridHeight,o.uniform2fv(this.locScale,this._scale);for(var v=0;p>v;v++)for(var g=0;f>g;g++)this._position[0]=g*_.gridWidth+_.gridX,this._position[1]=v*_.gridHeight+_.gridY,o.uniform2fv(this.locPos,this._position),o.drawElements(o.LINE_STRIP,5,o.UNSIGNED_SHORT,0)}o.bindBuffer(o.ELEMENT_ARRAY_BUFFER,null)}this.isNeedRender=!1}},clearScreen:function(){var t=meta.ctx;t.clear(t.COLOR_BUFFER_BIT|t.DEPTH_BUFFER_BIT|t.STENCIL_BUFFER_BIT)},_worldTex:null,_highlightTex:null,_position:null,_center:null,_scale:null,_frameCoord:null,_clipVolume:null,locCameraPos:null,locZoom:null,locSampler:null,locAlpha:null,locPos:null,locCenter:null,locScale:null,locFrameCoord:null,locAngle:null}),"use strict",Entity.CanvasRenderer=Entity.Controller.extend({init:function(){meta.subscribe(this,meta.Event.CAMERA_RESIZE,this.onCameraResize),this._super(),this._tStaticCheck=Date.now()},release:function(){this._super(),meta.unsubscribe(this,meta.Event.CAMERA_RESIZE)},render:function(t){var e=this.entities.first.next;if(this.isNeedRender)this._renderAll(e,t);else for(var i,s=this.entities.last;e!==s;e=e.next)if(i=e.entity,i.isNeedState&&i.updateState(),i._texture&&i.isAnimating&&i._updateAnim(t),i._isLoaded&&i.isNeedDraw){this._reRender(e.next,t);break}},_reRender:function(t,e){this.clearScreen();var i=meta,s=i.ctx,n=meta.camera;s.save(),s.scale(n._zoom,n._zoom);for(var o,h=this.entities.first.next;h!==t;h=h.next)o=h.entity,!o._isCached&&o.isVisible&&o._isLoaded&&(o.draw(s),o._isNeedDraw=!1);for(var r=this.entities.last;h!==r;h=h.next)if(o=h.entity,o.isNeedState&&o.updateState(),o._texture&&o.isAnimating&&o._updateAnim(e),!o._isCached&&o.isVisible&&o._isLoaded){if(this._clipVolume!==o.clipVolume){if(null===o.clipVolume)s.restore();else{s.save();var a=o.clipVolume;s.beginPath(),s.rect(a.minX,a.minY,a.width,a.height),s.closePath(),s.clip()}this._clipVolume=o.clipVolume}o.ignoreZoom?(s.restore(),s.save(),o.draw(s),s.scale(n._zoom,n._zoom)):o.draw(s),o._isNeedDraw=!1}this._drawBounds(),s.restore(),this.isNeedRender=!1},_renderAll:function(t,e){this.clearScreen();var i=meta,s=i.ctx,n=i.camera,o=i.unitRatio,h=i.unitSize;s.save(),s.translate(this.x*n._zoom|0,this.y*n._zoom|0),s.scale(n._zoom*o,n._zoom*o);for(var r,a=this.entities.last;t!==a;t=t.next)if(r=t.entity,r.isNeedState&&r.updateState(),r._texture&&r.isAnimating&&r._updateAnim(e),!r._isCached&&r.isVisible&&r._isLoaded){if(this._clipVolume!==r.clipVolume){if(null===r.clipVolume)s.restore();else{s.save();var u=r.clipVolume;s.beginPath(),s.rect(u.minX*h|0,u.minY*h|0,u.width*h,u.height*h),s.closePath(),s.clip()}this._clipVolume=r.clipVolume}r.ignoreZoom?(s.restore(),s.save(),r.draw(s),s.scale(n._zoom*o,n._zoom*o)):r.draw(s),r._isNeedDraw=!1}null!==this._clipVolume&&(this._clipVolume=null,s.restore()),s.restore(),s.save(),s.scale(n._zoom,n._zoom),s.translate(0|this.x,0|this.y),this._drawBounds(),this.showCells&&this._drawCells(),s.restore(),this.isNeedRender=!1},clearScreen:function(){var t=meta;t.view.bgTransparent?t.ctx.clearRect(0,0,t.width,t.height):(t.ctx.fillStyle=t.view.bgColor,t.ctx.fillRect(0,0,t.width,t.height))},_drawBounds:function(){if(this.numShowBounds>0||this.showBounds){var t=!1,e=meta.unitSize,i=meta.unitRatio,s=meta.camera,n=meta.ctx;n.strokeStyle="#ff0000",n.lineWidth=2;for(var o,h,r,a,u,c=this.entities.first.next,l=this.entities.last;c!==l;c=c.next)o=c.entity,(o.showBounds||this.showBounds)&&!o.disableDebug&&o.isVisible&&o.isLoaded&&(t!==o._isCached&&(n.strokeStyle=o.isCached||o.isHighlight?"#339933":"#ff0000",t=!t),n.save(),h=o.volume.x-o.pivotX,r=o.volume.y-o.pivotY,o.isChild?(a=o._parent.volume.x-o._parent.pivotX,u=o._parent.volume.y-o._parent.pivotY,n.translate(a,u),n.rotate(o._parent.totalAngleRad),n.translate(-a,-u),n.translate(h,r),n.rotate(o._angleRad),n.translate(-h,-r)):(n.translate(h,r),n.rotate(o._angleRad),n.translate(-h,-r)),o.volume.draw(n),this._centerTex.draw(n,h-3,r-3),n.restore())}},_drawWorldBounds:function(){var t=meta.world;if(t.showBounds){var e=meta.ctx;if(e.translate(this.x,this.y),e.strokeStyle="#7AA3CC",e.lineWidth=2,t.volume.draw(e),t.haveGrid){var i=t.numGridX,s=t.numGridY,n=i*t.gridWidth,o=s*t.gridHeight;e.translate(t.gridX,t.gridY);for(var h=0;i>=h;h++)e.moveTo(h*t.gridWidth,0),e.lineTo(h*t.gridHeight,o);for(var r=0;s>=r;r++)e.moveTo(0,r*t.gridHeight),e.lineTo(n,r*t.gridHeight);
-e.stroke()}}},_drawCells:function(){var t=meta.unitSize,e=meta.ctx;e.strokeStyle="orange",e.lineWidth=2,e.beginPath();for(var i=this.x%this._cellSizeX,s=this.y%this._cellSizeY,n=this.endCellX-this.startCellX,o=this.endCellY-this.startCellY,h=0;n>=h;h++)e.moveTo(i+h*this._cellSizeX,0),e.lineTo(i+h*this._cellSizeX,meta.camera.height);for(var r=0;o>=r;r++)e.moveTo(0,s+r*this._cellSizeY),e.lineTo(meta.camera.width,s+r*this._cellSizeY);e.stroke()},cacheEntity:function(t){},uncacheEntity:function(t){},onCameraResize:function(t,e){},_cachedCanvas:null,_cachedCtx:null,_cacheOffsetX:0,_cacheOffsetY:0,_tStaticCheck:0,tStaticCheckDelay:500,_clipVolume:null,x:0,y:0}),"use strict",Entity.Geometry=meta.Class.extend({_init:function(t){this.id=this._entityCtrl.getUniqueID(),this.name="entity"+this.id,this.volume=new meta.math.AdvAABB(0,0,0,0),this._parent=this._entityCtrl,this._depthNode=new Entity.DepthList.Node,this._initParams(t)},_initParams:function(t){if(t)if("object"==typeof t)if(t instanceof Resource.Texture)this.texture=t;else for(var e in t)this[e]=t[e];else"string"==typeof t&&(this.texture=t)},get parent(){return this._parent},remove:function(){this.isRemoved||(this.isRemoved=!0,this._view?(this._parent===this._entityCtrl?this._view.remove(this):this._view._isActive?(this._entityCtrl.entitiesToRemove.push(this),this._entityCtrl.numEntitiesToRemove++):this._view=null,this._tween&&(this._tween.clear(),this._tween.owner=null),this.children&&this.removeChilds()):this.components&&this.removeComponents(),this._onResize&&(this.onResize=null))},removeFully:function(){this.isUpdating=!1,this._depthNode.entity=null,this.components&&this.removeComponents()},removeChilds:function(){for(var t=this.children.length,e=0;t>e;e++)this.children[e].remove()},clone:function(){var t=new Entity.Geometry;for(var e in this)t[e]!==this[e]&&(t[e]=this[e]);return t.id=this._entityCtrl.getUniqueID(),t},draw:function(t){this._draw(t)},_draw:function(t){this._drawDefault(t)},_drawDefault:function(t){if(this._texture){var e=this.meta.unitSize;this._texture.isAnimated?this._texture.drawFrame(t,(0|this.drawX)*e,(0|this.drawY)*e,this._currFrame,this.isEmulateReverse):this._texture.draw(t,(0|this.drawX)*e,(0|this.drawY)*e)}},_drawTransform:function(t){if(this._texture){t.save(),t.globalAlpha=this.totalAlpha;var e=this.meta.unitSize,i=(this.volume.x-this.pivotX)*e,s=(this.volume.y-this.pivotY)*e;if(this.isChild){var i=(this.volume.x-this.pivotX)*e,s=(this.volume.y-this.pivotY)*e,n=(this._parent.volume.x-this._parent.pivotX)*e,o=(this._parent.volume.y-this._parent.pivotY)*e;t.translate(n,o),t.rotate(this._parent.totalAngleRad),t.translate(-n,-o),t.translate(i,s),t.rotate(this._angleRad),t.translate(-i,-s)}else t.translate(i,s),t.rotate(this._angleRad),t.scale(this.totalScaleX*this._flipX,this.totalScaleY*this._flipY),t.translate(-i,-s);this.texture.isAnimated?this._texture.drawFrame(t,(0|this.drawX)*e,(0|this.drawY)*e,this._currFrame,this.isEmulateReverse):this._texture.draw(t,(0|this.drawX)*e,(0|this.drawY)*e),t.restore()}},update:null,_updateComponents:function(t){for(var e,i=0;i<this.numComponents;i++)e=this.componentBuffer[i],e.update&&e.update(t)},_updateAnim:function(t){if(!(this.animSpeed<=0||this._texture.numFrames<2)){var e=1/(this.fps*this.animSpeed);if(this._tAnim+=t,!(this._tAnim<e)){this.isNeedDraw=!0;var i=this._tAnim/e|0;this._tAnim-=e*i,this._isAnimReverse?(this._currFrame-=i,this._currFrame<0&&(this.pauseAtEnd?(this.isAnimating=!1,this._currFrame=0):this.isLoop||this._texture.isLoop?this._currFrame=(this._texture.numFrames+this._currFrame)%this._texture.numFrames:(this.isAnimating=!1,this._currFrame=this._texture.numFrames-1),this.onAnimEnd&&this.onAnimEnd())):(this._currFrame+=i,this._currFrame>=this._texture.numFrames&&(this.pauseAtEnd?(this.isAnimating=!1,this._currFrame=this._texture.numFrames-1):this.isLoop||this._texture.isLoop?this._currFrame=this._currFrame%this._texture.numFrames:(this.isAnimating=!1,this._currFrame=0),this.onAnimEnd&&this.onAnimEnd()))}}},play:function(t,e){this.texture&&this.texture.isAnimated&&(this.isLoop=t?!0:!1,this.fps=e||this.texture.fps,this.currFrame=0,this.isAnimating=!0,this.pauseAtEnd=!1,this._isAnimReverse=!1)},playAndPause:function(t){this.play(!1,t),this.pauseAtEnd=!0},playReverse:function(t,e){this.texture&&(this.play(t,e),this.currFrame=this.texture.numFrames-1,this._isAnimReverse=!0)},playReverseAndPause:function(t){this.playReverse(!1,t),this.pauseAtEnd=!0},stop:function(){this._texture?(this.isLoop=this._texture.isLoop,this.currFrame=this._isAnimReverse?this._texture.numFrames-1:0):(this.isLoop=!1,this.currFrame=0),this.isAnimating=!1},pause:function(){this.isAnimating=!1},resume:function(){this.isAnimating=!0},forcePosition:function(t,e){this._x=t,this._y=e,this.updatePos()},updatePos:function(){if(this.drawSrcX=this._x+this._parent.childOffsetX+this.textureOffsetX+this._anchorPosX,this.drawSrcY=this._y+this._parent.childOffsetY+this.textureOffsetY+this._anchorPosY,this._view&&(this.drawSrcX+=this._view._x,this.drawSrcX+=this._view._y),this.volume.set(this.drawSrcX+this.pivotX,this.drawSrcY+this.pivotY),this.drawX=this.drawSrcX-this.volume.initHalfWidth+this.pivotSrcX,this.drawY=this.drawSrcY-this.volume.initHalfHeight+this.pivotSrcY,this.children){this.childOffsetX=this._x+this.childPivotX+this._anchorPosX,this.childOffsetY=this._y+this.childPivotY+this._anchorPosY,this._view&&(this.childOffsetX+=this._view._x,this.childOffsetY+=this._view._y);for(var t=this.children.length,e=0;t>e;e++)this.children[e].updatePos()}this.isNeedDraw=!0},updatePosType:function(){0!==this.positionType&&(1===this.positionType?(this._x=this.typeX+this.volume.halfWidth|0,this._y=this.typeY+this.volume.halfHeight|0):2===this.positionType?(this._x=this.typeX-this.volume.halfWidth|0,this._y=this.typeY+this.volume.halfHeight|0):3===this.positionType?(this._x=this.typeX+this.volume.halfWidth|0,this._y=this.typeY-this.volume.halfHeight|0):4===this.positionType?(this._x=this.typeX-this.volume.halfWidth|0,this._y=this.typeY-this.volume.halfHeight|0):5===this.positionType?this._y=this.typeY+this.volume.halfHeight|0:6===this.positionType?this._y=this.typeY-this.volume.halfHeight|0:7===this.positionType?this._x=this.typeX+this.volume.halfWidth|0:8===this.positionType&&(this._x=this.typeX-this.volume.halfWidth|0))},updateFromTexture:function(){var t=this.meta.unitRatio;if(this.volume.resizeInit(this._texture._width*t,this._texture._height*t),this.updatePivot(),this.updatePosType(),this.updatePos(),this.children)for(var e=this.children.length,i=0;e>i;i++){var s=this.children[i];s.positionType&&s.updatePosType(),s.updateAnchor()}},adapt:function(){this._texture||(this.volume.unitSize=meta.unitSize,this.updatePosType(),this.updatePos())},position:function(t,e){this.positionType=0,(this._x!==t||this._y!==e)&&(this._x=t,this._y=e,this.updatePos())},move:function(t,e){var i=this._x+t,s=this._y+e;(this._x!==i||this._y!==s)&&this.forcePosition(i,s)},moveForward:function(t){var e=this._x+t*Math.cos(this._angleRad-1.57079),i=this._y+t*Math.sin(this._angleRad-1.57079);(this._x!==e||this._y!==i)&&this.forcePosition(e,i)},moveDirected:function(t,e){var i=this._x+-t*Math.cos(this._angleRad-1.57079+e),s=this._y+-t*Math.sin(this._angleRad-1.57079+e);(this._x!==i||this._y!==s)&&this.forcePosition(i,s)},strafe:function(t){var e=this._x+-t*Math.cos(this._angleRad+Math.PI),i=this._y+-t*Math.sin(this._angleRad+Math.PI);(this._x!==e||this._y!==i)&&this.forcePosition(e,i)},positionTopLeft:function(t,e){(this._x!==t||this._y!==e||1!==this.positionType)&&(this.positionType=1,this.typeX=t,this.typeY=e,this._x=this.typeX+this.volume.halfWidth|0,this._y=this.typeY+this.volume.halfHeight|0,this.updatePos())},positionTopRight:function(t,e){(this._x!==t||this._y!==e||2!==this.positionType)&&(this.positionType=2,this.typeX=t,this.typeY=e,this._x=this.typeX-this.volume.halfWidth|0,this._y=this.typeY+this.volume.halfHeight|0,this.updatePos())},positionBottomLeft:function(t,e){(this._x!==t||this._y!==e||3!==this.positionType)&&(this.positionType=3,this.typeX=t,this.typeY=e,this._x=this.typeX+this.volume.halfWidth|0,this._y=this.typeY-this.volume.halfHeight|0,this.updatePos())},positionBottomRight:function(t,e){(this._x!==t||this._y!==e||4!==this.positionType)&&(this.positionType=4,this.typeX=t,this.typeY=e,this._x=this.typeX-this.volume.halfWidth|0,this._y=this.typeY-this.volume.halfHeight|0,this.updatePos())},positionTop:function(t,e){(this._x!==t||this._y!==e||5!==this.positionType)&&(this.positionType=5,this.typeX=t,this.typeY=e,this._x=t,this._y=this.typeY+this.volume.halfHeight|0,this.updatePos())},positionBottom:function(t,e){(this._x!==t||this._y!==e||6!==this.positionType)&&(this.positionType=6,this.typeX=t,this.typeY=e,this._x=t,this._y=this.typeY-this.volume.halfHeight|0,this.updatePos())},positionLeft:function(t,e){(this._x!==t||this._y!==e||7!==this.positionType)&&(this.positionType=7,this.typeX=t,this.typeY=e,this._x=this.typeX+this.volume.halfWidth|0,this._y=e,this.updatePos())},positionRight:function(t,e){(this._x!==t||this._y!==e||8!==this.positionType)&&(this.positionType=8,this.typeX=t,this.typeY=e,this._x=this.typeX-this.volume.halfWidth|0,this._y=e,this.updatePos())},topLeft:function(t,e){(this._x!==t||this._y!==e||1!==this.positionType)&&(this.positionType=1,this.typeX=t,this.typeY=e,this._x=this.typeX+this.volume.halfWidth|0,this._y=this.typeY+this.volume.halfHeight|0,this.updatePos())},topRight:function(t,e){(this._x!==t||this._y!==e||2!==this.positionType)&&(this.positionType=2,this.typeX=t,this.typeY=e,this._x=this.typeX-this.volume.halfWidth|0,this._y=this.typeY+this.volume.halfHeight|0,this.updatePos())},bottomLeft:function(t,e){(this._x!==t||this._y!==e||3!==this.positionType)&&(this.positionType=3,this.typeX=t,this.typeY=e,this._x=this.typeX+this.volume.halfWidth|0,this._y=this.typeY-this.volume.halfHeight|0,this.updatePos())},bottomRight:function(t,e){(this._x!==t||this._y!==e||4!==this.positionType)&&(this.positionType=4,this.typeX=t,this.typeY=e,this._x=this.typeX-this.volume.halfWidth|0,this._y=this.typeY-this.volume.halfHeight|0,this.updatePos())},set top(t){this.positionTop(this._x,t)},set bottom(t){this.positionBottom(this._x,t)},set left(t){this.positionLeft(t,this._y)},set right(t){this.positionRight(t,this._y)},get top(){return this.volume.minY},get bottom(){return this.volume.maxY},get left(){return this.volume.minX},get right(){return this.volume.maxX},pivot:function(t,e){void 0===e&&(e=t),this.pivotRatioX=t,this.pivotRatioY=e,this.updatePivot(),this.updatePos()},updatePivot:function(){this.pivotSrcX=-this.pivotRatioX*this.volume.initHalfWidth,this.pivotSrcY=-this.pivotRatioY*this.volume.initHalfHeight,this.pivotX=this.pivotSrcX*this._scaleX,this.pivotY=this.pivotSrcY*this._scaleY,this.children&&(this.childPivotX=(-this.pivotRatioX-1)*this.volume.initHalfWidth,this.childPivotY=(-this.pivotRatioY-1)*this.volume.initHalfHeight,this.childOffsetX=this._x+this.childPivotX+this._anchorPosX,this.childOffsetY=this._y+this.childPivotY+this._anchorPosY)},pivotPx:function(t,e){void 0===e&&(e=t),this.pivotX=t,this.pivotY=e,this.children&&(this.childOffsetX=this._x+pivotX+this._anchorPosX,this.childOffsetY=this._y+pivotY+this._anchorPosY),this.updatePos()},pivotCenter:function(t,e){return 0!==this.pivotRatioX&&0!==this.pivotRatioY?(this._x=t,this._y=e,this.pivot(0,0),void 0):((this._x!==t||this._y!==e)&&this.forcePosition(t,e),void 0)},pivotTopLeft:function(t,e){return-1!==this.pivotRatioX&&-1!==this.pivotRatioY?(this._x=t,this._y=e,this.pivot(-1,-1),void 0):((this._x!==t||this._y!==e)&&this.forcePosition(t,e),void 0)},pivotTopRight:function(t,e){return 1!==this.pivotRatioX&&-1!==this.pivotRatioY?(this._x=t,this._y=e,this.pivot(1,-1),void 0):((this._x!==t||this._y!==e)&&this.forcePosition(t,e),void 0)},pivotBottomLeft:function(t,e){return-1!==this.pivotRatioX&&1!==this.pivotRatioY?(this._x=t,this._y=e,this.pivot(-1,1),void 0):((this._x!==t||this._y!==e)&&this.forcePosition(t,e),void 0)},pivotBottomRight:function(t,e){return 1!==this.pivotRatioX&&1!==this.pivotRatioY?(this._x=t,this._y=e,this.pivot(1,1),void 0):((this._x!==t||this._y!==e)&&this.forcePosition(t,e),void 0)},pivotTop:function(t,e){return 0!==this.pivotRatioX&&-1!==this.pivotRatioY?(this._x=t,this._y=e,this.pivot(0,-1),void 0):((this._x!==t||this._y!==e)&&this.forcePosition(t,e),void 0)},pivotBottom:function(t,e){return 0!==this.pivotRatioX||1!==this.pivotRatioY?(this._x=t,this._y=e,this.pivot(0,1),void 0):((this._x!==t||this._y!==e)&&this.forcePosition(t,e),void 0)},pivotLeft:function(t,e){return-1!==this.pivotRatioX&&0!==this.pivotRatioY?(this._x=t,this._y=e,this.pivot(-1,0),void 0):((this._x!==t||this._y!==e)&&this.forcePosition(t,e),void 0)},pivotRight:function(t,e){return 1!==this.pivotRatioX&&0!==this.pivotRatioY?(this._x=t,this._y=e,this.pivot(1,0),void 0):((this._x!==t||this._y!==e)&&this.forcePosition(t,e),void 0)},anchor:function(t,e){if(void 0===e&&(e=t),this._anchorX!==t||this._anchorY!==e){if(this._anchorX=t,this._anchorY=e,!(this._flags&this.Flag.ANCHOR)){this.isAnchor=!0;var i=this;this._onResize_interal=function(){i.updateAnchor()},this.handleResizeFunc()}this.updateAnchor()}},updateAnchor:function(){if(this._flags&this.Flag.IGNORE_ZOOM?(this._anchorPosX=this._parent.volume.width*(1/this._parent.volume.scaleX)*this._anchorX+.5|0,this._anchorPosY=this._parent.volume.height*(1/this._parent.volume.scaleY)*this._anchorY+.5|0):(this._anchorPosX=this._parent.volume.width*this._anchorX+.5|0,this._anchorPosY=this._parent.volume.height*this._anchorY+.5|0),this.updatePos(),this.children)for(var t=this.children.length,e=0;t>e;e++)this.children[e].updateAnchor()},dragStart:function(t,e){this._dragOffsetX=this._x+this._anchorPosX-t,this._dragOffsetY=this._y+this._anchorPosY-e},dragEnd:function(){this._dragOffsetX=0,this._dragOffsetY=0},dragTo:function(t,e){t-=this._anchorPosX-this._dragOffsetX,e-=this._anchorPosY-this._dragOffsetY,(this._x!==t||this._y!==e)&&this.forcePosition(t,e)},isInside:function(t,e){return this.volume.vsBorderPoint(t,e)},_isInsideDefault:function(t,e){return this.volume.vsBorderPoint(t,e)},_isInsideTransform:function(t,e){var i=this._anchorPosX+this._parent.childOffsetX,s=this._anchorPosY+this._parent.childOffsetY;this.isChild||(i+=this._x,s+=this._y);var n=t-i,o=e-s,h=Math.sin(-this._angleRad),r=Math.cos(-this._angleRad),a=n*r-o*h+i,u=o*r+n*h+s;return this.volume.vsBorderPoint(a,u)},vsEntity:function(t){return this.volume.vsAABB(t.volume)},resize:function(t,e){void 0===e&&(e=this.volume.height),this.volume.resize(t,e)},setTexture:function(t){if("string"==typeof t){var e=t;if(t=meta.getTexture(e),!t)return this._texture=e,meta.subscribe(this,Resource.Event.ALL_LOADED,this._onResAllLoaded),void 0}return this._texture&&this._texture.unsubscribe(this),t?t instanceof Resource.Texture?(this._texture=t,this._texture.subscribe(this,this._onTextureEvent),this.textureOffsetX=this._texture._offsetX,this.textureOffsetY=this._texture._offsetY,this._texture._isLoaded?(this.isLoaded=!0,this.updateFromTexture()):(this.isLoaded=!1,this._texture.isLoading||this._texture.load()),t.isAnimated&&(this.isAnimating||(this.isAnimating=t.autoPlay),t.isEmulateReverse&&(this.isEmulateReverse=!0),this.isAnimReverse=t.isAnimReverse),t):(console.warn("[Entity.Geometry.setTexture]:","Texture should extend Resource.Texture class."),null):(this._texture=null,this.isLoaded=!1,null)},_onTextureEvent:function(t,e){var i=Resource.Event;e===i.LOADED?(this.updateFromTexture(),this.isLoaded=!0):e===i.UNLOADED?this.isLoaded=!1:e===i.RESIZE?this.updateFromTexture():e===i.CHANGED&&this.updateFromTexture(),this.isNeedDraw=!0},_onResAllLoaded:function(t,e){if("string"==typeof this._texture){var i=meta.getTexture(this._texture);i?(this._texture=null,this.setTexture(i)):(console.warn("[Entity.Geometry.setTexture]:","Could not find texture with a name: "+this._texture),this._texture=null),meta.unsubscribe(this,Resource.Event.ALL_LOADED)}},attach:function(t,e){if(!t)return console.error("[Entity.Geometry.attach]:","Invalid child object passed."),void 0;if(t.isChild)return console.error("[Entity.Geometry.attach]:","Entity is already a child of someone else."),void 0;if(t.isRemoved)return console.error("[Entity.Geometry.attach]:","Entity is marked as removed ro to be removed."),void 0;if(!t._view||t._view===this._view&&t.isChild||t._view._removeFromBuffer(t),e&&t.move(-this._x-this._anchorPosX-this.pivotX+this.volume.halfWidth,-this._y-this._anchorPosY-this.pivotY+this.volume.halfHeight),t._parent=this,t.isChild=!0,t.ignoreZoom=this.ignoreZoom,t.disableDebug=this.disableDebug,t._view=this._view,this.pickable||(t.pickable=!1),this.clickable||(t.clickable=!1),t.updateAngle(),t.updateAlpha(),t.updateScale(),0!==this._z&&(t.z=t._z),this.children)this.children.push(t);else{this.children=[t],this.childPivotX=(-this.pivotRatioX-1)*this.volume.halfWidth,this.childPivotY=(-this.pivotRatioY-1)*this.volume.halfHeight,this.childOffsetX=this._x+this.childPivotX+this._anchorPosX,this.childOffsetY=this._y+this.childPivotY+this._anchorPosY;for(var i=this._parent;i;)this.childOffsetX+=i.childOffsetX,this.childOffsetY+=i.childOffsetY,i=i._parent}t.isAnchor&&t.updateAnchor(),t.ignoreZoom!==this.ignoreZoom&&(t.ignoreZoom=this.ignoreZoom),t.updatePos(),this._view&&this._view._isActive&&this._entityCtrl.onAddToView(t,null),this.onChildAdded(t),t.onParentAdded(this)},detach:function(t){if(t){if(!this.children)return;for(var e,i=this.children.length,s=0;i>s;s++)if(e=this.children[s],!e.isRemoved&&e===t)return e._parent=this._entityCtrl,e._view=null,e.isChild=!1,this._view.add(e),e.move(this._x+this._anchorPosX+this.pivotX-this.volume.halfWidth,this._y+this._anchorPosY+this.pivotY-this.volume.halfHeight),this.onChildRemoved(e),e.onParentRemoved(this),void 0}else{if(!this.isChild)return;this._parent.detach(this)}},detachChildren:function(){if(this.children){var t,e,i=this.children.length;for(t=0;i>t;t++)e=this.children[t],e.isRemoved||(e._parent=this._entityCtrl,e._view=null,e.isChild=!1,this._view.add(e),e.move(this._x+this._anchorPosX+this.pivotX-this.volume.halfWidth,this._y+this._anchorPosY+this.pivotY-this.volume.halfHeight),this.onChildRemoved(e),e.onParentRemoved(this));this.children.length=0}},detachExact:function(){for(var t,e=this.children.length,i=0;e>i;i++)t=this.children[i],t.isRemoved||(t._x+=this.childOffsetX,t._y+=this.childOffsetY,t._parent=this._entityCtrl,t._view=null,t.isChild=!1,this._view.add(t),t.forcePosition(t._x,t._y),this.onChildRemoved(t),t.onParentRemoved(this));this.children.length=0},clip:function(t,e,i,s){return this.clipVolume="object"==typeof t?t instanceof meta.math.AdvAABB||t instanceof meta.math.AABB?t:t.volume:new meta.math.AdvAABB(t,e,i,s),this.isNeedDraw=!0,this.clipVolume},_onDown:meta.emptyFuncParam,_onUp:meta.emptyFuncParam,_onClick:meta.emptyFuncParam,_onDrag:meta.emptyFuncParam,_onDragStart:meta.emptyFuncParam,_onDragEnd:meta.emptyFuncParam,_onHover:meta.emptyFuncParam,_onHoverEnter:meta.emptyFuncParam,_onHoverExit:meta.emptyFuncParam,onDown:meta.emptyFuncParam,onUp:meta.emptyFuncParam,onClick:meta.emptyFuncParam,onDrag:meta.emptyFuncParam,onDragStart:meta.emptyFuncParam,onDragEnd:meta.emptyFuncParam,onHover:meta.emptyFuncParam,onHoverEnter:meta.emptyFuncParam,onHoverExit:meta.emptyFuncParam,onAnimEnd:null,onChildAdded:meta.emptyFuncParam,onChildRemoved:meta.emptyFuncParam,onParentAdded:meta.emptyFuncParam,onParentRemoved:meta.emptyFuncParam,addComponent:function(t,e){if(!t)return console.warn("[Entity.Geometry.addComponent]:","No component specified."),null;var i=window.Component,s=null,n;if("string"==typeof t){for(n in i)if(n===t){s=new i[n];break}}else for(n in i)if(i[n]===t){s=new t;break}if(!s)return console.warn("[Entity.Geometry.addComponent]:","Invalid component - "+t),null;if(this.numComponents++,this.components||(this.components={},this.componentBuffer=[]),this.numComponents>this.componentBuffer.length&&(this.componentBuffer.length=this.numComponents),this.components[n]=s,s.owner=this,s.__id=this.numComponents-1,this.componentBuffer[s.__id]=s,e)for(n in e)s[n]=e[n];return this._isLoaded&&s.load&&s.load(),s.update&&!this._isUpdating&&(this.isUpdating=!0),s},removeComponent:function(t){if(!t)return console.warn("[Entity.Geometry.removeComponent]:","No component specified."),void 0;if(this.components){var e,i;if("string"==typeof t){if(e=this.components[t],i=t,!e)return console.warn("[Entity.Geometry.removeComponent]:","No such component found - "+t),void 0}else{for(var s in this.components)if(this.components[s]===t){e=t,i=s;break}if(!e)return console.warn("[Entity.Geometry.removeComponent]:","No such component found - "+t),void 0}e.unload&&e.unload(),this.numComponents--,this.numComponents<=0?(this.components=null,this.componentBuffer=null,this.numComponents=0):(this.componentBuffer[e.__id]=this.componentBuffer[this.numComponents],this.componentBuffer[e.__id].__id=e.__id,this.componentBuffer[this.numComponents]=null,delete this.components[i])}},removeComponents:function(){for(var t,e=0;e<this.numComponents;e++)t=this.componentBuffer[e],t.unload&&t.unload();this.components=null,this.componentBuffer=null,this.numComponents=0},lookAt:function(t,e){this.angleRad=-Math.atan2(t-(this._x+this._anchorPosX+this._parent.childOffsetX),e-(this._y+this._anchorPosY+this._parent.childOffsetY))+Math.PI},lookAtEntity:function(t){this.lookAt(t._x+t._parent.childOffsetX,t._y+t._parent.childOffsetY)},getLookAt:function(t,e){this.angleRad=-Math.atan2(t-(this.x+this._anchorPosX+this._parent.childOffsetX),e-(this.y+this._anchorPosY+this._parent.childOffsetY))+Math.PI},on:function(t,e){meta.subscribe(this,t,e)},emit:function(t,e){},updateState:function(){if(this.isNeedState=!1,this._brush){var t;if(this._state){if(t=this._brush.getState(this),!t)return console.warn("[Entity.Geometry.updateState]:","Could not get brush state from entity state: "+this._state),void 0}else t=null;t!==this._brushState&&(this._brushState&&t.discardState(this),this._brushState=t,this.setTexture(t.texture),t.applyState(this))}},setState:function(t,e,i){this._brush||(this._brush=new meta.Brush,this._brushParams={},this._texture&&this._brush.setState("default",this._texture,i)),this._brush.setState(t,e)},set state(t){this._state=t,null===t?this.setTexture(null):this.isNeedState=!0},get state(){return this._state},print:function(t){t=t||"",console.log("[Entity",this.name+":"+this.id+"]",t)},get view(){return this._view},set x(t){this.position(t,this._y)},set y(t){this.position(this._x,t)},get x(){return this._x},get y(){return this._y},get absoluteX(){return this.volume.x},get absoluteY(){return this.volume.y},get width(){return this.volume.width},get height(){return this.volume.height},set anchorX(t){this.anchor(t,this._anchorY)},set anchorY(t){this.anchor(this._anchorX,t)},get anchorX(){return this._anchorX},get anchorY(){return this._anchorY},set isAnchor(t){(this._flags&this.Flag.ANCHOR)!==t&&(t?this._flags|=this.Flag.ANCHOR:(this._anchorX=0,this._anchorY=0,this._anchorPosX=0,this._anchorPosY=0,this._flags^=this.Flag.ANCHOR),this.isNeedDraw=!0)},get isAnchor(){return this._flags&this.Flag.ANCHOR},get centerX(){return this._x+this._parent.childOffsetX+this.textureOffsetX},get centerY(){return this._y+this._parent.childOffsetY+this.textureOffsetY},set z(t){var e=this._parent._z+t;if(this._view&&(e+=this._view._z),this._depthNode.depth!==e&&(this._z=t,this._depthNode.depth=e,this._depthNode.entity&&(this._entityCtrl.entities.update(this._depthNode),this.isNeedDraw=!0,this.children)))for(var i=this.children.length,s=0;i>s;s++)this.children[s].z=t},set depthIndex(t){this.z=t},get z(){return this._z},get depthIndex(){return this._z},set texture(t){this.setTexture(t)},get texture(){return this._texture},set brush(t){this._brush=t,this._brushParams={},this.isNeedState=t?!0:!1},get brush(){return this._brush},set isNeedDraw(t){this._isLoaded&&(this._isNeedDraw=t,this._tChange=Date.now(),this._isCached&&this._entityCtrl.uncacheEntity(this),t&&(this._entityCtrl.isNeedRender=!0))},get isNeedDraw(){return this._isNeedDraw},updateAlpha:function(){var t;if(t=this._flags&this.Flag.IGNORE_PARENT_ALPHA?this._alpha:this._alpha*this._parent.totalAlpha,this.totalAlpha!==t){if(this.totalAlpha=t,this.children)for(var e=this.children.length,i=0;e>i;i++){var s=this.children[i];if(s._flag&this.Flag.IGNORE_PARENT_ALPHA)return;s.updateAlpha()}this._draw=this._drawTransform,this.isNeedDraw=!0}},set alpha(t){this._alpha!==t&&(this._alpha=t,this.updateAlpha())},get alpha(){return this._alpha},set ignoreParentAlpha(t){this._flags|=this.Flag.IGNORE_PARENT_ALPHA},get ignoreParentAlpha(){return this._flags&this.Flag.IGNORE_PARENT_ALPHA},updateAngle:function(){var t;if(t=this._flags&this.Flag.IGNORE_PARENT_ANGLE?this._angleRad:this._angleRad+this._parent.totalAngleRad,t!==this.totalAngleRad){if(this.totalAngleRad=t,this.children)for(var e=this.children.length,i=0;e>i;i++){var s=this.children[i];s._flags&this.Flag.IGNORE_PARENT_ANGLE||s.updateAngle()}this._draw=this._drawTransform,this.isInside=this._isInsideTransform,this.isNeedDraw=!0}},set angle(t){t=meta.math.toRadians(t),this._angleRad!==t&&(this._angleRad=t,this.updateAngle())},get angle(){return meta.math.toDegree(this._angleRad)},set angleRad(t){this._angleRad!==t&&(this._angleRad=t,this.updateAngle())},get angleRad(){return this._angleRad},set ignoreParentAngle(t){this._flags|=this.Flag.IGNORE_PARENT_ANGLE},get ignoreParentAngle(){return this._flags&this.Flag.IGNORE_PARENT_ANGLE},updateScale:function(){var t,e;if(this._flags&this.Flag.IGNORE_PARENT_SCALE?(t=this._scaleX,e=this._scaleY):(t=this._scaleX*this._parent.totalScaleX,e=this._scaleY*this._parent.totalScaleY),this.totalScaleX=t,this.totalScaleY=e,this.pivotX=this.pivotSrcX*t,this.pivotY=this.pivotSrcY*e,this.volume.scalePivoted(this.totalScaleX,this.totalScaleY,this.drawSrcX+this.pivotX,this.drawSrcY+this.pivotY),this.children)for(var i=this.children.length,s=0;i>s;s++){var n=this.children[s];n._flag&this.Flag.IGNORE_PARENT_SCALE||n.updateScale()}this._draw=this._drawTransform,this.isInside=this._isInsideTransform,this.isNeedDraw=!0},scale:function(t,e){e=e||t,this._scaleX=t,this._scaleY=e,this.updateScale()},set scaleX(t){this._scaleX=t,this.updateScale()},set scaleY(t){this._scaleY=t,this.updateScale()},get scaleX(){return this._scaleX},get scaleY(){return this._scaleY},set ignoreParentScale(t){this._flags|=this.Flag.IGNORE_PARENT_SCALE},get ignoreParentScale(){return this._flags&this.Flag.IGNORE_PARENT_SCALE},flip:function(t,e){void 0===t&&void 0===e?(t=-this._flipX,e=this._flipY):(t=void 0!==t?t:1,e=void 0!==e?e:1),t=Math.round(t),e=Math.round(e),t>1?t=1:-1>t?t=-1:0===t&&(t=1),e>1?e=1:-1>e?e=-1:0===e&&(e=1),(t!==this._flipX||e!==this._flipY)&&(this._flipX=t,this._flipY=e,this._draw=this._drawTransform,this.isInside=this._isInsideTransform,this.isNeedDraw=!0)},set flipX(t){this.flip(t,this._flipY)},set flipY(t){this.flip(this._flipX,t)},get flipX(){return this._flipX},get flipY(){return this._flipY},set visible(t){if(this.isVisible!==t&&(this.isVisible=t,this._entityCtrl.isNeedRender=!0,this.children))for(var e=this.children.length,i=0;e>i;i++)this.children[i].visible=t},get visible(){return this.isVisible},set isLoaded(t){if(this._isLoaded!==t)if(this._isLoaded=t,t){if(this.load&&this.load(),this.components){var e;for(var i in this.components)e=this.components[i],e.load&&e.load()}this._entityCtrl.cacheEntity(this)}else this._entityCtrl.uncacheEntity(this)},get isLoaded(){return this._isLoaded},set isUpdating(t){this._isUpdating!==t&&(this._isUpdating=t,t?this._entityCtrl._addToUpdating(this):this._entityCtrl._removeFromUpdating(this))},get isUpdating(){return this._isUpdating},set currFrame(t){if(this._texture){var e=t%this._texture.numFrames;if(e===this._currFrame)return;this._currFrame=e,this.isNeedDraw=!0}else this._currFrame=t},get currFrame(){return this._currFrame},set isAnimReverse(t){this._isAnimReverse=t,this.currFrame=t&&this._texture?this._texture.numFrames-1:0},get isAnimReverse(){return this._isAnimReverse},get tween(){return this._tween?this._tween.clear():this._tween=new meta.Tween(this),this._tween},handleResizeFunc:function(){this._onResize_user||this._onResize_interal?(meta.subscribe(this,meta.Event.RESIZE,this._onResize),meta.subscribe(this,meta.Event.CAMERA_RESIZE,this._onResize)):(meta.unsubscribe(this,meta.Event.RESIZE,this._onResize),meta.unsubscribe(this,meta.Event.CAMERA_RESIZE,this._onResize))},_onResize:function(t,e){this._onResize_user&&this._onResize_user(t),this._onResize_interal&&this._onResize_interal(t)},_onResize_user:null,_onResize_internal:null,set onResize(t){this._onResize_user=t,this.handleResizeFunc()},get onResize(){return this._onResize_user},set isCached(t){this._isCached===t},get isCached(){return this._isCached},set ignoreZoom(t){!!(this._flags&this.Flag.IGNORE_ZOOM)!==t&&(this._flags&this.Flag.ANCHOR&&this.updateAnchor(),t?this._flags|=this.Flag.IGNORE_ZOOM:this._flags&=~this.Flag.IGNORE_ZOOM,this.isNeedDraw=!0)},get ignoreZoom(){return!!(this._flags&this.Flag.IGNORE_ZOOM)},set showBounds(t){!!(this._flags&this.Flag.SHOW_BOUNDS)!==t&&(t?(this._flags|=this.Flag.SHOW_BOUNDS,this._entityCtrl._addToDrawBounds()):(this._flags&=~this.Flag.SHOW_BOUNDS,this._entityCtrl._removeToDrawBounds()))},get showBounds(){return!!(this._flags&this.Flag.SHOW_BOUNDS)},set disableDebug(t){!!(this._flags&this.Flag.DISABLE_DEBUG)!==t&&(t?this._flags|=this.Flag.DISABLE_DEBUG:this._flags&=~this.Flag.DISABLE_DEBUG,this.isNeedDraw=!0)},get disableDebug(){return!!(this._flags&this.Flag.DISABLE_DEBUG)},Flag:{ANCHOR:128,IGNORE_ZOOM:256,IGNORE_PARENT_ANGLE:512,IGNORE_PARENT_SCALE:1024,IGNORE_PARENT_ALPHA:2048,SHOW_BOUNDS:4096,DISABLE_DEBUG:16384},meta:meta,_entityCtrl:null,id:-1,type:0,name:"unknown",_parent:null,_view:null,_depthNode:null,_checkID:-1,_viewNodeID:-1,_updateNodeID:-1,_updateAnimNodeID:-1,_removeFlag:0,_flags:0,_x:0,_y:0,_z:0,typeX:0,typeY:0,_anchorX:0,_anchorY:0,_anchorPosX:0,_anchorPosY:0,_dragOffsetX:0,_dragOffsetY:0,drawX:0,drawY:0,drawSrcX:0,drawSrcY:0,offsetX:0,offsetY:0,textureOffsetX:0,textureOffsetY:0,pivotX:0,pivotY:0,pivotRatioX:0,pivotRatioY:0,pivotSrcX:0,pivotSrcY:0,childOffsetX:0,childOffsetY:0,childPivotX:0,childPivotY:0,cellX:0,cellY:0,_cellIndex:0,_brush:null,_brushState:null,_brushParams:null,_state:"",_tween:null,volume:null,clipVolume:null,positionType:0,_angleRad:0,_scaleX:1,_scaleY:1,_flipX:1,_flipY:1,_alpha:1,totalAngleRad:0,totalScaleX:1,totalScaleY:1,totalAlpha:1,_texture:null,vbo:null,vertices:null,components:null,componentBuffer:null,numComponents:0,children:null,pickable:!0,clickable:!0,isHover:!1,isPressed:!1,isDragged:!1,fps:0,animSpeed:1,_currFrame:0,isAnimating:!1,isLoop:!1,_isAnimReverse:!1,isEmulateReverse:!1,_tAnim:0,pauseAtEnd:!1,_tChange:0,isAdded:!1,_isLoaded:!1,isVisible:!0,isPaused:!1,isChild:!1,isRemoved:!1,_isUpdating:!1,_isNeedDraw:!1,isNeedState:!1,_isNeedOffset:!1,_cacheIndex:-1,_isHighlight:!1}),"use strict",Entity.Text=Entity.Geometry.extend({init:function(t){this.texture=new Resource.Texture,this._texture.resize(this._fontSize,this._fontSize);var e=typeof t;this.setText("string"===e||"number"===e?t:"")},_initParams:function(t){},setText:function(t){this._text=t;var e;e=this._texture.textureType===Resource.TextureType.WEBGL?this._texture._tmpCtx:this._texture.ctx,e.font=this._style+" "+this._fontSizePx+" "+this._font;var i=e.measureText(this._text),s=i.width+2*this.outlineWidth;if(this.resize(s,1.2*this._fontSize),this._texture.textureType===Resource.TextureType.WEBGL&&(this._texture._tmpImg.width=s,this._texture._tmpImg.height=1.2*this._fontSize),e.clearRect(0,0,this.volume.width,this.volume.height),e.font=this._style+" "+this._fontSizePx+" "+this._font,e.fillStyle=this._color,e.textBaseline="top",e.fillText(t,this.outlineWidth,0),this.isOutline&&(e.lineWidth=this._outlineWidth,e.strokeStyle=this._outlineColor,e.strokeText(t,this.outlineWidth,0)),this._texture.textureType===Resource.TextureType.WEBGL){var n=meta.ctx;n.bindTexture(n.TEXTURE_2D,this._texture.image),n.texImage2D(n.TEXTURE_2D,0,n.RGBA,n.RGBA,n.UNSIGNED_BYTE,this._texture._tmpImg)
-}this._texture._isLoaded||(this._texture.isLoaded=!0),this.isNeedDraw=!0},resize:function(t,e){t=t||1,e=e||this.volume.height,this._texture.resize(t,e)},setFont:function(t){this._font=t,this.setText(this._text)},setSize:function(t){this._fontSize=t,this._fontSizePx=t+"px",this.setText(this._text)},setColor:function(t){this._color=t,this.setText(this._text)},setOutlineColor:function(t){this._outlineColor=t,this.isOutline=!0},setOutlineWidth:function(t){this._outlineWidth=t,this._isOutline&&this.setText(this._text)},setStyle:function(t){this._style=t,this.setText(this._text)},set text(t){this.setText(t)},get text(){return this._text},set font(t){this.setFont(t)},get font(){return this._font},set size(t){this.setSize(t)},get size(){return this._fontSize},set color(t){this.setColor(t)},get color(){return this._color},set outlineColor(t){this.setOutlineColor(t)},get outlineColor(){return this._outlineColor},set outlineWidth(t){this.setOutlineWidth(t)},get outlineWidth(){return this._outlineWidth},set style(t){this.setStyle(t)},get style(){return this._style},set isOutline(t){this._isOutline!==t&&(this._isOutline=t,this.setText(this._text))},get isOutline(){return this._isOutline},_text:"",_font:"Arial",_fontSize:14,_fontSizePx:"14px",_color:"#000000",_outlineColor:"#ffffff",_outlineWidth:1,_style:"",_isOutline:!1}),"use strict",Entity.DepthList=function(){this.length=0,this.first=new Entity.DepthList.Node(null),this.last=new Entity.DepthList.Node(null),this.bufferLength=64,this.buffer=new Array(this.bufferLength),this.first.depth=-2147483648,this.first.next=this.last,this.last.depth=2147483648,this.last.prev=this.first},Entity.DepthList.prototype={push:function(t){var e=this.last.prev;do{if(t.depth>=e.depth)return t.prev=e,t.next=e.next,e.next.prev=t,e.next=t,this.length>=this.bufferLength&&(this.bufferLength+=64,this.buffer.length=this.bufferLength),this.buffer[this.length]=t.entity,this.length++,void 0;e=e.prev}while(e);console.error("[Entity.DepthList.push]:","Node is out of the bounds!")},remove:function(t){t.next&&(t.next.prev=t.prev),t.prev&&(t.prev.next=t.next),t.next=null,t.prev=null,this.length--,this.buffer[t.index]=this.buffer[this.length],this.buffer[this.length]=null,t.index=0},clear:function(){this.length=0,this.buffer=new Array(this.bufferLength)},update:function(t){var e=t.prev;if(e!==this.first&&e.depth>t.depth){t.next.prev=t.prev,t.prev.next=t.next;do{if(e.depth<=t.depth)return t.prev=e,t.next=e.next,t.next.prev=t,e.next=t,void 0;e=e.prev}while(e)}if(e=t.next,e!==this.last&&e.depth<t.depth){t.next.prev=t.prev,t.prev.next=t.next;do{if(e.depth>t.depth)return t.next=e,t.prev=e.prev,t.prev.next=t,e.prev=t,void 0;e=e.next}while(e)}},print:function(){if(0===this.length)return console.log("Empty"),void 0;var t=this.first.next;do console.log(t.entity.name,t.depth),t=t.next;while(t!==this.last)}},Entity.DepthList.Node=function(){this.entity=null,this.depth=0,this.prev=null,this.next=null,this.index=-1},"use strict",Entity.CellArray=function(){this.buffer=new Array(8),this.size=8,this.length=0,this.isVisible=!1},Entity.CellArray.prototype={push:function(t){this.size===this.length&&(this.size+=8,this.buffer.length=this.size),this.buffer[this.length]=t,t._cellIndex=this.length,this.length++},remove:function(t){this.length--,this.buffer[t._cellIndex]=this.buffer[this.length],this.length+8===this.size&&(this.size-=8,this.buffer.length=this.size)}},"use strict",window.Input={},Input.Controller=meta.Controller.extend({init:function(){this.keys=new Array(this.numKeys),this.inputs=new Array(this.numInputs),this.touches=[],this._event={event:null,x:0,y:0,prevScreenX:0,prevScreenY:0,screenX:0,screenY:0,keyCode:0,entity:null},this.addEventListeners(),this._loadIgnoreKeys(),meta.subscribe(this,meta.Event.FOCUS,this.onFocus)},release:function(){this.removeEventListeners(),meta.unsubscribe(this,meta.Event.FOCUS,this.onFocus)},onKeyDown:function(t){if(window.top&&this._iFrameKeys[t.keyCode]&&t.preventDefault(),void 0!==this._cmdKeys[t.keyCode]&&this._numCmdKeys++,void 0===this._ignoreKeys[t.keyCode]&&this._numCmdKeys<=0&&t.preventDefault(),!(this.blockInput||this.isStickyKeys&&this.keys[t.keyCode]||(this.keys[t.keyCode]=!0,this._event.Event=t,this._event.prevScreenX=0,this._event.prevScreenY=0,this._event.screenX=0,this._event.screenY=0,this._event.x=0,this._event.y=0,this._event.keyCode=t.keyCode,this._chnKeyDown.emit(this._event,Input.Event.KEY_DOWN),!this.keyRepeat))){if(!this._inputTimer){var e=this;this._inputTimer=meta.addTimer(this,function(){e._event.keyCode=e._repeatKey,e._chnKeyDown.emit(e._event,Input.Event.KEY_DOWN)},this.keyRepeat)}this._repeatKey=t.keyCode,this._inputTimer.resume(),this._inputTimer.tAccumulator=0}},onKeyUp:function(t){window.top&&this._iFrameKeys[t.keyCode]&&t.preventDefault(),void 0!==this._cmdKeys[t.keyCode]&&this.keys[t.keyCode]&&this._numCmdKeys--,void 0===this._ignoreKeys[t.keyCode]&&this._numCmdKeys<=0&&t.preventDefault(),this.blockInput||(this.keys[t.keyCode]=!1,this._event.Event=t,this._event.prevScreenX=0,this._event.prevScreenY=0,this._event.prevX=0,this._event.prevY=0,this._event.x=0,this._event.y=0,this._event.keyCode=t.keyCode,this._chnKeyUp.emit(this._event,Input.Event.KEY_UP),this.keyRepeat&&this._inputTimer&&this._inputTimer.pause())},onMouseDown:function(t){if(!this.blockInput){this.inputs[t.button]=!0;var e=meta,i=e.camera,s=(t.pageX-e.engine.unsubscribesetLeft)*window.devicePixelRatio,n=(t.pageY-e.engine.unsubscribesetTop)*window.devicePixelRatio,o=s*i.zoomRatio-i._x|0,h=n*i.zoomRatio-i._y|0;this._event.Event=t,this._event.prevScreenX=s,this._event.prevScreenY=n,this._event.screenX=s,this._event.screenY=n,this._event.x=o,this._event.y=h,this._event.keyCode=t.button,this._chnInputDown.emit(this._event,Input.Event.INPUT_DOWN),this._event.entity=null}},onMouseUp:function(t){if(!this.blockInput){this.inputs[t.button]=!1;var e=meta,i=e.camera,s=(t.pageX-e.engine.unsubscribesetLeft)*window.devicePixelRatio,n=(t.pageY-e.engine.unsubscribesetTop)*window.devicePixelRatio,o=s*i.zoomRatio-i._x|0,h=n*i.zoomRatio-i._y|0;this._event.Event=t,this._event.prevScreenX=this._event.screenX,this._event.prevScreenY=this._event.screenY,this._event.screenX=s,this._event.screenY=n,this._event.x=o,this._event.y=h,this._event.keyCode=t.button,this._chnInputUp.emit(this._event,Input.Event.INPUT_UP),this._event.entity=null}},onMouseMove:function(t){if(t.preventDefault(),!this.blockInput){var e=meta,i=e.camera,s=(t.pageX-e.engine.unsubscribesetLeft)*window.devicePixelRatio,n=(t.pageY-e.engine.unsubscribesetTop)*window.devicePixelRatio,o=s*i.zoomRatio-i._x|0,h=n*i.zoomRatio-i._y|0;this._event.Event=t,this._event.prevScreenX=this._event.screenX,this._event.prevScreenY=this._event.screenY,this._event.screenX=s,this._event.screenY=n,this._event.x=o,this._event.y=h,this._event.keyCode=-1,this.inputX=o,this.inputY=h,this._chnInputMove.emit(this._event,Input.Event.INPUT_MOVE),this._event.entity=null}},onTouchDown:function(t){t.preventDefault();for(var e=meta,i=e.camera,s,n,o,h,r,a=t.changedTouches,u=a.length,c=0;u>c;c++)s=t.changedTouches[c],this.touches.push(s.identifier),this.numTouches++,n=(s.pageX-e.engine.unsubscribesetLeft)*window.devicePixelRatio,o=(s.pageY-e.engine.unsubscribesetTop)*window.devicePixelRatio,h=n*i.zoomRatio-i._x|0,r=o*i.zoomRatio-i._y|0,this._event.Event=t,this._event.prevScreenX=n,this._event.prevScreenY=o,this._event.screenX=n,this._event.screenY=o,this._event.x=h,this._event.y=r,this._event.keyCode=this.numTouches-1,this._chnInputDown.emit(this._event,Input.Event.INPUT_DOWN),this._event.entity=null},onTouchUp:function(t){t.preventDefault();for(var e=meta,i=e.camera,s,n,o,h,r,a,u=t.changedTouches,c=u.length,l=0;c>l;l++)s=t.changedTouches[l],n=this._getTouchID(s.identifier),-1!==n&&(this.touches.splice(n,1),this.numTouches--,o=(s.pageX-e.engine.unsubscribesetLeft)*window.devicePixelRatio,h=(s.pageY-e.engine.unsubscribesetTop)*window.devicePixelRatio,r=o*i.zoomRatio-i._x|0,a=h*i.zoomRatio-i._y|0,this._event.Event=t,0===n?(this._event.prevScreenX=this._event.screenX,this._event.prevScreenY=this._event.screenY):(this._event.prevScreenX=o,this._event.prevScreenY=h),this._event.screenX=o,this._event.screenY=h,this._event.x=r,this._event.y=a,this._event.keyCode=n,this._chnInputDown.emit(this._event,Input.Event.INPUT_UP),this._event.entity=null)},onTouchMove:function(t){t.preventDefault();for(var e=meta,i=e.camera,s,n,o,h,r,a,u=t.changedTouches,c=u.length,l=0;c>l;l++)s=t.changedTouches[l],n=this._getTouchID(s.identifier),-1!==n&&(o=(s.pageX-e.engine.unsubscribesetLeft)*window.devicePixelRatio,h=(s.pageY-e.engine.unsubscribesetTop)*window.devicePixelRatio,r=o*i.zoomRatio-i._x|0,a=h*i.zoomRatio-i._y|0,this._event.Event=t,0===n?(this._event.prevScreenX=this._event.screenX,this._event.prevScreenY=this._event.screenY,this.inputX=r,this.inputY=a):(this._event.prevScreenX=o,this._event.prevScreenY=h),this._event.screenX=o,this._event.screenY=h,this._event.x=r,this._event.y=a,this._event.keyCode=n,this._chnInputMove.emit(this._event,Input.Event.INPUT_MOVE),this._event.entity=null)},onFocus:function(t,e){e===!1&&this.resetInput()},isDown:function(t){return this.keys[t]},isInputDown:function(t){return this.inputs[t]},addEventListeners:function(){var t=this;this._chnKeyDown=meta.createChannel(Input.Event.KEY_DOWN),this._chnKeyUp=meta.createChannel(Input.Event.KEY_UP),this._chnInputDown=meta.createChannel(Input.Event.INPUT_DOWN),this._chnInputUp=meta.createChannel(Input.Event.INPUT_UP),this._chnInputMove=meta.createChannel(Input.Event.INPUT_MOVE),this._onKeyDown=function(e){t.onKeyDown(e)},this._onKeyUp=function(e){t.onKeyUp(e)},this._onMouseDown=function(e){t.onMouseDown(e)},this._onMouseUp=function(e){t.onMouseUp(e)},this._onMouseMove=function(e){t.onMouseMove(e)},this._onTouchDown=function(e){t.onTouchDown(e)},this._onTouchUp=function(e){t.onTouchUp(e)},this._onTouchMove=function(e){t.onTouchMove(e)},this._onTouchCancel=function(e){t.onTouchCancel(e)},window.addEventListener("mousedown",this._onMouseDown),window.addEventListener("mouseup",this._onMouseUp),window.addEventListener("mousemove",this._onMouseMove),window.addEventListener("touchstart",this._onTouchDown),window.addEventListener("touchend",this._onTouchUp),window.addEventListener("touchmove",this._onTouchMove),window.addEventListener("touchcancel",this._onTouchUp),window.addEventListener("touchleave",this._onTouchUp),meta.device.support.onkeydown&&window.addEventListener("keydown",this._onKeyDown),meta.device.support.onkeyup&&window.addEventListener("keyup",this._onKeyUp)},removeEventListeners:function(){window.removeEventListener("mousedown",this._onMouseDown),window.removeEventListener("mouseup",this._onMouseUp),window.removeEventListener("mousemove",this._onMouseMove),window.removeEventListener("touchstart",this._onTouchDown),window.removeEventListener("touchend",this._onTouchUp),window.removeEventListener("touchmove",this._onTouchMove),window.removeEventListener("touchcancel",this._onTouchUp),window.removeEventListener("touchleave",this._onTouchUp),meta.device.support.onkeydown&&window.removeEventListener("keydown",this._onKeyDown),meta.device.support.onkeyup&&window.removeEventListener("keyup",this._onKeyUp)},resetInput:function(){var t;for(this._event.Event=null,this._event.prevX=0,this._event.prevY=0,this._event.x=0,this._event.y=0,this._event.keyCode=0,t=0;t<this.numKeys;t++)this.keys[t]&&(this.keys[t]=!1,this._event.keyCode=t,this._chnKeyUp.emit(this._event,Input.Event.KEY_UP));for(t=0;t<this.numInputs;t++)this.inputs[t]&&(this.inputs[t]=!1,this._event.keyCode=t,this._chnInputUp.emit(this._event,Input.Event.INPUT_UP));if(this._numCmdKeys=0,this.numTouches){for(t=0;t<this.numTouches;t++)this._event.keyCode=t,this._chnInputUp.emit(this._event,Input.Event.INPUT_UP);this.touches.length=0,this.numTouches=0}},_loadIgnoreKeys:function(){this._ignoreKeys=[],this._ignoreKeys[8]=1,this._ignoreKeys[9]=1,this._ignoreKeys[13]=1,this._ignoreKeys[17]=1,this._ignoreKeys[91]=1,this._ignoreKeys[38]=1,this._ignoreKeys[39]=1,this._ignoreKeys[40]=1,this._ignoreKeys[37]=1,this._ignoreKeys[112]=1,this._ignoreKeys[113]=1,this._ignoreKeys[114]=1,this._ignoreKeys[115]=1,this._ignoreKeys[116]=1,this._ignoreKeys[117]=1,this._ignoreKeys[118]=1,this._ignoreKeys[119]=1,this._ignoreKeys[120]=1,this._ignoreKeys[121]=1,this._ignoreKeys[122]=1,this._ignoreKeys[123]=1,this._ignoreKeys[124]=1,this._ignoreKeys[125]=1,this._ignoreKeys[126]=1,this._cmdKeys=[],this._cmdKeys[91]=1,this._cmdKeys[17]=1,this._iFrameKeys=[],this._iFrameKeys[37]=1,this._iFrameKeys[38]=1,this._iFrameKeys[39]=1,this._iFrameKeys[40]=1},_getTouchID:function(t){for(var e=0;e<this.numTouches;e++)if(this.touches[e]===t)return e;return-1},keys:null,inputs:null,touches:null,blockInput:!1,isStickyKeys:!0,keyRepeat:0,_inputTimer:null,_repeatKey:0,numKeys:256,numInputs:10,numTouches:0,inputX:0,inputY:0,_event:null,_onKeyDown:null,_onKeyUp:null,_onMouseDown:null,_onMouseUp:null,_onMouseMove:null,_onTouchDown:null,_onTouchUp:null,_onTouchMove:null,_onTouchCancel:null,_chnKeyDown:null,_chnKeyUp:null,_chnInputDown:null,_chnInputUp:null,_chnInputMove:null,_ignoreKeys:null,_cmdKeys:null,_iFrameKeys:null,_numCmdKeys:0}),"use strict",Input.Event={KEY_DOWN:"keyDown",KEY_UP:"keyUp",INPUT_DOWN:"inputDown",INPUT_UP:"inputUp",INPUT_MOVE:"inputMove",INPUT_CLICK:"click"},Input.Key={A:65,B:66,C:67,D:68,E:69,F:70,G:71,H:72,I:73,J:74,K:75,L:76,M:77,N:78,O:79,P:80,Q:81,R:82,S:83,T:84,U:85,V:86,W:87,X:88,Y:89,Z:90,"[":91,BACKSPACE:8,TAB:9,ENTER:13,SHIFT:16,ESC:27,SPACE:32,NUM_0:48,NUM_1:49,NUM_2:50,NUM_3:51,NUM_4:52,NUM_5:53,NUM_6:54,NUM_7:55,NUM_8:56,NUM_9:57,PLUS:187,MINUS:189,ARROW_LEFT:37,ARROW_UP:38,ARROW_RIGHT:39,ARROW_DOWN:40,BUTTON_LEFT:0,BUTTON_MIDDLE:1,BUTTON_RIGHT:2},"use strict";var UI={};UI.Controller=meta.Controller.extend({init:function(){var t=new Resource.Texture;t.fillRect({color:"#111",width:160,height:40});var e=new Resource.Texture;e.fillRect({color:"#ff0000",width:160,height:40});var i=new Resource.Texture;i.fillRect({color:"#ff4488",width:160,height:40}),this.style=new UI.Style({button:{"*":{texture:t},"*:hover":{texture:e},"*:active":{texture:i}}}),UI.Button.prototype._style=this.style.getStyle("button")},setStyle:function(t){this.style.setStyle(t)},getStyle:function(t){return this.style.getStyle(t)},style:null}),"use strict",UI.Style=function(t){this.style=null,this.generate(t)},UI.Style.prototype={generate:function(t){this.style={},this.setStyle(t)},setStyle:function(t){var e,i,s,n,o,h;for(var r in t){h=this.style[r],h||(h={},this.style[r]=h),e=t[r];for(o in e)if(i=e[o],s=o.indexOf("@"),-1!==s&&(o=o.substr(0,s)),s=o.indexOf(":"),-1!==s)n=o.substr(s+1,o.length-s-1),o=o.substr(0,s),i?h[o].setState(n,null,i):h[o].removeState(n);else{var a=new meta.Brush;a.setState("default",null,i),h[o]=a}}},getStyle:function(t){var e=t.indexOf("."),i,s;return-1===e?(i=t,s="*"):(i=t.substr(0,e),s=t.substr(e+1,t.length-e-1)),this.style[i][s]}},"use strict",UI.Button=Entity.Geometry.extend({init:function(t){"string"!=typeof t&&(this.brush=this._style,this.state="default")},_updateState:function(){return this._style?this._disabled?(this.state="disabled",void 0):this.isHover&&this._style.states.hover?(this.state="hover",void 0):(this.state="default",void 0):void 0},onAdded:function(){this._label&&this.attach(this._label)},_onHoverEnter:function(t){document.body.style.cursor="pointer",this._updateState()},_onHoverExit:function(t){document.body.style.cursor="auto",this._updateState()},_onDown:function(t){this._disabled||this.move(2,2)},_onUp:function(t){this._disabled||this.move(-2,-2)},set style(t){"string"==typeof t&&(t=UI.ctrl.getStyle("button."+t)),this._style=t,this.brush=t,this._isNeedDraw=!0},get style(){return this._style},set text(t){this._label?this._label.setText(t):(this._label=new Entity.Text(t),this._label.color="#ffffff",this.attach(this._label),this._label.anchor(.5),this._label.pickable=!1,window.label=this._label)},get text(){return this._label?this._label._text:""},set width(t){this._width=t,this.isNeedDraw=!0},set height(t){this._height=t,this.isNeedDraw=!0},get width(){return this._width},get height(){return this._height},set disabled(t){this._disabled=t,this.clickable=!t,this._updateState()},get disabled(){return this._disabled},_style:null,_text:null,_width:0,_height:0,_disabled:!1}),"use strict",UI.ProgressBar=Entity.Geometry.extend({init:function(){this.texture=new Resource.Texture,this.volume.resize(300,30),this.buildElement()},buildElement:function(){this.texture.fillRect({width:this.width,height:this.height,color:"white"})},updateElement:function(){},set min(t){this._min!==t&&(this._min=t,this.updateElement())},set max(t){this._max!==t&&(this._max=t,this.updateElement())},set value(t){this._value!==t&&(this._value=t,this.updateElement())},get min(){return this._min},get max(){return this._max},get value(){return this._value},_min:0,_max:100,_value:0}),"use strict",function(){meta.enableDefault&&meta.createEngine()}();
+"use strict";
+
+var meta = {
+    version: "1.2.0",
+    device: null,
+    renderer: null,
+    camera: null,
+    autoInit: true,
+    autoMetaTags: true,
+    cache: {
+        width: 0,
+        height: 0,
+        metaTagsAdded: false,
+        timerIndex: 0,
+        initBuffer: [],
+        loadBuffer: [],
+        readyBuffer: [],
+        view: null,
+        views: {},
+        scripts: null,
+        pendingScripts: null,
+        numScriptsToLoad: 0,
+        resolutions: null,
+        currResolution: null,
+        imageSmoothing: true
+    }
+};
+
+"use strict";
+
+meta.channels = {};
+
+meta.loadingView = null;
+
+meta.world = null;
+
+meta.enableAdaptive = true;
+
+meta.tUpdate = 1e3 / 60;
+
+meta.unitSize = 1;
+
+meta.unitRatio = 1;
+
+meta.maxUnitSize = 1;
+
+meta.maxUnitRatio = 1;
+
+meta.utils = {};
+
+meta.modules = {};
+
+meta.importUrl = "http://meta.infinite-games.com/store/";
+
+meta.engine = {
+    create: function() {
+        this._container = document.body;
+        this._container.style.cssText = this.elementStyle;
+        this._createRenderer();
+        this._printInfo();
+        if (meta.autoMetaTags) {
+            this._addMetaTags();
+        }
+        meta.camera = new meta.Camera();
+        this._chnResize = meta.createChannel(meta.Event.RESIZE);
+        this._chnFocus = meta.createChannel(meta.Event.FOCUS);
+        this._chnFullScreen = meta.createChannel(meta.Event.FULLSCREEN);
+        this._chnAdapt = meta.createChannel(meta.Event.ADAPT);
+        this.sortAdaptions();
+        this.onResize();
+        meta.world = new meta.World(this.width, this.height);
+        var self = this;
+        this._onResizeCB = function(event) {
+            self.onResize();
+        };
+        this._onFocusCB = function(event) {
+            self.onFocusChange(true);
+        };
+        this._onBlurCB = function(event) {
+            self.onFocusChange(false);
+        };
+        window.addEventListener("resize", this._onResizeCB, false);
+        window.addEventListener("orientationchange", this._onResizeCB, false);
+        if (meta.device.hidden) {
+            this._onVisibilityChangeCB = function() {
+                self.onVisibilityChange();
+            };
+            document.addEventListener(meta.device.visibilityChange, this._onVisibilityChangeCB);
+        } else {
+            window.addEventListener("focus", this._onFocusCB);
+            window.addEventListener("blur", this._onBlurCB);
+        }
+        if (meta.device.support.fullScreen) {
+            this._onFullScreenChangeCB = function() {
+                self.onFullScreenChangeCB();
+            };
+            document.addEventListener(meta.device.fullScreenOnChange, this._onFullScreenChangeCB);
+        }
+        this.tNow = Date.now();
+        this.start();
+    },
+    start: function() {
+        var cache = meta.cache;
+        var masterView = new meta.View("master");
+        cache.views["master"] = masterView;
+        cache.view = masterView;
+        var numFuncs = cache.initBuffer.length;
+        for (var i = 0; i < numFuncs; i++) {
+            cache.initBuffer[i]();
+        }
+        this._addCorePlugins();
+        this.isInited = true;
+        console.log(" ");
+        this._load();
+    },
+    _load: function() {
+        console.log("%c(Loading started)", "background: #eee; font-weight: bold;");
+        this.isLoading = true;
+        if (!meta._loadAllScripts()) {
+            this._continueLoad();
+        }
+    },
+    _continueLoad: function() {
+        var i;
+        var cache = meta.cache;
+        var numFuncs = cache.loadBuffer.length;
+        for (i = 0; i < numFuncs; i++) {
+            cache.loadBuffer[i]();
+        }
+        var ctrl;
+        var numCtrl = this.controllers.length;
+        for (i = 0; i < numCtrl; i++) {
+            ctrl = this.controllers[i];
+            ctrl.load();
+            ctrl.isLoaded = true;
+        }
+        this.isCtrlLoaded = true;
+        meta.cache.view.isActive = true;
+        this.isLoading = false;
+        if (Resource.ctrl.numToLoad === 0) {
+            this.onResourcesLoaded();
+        }
+    },
+    update: function() {
+        this.updateFrameID++;
+        this.tNow = Date.now();
+        var tDelta = this.tNow - this.tUpdate;
+        if (this.pause) {
+            tDelta = 0;
+        }
+        if (tDelta > 250) {
+            tDelta = 250;
+        }
+        var tDeltaF = tDelta / 1e3;
+        if (meta.update) {
+            meta.update(tDeltaF);
+        }
+        var numCtrl = this.controllers.length;
+        for (var i = 0; i < numCtrl; i++) {
+            this.controllers[i].update(tDeltaF);
+        }
+        if (this.controllersToRemove.length) {
+            var ctrlToRemove;
+            var numCtrls = this.controllers.length;
+            var numCtrlsToRemove = this.controllersToRemove.length;
+            for (var n = 0; n < numCtrlsToRemove; n++) {
+                ctrlToRemove = this.controllersToRemove[n];
+                for (i = 0; i < numCtrls; i++) {
+                    if (this.controllers[i] === ctrlToRemove) {
+                        this.controllers[i] = this.controllers[numCtrls - 1];
+                        this.controllers.pop();
+                        break;
+                    }
+                }
+            }
+            this.controllersToRemove.length = 0;
+        }
+        this._updateTimers(tDelta);
+        this.tUpdate = this.tNow;
+        var tSample = Date.now();
+        var tSleep = Math.max(0, meta.tUpdate - (tSample - this.tNow));
+        window.setTimeout(this._updateLoop, tSleep);
+    },
+    _updateTimers: function(tDelta) {
+        var timer, i;
+        for (i = 0; i < this._numTimers; i++) {
+            timer = this._timers[i];
+            if (timer.isPaused) {
+                continue;
+            }
+            timer.tAccumulator += tDelta;
+            while (timer.tAccumulator >= timer.tDelta) {
+                timer.tAccumulator -= timer.tDelta;
+                if (timer.numTimes !== 0) {
+                    timer.func.call(timer.owner, timer);
+                }
+                timer.tStart += timer.tDelta;
+                if (timer.numTimes !== -1) {
+                    timer.numTimes--;
+                    if (timer.numTimes <= 0) {
+                        this._timersToRemove.push(timer);
+                        break;
+                    }
+                }
+            }
+        }
+        if (this._timersToRemove.length) {
+            var timerToRemove;
+            var numTimersToRemove = this._timersToRemove.length;
+            for (i = 0; i < numTimersToRemove; i++) {
+                timerToRemove = this._timersToRemove[i];
+                for (var n = 0; n < this._numTimers; n++) {
+                    timer = this._timers[n];
+                    if (timer.id === timerToRemove.id) {
+                        if (timer.onRemove) {
+                            timer.onRemove();
+                        }
+                        this._timers[n] = this._timers[this._numTimers - 1];
+                        this._timers.pop();
+                        this._numTimers--;
+                        break;
+                    }
+                }
+            }
+        }
+    },
+    render: function() {
+        this.frameID++;
+        var tNow = Date.now();
+        var tDelta = tNow - this.tRender;
+        if (tDelta > 250) {
+            tDelta = 250;
+        }
+        var tDeltaF = tDelta / 1e3;
+        if (tNow - this.tFPS >= 1e3) {
+            this.tFPS = tNow;
+            this.fps = this._fpsCounter;
+            this._fpsCounter = 0;
+        }
+        if (meta.render) {
+            meta.render(tDeltaF);
+        }
+        meta.renderer.render(tDeltaF);
+        this._fpsCounter++;
+        this.tRender = tNow;
+        requestAnimationFrame(this._renderLoop);
+    },
+    sortAdaptions: function() {
+        var scope = meta;
+        var resolutions = scope.cache.resolutions;
+        if (!resolutions) {
+            return;
+        }
+        var numResolutions = resolutions.length;
+        if (numResolutions <= 1) {
+            return;
+        }
+        resolutions.sort(function(a, b) {
+            var length_a = scope.math.length2(a.width, a.height);
+            var length_b = scope.math.length2(b.width, b.height);
+            return length_a - length_b;
+        });
+        var lowestResolution = resolutions[0];
+        var reso, prevReso;
+        for (var i = 1; i < numResolutions; i++) {
+            prevReso = resolutions[i - 1];
+            reso = resolutions[i];
+            reso.unitSize = reso.height / lowestResolution.height;
+            reso.zoomThreshold = prevReso.unitSize + (reso.unitSize - prevReso.unitSize) / 100 * 33;
+        }
+        meta.maxUnitSize = resolutions[numResolutions - 1].unitSize;
+        meta.maxUnitRatio = 1 / meta.maxUnitSize;
+        scope.camera.bounds(lowestResolution.width, lowestResolution.height);
+    },
+    adapt: function() {
+        var scope = meta;
+        var resolutions = scope.cache.resolutions;
+        if (!resolutions) {
+            return false;
+        }
+        var numResolutions = resolutions.length;
+        if (numResolutions < 1) {
+            return false;
+        }
+        var resolution;
+        var newResolution = resolutions[0];
+        var zoom = scope.camera.zoom;
+        for (var i = numResolutions - 1; i >= 0; i--) {
+            resolution = resolutions[i];
+            if (zoom >= resolution.zoomThreshold) {
+                newResolution = resolution;
+                break;
+            }
+        }
+        if (newResolution === scope.cache.currResolution) {
+            return true;
+        }
+        scope.cache.currResolution = newResolution;
+        scope.unitSize = newResolution.unitSize;
+        scope.unitRatio = 1 / scope.unitSize;
+        this._chnAdapt.emit(newResolution, meta.Event.ADAPT);
+        return true;
+    },
+    onResourcesLoaded: function() {
+        this.isLoaded = true;
+        console.log("%c(Loading ended)", "background: #eee; font-weight: bold;");
+        var numCtrl = this.controllers.length;
+        for (var i = 0; i < numCtrl; i++) {
+            this.controllers[i].ready();
+        }
+        this.isReady = true;
+        var numFuncs = meta.cache.readyBuffer.length;
+        for (var i = 0; i < numFuncs; i++) {
+            meta.cache.readyBuffer[i]();
+        }
+        this._start();
+    },
+    onResize: function() {
+        this._resize(this.meta.cache.width, this.meta.cache.height);
+    },
+    resize: function(width, height) {
+        var cache = this.meta.cache;
+        cache.width = width || 0;
+        cache.height = height || 0;
+        this._resize(cache.width, cache.height);
+    },
+    _resize: function(width, height) {
+        var container = this._container;
+        if (container === document.body) {
+            if (width === 0 || width > window.innerWidth) {
+                width = window.innerWidth;
+            }
+            if (height === 0 || height > window.innerHeight) {
+                height = window.innerHeight;
+            }
+        } else {
+            if (width === 0 || width > container.clientWidth) {
+                width = container.clientWidth;
+            }
+            if (height === 0 || height > container.clientHeight) {
+                height = container.clientHeight;
+            }
+        }
+        this.width = width | 0;
+        this.height = height | 0;
+        this.canvas.width = width;
+        this.canvas.height = height;
+        this.canvas.style.width = width * this.scaleX + "px";
+        this.canvas.style.height = height * this.scaleY + "px";
+        this.ctx.mozImageSmoothingEnabled = false;
+        this.ctx.webkitImageSmoothingEnabled = false;
+        this._updateOffset();
+        this._chnResize.emit(this, meta.Event.RESIZE);
+        meta.renderer.needRender = true;
+    },
+    scale: function(scaleX, scaleY) {
+        this.scaleX = scaleX || 1;
+        this.scaleY = scaleY || this.scaleX;
+        this._resize(this.meta.cache.width, this.meta.cache.height);
+    },
+    onFocusChange: function(value) {
+        this.isFocus = value;
+        if (this.enablePauseOnBlur) {
+            this.pause = !value;
+        }
+        this._chnFocus.emit(value, meta.Event.FOCUS);
+    },
+    onVisibilityChange: function() {
+        if (document[meta.device.hidden]) {
+            this.onFocusChange(false);
+        } else {
+            this.onFocusChange(true);
+        }
+    },
+    onFullScreenChangeCB: function() {
+        var isFullScreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+        meta.device.isFullScreen = !!isFullScreen;
+    },
+    onCtxLost: function() {
+        console.log("(Context lost)");
+    },
+    onCtxRestored: function() {
+        console.log("(Context restored)");
+    },
+    _addMetaTags: function() {
+        if (meta.cache.metaTagsAdded) {
+            return;
+        }
+        var contentType = document.createElement("meta");
+        contentType.setAttribute("http-equiv", "Content-Type");
+        contentType.setAttribute("content", "text/html; charset=utf-8");
+        document.head.appendChild(contentType);
+        var encoding = document.createElement("meta");
+        encoding.setAttribute("http-equiv", "encoding");
+        encoding.setAttribute("content", "utf-8");
+        document.head.appendChild(encoding);
+        var content = "user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height";
+        var viewport = document.createElement("meta");
+        viewport.setAttribute("name", "viewport");
+        viewport.setAttribute("content", content);
+        document.head.appendChild(viewport);
+        var appleMobileCapable = document.createElement("meta");
+        appleMobileCapable.setAttribute("name", "apple-mobile-web-app-capable");
+        appleMobileCapable.setAttribute("content", "yes");
+        document.head.appendChild(appleMobileCapable);
+        var appleStatusBar = document.createElement("meta");
+        appleStatusBar.setAttribute("name", "apple-mobile-web-app-status-bar-style");
+        appleStatusBar.setAttribute("content", "black-translucent");
+        document.head.appendChild(appleStatusBar);
+        meta.cache.metaTagsAdded = true;
+    },
+    _createRenderer: function() {
+        this.canvas = document.createElement("canvas");
+        this.canvas.setAttribute("id", "meta-canvas");
+        this.canvas.style.cssText = this.canvasStyle;
+        var container = this.meta.cache.container;
+        if (!container) {
+            document.body.appendChild(this.canvas);
+        } else {
+            container.appendChild(this.canvas);
+        }
+        meta.renderer = new meta.CanvasRenderer();
+    },
+    _updateOffset: function() {
+        this.offsetLeft = 0;
+        this.offsetTop = 0;
+        var element = this._container;
+        if (element.offsetParent) {
+            do {
+                this.offsetLeft += element.offsetLeft;
+                this.offsetTop += element.offsetTop;
+            } while (element = element.offsetParent);
+        }
+        var rect = this._container.getBoundingClientRect();
+        this.offsetLeft += rect.left;
+        this.offsetTop += rect.top;
+    },
+    _addCorePlugins: function() {
+        meta.register("Resource");
+        meta.register("Input");
+        meta.register("Physics");
+    },
+    _start: function() {
+        var self = this;
+        this._updateLoop = function() {
+            self.update();
+        };
+        this._renderLoop = function() {
+            self.render();
+        };
+        this.tUpdate = Date.now();
+        this.tRender = this.tUpdate;
+        this.tFPS = this.tUpdate;
+        setTimeout(this._updateLoop);
+        requestAnimationFrame(this._renderLoop);
+    },
+    _printInfo: function() {
+        if (meta.device.support.consoleCSS) {
+            console.log("%c META v" + meta.version + " ", "background: #000; color: white; font-size: 12px; padding: 2px 0 1px 0;", "http://infinite-games.com ");
+            console.log("%cBrowser: %c" + meta.device.name + " " + meta.device.version + "	", "font-weight: bold; padding: 2px 0 1px 0;", "padding: 2px 0 1px 0;");
+            console.log("%cRenderer: %cCanvas ", "font-weight: bold; padding: 2px 0 2px 0;", "padding: 2px 0 2px 0;");
+        } else {
+            console.log("META v" + meta.version + " http://infinite-games.com ");
+            console.log("Browser: " + meta.device.name + " " + meta.device.version + "	");
+            console.log("Renderer: Canvas ");
+        }
+    },
+    fullscreen: function(value) {
+        var device = meta.device;
+        if (device.isFulScreen === value) {
+            return;
+        }
+        if (value) {
+            if (!device.support.fullScreen) {
+                console.warn("[meta.engine.enterFullScreen]:", "Device does not support fullscreen.");
+                return;
+            }
+            document.documentElement[device.fullScreenRequest](Element.ALLOW_KEYBOARD_INPUT);
+        } else {
+            document[meta.device.fullScreenExit]();
+        }
+    },
+    toggleFullscreen: function() {
+        this.fullscreen(!meta.device.isFullScreen);
+    },
+    set container(element) {
+        if (this._container === element) {
+            return;
+        }
+        if (this._container) {
+            this._container.removeChild(this.canvas);
+        }
+        if (!element) {
+            this._container = document.body;
+        } else {
+            this._container = element;
+        }
+        this._container.appendChild(this.canvas);
+        this.onResize();
+    },
+    get container() {
+        return this._container;
+    },
+    set imageSmoothing(value) {
+        meta.cache.imageSmoothing = value;
+        if (this.isReady) {
+            this.onResize();
+        }
+    },
+    get imageSmoothing() {
+        return meta.cache.imageSmoothing;
+    },
+    set cursor(value) {
+        meta.element.style.cursor = value;
+    },
+    get cursor() {
+        return meta.element.style.cursor;
+    },
+    set bgColor(hex) {
+        if (meta.engine.isWebGL) {
+            if (hex.length === 3) {
+                hex += hex.substr(1, 3);
+            }
+            var color = meta.hexToRgb(hex);
+            if (color.r > 0) {
+                color.r = color.r / 255;
+            }
+            if (color.g > 0) {
+                color.g = color.g / 255;
+            }
+            if (color.b > 0) {
+                color.b = color.b / 255;
+            }
+            if (this._bgTransparent) {
+                meta.ctx.clearColor(0, 0, 0, 0);
+            } else {
+                meta.ctx.clearColor(color.r, color.g, color.b, 1);
+            }
+        } else {
+            this._bgColor = hex;
+        }
+    },
+    get bgColor() {
+        return this._bgColor;
+    },
+    set bgTransparent(value) {
+        this._bgTransparent = value;
+        this.bgColor = this._bgColor;
+    },
+    get bgTransparent() {
+        return this._bgTransparent;
+    },
+    elementStyle: "padding:0; margin:0;",
+    canvasStyle: "position:absolute; overflow:hidden; translateZ(0); " + "-webkit-backface-visibility:hidden; -webkit-perspective: 1000; " + "-webkit-touch-callout: none; -webkit-user-select: none; zoom: 1;",
+    meta: meta,
+    _container: null,
+    width: 0,
+    height: 0,
+    offsetLeft: 0,
+    offsetTop: 0,
+    scaleX: 1,
+    scaleY: 1,
+    canvas: null,
+    ctx: null,
+    controllers: [],
+    controllersToRemove: [],
+    _timers: [],
+    _timersToRemove: [],
+    _numTimers: 0,
+    _onResizeCB: null,
+    _onVisibilityChangeCB: null,
+    _onFullScreenChangeCB: null,
+    _onFocusCB: null,
+    _onBlurCB: null,
+    _onCtxLostCB: null,
+    _onCtxRestoredCB: null,
+    _chnResize: null,
+    _chnFocus: null,
+    _chnFullScreen: null,
+    _chnAdapt: null,
+    isFocus: false,
+    isWebGL: false,
+    isInited: false,
+    isLoaded: false,
+    isLoading: false,
+    isCtrlLoaded: false,
+    isReady: false,
+    pause: false,
+    projection: null,
+    _updateLoop: null,
+    _renderLoop: null,
+    tUpdate: 0,
+    tRender: 0,
+    tFPS: 0,
+    tNow: 0,
+    fps: 0,
+    _fpsCounter: 0,
+    frameID: 0,
+    updateFrameID: 0,
+    enablePauseOnBlur: true,
+    _bgColor: "#ddd",
+    _bgTransparent: false
+};
+
+Object.defineProperty(meta, "init", {
+    set: function(func) {
+        meta.cache.initBuffer.push(func);
+        if (meta.engine && meta.engine.isInited) {
+            func();
+        }
+    }
+});
+
+Object.defineProperty(meta, "load", {
+    set: function(func) {
+        meta.cache.loadBuffer.push(func);
+        if (meta.engine && meta.engine.isLoaded) {
+            func();
+        }
+    }
+});
+
+Object.defineProperty(meta, "ready", {
+    set: function(func) {
+        meta.cache.readyBuffer.push(func);
+        if (meta.engine && meta.engine.isReady) {
+            func();
+        }
+    }
+});
+
+meta.render = null;
+
+meta.update = null;
+
+"use strict";
+
+meta.Device = function() {
+    this.name = "unknown";
+    this.version = "0";
+    this.versionBuffer = null;
+    this.vendors = [ "", "webkit", "moz", "ms", "o" ];
+    this.support = {};
+    this.audioFormats = [];
+    this.mobile = false;
+    this.isPortrait = false;
+    this.isAudioAPI = false;
+    this.hidden = null;
+    this.visibilityChange = null;
+    this.fullScreenRequest = null;
+    this.fullScreenExit = null;
+    this.fullScreenOnChange = null;
+    this.isFullScreen = false;
+    this.load();
+};
+
+meta.Device.prototype = {
+    load: function() {
+        this.checkBrowser();
+        this.mobile = this.isMobileAgent();
+        this.checkConsoleCSS();
+        this.support.onloadedmetadata = typeof window.onloadedmetadata === "object";
+        this.support.onkeyup = typeof window.onkeyup === "object";
+        this.support.onkeydown = typeof window.onkeydown === "object";
+        this.support.canvas = this.isCanvasSupport();
+        this.support.webgl = this.isWebGLSupport();
+        this.modernize();
+    },
+    checkBrowser: function() {
+        var regexps = {
+            Chrome: [ /Chrome\/(\S+)/ ],
+            Firefox: [ /Firefox\/(\S+)/ ],
+            MSIE: [ /MSIE (\S+);/ ],
+            Opera: [ /OPR\/(\S+)/, /Opera\/.*?Version\/(\S+)/, /Opera\/(\S+)/ ],
+            Safari: [ /Version\/(\S+).*?Safari\// ]
+        };
+        var userAgent = navigator.userAgent;
+        var name, currRegexp, match;
+        var numElements = 2;
+        for (name in regexps) {
+            while (currRegexp = regexps[name].shift()) {
+                if (match = userAgent.match(currRegexp)) {
+                    this.version = match[1].match(new RegExp("[^.]+(?:.[^.]+){0," + --numElements + "}"))[0];
+                    this.name = name;
+                    this.versionBuffer = this.version.split(".");
+                    var versionBufferLength = this.versionBuffer.length;
+                    for (var i = 0; i < versionBufferLength; i++) {
+                        this.versionBuffer[i] = parseInt(this.versionBuffer[i]);
+                    }
+                    break;
+                }
+            }
+        }
+        if (this.versionBuffer === null || this.name === "unknown") {
+            console.warn("[meta.Device.checkBrowser]:", "Could not detect browser.");
+        }
+    },
+    checkConsoleCSS: function() {
+        if (!this.mobile && (this.name === "Chrome" || this.name === "Opera")) {
+            this.support.consoleCSS = true;
+        } else {
+            this.support.consoleCSS = false;
+        }
+    },
+    modernize: function() {
+        this.supportConsole();
+        this.supportPageVisibility();
+        this.supportFullScreen();
+        this.supportRequestAnimFrame();
+        this.supportPerformanceNow();
+        this.supportAudioFormats();
+        this.supportAudioAPI();
+    },
+    isMobileAgent: function() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    },
+    isCanvasSupport: function() {
+        return !!window.CanvasRenderingContext2D;
+    },
+    isWebGLSupport: function() {
+        var canvas = document.createElement("canvas");
+        var context = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+        return !!context;
+    },
+    supportConsole: function() {
+        if (!window.console) {
+            window.console = {};
+            window.console.log = meta.emptyFuncParam;
+            window.console.warn = meta.emptyFuncParam;
+            window.console.error = meta.emptyFuncParam;
+        }
+    },
+    supportPageVisibility: function() {
+        if (document.hidden !== void 0) {
+            this.hidden = "hidden";
+            this.visibilityChange = "visibilitychange";
+        } else if (document.hidden !== void 0) {
+            this.hidden = "webkitHidden";
+            this.visibilityChange = "webkitvisibilitychange";
+        } else if (document.hidden !== void 0) {
+            this.hidden = "mozhidden";
+            this.visibilityChange = "mozvisibilitychange";
+        } else if (document.hidden !== void 0) {
+            this.hidden = "mshidden";
+            this.visibilityChange = "msvisibilitychange";
+        }
+    },
+    supportFullScreen: function() {
+        this._fullScreenRequest();
+        this._fullScreenExit();
+        this._fullScreenOnChange();
+        this.support.fullScreen = document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled || document.msFullscreenEnabled;
+    },
+    _fullScreenRequest: function() {
+        var element = document.documentElement;
+        if (element.requestFullscreen !== void 0) {
+            this.fullScreenRequest = "requestFullscreen";
+        } else if (element.webkitRequestFullscreen !== void 0) {
+            this.fullScreenRequest = "webkitRequestFullscreen";
+        } else if (element.mozRequestFullScreen !== void 0) {
+            this.fullScreenRequest = "mozRequestFullScreen";
+        } else if (element.msRequestFullscreen !== void 0) {
+            this.fullScreenRequest = "msRequestFullscreen";
+        }
+    },
+    _fullScreenExit: function() {
+        if (document.exitFullscreen !== void 0) {
+            this.fullScreenExit = "exitFullscreen";
+        } else if (document.webkitExitFullscreen !== void 0) {
+            this.fullScreenExit = "webkitExitFullscreen";
+        } else if (document.mozCancelFullScreen !== void 0) {
+            this.fullScreenExit = "mozCancelFullScreen";
+        } else if (document.msExitFullscreen !== void 0) {
+            this.fullScreenExit = "msExitFullscreen";
+        }
+    },
+    _fullScreenOnChange: function() {
+        if (document.onfullscreenchange !== void 0) {
+            this.fullScreenOnChange = "fullscreenchange";
+        } else if (document.onwebkitfullscreenchange !== void 0) {
+            this.fullScreenOnChange = "webkitfullscreenchange";
+        } else if (document.onmozfullscreenchange !== void 0) {
+            this.fullScreenOnChange = "mozfullscreenchange";
+        } else if (document.onmsfullscreenchange !== void 0) {
+            this.fullScreenOnChange = "msfullscreenchange";
+        }
+    },
+    supportRequestAnimFrame: function() {
+        if (!window.requestAnimationFrame) {
+            window.requestAnimationFrame = function() {
+                return window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function(callback, element) {
+                    window.setTimeout(callback, 1e3 / 60);
+                };
+            }();
+        }
+    },
+    supportPerformanceNow: function() {
+        if (window.performance === void 0) {
+            window.performance = {};
+        }
+        if (window.performance.now === void 0) {
+            window.performance.now = Date.now;
+        }
+    },
+    supportAudioFormats: function() {
+        var audio = document.createElement("audio");
+        if (audio.canPlayType('audio/mp4; codecs="mp4a.40.2"').replace(/no/i, "") != "") {
+            this.audioFormats.push("m4a");
+        }
+        if (audio.canPlayType('audio/ogg; codecs="vorbis"').replace(/no/, "")) {
+            this.audioFormats.push("ogg");
+        }
+        if (audio.canPlayType("audio/mpeg;").replace(/no/, "")) {
+            this.audioFormats.push("mp3");
+        }
+        if (audio.canPlayType('audio/wav; codecs="1"').replace(/no/, "")) {
+            this.audioFormats.push("wav");
+        }
+    },
+    supportAudioAPI: function() {
+        if (!window.AudioContext) {
+            window.AudioContext = window.webkitAudioContext || window.mozAudioContext || window.oAudioContext || window.msAudioContext;
+        }
+    }
+};
+
+meta.device = new meta.Device();
+
+"use strict";
+
+if (meta.device.mobile) {
+    window.onerror = function(message, file, lineNumber) {
+        alert(file + ": " + lineNumber + " " + message);
+    };
+}
+
+"use strict";
+
+meta.emptyFunc = function() {};
+
+meta.emptyFuncParam = function(param) {};
+
+meta.loadTexture = function(buffer, folderPath, hd_folderPath) {
+    if (!meta._loadResource("Texture", buffer, folderPath, hd_folderPath)) {
+        console.warn("[meta.loadTexture]:", "Unsupported parameter was passed.");
+    }
+};
+
+meta.preloadTexture = function(buffer, folderPath, hd_folderPath) {
+    if (!meta._preloadResource("Texture", buffer, folderPath, hd_folderPath)) {
+        console.warn("[meta.preloadTexture]:", "Unsupported parameter was passed.");
+    }
+};
+
+meta.loadSound = function(buffer, folderPath) {
+    if (!meta._loadResource("Sound", buffer, folderPath)) {
+        console.warn("[meta.loadSound]:", "Unsupported parameter was passed.");
+    }
+};
+
+meta.preloadSound = function(buffer, folderPath) {
+    if (!meta._preloadResource("Sound", buffer, folderPath)) {
+        console.warn("[meta.preloadSound]:", "Unsupported parameter was passed.");
+    }
+};
+
+meta.loadSpriteSheet = function(buffer, folderPath) {
+    if (!meta._preloadResource("SpriteSheet", buffer, folderPath)) {
+        console.warn("[meta.loadSpriteSheet]:", "Unsupported parameter was passed.");
+    }
+};
+
+meta.loadFont = function(buffer, folderPath) {
+    if (!meta._preloadResource("Font", buffer, folderPath)) {
+        console.warn("[meta.loadFont]:", "Unsupported parameter was passed.");
+    }
+};
+
+meta._loadResource = function(strType, buffer, folderPath) {
+    if (folderPath) {
+        var slashIndex = folderPath.lastIndexOf("/");
+        if (slashIndex <= 0) {
+            folderPath += "/";
+        }
+    } else {
+        folderPath = "";
+    }
+    if (buffer instanceof Array) {
+        var numResources = buffer.length;
+        for (var i = 0; i < numResources; i++) {
+            meta._addResource(strType, buffer[i], folderPath);
+        }
+    } else if (typeof buffer === "object" || typeof buffer === "string") {
+        meta._addResource(strType, buffer, folderPath);
+    } else {
+        return false;
+    }
+    return true;
+};
+
+meta._preloadResource = function(strType, buffer, folderPath) {
+    if (folderPath) {
+        var slashIndex = folderPath.lastIndexOf("/");
+        if (slashIndex !== folderPath.length - 1) {
+            folderPath += "/";
+        }
+    } else {
+        folderPath = "";
+    }
+    if (buffer instanceof Array) {
+        var numResources = buffer.length;
+        for (var i = 0; i < numResources; i++) {
+            meta._addResource(strType, buffer[i], folderPath).load();
+        }
+    } else if (typeof buffer === "object" || typeof buffer === "string") {
+        meta._addResource(strType, buffer, folderPath).load();
+    } else {
+        return false;
+    }
+    return true;
+};
+
+meta._addResource = function(strType, data, folderPath) {
+    var resource;
+    if (typeof data === "object") {
+        resource = new Resource[strType](data, folderPath + data.path);
+    } else {
+        resource = new Resource[strType](folderPath + data);
+    }
+    Resource.ctrl.add(resource);
+    return resource;
+};
+
+meta.getTexture = function(name) {
+    return Resource.ctrl.getTexture(name);
+};
+
+meta.getSound = function(name) {
+    return Resource.ctrl.getSound(name);
+};
+
+meta.createCtrl = function(ctrlName, view) {
+    if (!ctrlName) {
+        console.error("(meta.createCtrl)No controller name is defined.");
+        return null;
+    }
+    var parts = ctrlName.split(".");
+    if (parts.length > 2) {
+        console.error('(meta.createCtrl) Name should be in format "MyScope.Controller".');
+        return null;
+    }
+    var name = parts[0];
+    var ctrlScope = window[name];
+    if (!ctrlScope) {
+        console.error("(meta.createCtrl) No such scope defined: " + name);
+        return null;
+    }
+    if (ctrlScope.ctrl) {
+        console.error("(meta.register) Controller (" + ctrl.name + ") is already added in scope.");
+        return null;
+    }
+    var objName;
+    if (parts.length === 1) {
+        objName = "Controller";
+    } else {
+        objName = parts[1];
+    }
+    if (!ctrlScope[objName]) {
+        console.error("(meta.createCtrl) No Controller (" + objName + ") found in scope: " + name);
+        return null;
+    }
+    view = view || meta.view;
+    var ctrl = new ctrlScope[objName](view);
+    ctrlScope.ctrl = ctrl;
+    ctrl.name = name;
+    ctrl.view = view;
+    return ctrl;
+};
+
+meta.addCtrl = function(ctrl) {
+    if (!ctrl) {
+        console.error("[meta.addCtrl]:", "Invalid controller passed.");
+        return;
+    }
+    var ctrlScope = window[ctrl.name];
+    ctrlScope.ctrl = ctrl;
+    meta.engine.controllers.push(ctrl);
+    if (meta.engine.isCtrlLoaded) {
+        ctrl.load();
+    }
+    if (meta.engine.isReady) {
+        ctrl.ready();
+    }
+};
+
+meta.removeCtrl = function(ctrl) {
+    if (!ctrl) {
+        console.error("[meta.addCtrl]:", "Invalid controller passed.");
+        return;
+    }
+    var ctrlScope = window[ctrl.name];
+    if (!ctrlScope.ctrl) {
+        console.error("[meta.removeCtrl]:", "No controller added to the scope.");
+        return;
+    }
+    if (ctrlScope.ctrl !== ctrl) {
+        console.error("[meta.removeCtrl]:", "Controller (" + ctrl.name + ") is not the same what is already added to the scope.");
+        return;
+    }
+    ctrl.unload();
+    ctrl.release();
+    meta.engine.controllersToRemove.push(ctrl);
+}, meta.register = function(ctrlName, view) {
+    var ctrl = meta.createCtrl(ctrlName, view);
+    if (!ctrl) {
+        return;
+    }
+    meta.engine.controllers.push(ctrl);
+    if (meta.engine.isCtrlLoaded) {
+        ctrl.load();
+    }
+    if (meta.engine.isReady) {
+        ctrl.ready();
+    }
+    return ctrl;
+};
+
+meta.unregister = function(ctrlName) {
+    if (!ctrlName) {
+        console.error("[meta.unregister]:", "No controller name is defined.");
+        return;
+    }
+    var parts = ctrlName.split(".");
+    if (parts.length > 2) {
+        console.error("[meta.unregister]:", 'Name should be in format "MyScope.Controller".');
+        return;
+    }
+    var name = parts[0];
+    var ctrlScope = window[name];
+    if (!ctrlScope) {
+        console.error("[meta.unregister]:", "No such scope defined: " + name);
+        return;
+    }
+    if (ctrlScope[name]) {
+        console.error("[meta.unregister]:", "Controller (" + name + ") is already added in scope.");
+        return;
+    }
+    var objName;
+    if (parts.length === 1) {
+        objName = "Controller";
+    } else {
+        objName = parts[1];
+    }
+    if (!ctrlScope[objName]) {
+        console.error("[meta.unregister]:", "No Controller (" + objName + ") found in scope: " + name);
+        return;
+    }
+    var controller = ctrlScope.ctrl;
+    if (!controller) {
+        console.error("[meta.unregister]:", "No Controller (" + objName + ") found in scope: " + name);
+        return;
+    }
+    controller.unload();
+    controller.release();
+    meta.engine.controllersToRemove.push(controller);
+};
+
+meta.unregisterAll = function() {
+    var ctrl;
+    var ctrls = meta.engine.controllers;
+    var numCtrls = ctrls.length;
+    for (var i = 0; i < numCtrls; i++) {
+        ctrl = window[ctrls[i].name].ctrl;
+        ctrl.unload();
+        ctrl.release();
+        window[ctrls[i].name].ctrl = null;
+    }
+    ctrls.length = 0;
+};
+
+meta.onDomLoad = function(func) {
+    if ((document.readyState === "interactive" || document.readyState === "complete") && document.body && !meta.debug) {
+        func();
+        return;
+    }
+    var cbFunc = function(event) {
+        func();
+        window.removeEventListener("DOMContentLoaded", cbFunc);
+    };
+    window.addEventListener("DOMContentLoaded", cbFunc);
+};
+
+meta.enumToString = function(buffer, value) {
+    if (buffer === void 0) {
+        return "unknown";
+    }
+    for (var enumKey in buffer) {
+        if (buffer[enumKey] === value) {
+            return enumKey;
+        }
+    }
+    return "unknown";
+};
+
+meta.hexToRgb = function(hex) {
+    if (hex.length < 6) {
+        hex += hex.substr(1, 4);
+    }
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    };
+};
+
+meta.isUrl = function(str) {
+    if (str.indexOf("http://") !== -1 || str.indexOf("https://") !== -1) {
+        return true;
+    }
+    return false;
+};
+
+meta.toUpperFirstChar = function(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+meta.loadScript = function(src, onLoad) {
+    if (!meta.engine || !meta.engine.isLoaded) {
+        if (!meta.cache.scripts) {
+            meta.cache.scripts = [];
+        }
+        meta.cache.scripts.push({
+            s: src,
+            c: onLoad
+        });
+    } else {
+        meta._loadScript({
+            s: src,
+            c: onLoad
+        });
+    }
+};
+
+meta._loadScript = function(obj) {
+    var script = document.createElement("script");
+    var firstScript = document.scripts[0];
+    if ("async" in firstScript) {
+        script.async = false;
+        script.onload = obj.c;
+        script.src = obj.s;
+        document.head.appendChild(script);
+    } else if (firstScript.readyState) {
+        if (!meta.cache.pendingScripts) {
+            meta.cache.pendingScripts = [];
+        }
+        meta.cache.pendingScripts.push(script);
+        script.onreadystatechange = meta._onReadyStateChange;
+        script.src = obj.s;
+    } else {
+        document.write("<script src='" + src + "' defer></script>");
+    }
+};
+
+meta._onReadyStateChange = function() {
+    var pendingScript;
+    var pendingScripts = meta.cache.pendingScripts;
+    while (pendingScripts[0] && pendingScripts[0].s.readyState === "loaded") {
+        pendingScript = pendingScripts.shift();
+        pendingScript.s.onreadystatechange = null;
+        document.scripts[0].parentNode.insertBefore(pendingScript.s, firstScript);
+        if (pendingScript.c) {
+            pendingScript.c();
+        }
+    }
+};
+
+meta._loadAllScripts = function() {
+    var scripts = meta.cache.scripts;
+    if (!scripts) {
+        return false;
+    }
+    var numScripts = scripts.length;
+    if (numScripts === 0) {
+        return false;
+    }
+    var callback = function() {
+        var cache = meta.cache;
+        cache.numScriptsToLoad--;
+        var scripts = meta.cache.scripts;
+        var numScripts = scripts.length;
+        if (numScripts > 0) {
+            cache.numScriptsToLoad += numScripts;
+            cache.scripts = [];
+            var script;
+            for (var n = 0; n < numScripts; n++) {
+                script = scripts[n];
+                script.c = callback;
+                meta._loadScript(script);
+            }
+        }
+        if (cache.numScriptsToLoad === 0) {
+            cache.scripts = null;
+            meta.engine._continueLoad();
+        }
+    };
+    var script;
+    var cache = meta.cache;
+    cache.numScriptsToLoad += scripts.length;
+    cache.scripts = [];
+    for (var i = 0; i < numScripts; i++) {
+        script = scripts[i];
+        script.c = callback;
+        meta._loadScript(script);
+    }
+    return true;
+};
+
+meta.import = function(path) {
+    if (!path) {
+        return;
+    }
+    var buffer = path.split("/");
+    var name = buffer[0];
+    var version;
+    if (buffer.length === 1) {
+        version = "latest";
+        path += "/latest";
+    } else {
+        version = buffer[buffer.length - 1];
+    }
+    var module = meta.modules[name];
+    if (module) {
+        if (module.version !== version) {
+            console.error("[meta.loadPackage]:", "There is already added module [" + module.name + "] but with different version: " + module.version);
+        }
+        return;
+    }
+    module = {
+        name: name,
+        version: version
+    };
+    meta.modules[name] = module;
+    if (!meta.isUrl(path)) {
+        path = meta.importUrl + path + "/module.js";
+    }
+    meta.loadScript(path, null);
+};
+
+meta.serialize = function(obj) {
+    var str = [];
+    for (var key in obj) {
+        str.push(encodeURIComponent(key) + "=" + encodeURIComponent(obj[key]));
+    }
+    return str.join("&");
+};
+
+meta.addDescription = function(text) {
+    var msg = new Entity.Text(text);
+    msg.color = "#ffffff";
+    msg.anchor(.5);
+    var texture = new Resource.Texture();
+    texture.fillRect({
+        width: msg.width + 10,
+        height: msg.height + 10,
+        color: "#000000"
+    });
+    var bg = new Entity.Geometry(texture);
+    bg.z = 9999;
+    bg.anchor(.5, 0);
+    bg.positionTop(0, 10);
+    bg.isPickable = false;
+    bg.ignoreZoom = true;
+    bg.disableDebug = true;
+    meta.view.attach(bg);
+    bg.attach(msg);
+};
+
+meta.adaptTo = function(width, height, path) {
+    if (meta.engine && meta.engine.isInited) {
+        console.warn("[meta.adaptTo]:", "Only usable before engine is initialized.");
+        return;
+    }
+    var resolutions = meta.cache.resolutions;
+    if (!resolutions) {
+        resolutions = [];
+        meta.cache.resolutions = resolutions;
+    }
+    var lastChar = path.charAt(path.length - 1);
+    if (lastChar !== "/") {
+        path += "/";
+    }
+    var newRes = {
+        width: width,
+        height: height,
+        path: path,
+        unitSize: 1,
+        zoomThreshold: 1
+    };
+    resolutions.push(newRes);
+};
+
+meta.removeFromArray = function(item, array) {
+    var numItems = array.length;
+    for (var i = 0; i < numItems; i++) {
+        if (item === array[i]) {
+            array[i] = array[numItems - 1];
+            array.pop();
+            break;
+        }
+    }
+};
+
+meta.shuffleArray = function(array) {
+    var length = array.length;
+    var temp, item;
+    while (length) {
+        item = Math.floor(Math.random() * length--);
+        temp = array[length];
+        array[length] = array[item];
+        array[item] = temp;
+    }
+    return array;
+};
+
+meta.rotateArray = function(array) {
+    var tmp = array[0];
+    var numItems = array.length - 1;
+    for (var i = 0; i < numItems; i++) {
+        array[i] = array[i + 1];
+    }
+    array[numItems] = tmp;
+};
+
+meta.nextPowerOfTwo = function(value) {
+    value--;
+    value |= value >> 1;
+    value |= value >> 2;
+    value |= value >> 4;
+    value |= value >> 8;
+    value |= value >> 16;
+    value++;
+    return value;
+};
+
+"use strict";
+
+meta.Channel = function(name) {
+    this.name = name;
+    this.subs = [];
+    this.numSubs = 0;
+    this._isEmiting = false;
+    this._subsToRemove = null;
+};
+
+meta.Channel.prototype = {
+    remove: function() {
+        meta.channels[this.name] = null;
+    },
+    emit: function(data, event) {
+        this._isEmiting = true;
+        var sub;
+        for (var i = 0; i < this.numSubs; i++) {
+            sub = this.subs[i];
+            sub.func.call(sub.owner, data, event);
+        }
+        this._isEmiting = false;
+        if (this._subsToRemove) {
+            var numToRemove = this._subsToRemove.length;
+            for (var n = 0; n < numToRemove; n++) {
+                this.unsubscribe(this._subsToRemove[n]);
+            }
+            this._subsToRemove = null;
+        }
+    },
+    subscribe: function(owner, func, priority) {
+        priority = priority || 0;
+        if (!func) {
+            console.warn("(meta.Channel.subscribe) No callback function passed.");
+            return;
+        }
+        for (var i = 0; i < this.numSubs; i++) {
+            if (this.subs[i].owner === owner) {
+                console.warn("(meta.Channel.subscribe) Already subscribed to channel: " + this.name);
+                return;
+            }
+        }
+        var newSub = new meta.Subscriber(owner, func, priority);
+        this.subs.push(newSub);
+        this.numSubs++;
+        if (priority) {
+            this._havePriority = true;
+            this.subs.sort(this._sortFunc);
+        } else if (this._havePriority) {
+            this.subs.sort(this._sortFunc);
+        }
+    },
+    unsubscribe: function(owner) {
+        if (this._isEmiting) {
+            if (!this._subsToRemove) {
+                this._subsToRemove = [];
+            }
+            this._subsToRemove.push(owner);
+            return;
+        }
+        var sub;
+        for (var i = 0; i < this.numSubs; i++) {
+            sub = this.subs[i];
+            if (sub.owner === owner) {
+                this.subs[i] = this.subs[this.numSubs - 1];
+                this.subs.pop();
+                this.numSubs--;
+                break;
+            }
+        }
+        if (this._havePriority) {
+            this.subs.sort(this._sortFunc);
+        }
+    },
+    _sortFunc: function(a, b) {
+        return a.priority > b.priority ? -1 : 1;
+    },
+    _havePriority: false
+};
+
+meta.Subscriber = function(owner, func, priority) {
+    this.owner = owner;
+    this.func = func;
+    this.priority = priority;
+};
+
+meta.createChannel = function(name) {
+    if (!name) {
+        console.warn("(meta.createChannel) No name was specified!");
+        return null;
+    }
+    var channel = meta.channels[name];
+    if (!channel) {
+        channel = new meta.Channel(name);
+        meta.channels[name] = channel;
+    }
+    return channel;
+};
+
+meta.releaseChannel = function(name) {
+    if (!name) {
+        console.warn("(meta.releaseChannel) No name was specified!");
+        return;
+    }
+    if (meta.channels[name]) {
+        meta.channels[name] = null;
+    }
+};
+
+meta.subscribe = function(owner, channel, func, priority) {
+    if (typeof owner !== "object") {
+        console.warn("(meta.subscribe) No owner passed.");
+        return;
+    }
+    if (!func) {
+        console.warn("(meta.subscribe) No callback function passed.");
+        return;
+    }
+    if (typeof channel === "string") {
+        var srcChannel = meta.channels[channel];
+        if (!srcChannel) {
+            channel = meta.createChannel(channel);
+            if (!channel) {
+                return;
+            }
+        } else {
+            channel = srcChannel;
+        }
+    } else if (Object.prototype.toString.call(channel) === "[object Array]") {
+        var numChannels = channel.length;
+        for (var i = 0; i < numChannels; i++) {
+            meta.subscribe(owner, channel[i], func, priority);
+        }
+        return;
+    } else {
+        console.warn("(meta.subscribe) Wrong type for channel object: " + typeof channel);
+        return;
+    }
+    channel.subscribe(owner, func, priority);
+};
+
+meta.unsubscribe = function(owner, channel) {
+    if (typeof channel === "string") {
+        channel = meta.channels[channel];
+        if (!channel) {
+            console.warn("(meta.unsubscribe) No name was specified!");
+            return;
+        }
+    } else if (Object.prototype.toString.call(channel) === "[object Array]") {
+        var numChannels = channel.length;
+        for (var i = 0; i < numChannels; i++) {
+            meta.unsubscribe(owner, channel[i]);
+        }
+        return;
+    } else {
+        console.warn("(meta.unsubscribe) Wrong type for channel object.");
+        return;
+    }
+    channel.unsubscribe(owner);
+};
+
+meta.emit = function(channel, data, event) {
+    if (typeof channel === "string") {
+        channel = meta.channels[channel];
+        if (!channel) {
+            console.warn("(meta.emit) No name was specified!");
+            return;
+        }
+    }
+    channel.emit(data, event);
+};
+
+"use strict";
+
+meta.View = function(name) {
+    this.name = name;
+    this.entities = [];
+    this.views = null;
+    this.parentView = null;
+    this.numEntities = 0;
+    this._x = 0;
+    this._y = 0;
+    this._z = 0;
+    this._tween = null;
+    this._isActive = false;
+};
+
+meta.View.prototype = {
+    remove: function() {
+        if (this.name === "master") {
+            console.warn("(meta.View.remove) Master view can't be removed");
+            return;
+        }
+        if (this.parentView) {
+            this.parentView.detachView(this);
+        }
+        if (this.views) {
+            var numViews = this.views.length;
+            for (var i = 0; i < numViews; i++) {
+                this.views[i].remove();
+            }
+        }
+        this.isActive = false;
+        this._unregisterFromEngine();
+        var entity;
+        var numEntities = this.entities.length;
+        for (var n = 0; n < numEntities; n++) {
+            entity = this.entities[n];
+            entity._view = null;
+            entity.remove();
+        }
+        this.entities.length = 0;
+        this.numEntities = 0;
+    },
+    attach: function(entity) {
+        if (entity.isRemoved) {
+            console.warn("(meta.View.attach) Removed entity can not be added to the view.");
+            return;
+        }
+        if (entity._view) {
+            if (entity._view === this) {
+                console.warn("(meta.View.attach) Entity is already added to this view.");
+            } else {
+                console.warn("(meta.View.attach) Entity is already added to some other view.");
+            }
+            return;
+        }
+        if (this._x !== 0 || this._y !== 0) {
+            entity.updatePos();
+        }
+        this.entities.push(entity);
+        this.numEntities++;
+        this._attachChildren(entity.children);
+        entity._view = this;
+        entity._viewNodeID = this.numEntities;
+        if (this._z) {
+            entity.z = entity._z;
+        }
+        if (!entity.texture) {
+            entity.isLoaded = true;
+        }
+        if (this._isActive && meta.engine.isReady) {
+            meta.renderer.addEntity(entity);
+        }
+    },
+    _attachChildren: function(children) {
+        if (!children) {
+            return;
+        }
+        var child;
+        var numChildren = children.length;
+        for (var i = 0; i < numChildren; i++) {
+            child = children[i];
+            if (child.isRemoved) {
+                continue;
+            }
+            child._view = this;
+            this._attachChildren(child.children);
+        }
+    },
+    detach: function(entity) {
+        if (entity.isRemoved) {
+            return;
+        }
+        if (!entity._view) {
+            console.warn("(meta.View.detach) Entity does not have view.");
+            return;
+        }
+        if (entity._view !== this) {
+            console.warn("(meta.View.detach) Entity is part of other view: " + entity.view.name);
+            return;
+        }
+        if (entity._parent !== entity._entityCtrl) {
+            console.warn("(meta.View.detach) Entity children are not part of view.");
+            return;
+        }
+        entity.isRemoved = true;
+        entity.removeCore();
+        this.numEntities--;
+        var replaceEntity = this.entities[this.numEntities];
+        replaceEntity.core.viewIndex = this.numEntities;
+        this.entities[this.numEntities] = replaceEntity;
+        this.entities.pop();
+        if (this._isActive) {
+            Renderer.ctrl.removeEntities(entity);
+        }
+    },
+    attachView: function(view) {
+        if (!view) {
+            if (this.parentView) {
+                console.warn("(meta.View.attach) No view was passed.");
+                return;
+            }
+            meta.cache.view.attachView(this);
+            return;
+        }
+        if (typeof view === "string") {
+            var srcView = meta.cache.views[view];
+            if (!srcView) {
+                console.warn("(meta.View.attach) No such view found: " + view);
+                return;
+            }
+            view = srcView;
+        } else if (!(view instanceof meta.View)) {
+            console.warn("(meta.View.attach) Trying to attach invalid view object.");
+            return;
+        }
+        if (view._isActive) {
+            console.warn("(meta.View.attach) Can't attach an active view.");
+            return;
+        }
+        if (view.parentView) {
+            console.warn("(meta.View.attach) View is already part of other view.");
+            return;
+        }
+        if (!this.views) {
+            this.views = [];
+        }
+        this.views.push(view);
+        view.parentView = this;
+        if (this._isActive) {
+            view.isActive = true;
+        }
+    },
+    detachView: function(view) {
+        if (!view) {
+            if (!this.parentView) {
+                console.warn("(meta.View.detachView) No view was passed.");
+                return;
+            }
+            this.parentView.detachView(this);
+            return;
+        }
+        if (typeof view === "string") {
+            var srcView = meta.cache.views[view];
+            if (!srcView) {
+                console.warn('(meta.View.detachView) No such view found: "' + view + '"');
+                return;
+            }
+            view = srcView;
+        }
+        if (!view.parentView) {
+            console.warn("(meta.View.detachView) View has not parents to detach from");
+            return;
+        }
+        if (view.parentView !== this) {
+            console.warn("(meta.View.detachView) Detaching from wrong parent");
+            return;
+        }
+        var numViews = this.views.length;
+        for (var i = 0; i < numViews; i++) {
+            if (this.views[i] === view) {
+                this.views[i] = this.views[numViews - 1];
+                this.views.pop();
+                break;
+            }
+        }
+        view.isActive = false;
+        view.parentView = null;
+    },
+    detachViews: function() {
+        if (!this.views) {
+            return;
+        }
+        var view;
+        var numChildren = this.views.length;
+        var numViews = this.views.length;
+        for (var i = 0; i < numViews; i++) {
+            view = this.views[i];
+            view.isActive = false;
+            view.parentView = null;
+        }
+        this.views.length = 0;
+    },
+    register: function(ctrlName) {
+        var ctrl = meta.createCtrl(ctrlName, this);
+        if (!this.controllers) {
+            this.controllers = [ ctrl ];
+        } else {
+            this.controllers.push(ctrl);
+        }
+        if (!this._isActive) {
+            return;
+        }
+        if (this.parentView && !this.parentView._isActive) {
+            return;
+        }
+        meta.addCtrl(ctrl);
+    },
+    unregister: function(ctrlName) {
+        var numControllers = this.controllers.length;
+        for (var i = 0; i < numControllers; i++) {
+            if (this.controllers[i].name === ctrlName) {
+                if (this._isActive) {
+                    meta.unregister(ctrlName);
+                }
+                this.controllers[i] = this.controllers[numControllers - 1];
+                this.controllers.pop();
+            }
+        }
+    },
+    _unregisterFromEngine: function() {
+        if (this.controllers) {
+            var numControllers = this.controllers.length;
+            for (var n = 0; n < numControllers; n++) {
+                meta.unregister(this.controllers[n]);
+            }
+        }
+    },
+    _makeActive: function() {
+        var n;
+        if (this.controllers) {
+            var numControllers = this.controllers.length;
+            for (n = 0; n < numControllers; n++) {
+                meta.addCtrl(this.controllers[n]);
+            }
+        }
+        meta.renderer.addEntities(this.entities);
+        if (this.views) {
+            var numViews = this.views.length;
+            for (n = 0; n < numViews; n++) {
+                this.views[n].isActive = true;
+            }
+        }
+    },
+    _makeInactive: function() {
+        var n;
+        if (this.controllers) {
+            var numControllers = this.controllers.length;
+            for (n = 0; n < numControllers; n++) {
+                meta.removeCtrl(this.controllers[n]);
+            }
+        }
+        Renderer.ctrl.removeEntities(this.entities);
+        if (this.views) {
+            var numViews = this.views.length;
+            for (n = 0; n < numViews; n++) {
+                this.views[n].isActive = false;
+            }
+        }
+    },
+    set isActive(value) {
+        if (this._isActive === value) {
+            return;
+        }
+        if (value) {
+            this._makeActive();
+        } else {
+            this._makeInactive();
+        }
+        this._isActive = value;
+    },
+    get isActive() {
+        return this._isActive;
+    },
+    set x(value) {
+        if (this._x === value) {
+            return;
+        }
+        this._x = value;
+        var entity;
+        var numEntities = this.entities.length;
+        for (var i = 0; i < numEntities; i++) {
+            entity = this.entities[i];
+            entity.forcePosition(entity._x, entity._y);
+        }
+    },
+    set y(value) {
+        if (this._y === value) {
+            return;
+        }
+        this._y = value;
+        var entity;
+        var numEntities = this.entities.length;
+        for (var i = 0; i < numEntities; i++) {
+            entity = this.entities[i];
+            entity.forcePosition(entity._x, entity._y);
+        }
+    },
+    set z(value) {
+        this._z = value;
+        var numEntities = this.entities.length;
+        for (var i = 0; i < numEntities; i++) {
+            this.entities[i].z = this.entities[i]._z;
+        }
+    },
+    get x() {
+        return this._x;
+    },
+    get y() {
+        return this._y;
+    },
+    get z() {
+        return this._z;
+    },
+    get tween() {
+        if (!this._tween) {
+            this._tween = new meta.Tween(this);
+        }
+        return this._tween;
+    },
+    controllers: null
+};
+
+meta.createView = function(name, ctrls) {
+    if (!name || typeof name !== "string") {
+        console.error("(meta.createView) Invalid name of the view");
+        return;
+    }
+    var view = meta.cache.views[name];
+    if (view) {
+        console.error("(meta.createView) View with a name - " + name + ", already exist");
+        return;
+    }
+    view = new meta.View(name);
+    meta.cache.views[name] = view;
+    if (!ctrls) {
+        return;
+    }
+    if (ctrls instanceof Array) {
+        var numCtrls = ctrls.length;
+        for (var i = 0; i < numCtrls; i++) {
+            view.register(ctrls[i]);
+        }
+    } else {
+        view.register(ctrls);
+    }
+};
+
+meta.setView = function(view) {
+    if (!view) {
+        console.error("(meta.setView) No view passed");
+        return;
+    }
+    var cache = meta.cache;
+    if (typeof view === "string") {
+        var name = view;
+        view = cache.views[name];
+        if (!view) {
+            console.warn("(meta.setView) Creating empty view, could be unintended - " + name);
+            view = new meta.View(name);
+            cache.views[name] = view;
+        }
+    }
+    if (view.isActive) {
+        return;
+    }
+    cache.view.detachViews();
+    cache.view.attachView(view);
+};
+
+meta.getView = function(name) {
+    if (!name) {
+        console.error("(meta.getView) No name specified");
+        return null;
+    }
+    var view = meta.cache.views[name];
+    if (!view) {
+        view = new meta.View(name);
+        meta.cache.views[name] = view;
+    }
+    return view;
+};
+
+meta.attachView = function(view) {
+    if (!meta.cache.view) {
+        console.warn("(meta.attachView) No current active view");
+        return;
+    }
+    if (typeof view === "string") {
+        var srcView = meta.cache.views[view];
+        if (!srcView) {
+            console.warn("(meta.attachView) No such view found: " + view);
+            return;
+        }
+        view = srcView;
+    }
+    meta.cache.view.attachView(view);
+};
+
+meta.detachView = function(view) {
+    if (!meta.cache.view) {
+        console.warn("(meta.detachView) No current active view.");
+        return;
+    }
+    if (typeof view === "string") {
+        var srcView = meta.cache.views[view];
+        if (!view) {
+            console.warn("(meta.detachView) No such view found: " + view);
+            return;
+        }
+        view = srcView;
+    }
+    meta.cache.view.detachView(view);
+};
+
+Object.defineProperty(meta, "view", {
+    get: function() {
+        return meta.cache.view;
+    }
+});
+
+"use strict";
+
+meta.Camera = function() {
+    this._x = 0;
+    this._y = 0;
+    this.volume = new meta.math.AdvAABB(0, 0, 0, 0);
+    this.zoomBounds = null;
+    this._zoom = 1;
+    this.prevZoom = 1;
+    this.zoomRatio = 1;
+    this._draggable = false;
+    this._isDraggable = false;
+    this._isAutoZoom = false;
+    this._enableBorderIgnore = true;
+    this._enableCentering = false;
+    this._enableCenteringX = true;
+    this._enableCenteringY = true;
+    this._chnMove = null;
+    this._chnResize = null;
+    this._wasMoved = false;
+    this.init();
+};
+
+meta.Camera.prototype = {
+    init: function() {
+        this._chnMove = meta.createChannel(meta.Event.CAMERA_MOVE);
+        this._chnResize = meta.createChannel(meta.Event.CAMERA_RESIZE);
+        meta.subscribe(this, meta.Event.RESIZE, this._onResize);
+        meta.subscribe(this, meta.Event.WORLD_RESIZE, this._onWorldResize);
+        this.zoomBounds = {
+            width: -1,
+            height: -1,
+            minWidth: -1,
+            minHeight: -1,
+            maxWidth: -1,
+            maxHeight: -1
+        };
+    },
+    release: function() {
+        this._chnMove.release();
+        meta.unsubscribe(this, meta.Event.RESIZE);
+        meta.unsubscribe(this, meta.Event.WORLD_RESIZE);
+    },
+    updateView: function() {
+        if (this._isAutoZoom) {
+            this.updateAutoZoom();
+        } else {
+            this.updateZoom();
+        }
+        if (!this._wasMoved) {
+            if (this._enableCentering) {
+                var world = meta.world;
+                if (this._enableCenteringX) {
+                    this._x = Math.floor((this.volume.width - world.width) / 2);
+                } else {
+                    this._x = 0;
+                }
+                if (this._enableCenteringY) {
+                    this._y = Math.floor((this.volume.height - world.height) / 2);
+                } else {
+                    this._y = 0;
+                }
+            } else {
+                this._x = 0;
+                this._y = 0;
+            }
+            this.volume.move(this._x, this._y);
+        }
+        this._chnMove.emit(this, meta.Event.CAMERA_MOVE);
+    },
+    updateZoom: function() {
+        if (this.prevZoom !== this._zoom) {
+            this.zoomRatio = 1 / this._zoom;
+            this.volume.scale(this.zoomRatio, this.zoomRatio);
+            this._chnResize.emit(this, meta.Event.CAMERA_RESIZE);
+        }
+    },
+    updateAutoZoom: function() {
+        var scope = meta;
+        var width = this.zoomBounds.width;
+        var height = this.zoomBounds.height;
+        var diffX = scope.width / width;
+        var diffY = scope.height / height;
+        this.prevZoom = this._zoom;
+        this._zoom = diffX;
+        if (diffY < diffX) {
+            this._zoom = diffY;
+        }
+        if (scope.engine.adapt()) {
+            width = this.zoomBounds.width;
+            height = this.zoomBounds.height;
+            diffX = scope.width / width;
+            diffY = scope.height / height;
+            this._zoom = diffX;
+            if (diffY < diffX) {
+                this._zoom = diffY;
+            }
+            this.volume.resize(scope.width, scope.height);
+        }
+        this.updateZoom();
+    },
+    bounds: function(width, height) {
+        this._isAutoZoom = true;
+        this.zoomBounds.width = width;
+        this.zoomBounds.height = height;
+        if (this.width !== 0 || this.height !== 0) {
+            this.updateView();
+        }
+    },
+    minBounds: function(width, height) {
+        this._isAutoZoom = true;
+        this.zoomBounds.minWidth = width;
+        this.zoomBounds.minHeight = height;
+        this.updateView();
+    },
+    maxBounds: function(width, height) {
+        this._isAutoZoom = true;
+        this.zoomBounds.maxWidth = width;
+        this.zoomBounds.maxHeight = height;
+        this.updateView();
+    },
+    _onInput: function(data, event) {
+        var inputEvent = Input.Event;
+        if (event === inputEvent.MOVE) {
+            this._drag(data);
+        } else if (event === inputEvent.DOWN) {
+            if (data.keyCode !== 0) {
+                return;
+            }
+            this._startDrag(data);
+        } else if (event === inputEvent.UP) {
+            if (data.keyCode !== 0) {
+                return;
+            }
+            this._endDrag(data);
+        }
+    },
+    _onResize: function(data, event) {
+        this.volume.resize(data.width, data.height);
+        this.updateView();
+        this._chnResize.emit(this, meta.Event.CAMERA_RESIZE);
+    },
+    _onWorldResize: function(data, event) {},
+    _startDrag: function(data) {
+        if (!this._draggable) {
+            return;
+        }
+        this._isDraggable = true;
+    },
+    _endDrag: function(data) {
+        this._isDraggable = false;
+    },
+    _drag: function(data) {
+        if (!this._isDraggable) {
+            return;
+        }
+        var scope = meta;
+        var diffX = (data.screenX - data.prevScreenX) * this.zoomRatio;
+        var diffY = (data.screenY - data.prevScreenY) * this.zoomRatio;
+        this._x += diffX;
+        this._y += diffY;
+        this.volume.move(-diffX, -diffY);
+        this._wasMoved = true;
+        if (!this.enableBorderIgnore) {
+            if (-this._x < 0) {
+                this._x = 0;
+            }
+            if (-this._y < 0) {
+                this._y = 0;
+            }
+        }
+        this._chnMove.emit(this, scope.Event.CAMERA_MOVE);
+    },
+    set x(value) {
+        if (this._x === value) {
+            return;
+        }
+        this._x = value;
+        this._wasMoved = true;
+        this.updateView();
+    },
+    set y(value) {
+        if (this._y === value) {
+            return;
+        }
+        this._y = value;
+        this._wasMoved = true;
+        this.updateView();
+    },
+    get x() {
+        return this._x;
+    },
+    get y() {
+        return this._y;
+    },
+    get width() {
+        return this.volume.width;
+    },
+    get height() {
+        return this.volume.height;
+    },
+    set zoom(value) {
+        if (this._zoom === value) {
+            return;
+        }
+        this.prevZoom = this._zoom;
+        this._zoom = value;
+        this.updateView();
+    },
+    get zoom() {
+        return this._zoom;
+    },
+    set enableBorderIgnore(value) {
+        this._enableBorderIgnore = value;
+        this.updateView();
+    },
+    get enableBorderIgnore() {
+        return this._enableBorderIgnore;
+    },
+    set draggable(value) {
+        if (this._draggable === value) {
+            return;
+        }
+        this._draggable = value;
+        var events = [ Input.Event.DOWN, Input.Event.UP, Input.Event.MOVE ];
+        if (value) {
+            meta.subscribe(this, events, this._onInput);
+        } else {
+            meta.unsubscribe(this, events);
+            this._isDraggable = false;
+        }
+    },
+    get draggable() {
+        return this._draggable;
+    },
+    set isAutoZoom(value) {
+        if (this._isAutoZoom === value) {
+            return;
+        }
+        this._isAutoZoom = value;
+        this.updateView();
+    },
+    get isAutoZoom() {
+        return this._isAutoZoom;
+    },
+    set enableCentering(value) {
+        this._enableCentering = value;
+        this.updateView();
+    },
+    set enableCenteringX(value) {
+        this._enableCenteringX = value;
+        this.updateView();
+    },
+    set enableCenteringY(value) {
+        this._enableCenteringY = value;
+        this.updateView();
+    },
+    get enableCentering() {
+        return this._enableCentering;
+    },
+    get enableCenteringX() {
+        return this._enableCenteringX;
+    },
+    get enableCenteringY() {
+        return this._enableCenteringY;
+    }
+};
+
+"use strict";
+
+meta.World = function(width, height) {
+    this.chn = null;
+    this.volume = new meta.math.AdvAABB(0, 0, 0, 0);
+    this.minWidth = -1;
+    this.minHeight = -1;
+    this.maxHeight = -1;
+    this.maxHeight = -1;
+    this.centerX = 0;
+    this.centerY = 0;
+    this.gridX = 0;
+    this.gridY = 0;
+    this.gridWidth = 0;
+    this.gridHeight = 0;
+    this.numGridX = 0;
+    this.numGridY = 0;
+    this.haveGrid = false;
+    this._discardUnusedSpace = false;
+    this.lockGrid = false;
+    this.showBounds = false;
+    this.init(width, height);
+};
+
+meta.World.prototype = {
+    init: function(width, height) {
+        this.bounds(width, height);
+        this.chn = meta.createChannel(meta.Event.WORLD_RESIZE);
+        meta.subscribe(this, meta.Event.CAMERA_RESIZE, this.onCameraResize);
+    },
+    updateVolume: function() {
+        var scope = meta;
+        var width = scope.camera.width + .5 | 0;
+        var height = scope.camera.height + .5 | 0;
+        this.centerX = width / 2;
+        this.centerY = height / 2;
+        this.volume.resize(width, height);
+        if (this.chn) {
+            this.chn.emit(scope.Event.WORLD_RESIZE, this);
+        }
+    },
+    bounds: function(width, height) {
+        this.volume.resize(width, height);
+        this.updateVolume();
+    },
+    minBounds: function(width, height) {
+        this.minWidth = width;
+        this.minHeight = height;
+        this.updateVolume();
+    },
+    maxBounds: function(width, height) {
+        this.maxWidth = width;
+        this.maxHeight = height;
+        this.updateVolume();
+    },
+    setGrid: function(obj) {
+        obj.x = obj.x || 0;
+        obj.y = obj.y || 0;
+        obj.width = obj.width || 16;
+        obj.height = obj.height || 16;
+        obj.sizeX = obj.sizeX || 1;
+        obj.sizeY = obj.sizeY || 1;
+        this.setGridPosition(obj.x, obj.y);
+        this.setGridResolution(obj.width, obj.height);
+        this.setGridSize(obj.sizeX, obj.sizeY);
+    },
+    setGridResolution: function(width, height) {
+        this.gridWidth = width;
+        this.gridHeight = height;
+        this.haveGrid = width || height;
+        if (!this.lockGrid) {
+            this.numGridX = Math.floor(this.width / width);
+            this.numGridY = Math.floor(this.height / height);
+        }
+        if (this.haveGrid && this._discardUnusedSpace) {
+            this.setBounds(this.numGridX * this.gridWidth, this.numGridY * this.gridHeight);
+        }
+    },
+    setGridSize: function(numGridX, numGridY) {
+        this.numGridX = numGridX;
+        this.numGridY = numGridY;
+        this.lockGrid = numGridX || numGridY;
+        if (this.haveGrid) {
+            var width = this.numGridX * this.gridWidth;
+            var height = this.numGridY * this.gridHeight;
+            if (this.width > width) {
+                width = this.width;
+            }
+            if (this.height > height) {
+                height = this.height;
+            }
+            this.setBounds(width, height);
+            if (!this.lockGrid) {
+                this.numGridX = Math.floor(this.width / this.gridWidth);
+                this.numGridY = Math.floor(this.height / this.gridHeight);
+            }
+        }
+    },
+    setGridPosition: function(x, y) {
+        this.gridX = x;
+        this.gridY = y;
+    },
+    getGridPosX: function(x) {
+        return this.gridX + this.gridWidth * x;
+    },
+    getGridPosY: function(y) {
+        return this.gridY + this.gridHeight * y;
+    },
+    getGridFromWorldX: function(x) {
+        var gridX = Math.floor((x - this.gridX) / this.gridWidth);
+        if (gridX < -1) {
+            gridX = -1;
+        } else if (gridX >= this.numGridX) {
+            gridX = -1;
+        }
+        return gridX;
+    },
+    getGridFromWorldY: function(y) {
+        var gridY = Math.floor((y - this.gridY) / this.gridHeight);
+        if (gridY < -1) {
+            gridY = -1;
+        } else if (gridY >= this.numGridY) {
+            gridY = -1;
+        }
+        return gridY;
+    },
+    get randX() {
+        return meta.random.number(0, this.volume.width);
+    },
+    get randY() {
+        return meta.random.number(0, this.volume.height);
+    },
+    onCameraResize: function(data, event) {
+        this.updateVolume();
+    },
+    set discardUnusedSpace(value) {
+        this._discardUnusedSpace = value;
+        if (value && this.haveGrid) {
+            this.setBounds(this.gridX + this.numGridX * this.gridWidth, this.gridY + this.numGridY * this.gridHeight);
+        }
+    },
+    get discardUnusedSpace() {
+        return this._discardUnusedSpace;
+    },
+    get left() {
+        return this.volume.minX;
+    },
+    get right() {
+        return this.volume.maxX;
+    },
+    get top() {
+        return this.volume.minY;
+    },
+    get bottom() {
+        return this.volume.maxY;
+    },
+    get width() {
+        return this.volume.width;
+    },
+    get height() {
+        return this.volume.height;
+    }
+};
+
+"use strict";
+
+(function(scope) {
+    var initializing = false, fnTest = /\b_super\b/;
+    scope.meta.Class = function() {};
+    scope.meta.Class.extend = function(prop) {
+        var _super = this.prototype;
+        initializing = true;
+        var proto = new this();
+        initializing = false;
+        for (var name in prop) {
+            var p = Object.getOwnPropertyDescriptor(prop, name);
+            if (p.get || p.set) {
+                Object.defineProperty(proto, name, p);
+                continue;
+            }
+            if (typeof prop[name] == "function" && typeof _super[name] == "function" && fnTest.test(prop[name])) {
+                proto[name] = function(name, fn) {
+                    return function(a, b, c, d, e, f) {
+                        var tmp = this._super;
+                        this._super = _super[name];
+                        this._fn = fn;
+                        var ret = this._fn(a, b, c, d, e, f);
+                        this._super = tmp;
+                        return ret;
+                    };
+                }(name, prop[name]);
+                continue;
+            }
+            proto[name] = prop[name];
+        }
+        function Class(a, b, c, d, e, f) {
+            if (!initializing) {
+                if (this._init) {
+                    this._init(a, b, c, d, e, f);
+                }
+                if (this.init) {
+                    this.init(a, b, c, d, e, f);
+                }
+            }
+        }
+        Class.prototype = proto;
+        Class.prototype.constructor = proto.init;
+        Class.extend = this.extend;
+        return Class;
+    };
+    scope.meta["Class"] = scope.meta.Class;
+})(typeof window !== void 0 ? window : global);
+
+"use strict";
+
+meta.Controller = meta.Class.extend({
+    init: meta.emptyFunc,
+    _init: function(view) {
+        this.view = view;
+    },
+    release: meta.emptyFunc,
+    load: meta.emptyFunc,
+    unload: meta.emptyFunc,
+    ready: meta.emptyFunc,
+    update: meta.emptyFuncParam,
+    view: null,
+    name: "unknown",
+    isLoaded: false
+});
+
+"use strict";
+
+meta.Timer = function(owner, func, tDelta, numTimes) {
+    this.owner = owner;
+    this.id = meta.cache.timerIndex++;
+    this.func = func;
+    this.onRemove = null;
+    this.tDelta = tDelta;
+    this.numTimes = numTimes;
+    if (this.numTimes === void 0) {
+        this.numTimes = -1;
+    }
+    this.tAccumulator = 0;
+    this.tStart = Date.now();
+};
+
+meta.Timer.prototype = {
+    remove: function() {
+        this.numTimes = 0;
+    },
+    pause: function() {
+        this.isPaused = true;
+    },
+    resume: function() {
+        this.isPaused = false;
+        this.tStart = Date.now();
+    },
+    onRemove: null,
+    isPaused: false
+};
+
+meta.addTimer = function(owner, func, tDelta, numTimes) {
+    if (typeof owner === "function") {
+        numTimes = tDelta;
+        tDelta = func;
+        func = owner;
+        owner = window;
+    }
+    var newTimer = new meta.Timer(owner, func, tDelta, numTimes);
+    meta.engine._timers.push(newTimer);
+    meta.engine._numTimers++;
+    return newTimer;
+};
+
+"use strict";
+
+meta.Style = function(params) {
+    this.states = {};
+    this.setStates(params);
+    if (!this.defaultState) {
+        this.setState("*", null);
+    }
+};
+
+meta.Style.prototype = {
+    setState: function(name, params) {
+        if (name.indexOf(",") !== -1) {
+            var items = name.split(/[ ,]+/);
+            var numItems = items.length;
+            for (var i = 0; i < numItems; i++) {
+                this.defineState(items[i], params);
+            }
+        } else {
+            this.defineState(name, params);
+        }
+    },
+    defineState: function(name, params) {
+        var state, stateParams, stateName, key;
+        var tmpState;
+        if (typeof params === "string") {
+            params = {
+                texture: params
+            };
+        }
+        if (name.charAt(0) === "[") {
+            name = name.substr(1, name.length - 2);
+            if (!this.childStyle) {
+                this.childStyle = new meta.Style();
+            }
+            this.childStyle.setState(name, params);
+            return;
+        }
+        var actionIndex = name.indexOf(":");
+        if (actionIndex !== -1) {
+            var actionName = name.substr(actionIndex + 1, name.length - actionIndex - 1);
+            name = name.substr(0, actionIndex);
+            if (!name) {
+                name = "*";
+            }
+            state = this.states[name];
+            if (!state) {
+                state = new meta.StyleState(name);
+                state.actions = {};
+                this.states[name] = state;
+            } else if (!state.actions) {
+                state.actions = {};
+            }
+            var tmpAction;
+            if (name === "*") {
+                this.defaultState = state;
+                for (stateName in this.states) {
+                    tmpState = this.states[stateName];
+                    if (!tmpState.actions) {
+                        continue;
+                    }
+                    tmpAction = tmpState.actions[actionName];
+                    if (!tmpAction) {
+                        continue;
+                    }
+                    stateParams = tmpAction.params;
+                    for (key in params) {
+                        if (stateParams[key]) {
+                            continue;
+                        }
+                        stateParams[key] = params[key];
+                    }
+                }
+            } else if (this.defaultState && this.defaultState.actions) {
+                tmpAction = this.defaultState.actions[actionName];
+                if (tmpAction) {
+                    stateParams = tmpAction.params;
+                    for (key in stateParams) {
+                        if (params[key]) {
+                            continue;
+                        }
+                        params[key] = stateParams[key];
+                    }
+                }
+            }
+            state.actions[actionName] = new meta.StyleState(actionName, params);
+            this.haveActions = true;
+        } else {
+            if (!name) {
+                name = "*";
+            }
+            state = this.states[name];
+            if (!state) {
+                if (this.defaultState) {
+                    stateParams = this.defaultState.params;
+                    for (key in stateParams) {
+                        if (params[key]) {
+                            continue;
+                        }
+                        params[key] = stateParams[key];
+                    }
+                }
+                state = new meta.StyleState(name, params);
+                if (name === "*") {
+                    this.defaultState = state;
+                    for (stateName in this.states) {
+                        stateParams = this.states[stateName].params;
+                        for (key in params) {
+                            if (stateParams[key]) {
+                                continue;
+                            }
+                            stateParams[key] = params[key];
+                        }
+                    }
+                }
+                this.states[name] = state;
+            } else {
+                stateParams = state.params;
+                for (key in stateParams) {
+                    if (stateParams[key]) {
+                        continue;
+                    }
+                    stateParams[key] = params[key];
+                }
+                state._updateTexture();
+            }
+        }
+        return this;
+    },
+    setStates: function(params) {
+        for (var key in params) {
+            this.setState(key, params[key]);
+        }
+    },
+    setHiddenState: function(name, texture, params) {
+        var state = this.setState(name, texture, params);
+        if (state) {
+            state.isHidden = true;
+        }
+        return state;
+    },
+    removeState: function(name) {
+        if (!this.states[name]) {
+            console.warn("[meta.Brush.removeState]:", "No such state: " + name);
+            return;
+        }
+        delete this.states[name];
+    },
+    update: function(entity) {
+        entity.isNeedStyle = false;
+        if (!this.states) {
+            return;
+        }
+        var styleState = this.states[entity._state];
+        if (!styleState) {
+            if (!this.defaultState) {
+                console.warn("[meta.Style.update]:", "Could not get state from the style: " + entity._state);
+                return;
+            }
+            styleState = this.defaultState;
+        }
+        if (styleState === entity._styleState) {
+            return;
+        }
+        var key;
+        var entityParams = entity._styleParams;
+        for (key in entityParams) {
+            entity[key] = entityParams[key];
+        }
+        entityParams = {};
+        entity._styleParams = entityParams;
+        var params = styleState.params;
+        for (key in params) {
+            entityParams[key] = entity[key];
+            entity[key] = params[key];
+        }
+        entity._styleState = styleState;
+        if (entity._inputFlags) {
+            this.updateAction(entity);
+        }
+    },
+    updateAction: function(entity) {
+        var entityParams = entity._styleActionParams;
+        for (var key in entityParams) {
+            entity[key] = entityParams[key];
+        }
+        entityParams = {};
+        entity._styleActionParams = entityParams;
+        var action;
+        var state = this.states[entity._state];
+        if (!state) {
+            if (!this.defaultState) {
+                return;
+            }
+            state = this.defaultState;
+        }
+        if (!state.actions) {
+            if (!this.defaultState.actions) {
+                return;
+            }
+            action = this.defaultState.actions[entity._action];
+        } else {
+            action = state.actions[entity._action];
+        }
+        if (!action) {
+            return;
+        }
+        var params = action.params;
+        for (var key in params) {
+            entityParams[key] = entity[key];
+            entity[key] = params[key];
+        }
+    },
+    getRandomState: function() {
+        if (!this.states) {
+            return null;
+        }
+        var result = null;
+        var count = 0;
+        for (var key in this.states) {
+            if (!this.states[key].isHidden) {
+                if (Math.random() < 1 / ++count) {
+                    result = key;
+                }
+            }
+        }
+        return result;
+    },
+    states: null,
+    defaultState: null,
+    haveActions: false,
+    childStyle: null
+};
+
+meta.StyleState = function(name, params) {
+    this.name = name;
+    this.params = params;
+    this.isHidden = false;
+    this._updateTexture();
+};
+
+meta.StyleState.prototype = {
+    _updateTexture: function() {
+        if (this.params && this.params.texture !== void 0) {
+            var texture = this.params.texture;
+            if (typeof texture !== "string") {
+                return;
+            }
+            var newTexture = meta.getTexture(texture);
+            if (!newTexture) {
+                console.warn("[meta.StyleState]:", "Could not get texture from texture name: " + texture);
+                return;
+            }
+            this.params.texture = newTexture;
+        }
+    }
+};
+
+meta.createStyle = function(obj, extend) {
+    if (!obj) {
+        if (!extend) {
+            return null;
+        }
+        return extend;
+    }
+    extend = extend || null;
+    var newStyle = Object.create(extend);
+    if (typeof obj === "string" || obj instanceof Resource.Texture) {
+        if (!newStyle["*"]) {
+            newStyle["*"] = {
+                texture: obj
+            };
+        } else {
+            newStyle["*"].texture = obj;
+        }
+    } else if (typeof obj === "object") {
+        var item, itemKey, paramsItem, itemKey;
+        var i, key, style, tmpStyle, styleName, styleBuffer, numStyles;
+        for (itemKey in obj) {
+            item = obj[itemKey];
+            if (typeof item === "string") {
+                item = {
+                    texture: item
+                };
+            }
+            if (itemKey.indexOf(",") !== -1) {
+                styleBuffer = itemKey.split(/[ ,]+/);
+                numStyles = styleBuffer.length;
+                for (i = 0; i < numStyles; i++) {
+                    styleName = styleBuffer[i];
+                    style = newStyle[styleName];
+                    if (!style) {
+                        style = {};
+                    } else {
+                        tmpStyle = {};
+                        for (key in style) {
+                            tmpStyle[key] = style[key];
+                        }
+                        style = tmpStyle;
+                    }
+                    for (key in item) {
+                        style[key] = item[key];
+                    }
+                    newStyle[styleName] = style;
+                }
+            } else {
+                style = newStyle[itemKey];
+                if (!style) {
+                    style = {};
+                } else {
+                    tmpStyle = {};
+                    for (key in style) {
+                        tmpStyle[key] = style[key];
+                    }
+                    style = tmpStyle;
+                }
+                for (key in item) {
+                    style[key] = item[key];
+                }
+                newStyle[itemKey] = style;
+            }
+        }
+    }
+    return newStyle;
+};
+
+"use strict";
+
+meta.Event = {
+    RESIZE: "resize",
+    WORLD_RESIZE: "world-resize",
+    CAMERA_MOVE: "camera-move",
+    CAMERA_RESIZE: "camera-resize",
+    FOCUS: "focus",
+    FULLSCREEN: "fullscreen",
+    ADAPT: "adapt"
+};
+
+meta.Priority = {
+    LOW: 0,
+    MEDIUM: 5e3,
+    HIGH: 1e4
+};
+
+meta.Cursor = {
+    ALIAS: "alias",
+    ALL_SCROLL: "all-scroll",
+    CELL: "cell",
+    CONTEXT_MENU: "context-menu",
+    COL_RESIZE: "col-resize",
+    COPY: "copy",
+    CROSSHAIR: "crosshair",
+    DEFAULT: "default",
+    E_RESIZE: "e-resize",
+    EW_RESIZE: "ew-resize",
+    GRAB: "grab",
+    GRABBING: "grabbing",
+    HELP: "help",
+    MOVE: "move",
+    N_RESIZE: "n-resize",
+    NE_RESIZE: "ne-resize",
+    NESW_RESIZE: "nesw-resize",
+    NS_RESIZE: "ns-reisize",
+    NW_RESIZE: "nw-resize",
+    NWSE_RESIZE: "nwse-resize",
+    NO_DROP: "no-drop",
+    NONE: "none",
+    NOT_ALLOWED: "not-allowed",
+    POINTER: "pointer",
+    PROGRESS: "progress",
+    ROW_RESIZE: "row-resize",
+    S_RESIZE: "s-resize",
+    SE_RESIZE: "se-resize",
+    SW_RESIZE: "sw-resize",
+    TEXT: "text",
+    VERTICAL_TEXT: "vertical-text",
+    W_RESIZE: "w-resize",
+    WAIT: "wait",
+    ZOOM_IN: "zoom-in",
+    ZOOM_OUT: "zoom-out",
+    INITIAL: "initial"
+};
+
+"use strict";
+
+meta.getTexture = function(name) {
+    return Resource.ctrl.getTexture(name);
+};
+
+"use strict";
+
+meta.ajax = function(params) {
+    if (params.dataType === "html") {
+        params.responseType = "document";
+    } else if (params.dataType === "script" || params.dataType === "json") {
+        params.responseType = "text";
+    } else if (params.dataType === void 0) {
+        params.responseType = "GET";
+    } else {
+        params.responseType = params.dataType;
+    }
+    if (params.type === void 0) {
+        params.type = "GET";
+    }
+    var data = meta.serialize(params.data);
+    var xhr = new XMLHttpRequest();
+    xhr.open(params.type, params.url, true);
+    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhr.onload = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            if (params.success !== void 0) {
+                if (params.responseType === "document") {
+                    params.success(xhr.responseXML);
+                } else if (params.dataType === "script") {
+                    params.success(eval(xhr.responseText));
+                } else if (params.dataType === "json") {
+                    params.success(JSON.parse(xhr.responseText));
+                } else {
+                    params.success(xhr.responseText);
+                }
+            }
+        } else {
+            if (params.error !== void 0) {
+                params.error();
+            }
+        }
+    };
+    xhr.send(data);
+    return xhr;
+};
+
+"use strict";
+
+meta.utils.LinkedList = function() {
+    this.length = 0;
+    this.first = new meta.utils.LinkedListNode(null);
+    this.last = new meta.utils.LinkedListNode(null);
+    this.first.next = this.last;
+    this.last.prev = this.first;
+};
+
+meta.utils.LinkedList.prototype = {
+    push: function(node) {
+        this.last.prev.next = node;
+        this.last.prev = node;
+        node.prev = this.last.prev;
+        node.next = this.last;
+        this.length++;
+    },
+    remove: function(node) {
+        node.prev.next = node.next;
+        node.next.prev = node.prev;
+        node.prev = null;
+        node.next = null;
+        this.length--;
+    }
+};
+
+meta.utils.LinkedListNode = function(data) {
+    this.data = data;
+    this.prev = null;
+    this.next = null;
+};
+
+"use strict";
+
+meta.math = {};
+
+meta.math = {
+    degToRad: function(degree) {
+        return degree * Math.PI / 180;
+    },
+    radToDeg: function(rad) {
+        return rad * 180 / Math.PI;
+    },
+    radiansToPoint: function(x1, y1, x2, y2) {
+        var dx = x2 - x1;
+        var dy = y2 - y1;
+        return Math.atan(dx / dy);
+    },
+    clamp: function(num, min, max) {
+        return num < min ? min : num > max ? max : num;
+    },
+    map: function(v, a, b, x, y) {
+        return v == a ? x : (v - a) * (y - x) / (b - a) + x;
+    },
+    length: function(x1, y1, x2, y2) {
+        var x = x2 - x1;
+        var y = y2 - y1;
+        return Math.sqrt(x * x + y * y);
+    },
+    length2: function(x, y) {
+        return Math.sqrt(x * x + y * y);
+    },
+    limit: function(value, maxValue) {
+        if (value > maxValue) {
+            return maxValue;
+        }
+        if (value < -maxValue) {
+            return -maxValue;
+        }
+        return value;
+    },
+    lerp: function(value1, value2, amount) {
+        return value1 + (value2 - value1) * amount;
+    },
+    lookAt: function(srcX, srcY, targetX, targetY) {
+        return Math.atan2(targetX - srcX, srcY - targetY);
+    },
+    lookAtEntity: function(src, target) {
+        return meta.math.lookAt(src.x, src.y, target.x, target.y);
+    }
+};
+
+"use strict";
+
+meta.math.Vector2 = function(x, y) {
+    this.x = x;
+    this.y = y;
+};
+
+meta.math.Vector2.prototype = {
+    reset: function() {
+        this.x = 0;
+        this.y = 0;
+    },
+    set: function(x, y) {
+        this.x = x;
+        this.y = y;
+    },
+    add: function(value) {
+        this.x += value;
+        this.y += value;
+    },
+    sub: function(value) {
+        this.x -= value;
+        this.y -= value;
+    },
+    mul: function(value) {
+        this.x *= value;
+        this.y *= value;
+    },
+    div: function(value) {
+        this.x /= value;
+        this.y /= value;
+    },
+    addVec2: function(vec) {
+        this.x += vec.x;
+        this.y += vec.y;
+    },
+    subVec2: function(vec) {
+        this.x -= vec.x;
+        this.y -= vec.y;
+    },
+    mulVec2: function(vec) {
+        this.x *= vec.x;
+        this.y *= vec.y;
+    },
+    divVec2: function(vec) {
+        this.x /= vec.x;
+        this.y /= vec.y;
+    },
+    length: function() {
+        return Math.sqrt(this.x * this.x + this.y * this.y);
+    },
+    normalize: function() {
+        var length = Math.sqrt(this.x * this.x + this.y * this.y);
+        if (length > 0) {
+            this.x /= length;
+            this.y /= length;
+        } else {
+            this.x = 0;
+            this.y = 0;
+        }
+    },
+    dot: function(vec) {
+        return this.x * vec.x + this.y * vec.y;
+    },
+    truncate: function(max) {
+        var length = Math.sqrt(this.x * this.x + this.y * this.y);
+        if (length > max) {
+            this.x *= max / length;
+            this.y *= max / length;
+        }
+    },
+    limit: function(max) {
+        if (this.x > max) {
+            this.x = max;
+        } else if (this.x < -max) {
+            this.x = -max;
+        }
+        if (this.y > max) {
+            this.y = max;
+        } else if (this.y < -max) {
+            this.y = -max;
+        }
+    },
+    lengthSq: function() {
+        return this.x * this.x + this.y * this.y;
+    },
+    heading: function() {
+        var angle = Math.atan2(-this.y, this.x);
+        return -angle + Math.PI * .5;
+    },
+    perp: function() {
+        var tmpX = this.x;
+        this.x = -this.y;
+        this.y = tmpX;
+    },
+    print: function(str) {
+        if (str) {
+            console.log('[vec "' + str + '"] x: ' + this.x + " y: " + this.y);
+        } else {
+            console.log("[vec] x: " + this.x + " y: " + this.y);
+        }
+    }
+};
+
+"use strict";
+
+meta.math.AABB = function(x, y, width, height) {
+    this.x = x || 0;
+    this.y = y || 0;
+    this.width = width || 0;
+    this.height = height || 0;
+    this.minX = this.x;
+    this.minY = this.y;
+    this.maxX = this.x + this.width;
+    this.maxY = this.y + this.height;
+};
+
+meta.math.AABB.prototype = {
+    set: function(x, y) {
+        this.x = x;
+        this.y = y;
+        this.minX = this.x - this.pivotPosX;
+        this.minY = this.y - this.pivotPosY;
+        this.maxX = this.minX + this.width;
+        this.maxY = this.minY + this.height;
+        meta.renderer.needRender = true;
+    },
+    move: function(x, y) {
+        this.minX += x;
+        this.minY += y;
+        this.maxX += x;
+        this.maxY += y;
+        meta.renderer.needRender = true;
+    },
+    resize: function(width, height) {
+        this.width = width || 0;
+        this.height = height || 0;
+        this.updatePivot();
+        this.minX = this.x - this.pivotPosX;
+        this.minY = this.y - this.pivotPosY;
+        this.maxX = this.minX + this.width;
+        this.maxY = this.minY + this.height;
+        meta.renderer.needRender = true;
+    },
+    pivot: function(x, y) {
+        if (this.pivotX === x && this.pivotY === y) {
+            return;
+        }
+        this.pivotX = x;
+        this.pivotY = y;
+        this.updatePivot();
+        meta.renderer.needRender = true;
+    },
+    updatePivot: function() {
+        if (this.scaleX > 0) {
+            this.pivotPosX = this.pivotX * this.width;
+        } else {
+            this.pivotPosX = (1 - this.pivotX) * this.width;
+        }
+        if (this.scaleY > 0) {
+            this.pivotPosY = this.pivotY * this.height;
+        } else {
+            this.pivotPosY = (1 - this.pivotY) * this.height;
+        }
+    },
+    vsAABB: function(src) {
+        if (this.maxX < src.minX || this.minX > src.maxX) {
+            return false;
+        }
+        if (this.maxY < src.minY || this.minY > src.maxY) {
+            return false;
+        }
+        return true;
+    },
+    vsBorderAABB: function(src) {
+        if (this.maxX <= src.minX || this.minX >= src.maxX) {
+            return false;
+        }
+        if (this.maxY <= src.minY || this.minY >= src.maxY) {
+            return false;
+        }
+        return true;
+    },
+    vsAABBIntersection: function(src) {
+        if (this.maxX < src.minX || this.minX > src.maxX) {
+            return 0;
+        }
+        if (this.maxY < src.minY || this.minY > src.maxY) {
+            return 0;
+        }
+        if (this.minX > src.minX || this.minY > src.minY) {
+            return 1;
+        }
+        if (this.maxX < src.maxX || this.maxY < src.maxY) {
+            return 1;
+        }
+        return 2;
+    },
+    vsPoint: function(x, y) {
+        if (this.minX > x || this.maxX < x) {
+            return false;
+        }
+        if (this.minY > y || this.maxY < y) {
+            return false;
+        }
+        return true;
+    },
+    vsBorderPoint: function(x, y) {
+        if (this.minX >= x || this.maxX <= x) {
+            return false;
+        }
+        if (this.minY >= y || this.maxY <= y) {
+            return false;
+        }
+        return true;
+    },
+    getSqrDistance: function(x, y) {
+        var tmp;
+        var sqDist = 0;
+        if (x < this.minX) {
+            tmp = this.minX - x;
+            sqDist += tmp * tmp;
+        }
+        if (x > this.maxX) {
+            tmp = x - this.maxX;
+            sqDist += tmp * tmp;
+        }
+        if (y < this.minY) {
+            tmp = this.minY - y;
+            sqDist += tmp * tmp;
+        }
+        if (y > this.maxY) {
+            tmp = y - this.maxY;
+            sqDist += tmp * tmp;
+        }
+        return sqDist;
+    },
+    getDistanceVsAABB: function(aabb) {
+        var centerX = this.minX + (this.maxX - this.minX) / 2;
+        var centerY = this.minY + (this.maxY - this.minY) / 2;
+        var srcCenterX = aabb.minX + (aabb.maxY - aabb.minY) / 2;
+        var srcCenterY = aabb.minY + (aabb.maxY - aabb.minY) / 2;
+        var diffX = srcCenterX - centerX;
+        var diffY = srcCenterY - centerY;
+        return Math.sqrt(diffX * diffX + diffY * diffY);
+    },
+    isUndefined: function() {
+        return this.maxY === void 0;
+    },
+    genCircle: function() {
+        var width = this.maxX - this.minX;
+        var height = this.maxY - this.minY;
+        var radius;
+        if (width > height) {
+            radius = width / 2;
+        } else {
+            radius = height / 2;
+        }
+        return new meta.math.Circle(this.x, this.y, radius);
+    },
+    print: function(str) {
+        if (str) {
+            console.log("(AABB) " + str + " minX: " + this.minX + " minY: " + this.minY + " maxX: " + this.maxX + " maxY: " + this.maxY);
+        } else {
+            console.log("(AABB) minX: " + this.minX + " minY: " + this.minY + " maxX: " + this.maxX + " maxY: " + this.maxY);
+        }
+    },
+    pivotX: 0,
+    pivotY: 0,
+    pivotPosX: 0,
+    pivotPosY: 0,
+    scaleX: 0,
+    scaleY: 0
+};
+
+"use strict";
+
+meta.math.AdvAABB = function(minX, minY, maxX, maxY) {
+    this.minX = minX;
+    this.minY = minY;
+    this.maxX = maxX;
+    this.maxY = maxY;
+    this.initWidth = maxX - minX;
+    this.initHeight = maxY - minY;
+    this.initHalfWidth = this.initWidth * .5;
+    this.initHalfHeight = this.initHeight * .5;
+    this.width = this.initWidth;
+    this.height = this.initHeight;
+    this.halfWidth = this.initHalfWidth;
+    this.halfHeight = this.initHalfHeight;
+    this.x = minX + this.halfWidth | 0;
+    this.y = minY + this.halfHeight | 0;
+    this.scaleX = 1;
+    this.scaleY = 1;
+};
+
+meta.math.AdvAABB.prototype = {
+    move: function(x, y) {
+        this.x += x;
+        this.y += y;
+        this.minX += x;
+        this.minY += y;
+        this.maxX += x;
+        this.maxY += y;
+    },
+    set: function(x, y) {
+        this.x = x;
+        this.y = y;
+        this.minX = this.x - this.halfWidth;
+        this.minY = this.y - this.halfHeight;
+        this.maxX = this.x + this.halfWidth;
+        this.maxY = this.y + this.halfHeight;
+    },
+    resize: function(width, height) {
+        this.initWidth = width;
+        this.initHeight = height;
+        this.initHalfWidth = width * .5;
+        this.initHalfHeight = height * .5;
+        this.width = width * this.scaleX;
+        this.height = height * this.scaleY;
+        this.halfWidth = this.width * .5;
+        this.halfHeight = this.height * .5;
+        this.maxX = this.minX + this.width;
+        this.maxY = this.minY + this.height;
+    },
+    scale: function(scaleX, scaleY) {
+        this.scaleX = scaleX;
+        this.scaleY = scaleY;
+        this.width = this.initWidth * this.scaleX;
+        this.height = this.initHeight * this.scaleY;
+        this.halfWidth = this.width / 2;
+        this.halfHeight = this.height / 2;
+        this.minX = this.x - this.halfWidth;
+        this.minY = this.y - this.halfHeight;
+        this.maxX = this.minX + this.width;
+        this.maxY = this.minY + this.height;
+    },
+    scalePivoted: function(scaleX, scaleY, x, y) {
+        this.scaleX = scaleX;
+        this.scaleY = scaleY;
+        this.width = this.initWidth * this.scaleX;
+        this.height = this.initHeight * this.scaleY;
+        this.halfWidth = this.width / 2;
+        this.halfHeight = this.height / 2;
+        this.x = x;
+        this.y = y;
+        this.minX = this.x - this.halfWidth;
+        this.minY = this.y - this.halfHeight;
+        this.maxX = this.minX + this.width;
+        this.maxY = this.minY + this.height;
+    },
+    vsAABB: function(src) {
+        if (this.maxX < src.minX || this.minX > src.maxX) {
+            return false;
+        }
+        if (this.maxY < src.minY || this.minY > src.maxY) {
+            return false;
+        }
+        return true;
+    },
+    vsBorderAABB: function(src) {
+        if (this.maxX <= src.minX || this.minX >= src.maxX) {
+            return false;
+        }
+        if (this.maxY <= src.minY || this.minY >= src.maxY) {
+            return false;
+        }
+        return true;
+    },
+    vsAABBIntersection: function(src) {
+        if (this.maxX < src.minX || this.minX > src.maxX) {
+            return 0;
+        }
+        if (this.maxY < src.minY || this.minY > src.maxY) {
+            return 0;
+        }
+        if (this.minX > src.minX || this.minY > src.minY) {
+            return 1;
+        }
+        if (this.maxX < src.maxX || this.maxY < src.maxY) {
+            return 1;
+        }
+        return 2;
+    },
+    vsPoint: function(x, y) {
+        if (this.minX > x || this.maxX < x) {
+            return false;
+        }
+        if (this.minY > y || this.maxY < y) {
+            return false;
+        }
+        return true;
+    },
+    vsBorderPoint: function(x, y) {
+        if (this.minX >= x || this.maxX <= x) {
+            return false;
+        }
+        if (this.minY >= y || this.maxY <= y) {
+            return false;
+        }
+        return true;
+    },
+    getSqrDistance: function(x, y) {
+        var tmp;
+        var sqDist = 0;
+        if (x < this.minX) {
+            tmp = this.minX - x;
+            sqDist += tmp * tmp;
+        }
+        if (x > this.maxX) {
+            tmp = x - this.maxX;
+            sqDist += tmp * tmp;
+        }
+        if (y < this.minY) {
+            tmp = this.minY - y;
+            sqDist += tmp * tmp;
+        }
+        if (y > this.maxY) {
+            tmp = y - this.maxY;
+            sqDist += tmp * tmp;
+        }
+        return sqDist;
+    },
+    getDistanceVsAABB: function(aabb) {
+        var centerX = this.minX + (this.maxX - this.minX) * .5;
+        var centerY = this.minY + (this.maxY - this.minY) * .5;
+        var srcCenterX = aabb.minX + (aabb.maxY - aabb.minY) * .5;
+        var srcCenterY = aabb.minY + (aabb.maxY - aabb.minY) * .5;
+        var diffX = srcCenterX - centerX;
+        var diffY = srcCenterY - centerY;
+        return Math.sqrt(diffX * diffX + diffY * diffY);
+    },
+    isUndefined: function() {
+        return this.maxY === void 0;
+    },
+    draw: function(ctx) {
+        var unitSize = meta.unitSize;
+        var minX, minY, maxX, maxY;
+        minX = this.minX | 0;
+        minY = this.minY | 0;
+        maxX = this.maxX + .5 | 0;
+        maxY = this.maxY + .5 | 0;
+        ctx.beginPath();
+        ctx.moveTo(minX, minY);
+        ctx.lineTo(maxX, minY);
+        ctx.lineTo(maxX, maxY);
+        ctx.lineTo(minX, maxY);
+        ctx.lineTo(minX, minY);
+        ctx.stroke();
+    },
+    drawTranslated: function(ctx) {
+        var camera = meta.camera;
+        this.translate(camera._x, camera._y);
+        this.draw(ctx);
+        this.translate(-camera._x, -camera._y);
+    },
+    genCircle: function() {
+        var radius;
+        if (this.initHalfWidth > this.initHalfHeight) {
+            radius = this.initHalfWidth;
+        } else {
+            radius = this.initHalfHeight;
+        }
+        return new meta.math.Circle(this.x, this.y, radius);
+    },
+    print: function(str) {
+        if (str) {
+            console.log("(AABB) " + str + " minX: " + this.minX + " minY: " + this.minY + " maxX: " + this.maxX + " maxY: " + this.maxY);
+        } else {
+            console.log("(AABB) minX: " + this.minX + " minY: " + this.minY + " maxX: " + this.maxX + " maxY: " + this.maxY);
+        }
+    }
+};
+
+"use strict";
+
+meta.math.Circle = function(x, y, radius) {
+    this.x = x;
+    this.y = y;
+    this.radius = radius;
+};
+
+meta.math.Circle.prototype = {
+    vsPoint: function(x, y) {
+        return (this.x - x) * 2 + (this.y - y) * 2 <= radius * 2;
+    },
+    vsCircle: function(circle) {
+        var radius2 = this.radius + circle.radius;
+        radius2 *= radius2;
+        var x2 = this.x + circle.x;
+        x2 *= x2;
+        var y2 = this.y + circle.y;
+        y2 *= y2;
+        return radius2 < x2 + y2;
+    },
+    overlapCircle: function(circle) {
+        var distance = Math.sqrt((this.x - circle.x) * (this.y - circle.y));
+        if (distance > this.radius + circle.radius) {
+            return 0;
+        } else if (distance <= Math.abs(this.radius + circle.radius)) {
+            return 1;
+        }
+        return 2;
+    },
+    genAABB: function() {
+        return new meta.math.AABB(this.x - this.radius, this.y - this.radius, this.x + this.radius, this.y + this.radius);
+    },
+    print: function(str) {
+        if (str) {
+            console.log("[" + str + "] x:", this.x, "y:", this.y, "raidus:", this.radius);
+        } else {
+            console.log("x:", this.x, "y:", this.y, "raidus:", this.radius);
+        }
+    }
+};
+
+"use strict";
+
+meta.math.Matrix4 = function() {
+    this.m = new Float32Array(16);
+    this.m[0] = 1;
+    this.m[5] = 1;
+    this.m[10] = 1;
+    this.m[15] = 1;
+};
+
+meta.math.Matrix4.prototype = {
+    reset: function() {
+        this.m[0] = 1;
+        this.m[1] = 0;
+        this.m[2] = 0;
+        this.m[3] = 0;
+        this.m[4] = 0;
+        this.m[5] = 1;
+        this.m[6] = 0;
+        this.m[7] = 0;
+        this.m[8] = 0;
+        this.m[9] = 0;
+        this.m[10] = 1;
+        this.m[11] = 0;
+        this.m[12] = 0;
+        this.m[13] = 0;
+        this.m[14] = 0;
+        this.m[15] = 1;
+    },
+    scale: function(x, y, z) {
+        this.m[0] = x;
+        this.m[5] = y;
+        this.m[10] = z;
+    },
+    ortho: function(left, right, bottom, top, zNear, zFar) {
+        this.m[0] = 2 / (right - left);
+        this.m[1] = 0;
+        this.m[2] = 0;
+        this.m[3] = 0;
+        this.m[4] = 0;
+        this.m[5] = 2 / (top - bottom);
+        this.m[6] = 0;
+        this.m[7] = 0;
+        this.m[8] = 0;
+        this.m[9] = 0;
+        this.m[10] = -2 / (zFar - zNear);
+        this.m[11] = 0;
+        this.m[12] = -(right + left) / (right - left);
+        this.m[13] = -(top + bottom) / (top - bottom);
+        this.m[14] = -(zFar + zNear) / (zFar - zNear);
+        this.m[15] = 1;
+    }
+};
+
+"use strict";
+
+meta.math.Random = function() {
+    this.seed = 0;
+    this.a = 0;
+    this.m = 0;
+    this.q = 0;
+    this.r = 0;
+    this.oneOverM = 0;
+    this.init();
+};
+
+meta.math.Random.prototype = {
+    init: function() {
+        this.setSeed(3456789012, true);
+    },
+    generate: function() {
+        var hi = Math.floor(this.seed / this.q);
+        var lo = this.seed % this.q;
+        var test = this.a * lo - this.r * hi;
+        if (test > 0) {
+            this.seed = test;
+        } else {
+            this.seed = test + this.m;
+        }
+        return this.seed * this.oneOverM;
+    },
+    number: function(min, max) {
+        var number = this.generate();
+        return Math.round((max - min) * number + min);
+    },
+    numberF: function(min, max) {
+        var number = this.generate();
+        return (max - min) * number + min;
+    },
+    setSeed: function(seed, useTime) {
+        if (useTime !== void 0) {
+            useTime = true;
+        }
+        if (useTime === true) {
+            var date = new Date();
+            this.seed = seed + date.getSeconds() * 16777215 + date.getMinutes() * 65535;
+        } else {
+            this.seed = seed;
+        }
+        this.a = 48271;
+        this.m = 2147483647;
+        this.q = Math.floor(this.m / this.a);
+        this.r = this.m % this.a;
+        this.oneOverM = 1 / this.m;
+    }
+};
+
+meta.random = new meta.math.Random();
+
+"use strict";
+
+meta.Tween = function() {
+    this.cache = null;
+    this.chain = [];
+};
+
+meta.Tween.prototype = {
+    play: function() {
+        if (!this.cache) {
+            this.autoPlay = true;
+        } else {
+            var cache = this.cache;
+            if (!cache.owner) {
+                return this;
+            }
+            if (cache.owner.isRemoved) {
+                return this;
+            }
+            cache.isPaused = false;
+            cache.numRepeat = this.numRepeat;
+            this.next();
+            this._play();
+            this.cache = null;
+        }
+        return this;
+    },
+    _play: function() {
+        if (Renderer.ctrl._addToUpdating(this.cache) && this._group) {
+            this._group.activeUsers++;
+        }
+    },
+    stop: function(callCB) {
+        this.linkIndex = 0;
+        this._stop(callCB);
+        if (this.cache) {
+            this.autoPlay = false;
+            this.cache = null;
+        }
+        return this;
+    },
+    _stop: function(callCB) {
+        if (Renderer.ctrl._removeFromUpdating(this.cache)) {
+            if (callCB) {
+                callCB(this.cache.owner);
+            }
+            if (this.cache.currLink._onDone) {
+                this.cache.currLink._onDone.call(this.cache.owner);
+            }
+            if (this._group) {
+                this._group.activeUsers--;
+                if (this._group.activeUsers === 0 && this._group.callback) {
+                    this._group.callback();
+                }
+            }
+        }
+    },
+    paused: function(value) {
+        if (value === void 0) {
+            value = true;
+        }
+        this.cache.isPaused = value;
+        return this;
+    },
+    resume: function() {
+        this.cache.isPaused = false;
+        return this;
+    },
+    clear: function() {
+        this.stop();
+        this._tStart = 0;
+        this.chain.length = 0;
+        this.linkIndex = 0;
+        this.currLink = null;
+        if (this._group) {
+            this._group.users--;
+            this._group = null;
+        }
+        return this;
+    },
+    reset: function() {
+        var cache = this.cache;
+        cache.linkIndex = 0;
+        cache.currLink = this.chain[0];
+        if (!cache.currLink) {
+            return this;
+        }
+        for (var key in cache.currLink.startValues) {
+            cache.owner[key] = cache.currLink.startValues[key];
+        }
+        this.stop(false);
+        return this;
+    },
+    next: function() {
+        var isRepeating = false;
+        var cache = this.cache;
+        if (cache.linkIndex === this.chain.length) {
+            if (cache.numRepeat === 0) {
+                this.stop();
+                return this;
+            } else {
+                cache.linkIndex = 0;
+                if (cache.numRepeat !== -1) {
+                    cache.numRepeat--;
+                    if (cache.numRepeat === 0) {
+                        this.stop();
+                        return this;
+                    }
+                }
+                isRepeating = true;
+            }
+        }
+        cache._isLinkDone = false;
+        var key;
+        var link = this.chain[cache.linkIndex++];
+        var owner = cache.owner;
+        if (!isRepeating) {
+            for (key in link.endValues) {
+                link.startValues[key] = owner[key];
+            }
+        } else {
+            for (key in link.startValues) {
+                owner[key] = link.startValues[key];
+            }
+        }
+        if (link._onStart) {
+            link._onStart.call(this);
+        }
+        cache._tStart = meta.engine.tNow;
+        cache.currLink = link;
+        return this;
+    },
+    repeat: function(numRepeat) {
+        if (numRepeat === void 0) {
+            numRepeat = -1;
+        }
+        this.numRepeat = numRepeat;
+        return this;
+    },
+    set reverse(value) {
+        if (value === void 0) {
+            value = true;
+        }
+        this.cache.isReverse = value;
+        return this;
+    },
+    get reverse() {
+        return this.cache.isReverse;
+    },
+    update: function(tDelta) {
+        var cache = this.cache;
+        if (!cache.currLink) {
+            this.stop(false);
+            return;
+        }
+        var tCurr = meta.engine.tNow;
+        var tFrameDelta = tCurr - cache._tFrame;
+        if (tFrameDelta < cache.currLink.tFrameDelay) {
+            return;
+        }
+        var tElapsed = (tCurr - cache._tStart) / cache.currLink.duration;
+        if (tElapsed > 1) {
+            tElapsed = 1;
+        }
+        if (cache._isLinkDone) {
+            if (tFrameDelta < cache.currLink.tDelay) {
+                return;
+            }
+        } else {
+            cache._tFrame = tCurr;
+            cache.currLink.update(tElapsed);
+            if (cache.currLink._onTick) {
+                cache.currLink._onTick.call(this);
+            }
+        }
+        if (tElapsed === 1) {
+            if (!cache._isLinkDone && cache.currLink.tDelay > 0) {
+                cache._isLinkDone = true;
+                return;
+            }
+            this.next();
+        }
+    },
+    to: function(endValues, duration, onDone) {
+        var link = new meta.Tween.Link(this, endValues, duration, onDone);
+        this.chain.push(link);
+        return link;
+    },
+    wait: function(tDelay) {
+        var link = this.to(null, 0, null);
+        link.wait(tDelay);
+        return link;
+    },
+    group: function(group) {
+        if (!group) {
+            console.warn("[meta.Tween.group]:", "No group name specified.");
+            return this;
+        }
+        if (this._group) {
+            console.warn("[meta.Tween.group]:", "Tween already is part of a group.");
+            return this;
+        }
+        if (typeof group === "object") {
+            this._group = group;
+        }
+        this._group.users++;
+        return this;
+    },
+    autoPlay: false,
+    _group: null,
+    _isReversing: false,
+    _removeFlag: 0,
+    numRepeat: 0
+};
+
+meta.Tween.Cache = function(owner) {
+    this.owner = owner;
+    this.tween = null;
+    this.linkIndex = 0;
+    this.currLink = null;
+    this.numRepeat = 0;
+    this._updateNodeID = -1;
+    this._isLinkDone = false;
+    this._tStart = 0;
+    this._tFrame = 0;
+};
+
+meta.Tween.Cache.prototype = {
+    update: function(tDelta) {
+        this.tween.cache = this;
+        this.tween.update(tDelta);
+        this.tween.cache = null;
+    },
+    isPaused: false,
+    isRemoved: false,
+    reverse: false,
+    _flags: 0
+};
+
+meta.Tween.Group = function(name, callback) {
+    if (typeof name === "function") {
+        callback = name;
+        name = "";
+    }
+    this.name = name;
+    this.users = 0;
+    this.activeUsers = 0;
+    this.callback = callback || null;
+};
+
+"use strict";
+
+meta.Tween.Easing = {
+    linear: function(k) {
+        return k;
+    },
+    quadIn: function(k) {
+        return k * k;
+    },
+    quadOut: function(k) {
+        return k * (2 - k);
+    },
+    quadInOut: function(k) {
+        if ((k *= 2) < 1) {
+            return .5 * k * k;
+        }
+        return -.5 * (--k * (k - 2) - 1);
+    },
+    cubicIn: function(k) {
+        return k * k * k;
+    },
+    cubicOut: function(k) {
+        return --k * k * k + 1;
+    },
+    cubicInOut: function(k) {
+        if ((k *= 2) < 1) {
+            return .5 * k * k * k;
+        }
+        return .5 * ((k -= 2) * k * k + 2);
+    },
+    quartIn: function(k) {
+        return k * k * k * k;
+    },
+    quartOut: function(k) {
+        return 1 - --k * k * k * k;
+    },
+    quartInOut: function(k) {
+        if ((k *= 2) < 1) {
+            return .5 * k * k * k * k;
+        }
+        return -.5 * ((k -= 2) * k * k * k - 2);
+    },
+    quintIn: function(k) {
+        return k * k * k * k * k;
+    },
+    quintOut: function(k) {
+        return --k * k * k * k * k + 1;
+    },
+    quintIntOut: function(k) {
+        if ((k *= 2) < 1) {
+            return .5 * k * k * k * k * k;
+        }
+        return .5 * ((k -= 2) * k * k * k * k + 2);
+    },
+    sineIn: function(k) {
+        return 1 - Math.cos(k * Math.PI / 2);
+    },
+    sineOut: function(k) {
+        return Math.sin(k * Math.PI / 2);
+    },
+    sineIntOut: function(k) {
+        return .5 * (1 - Math.cos(Math.PI * k));
+    },
+    expoIn: function(k) {
+        if (k === 0) {
+            return 0;
+        }
+        return Math.pow(1024, k - 1);
+    },
+    expoOut: function(k) {
+        if (k === 1) {
+            return 1;
+        }
+        return 1 - Math.pow(2, -10 * k);
+    },
+    expoInOut: function(k) {
+        if (k === 0) {
+            return 0;
+        }
+        if (k === 1) {
+            return 1;
+        }
+        if ((k *= 2) < 1) {
+            return .5 * Math.pow(1024, k - 1);
+        }
+        return .5 * (-Math.pow(2, -10 * (k - 1)) + 2);
+    },
+    circIn: function(k) {
+        return 1 - Math.sqrt(1 - k * k);
+    },
+    circOut: function(k) {
+        return Math.sqrt(1 - --k * k);
+    },
+    circInOut: function(k) {
+        if ((k *= 2) < 1) {
+            return -.5 * (Math.sqrt(1 - k * k) - 1);
+        }
+        return .5 * (Math.sqrt(1 - (k -= 2) * k) + 1);
+    },
+    elasticIn: function(k) {
+        var s;
+        var a = .1, p = .4;
+        if (k === 0) {
+            return 0;
+        }
+        if (k === 1) {
+            return 1;
+        }
+        if (!a || a < 1) {
+            a = 1;
+            s = p / 4;
+        } else {
+            s = p * Math.asin(1 / a) / (2 * Math.PI);
+        }
+        return -(a * Math.pow(2, 10 * (k -= 1)) * Math.sin((k - s) * (2 * Math.PI) / p));
+    },
+    elasticOut: function(k) {
+        var s;
+        var a = .1, p = .4;
+        if (k === 0) {
+            return 0;
+        }
+        if (k === 1) {
+            return 1;
+        }
+        if (!a || a < 1) {
+            a = 1;
+            s = p / 4;
+        } else {
+            s = p * Math.asin(1 / a) / (2 * Math.PI);
+        }
+        return a * Math.pow(2, -10 * k) * Math.sin((k - s) * (2 * Math.PI) / p) + 1;
+    },
+    elasticInOut: function(k) {
+        var s;
+        var a = .1, p = .4;
+        if (k === 0) {
+            return 0;
+        }
+        if (k === 1) {
+            return 1;
+        }
+        if (!a || a < 1) {
+            a = 1;
+            s = p / 4;
+        } else {
+            s = p * Math.asin(1 / a) / (2 * Math.PI);
+        }
+        if ((k *= 2) < 1) {
+            return -.5 * (a * Math.pow(2, 10 * (k -= 1)) * Math.sin((k - s) * (2 * Math.PI) / p));
+        }
+        return a * Math.pow(2, -10 * (k -= 1)) * Math.sin((k - s) * (2 * Math.PI) / p) * .5 + 1;
+    },
+    backIn: function(k) {
+        var s = 1.70158;
+        return k * k * ((s + 1) * k - s);
+    },
+    backOut: function(k) {
+        var s = 1.70158;
+        return --k * k * ((s + 1) * k + s) + 1;
+    },
+    backInOut: function(k) {
+        var s = 1.70158 * 1.525;
+        if ((k *= 2) < 1) {
+            return .5 * (k * k * ((s + 1) * k - s));
+        }
+        return .5 * ((k -= 2) * k * ((s + 1) * k + s) + 2);
+    },
+    bounceIn: function(k) {
+        return 1 - meta.Tween.Easing.bounceOut(1 - k);
+    },
+    bounceOut: function(k) {
+        if (k < 1 / 2.75) {
+            return 7.5625 * k * k;
+        } else if (k < 2 / 2.75) {
+            return 7.5625 * (k -= 1.5 / 2.75) * k + .75;
+        } else if (k < 2.5 / 2.75) {
+            return 7.5625 * (k -= 2.25 / 2.75) * k + .9375;
+        }
+        return 7.5625 * (k -= 2.625 / 2.75) * k + .984375;
+    },
+    bounceInOut: function(k) {
+        if (k < .5) {
+            return meta.Tween.Easing.bounceIn(k * 2) * .5;
+        }
+        return meta.Tween.Easing.bounceOut(k * 2 - 1) * .5 + .5;
+    }
+};
+
+"use strict";
+
+meta.Tween.Link = function(tween, endValues, duration, onDone) {
+    this.tween = tween;
+    this.startValues = {};
+    this.endValues = endValues;
+    this.duration = duration;
+    this._onDone = onDone;
+};
+
+meta.Tween.Link.prototype = {
+    play: function() {
+        this.tween.play();
+        return this;
+    },
+    stop: function() {
+        this.tween.stop();
+        return this;
+    },
+    paused: function(value) {
+        this.tween.paused(value);
+        return this;
+    },
+    resume: function() {
+        this.tween.resume();
+        return this;
+    },
+    clear: function() {
+        this.tween.clear();
+        return this;
+    },
+    reset: function() {
+        this.tween.reset();
+        return this;
+    },
+    update: function(tElapsed) {
+        var value = this._easing(tElapsed);
+        var startValue, endValue, result;
+        var owner = this.tween.cache.owner;
+        for (var key in this.endValues) {
+            startValue = this.startValues[key];
+            endValue = this.endValues[key];
+            if (typeof startValue === "string") {
+                endValue = startValue + parseFloat(endValue, 4);
+            }
+            result = startValue + (endValue - startValue) * value;
+            if (this.isRounding) {
+                result = Math.round(result);
+            }
+            owner[key] = result;
+        }
+    },
+    next: function() {
+        this.tween.next();
+        return this;
+    },
+    wait: function(tDelay) {
+        this.tDelay = tDelay;
+        return this;
+    },
+    frameDelay: function(tFrameDelay) {
+        this.tFrameDelay = tFrameDelay;
+        return this;
+    },
+    round: function(value) {
+        if (value === void 0) {
+            value = true;
+        }
+        this.isRounding = value;
+        return this;
+    },
+    repeat: function(numRepeat) {
+        this.tween.repeat(numRepeat);
+        return this;
+    },
+    reverse: function(value) {
+        this.tween.reverse(value);
+        return this;
+    },
+    easing: function(func) {
+        if (typeof func === "function") {
+            this._easing = func;
+        } else {
+            this._easing = meta.Tween.Easing[func];
+        }
+        if (this._easing === void 0) {
+            this._easing = meta.Tween.Easing.linear;
+        }
+        return this;
+    },
+    onStart: function(func) {
+        this._onStart = func;
+        return this;
+    },
+    onDone: function(func) {
+        this._onDone = func;
+        return this;
+    },
+    onTick: function(func) {
+        this._onTick = func;
+        return this;
+    },
+    to: function(endValues, duration, onDone) {
+        return this.tween.to(endValues, duration, onDone);
+    },
+    group: function(name) {
+        return this.tween.group(name);
+    },
+    _easing: meta.Tween.Easing.linear,
+    _onStart: null,
+    _onDone: null,
+    _onTick: null,
+    tDelay: 0,
+    tFrameDelay: 0,
+    isRounding: false
+};
+
+"use strict";
+
+window.Component = {};
+
+"use strict";
+
+var Resource = {};
+
+Resource.Controller = meta.Controller.extend({
+    init: function() {
+        this.resources = {};
+        this.resourcesInUse = {};
+        this._chn_added = meta.createChannel(Resource.Event.ADDED);
+        this._chn_allLoaded = meta.createChannel(Resource.Event.ALL_LOADED);
+        var canvas = document.createElement("canvas");
+        Resource.Texture.prototype._tmpImg = canvas;
+        Resource.Texture.prototype._tmpCtx = canvas.getContext("2d");
+        meta.subscribe(this, meta.Event.ADAPT, this.onAdapt);
+        var proto = Resource.Sound.prototype;
+        if (meta.device.isAudioAPI) {
+            proto._context = new AudioContext();
+            console.log("%cAudio: %cWebAudio ", "font-weight: bold; padding: 2px 0 2px 0;", "padding: 2px 0 2px 0;");
+        } else {
+            proto._loadFromUrl = proto._loadFromUrl_legacy;
+            proto._clear = proto._clear_legacy;
+            proto._createInstance = proto._createInstance_legacy;
+            proto._syncLoading = true;
+            console.log("%cAudio: %c<audio> ", "font-weight: bold; padding: 2px 0 1px 0; width: 500px;", "padding: 2px 0 1px 0;");
+        }
+    },
+    add: function(resource) {
+        var subBuffer = this.resources[resource.type];
+        if (!subBuffer) {
+            subBuffer = {};
+            this.resources[resource.type] = subBuffer;
+        }
+        var path = resource.path;
+        if (resource.name === "unknown" && path) {
+            var wildcardIndex = path.lastIndexOf(".");
+            var slashIndex = path.lastIndexOf("/");
+            if (wildcardIndex < 0 || path.length - wildcardIndex > 5) {
+                resource.name = path.slice(slashIndex + 1);
+            } else {
+                resource.name = path.slice(slashIndex + 1, wildcardIndex);
+            }
+        }
+        if (subBuffer[resource.name]) {
+            console.warn("[Resource.Manager.add]:", "There is already a resource(" + meta.enumToString(Resource.Type, resource.type) + ") added with a name: " + resource.name);
+            return null;
+        }
+        subBuffer[resource.name] = resource;
+        this._chn_added.emit(resource, Resource.Event.ADDED);
+        return resource;
+    },
+    remove: function(resource) {
+        var subBuffer = this.resources[resource.type];
+        if (!subBuffer) {
+            console.warn("[Resource.Manager.remove]:", "Resource(" + meta.enumToString(Resource.Type, resource.type) + ")(" + resource.name + ") is not added to the manager.");
+            return;
+        }
+        if (!subBuffer[resource.name]) {
+            console.warn("[Resource.Manager.remove]:", "Resource(" + meta.enumToString(Resource.Type, resource.type) + ")(" + resource.name + ") is not added to the manager.");
+            return;
+        }
+        subBuffer[resource.name] = null;
+    },
+    addToLoad: function(resource) {
+        resource.isLoading = true;
+        if (!meta.engine.isReady) {
+            this.numToLoad++;
+        }
+    },
+    loadSuccess: function(resource) {
+        var subBuffer = this.resourcesInUse[resource.type];
+        if (!subBuffer) {
+            subBuffer = [];
+            this.resourcesInUse[resource.type] = subBuffer;
+        }
+        subBuffer.push(resource);
+        resource.isLoading = false;
+        resource.inUse = true;
+        if (!meta.engine.isReady) {
+            this.numToLoad--;
+            this.numLoaded++;
+            if (this.numToLoad === 0 && !meta.engine.isLoading) {
+                meta.engine.onResourcesLoaded();
+                this._chn_allLoaded.emit(this, Resource.Event.ALL_LOADED);
+            }
+        }
+    },
+    loadFailed: function(resource) {
+        resource.isLoading = false;
+        if (!meta.engine.isReady) {
+            this.numToLoad--;
+            if (this.numToLoad === 0 && !meta.engine.isLoading) {
+                meta.engine.onResourcesLoaded();
+                this._chn_allLoaded.emit(this, Resource.Event.ALL_LOADED);
+            }
+        }
+    },
+    getTexture: function(name) {
+        if (!name) {
+            console.warn("[Resource.Manager.getTexture]:", "No name specified.");
+            return null;
+        }
+        var subBuffer = this.resources[Resource.Type.TEXTURE];
+        if (!subBuffer) {
+            return null;
+        }
+        var texture = subBuffer[name];
+        if (!texture) {
+            return null;
+        }
+        return texture;
+    },
+    getSound: function(name) {
+        if (!name) {
+            console.warn("[Resource.Manager.getSound]:", "No name specified.");
+            return null;
+        }
+        var subBuffer = this.resources[Resource.Type.SOUND];
+        if (!subBuffer) {
+            return null;
+        }
+        var sound = subBuffer[name];
+        if (!sound) {
+            return null;
+        }
+        return sound;
+    },
+    addToQueue: function(resource) {
+        if (!this._syncQueue) {
+            this._syncQueue = [];
+        }
+        this._syncQueue.push(resource);
+    },
+    loadNextFromQueue: function() {
+        this.isSyncLoading = false;
+        if (!this._syncQueue || !this._syncQueue.length) {
+            return;
+        }
+        this._syncQueue[this._syncQueue.length - 1].forceLoad(true);
+        this._syncQueue.pop();
+    },
+    onAdapt: function(data, event) {
+        var unitRatio = meta.unitRatio;
+        var texture;
+        var textures = this.resources[Resource.Type.TEXTURE];
+        for (var key in textures) {
+            texture = textures[key];
+            texture.unitRatio = unitRatio;
+            texture.load();
+        }
+    },
+    getUniqueID: function() {
+        return ++this._uniqueID;
+    },
+    resources: null,
+    resourcesInUse: null,
+    rootPath: "",
+    numLoaded: 0,
+    numToLoad: 0,
+    _syncQueue: null,
+    isSyncLoading: false,
+    _chn_added: null,
+    _chn_allLoaded: null,
+    _uniqueID: 0
+});
+
+"use strict";
+
+Resource.Event = {
+    UNLOADED: "res-unloaded",
+    LOADED: "res-loaded",
+    RESIZE: "res-resize",
+    CHANGED: "res-changed",
+    ADDED: "res-added",
+    ALL_LOADED: "res-all-loaded"
+};
+
+Resource.Type = {
+    BASIC: 0,
+    TEXTURE: 1,
+    SOUND: 2,
+    SPRITE_SHEET: 3,
+    FONT: 4
+};
+
+Resource.TextureType = {
+    UNKNOWN: -1,
+    CANVAS: 0,
+    WEBGL: 1
+};
+
+Resource.AnimType = {
+    NONE: 0,
+    LINEAR_H: 1,
+    LINEAR_V: 2,
+    RADIAL: 3,
+    RADIAL_TOP_LEFT: 4,
+    RADIAL_TOP_RIGHT: 5,
+    RADIAL_BOTTOM_LEFT: 6,
+    RADIAL_BOTTOM_RIGHT: 7
+};
+
+"use strict";
+
+Resource.Basic = meta.Class.extend({
+    _init: function() {
+        this.id = Resource.ctrl.getUniqueID();
+    },
+    subscribe: function(owner, func) {
+        if (!this.chn) {
+            this.chn = meta.createChannel("__res" + this.id);
+        }
+        this.chn.subscribe(owner, func);
+    },
+    unsubscribe: function(owner) {
+        if (!this.chn) {
+            return;
+        }
+        this.chn.unsubscribe(owner);
+        if (this.chn.numSubs === 0) {
+            this.chn.remove();
+            this.chn = null;
+        }
+    },
+    emit: function(data, event) {
+        if (this.chn) {
+            this.chn.emit(data, event);
+        }
+    },
+    set loaded(value) {
+        if (value) {
+            if (!this._loaded) {
+                this._loaded = value;
+                this.emit(this, Resource.Event.LOADED);
+            } else {
+                this._loaded = value;
+                this.emit(this, Resource.Event.CHANGED);
+            }
+        } else {
+            if (this._loaded) {
+                this._loaded = value;
+                this.emit(this, Resource.Event.UNLOADED);
+            }
+        }
+    },
+    get loaded() {
+        return this._loaded;
+    },
+    id: 0,
+    type: Resource.Type.BASIC,
+    name: "unknown",
+    path: "",
+    fullPath: "",
+    chn: null,
+    _loaded: false,
+    loading: false,
+    used: false
+});
+
+"use strict";
+
+Resource.Texture = Resource.Basic.extend({
+    init: function(path) {
+        this.generate();
+        if (path) {
+            this.load(path);
+        }
+    },
+    remove: function() {},
+    generate: function() {
+        this.loaded = true;
+        this.canvas = document.createElement("canvas");
+        this.canvas.width = this.trueFullWidth;
+        this.canvas.height = this.trueFullHeight;
+        this.ctx = this.canvas.getContext("2d");
+    },
+    load: function(path) {
+        if (this.loading) {
+            return;
+        }
+        if (!path) {
+            return;
+        }
+        this.path = path;
+        var wildCardIndex = this.path.lastIndexOf(".");
+        if (wildCardIndex === -1 || this.path.length - wildCardIndex > 4) {
+            this.path += ".png";
+        }
+        if (meta.cache.currResolution) {
+            this.fullPath = Resource.ctrl.rootPath + meta.cache.currResolution.path + this.path;
+        } else {
+            this.fullPath = Resource.ctrl.rootPath + this.path;
+        }
+        var self = this;
+        var img = new Image();
+        img.onload = function() {
+            if (!img.complete) {
+                console.warn("(Resource.Texture.load) Could not load texture from - " + img.src);
+                Resource.ctrl.loadFailed(self);
+                return;
+            }
+            self.createFromImg(img);
+            Resource.ctrl.loadSuccess(self);
+        };
+        img.onerror = function(event) {
+            Resource.ctrl.loadFailed(self);
+        };
+        img.src = this.fullPath;
+    },
+    createFromImg: function(img) {
+        if (this._loaded) {
+            this.clear();
+        }
+        this.resize(img.width, img.height);
+        this.ctx.drawImage(img, 0, 0);
+        this.unitRatio = meta.unitRatio;
+        console.log("here");
+        this._isReloading = false;
+        this.isLoaded = true;
+    },
+    _createCachedImg: function() {
+        if (this._cachedImg) {
+            return;
+        }
+        this._cachedImg = document.createElement("canvas");
+        this._cachedImg.width = this.trueFullWidth;
+        this._cachedImg.height = this.trueFullHeight;
+        this._cachedCtx = this._cachedImg.getContext("2d");
+    },
+    resize: function(width, height) {
+        if (this.trueFullWidth === width && this.trueFullHeight === height) {
+            return;
+        }
+        this.trueFullWidth = width;
+        this.trueFullHeight = height;
+        if (this.isAnimated) {
+            this.trueWidth = width / this.numFramesX;
+            this.trueHeight = height / this.numFramesY;
+        } else {
+            this.trueWidth = width;
+            this.trueHeight = height;
+        }
+        var unitRatio = meta.unitRatio;
+        this.width = this.trueWidth * unitRatio + .5 | 0;
+        this.height = this.trueHeight * unitRatio + .5 | 0;
+        this.fullWidth = this.trueFullWidth * unitRatio + .5 | 0;
+        this.fullHeight = this.trueFullHeight * unitRatio + .5 | 0;
+        this.halfWidth = this.width * .5;
+        this.halfHeight = this.height * .5;
+        if (this._isLoaded) {
+            if (this.canvas.width > 0 && this.canvas.height > 0) {
+                this._tmpImg.width = this.canvas.width;
+                this._tmpImg.height = this.canvas.height;
+                this._tmpCtx.drawImage(this.canvas, 0, 0);
+                this.canvas.width = this.trueFullWidth;
+                this.canvas.height = this.trueFullHeight;
+                this.ctx.drawImage(this._tmpImg, 0, 0);
+            } else {
+                this.canvas.width = this.trueFullWidth;
+                this.canvas.height = this.trueFullHeight;
+            }
+        } else {
+            this.canvas.width = this.trueFullWidth;
+            this.canvas.height = this.trueFullHeight;
+        }
+        if (this._loaded && !this._isReloading) {
+            this.emit(this, Resource.Event.RESIZE);
+        }
+    },
+    upResize: function(width, height) {
+        if (width < this.trueFullWidth) {
+            width = this.trueFullWidth;
+        }
+        if (height < this.trueFullHeight) {
+            height = this.trueFullHeight;
+        }
+        this.resize(width, height);
+    },
+    draw: function(ctx, x, y) {
+        if (this._bgTexture) {
+            this._bgTexture.draw(ctx, x, y);
+        }
+        if (!this.fromAtlas) {
+            ctx.drawImage(this.image, x, y);
+        } else {
+            ctx.drawImage(this.ptr.image, this._x, this._y, this.trueWidth, this.trueHeight, x, y, this.trueWidth, this.trueHeight);
+        }
+    },
+    drawFrame: function(ctx, x, y, frame, isEmulateReverse) {
+        if (this._bgTexture) {
+            ctx.drawImage(this._bgTexture.image, x, y);
+        }
+        if (this._anim) {
+            var theta, cos;
+            if (this._anim.type === 1) {
+                var width = this._anim.fill * frame;
+                if (width === 0) {
+                    width = .01;
+                } else if (width > this.trueFullWidth) {
+                    width = this.trueFullWidth;
+                }
+                if (isEmulateReverse) {
+                    ctx.drawImage(this.image, this.trueFullWidth - width, 0, width, this.trueFullHeight, x + this.trueFullWidth - width, y, width, this.trueFullHeight);
+                } else {
+                    ctx.drawImage(this.image, 0, 0, width, this.trueFullHeight, x, y, width, this.trueFullHeight);
+                }
+            } else if (this._anim.type === 2) {
+                var height = this._anim.fill * frame;
+                if (height === 0) {
+                    height = .01;
+                } else if (height > this.trueHeight) {
+                    width = this.trueHeight;
+                }
+                if (isEmulateReverse) {
+                    ctx.drawImage(this.image, 0, this.trueFullHeight - height, this.trueFullWidth, height, x, y + this.trueFullHeight - height, this.trueFullWidth, height);
+                } else {
+                    ctx.drawImage(this.image, 0, 0, this.trueFullWidth, height, x, y, this.trueFullWidth, height);
+                }
+            } else if (this._anim.type === 3) {} else if (this._anim.type === 4) {
+                if (isEmulateReverse) {
+                    theta = this._anim.fill * (-this.numFrames + frame + 1) + Math.PI / 2;
+                    cos = x + Math.cos(theta) * this._anim.length;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(cos, y + Math.sin(theta) * this._anim.length);
+                    ctx.lineTo(cos + this.trueFullWidth, y);
+                    ctx.closePath();
+                    ctx.clip();
+                } else {
+                    theta = this._anim.fill * -frame + Math.PI / 2;
+                    cos = x + Math.cos(theta) * this._anim.length;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(cos, y + Math.sin(theta) * this._anim.length);
+                    ctx.lineTo(cos, y + this.trueFullHeight);
+                    ctx.lineTo(x, y + this.trueFullHeight);
+                    ctx.closePath();
+                    ctx.clip();
+                }
+                ctx.drawImage(this.image, x, y);
+                ctx.restore();
+            } else if (this._anim.type === 5) {
+                if (isEmulateReverse) {
+                    theta = this._anim.fill * (this.numFrames - frame - 1) + Math.PI / 2;
+                    cos = x + Math.cos(theta) * this._anim.length + this.trueFullWidth;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(x + this.trueFullWidth, y);
+                    ctx.lineTo(cos, y + Math.sin(theta) * this._anim.length);
+                    ctx.lineTo(x, y + this.trueFullHeight);
+                    ctx.lineTo(x, y);
+                    ctx.closePath();
+                    ctx.clip();
+                } else {
+                    theta = this._anim.fill * frame + Math.PI / 2;
+                    cos = x + Math.cos(theta) * this._anim.length + this.trueFullWidth;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(x + this.trueFullWidth, y);
+                    ctx.lineTo(cos, y + Math.sin(theta) * this._anim.length);
+                    ctx.lineTo(cos, y + this.trueFullHeight);
+                    ctx.lineTo(x + this.trueFullWidth, y + this.trueFullHeight);
+                    ctx.closePath();
+                    ctx.clip();
+                }
+                ctx.drawImage(this.image, x, y);
+                ctx.restore();
+            } else if (this._anim.type === 6) {
+                if (isEmulateReverse) {
+                    theta = this._anim.fill * (-this.numFrames + frame + 1);
+                    cos = x + Math.cos(theta) * this._anim.length;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(x, y + this.trueFullHeight);
+                    ctx.lineTo(cos, y + Math.sin(theta) * this._anim.length + this.trueFullHeight);
+                    ctx.lineTo(x + this.trueFullWidth, y);
+                    ctx.lineTo(x, y);
+                    ctx.closePath();
+                    ctx.clip();
+                } else {
+                    theta = this._anim.fill * -frame;
+                    cos = x + Math.cos(theta) * this._anim.length;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(x, y + this.trueFullHeight);
+                    ctx.lineTo(cos, y + Math.sin(theta) * this._anim.length + this.trueFullHeight);
+                    ctx.lineTo(x + this.trueFullWidth, y);
+                    ctx.lineTo(x + this.trueFullWidth, y + this.trueFullHeight);
+                    ctx.closePath();
+                    ctx.clip();
+                }
+                ctx.drawImage(this.image, x, y);
+                ctx.restore();
+            } else if (this._anim.type === 7) {
+                if (isEmulateReverse) {
+                    theta = this._anim.fill * (this.numFrames - 1 - frame) + Math.PI;
+                    cos = x + Math.cos(theta) * this._anim.length;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(x + 64, y + this.trueFullHeight);
+                    ctx.lineTo(cos + 64, y + Math.sin(theta) * this._anim.length + 64);
+                    ctx.lineTo(x, y);
+                    ctx.lineTo(x + 64, y);
+                    ctx.closePath();
+                    ctx.clip();
+                } else {
+                    theta = this._anim.fill * frame + Math.PI;
+                    cos = x + Math.cos(theta) * this._anim.length;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(x + 64, y + this.trueFullHeight);
+                    ctx.lineTo(cos + 64, y + Math.sin(theta) * this._anim.length + 64);
+                    ctx.lineTo(x, y);
+                    ctx.lineTo(x, y + 64);
+                    ctx.closePath();
+                    ctx.clip();
+                }
+                ctx.drawImage(this.image, x, y);
+                ctx.restore();
+            }
+        } else {
+            ctx.drawImage(this.image, this.trueWidth * (frame % this.numFramesX), this.trueHeight * Math.floor(frame / this.numFramesX), this.trueWidth, this.trueHeight, x, y, this.trueWidth, this.trueHeight);
+        }
+    },
+    clear: function() {
+        if (this.textureType === Resource.TextureType.WEBGL) {
+            if (!this._cachedCtx) {
+                return;
+            }
+            this._cachedCtx.clearRect(0, 0, this.trueFullWidth, this.trueFullHeight);
+            var gl = meta.ctx;
+            gl.bindTexture(gl.TEXTURE_2D, this.image);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
+        } else {
+            this.ctx.clearRect(0, 0, this.trueFullWidth, this.trueFullHeight);
+        }
+        if (!this._isReloading) {
+            this.isLoaded = true;
+        }
+    },
+    clearSilent: function() {
+        if (this.textureType === Resource.TextureType.WEBGL) {
+            this._tmpCtx.clearRect(0, 0, this.trueFullWidth, this.trueFullHeight);
+            var gl = meta.ctx;
+            gl.bindTexture(gl.TEXTURE_2D, this.image);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
+        } else {
+            this.ctx.clearRect(0, 0, this.trueFullWidth, this.trueFullHeight);
+        }
+    },
+    drawOver: function(texture, x, y) {
+        if (!texture) {
+            console.warn("[Resource.Texture.drawOver]:", "No texture specified.");
+            return;
+        }
+        x = x || 0;
+        y = y || 0;
+        if (typeof texture === "string") {
+            var obj = meta.getTexture(texture);
+            if (!obj) {
+                console.warn("[Resource.Texture.drawOver]:", "No such texture with name - " + texture);
+                return;
+            }
+            texture = obj;
+        }
+        if (texture.textureType === Resource.TextureType.WEBGL) {
+            if (texture._canvasCache) {
+                texture = texture._canvasCache;
+            } else {
+                texture._canvasCache = new Resource.Texture(Resource.TextureType.CANVAS, texture.path);
+                texture._canvasCache.load();
+                texture = texture._canvasCache;
+                this._loadCache = {
+                    name: "drawOver",
+                    texture: texture,
+                    x: x,
+                    y: y
+                };
+                this.isLoaded = false;
+                texture.subscribe(this, this.onTextureCacheEvent);
+                return;
+            }
+        }
+        var ctx = this.ctx;
+        if (this.textureType) {
+            this._createCachedImg();
+            ctx = this._cachedCtx;
+        }
+        ctx.drawImage(texture.image, x, y);
+        if (this.textureType) {
+            var gl = meta.ctx;
+            gl.bindTexture(gl.TEXTURE_2D, this.image);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
+        }
+        this.isLoaded = true;
+    },
+    fillRect: function(params, height, color) {
+        if (!params) {
+            console.warn("[Resource.Texture.fillRect]:", "No parameters specified.");
+            return;
+        }
+        if (typeof params === "number") {
+            this.fillRect({
+                width: params,
+                height: height,
+                color: color
+            });
+            return;
+        }
+        var scope = meta;
+        var ctx = this.ctx;
+        params.x = params.x || 0;
+        params.y = params.y || 0;
+        var width = (params.width || this.trueFullWidth || 1) + params.x;
+        var height = (params.height || this.trueFullHeight || 1) + params.y;
+        this.upResize(width, height);
+        if (this.textureType) {
+            this._createCachedImg();
+            ctx = this._cachedCtx;
+        }
+        ctx.fillStyle = params.color || "#000000";
+        ctx.fillRect(params.x, params.y, width, height);
+        if (this.textureType) {
+            var gl = scope.ctx;
+            gl.bindTexture(gl.TEXTURE_2D, this.image);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
+        }
+        this.isLoaded = true;
+    },
+    tile: function(params, height, texture) {
+        if (typeof params === "number") {
+            this.tile({
+                width: params,
+                height: height,
+                texture: texture
+            });
+            return;
+        }
+        if (!params) {
+            console.warn("[Resource.Texture.tile]:", "No parameters specified.");
+            return;
+        }
+        if (typeof params.texture === "string") {
+            params.texture = Resource.ctrl.getTexture(params.texture);
+        }
+        if (!params.texture) {
+            console.warn("[Resource.Texture.tile]:", "Undefined texture.");
+            return;
+        }
+        var texture = params.texture;
+        if (texture.textureType === Resource.TextureType.WEBGL) {
+            if (texture._canvasCache) {
+                texture = texture._canvasCache;
+            } else {
+                texture._canvasCache = new Resource.Texture(Resource.TextureType.CANVAS, texture.path);
+                texture._canvasCache.load();
+                texture = texture._canvasCache;
+                this._loadCache = {
+                    name: "tile",
+                    data: params
+                };
+                this.isLoaded = false;
+                texture.subscribe(this, this.onTextureCacheEvent);
+                return;
+            }
+        }
+        if (!texture._isLoaded) {
+            if (!texture._isLoading) {
+                texture.load();
+            }
+            this._loadCache = {
+                name: "tile",
+                data: params
+            };
+            this.isLoaded = false;
+            texture.subscribe(this, this.onTextureCacheEvent);
+            return;
+        }
+        var scope = meta;
+        params.x = params.x || 0;
+        params.y = params.y || 0;
+        params.width = params.width || texture.fullWidth;
+        params.height = params.height || texture.fullHeight;
+        params.width *= scope.unitSize;
+        params.height *= scope.unitSize;
+        this.resize(params.width, params.height);
+        if (params.center) {
+            params.x += (this.trueFullWidth & texture.trueFullWidth - 1) / 2;
+            params.y += (this.trueFullHeight & texture.trueFullHeight - 1) / 2;
+        }
+        var ctx = this.ctx;
+        if (this.textureType) {
+            this._createCachedImg();
+            ctx = this._cachedCtx;
+        }
+        var posX = params.x;
+        var posY = params.y;
+        var numX = Math.ceil(this.trueFullWidth / texture.trueFullWidth) || 1;
+        var numY = Math.ceil(this.trueFullHeight / texture.trueFullHeight) || 1;
+        if (posX > 0) {
+            numX += Math.ceil(posX / texture.trueFullWidth);
+            posX -= texture.trueFullWidth;
+        }
+        if (posY > 0) {
+            numY += Math.ceil(posY / texture.trueFullHeight);
+            posY -= texture.trueFullHeight;
+        }
+        var origY = posY;
+        for (var x = 0; x < numX; x++) {
+            for (var y = 0; y < numY; y++) {
+                ctx.drawImage(texture.image, posX, posY);
+                posY += texture.trueHeight;
+            }
+            posX += texture.trueWidth;
+            posY = origY;
+        }
+        if (this.textureType) {
+            var gl = scope.ctx;
+            gl.bindTexture(gl.TEXTURE_2D, this.image);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
+        }
+        this.isLoaded = true;
+    },
+    stroke: function(params) {
+        if (!params) {
+            console.warn("[Resource.Texture.stroke]:", "No parameters specified.");
+            return;
+        }
+        if (!params.buffer) {
+            console.warn("[Resource.Texture.stroke]:", "No buffer defined.");
+            return;
+        }
+        var scope = meta;
+        var unitSize = scope.unitSize;
+        var minX = Number.POSITIVE_INFINITY, minY = minX, maxX = Number.NEGATIVE_INFINITY, maxY = maxX;
+        var item, i, x, y;
+        var buffer = params.buffer;
+        var numItems = buffer.length;
+        for (i = 0; i < numItems; i += 2) {
+            x = buffer[i] * unitSize | 0;
+            y = buffer[i + 1] * unitSize | 0;
+            if (x < minX) {
+                minX = x;
+            }
+            if (y < minY) {
+                minY = y;
+            }
+            if (x > maxX) {
+                maxX = x;
+            }
+            if (y > maxY) {
+                maxY = y;
+            }
+            buffer[i] = x;
+            buffer[i + 1] = y;
+        }
+        if (minX > 0) {
+            minX = 0;
+        }
+        if (minY > 0) {
+            minY = 0;
+        }
+        var ctx = this.ctx;
+        params.addWidth = params.addWidth || 0;
+        params.addHeight = params.addHeight || 0;
+        params.lineWidth = params.lineWidth || 1;
+        if (!params.color && !params.fillColor) {
+            params.color = "#000000";
+        }
+        var halfLineWidth = params.lineWidth / 2;
+        var offsetX = -minX + halfLineWidth + params.addWidth * .5;
+        var offsetY = -minY + halfLineWidth + params.addHeight * .5;
+        this.resize(maxX - minX + params.lineWidth + params.addWidth, maxY - minY + params.lineWidth);
+        if (this.textureType) {
+            this._createCachedImg();
+            ctx = this._cachedCtx;
+        }
+        ctx.lineWidth = params.lineWidth;
+        if (params.lineCap) {
+            ctx.lineCap = params.lineCap;
+        }
+        if (params.lineDash) {
+            ctx.setLineDash(params.lineDash);
+        }
+        ctx.beginPath();
+        ctx.moveTo(buffer[0] + offsetX, buffer[1] + offsetY);
+        for (i = 2; i < numItems; i += 2) {
+            ctx.lineTo(buffer[i] + offsetX, buffer[i + 1] + offsetY);
+        }
+        if (params.fillColor) {
+            ctx.fillStyle = params.fillColor;
+            ctx.closePath();
+            ctx.fill();
+        }
+        if (params.color) {
+            ctx.strokeStyle = params.color;
+            ctx.stroke();
+        }
+        if (this.textureType === Resource.TextureType.WEBGL) {
+            var gl = scope.ctx;
+            gl.bindTexture(gl.TEXTURE_2D, this.image);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
+        }
+        this.isLoaded = true;
+    },
+    border: function(params) {
+        if (!params) {
+            console.warn("[Resource.Texture.strokeBorder]:", "No parameters specified.");
+            return;
+        }
+        params.width = params.width || this.trueFullWidth;
+        params.height = params.height || this.trueFullHeight;
+        var lineWidth = 1;
+        if (params.borderWidth) {
+            lineWidth = params.borderWidth;
+        }
+        params.buffer = [ 0, 0, params.width - lineWidth, 0, params.width - lineWidth, params.height - lineWidth, 0, params.height - lineWidth, 0, 0 ];
+        this.stroke(params);
+    },
+    arc: function(params) {
+        if (!params) {
+            console.warn("[Resource.Texture.arc]:", "No parameters specified.");
+            return;
+        }
+        var ctx = this.ctx;
+        params.x = params.x || 0;
+        params.y = params.y || 0;
+        params.radius = params.radius || 5;
+        params.startAngle = params.startAngle || 0;
+        params.endAngle = params.endAngle || Math.PI * 2;
+        params.borderWidth = params.borderWidth || 1;
+        if (!params.color && !params.borderColor) {
+            params.borderColor = params.borderColor || "#000000";
+        }
+        if (params.closePath === void 0) {
+            params.closePath = true;
+        } else {
+            params.closePath = params.closePath;
+        }
+        var size = params.radius * 2 + params.borderWidth;
+        if (!params.drawOver) {
+            this.resize(params.x + size + 1, params.y + size + 1);
+        }
+        if (this.textureType) {
+            this._createCachedImg();
+            ctx = this._cachedCtx;
+        }
+        ctx.lineWidth = params.borderWidth;
+        ctx.clearRect(0, 0, this.trueFullWidth, this.trueFullHeight);
+        if (params.closePath) {
+            ctx.beginPath();
+            ctx.arc(params.x + params.radius + params.borderWidth / 2 + .5, params.y + params.radius + params.borderWidth / 2 + .5, params.radius, params.startAngle, params.endAngle, false);
+            ctx.closePath();
+        } else {
+            ctx.arc(params.x + params.radius + params.borderWidth / 2, params.y + params.radius + params.borderWidth / 2, params.radius, params.startAngle, params.endAngle, false);
+        }
+        if (params.color) {
+            ctx.fillStyle = params.color;
+            ctx.fill();
+        }
+        if (params.borderColor) {
+            ctx.strokeStyle = params.borderColor;
+            ctx.stroke();
+        }
+        if (this.textureType === Resource.TextureType.WEBGL) {
+            var gl = meta.ctx;
+            gl.bindTexture(gl.TEXTURE_2D, this.image);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
+        }
+        this.isLoaded = true;
+    },
+    rect: function(params, height, color, borderWidth) {
+        if (typeof params !== "object") {
+            this.rect({
+                width: params,
+                height: height,
+                color: color,
+                borderWidth: borderWidth
+            });
+            return;
+        }
+        if (!params) {
+            console.warn("[Resource.Texture.rect]:", "No parameters specified.");
+            return;
+        }
+        var ctx = this.ctx;
+        var width = params.width || 1;
+        var height = params.height || 1;
+        params.color = params.color || "#0000000";
+        var borderWidth = params.borderWidth || 1;
+        if (!params.drawOver) {
+            this.resize(width, height);
+        }
+        if (this.textureType) {
+            this._createCachedImg();
+            ctx = this._cachedCtx;
+        }
+        ctx.strokeStyle = params.color;
+        ctx.lineWidth = borderWidth;
+        var halfWidth = Math.ceil(borderWidth / 2);
+        if (borderWidth % 2 === 1) {
+            ctx.save();
+            ctx.translate(.5, .5);
+            ctx.beginPath();
+            ctx.moveTo(halfWidth, halfWidth);
+            ctx.lineTo(width - halfWidth - 1, halfWidth);
+            ctx.lineTo(width - halfWidth - 1, height - halfWidth - 1);
+            ctx.lineTo(halfWidth, height - halfWidth - 1);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.restore();
+        } else {
+            ctx.beginPath();
+            ctx.moveTo(halfWidth, halfWidth);
+            ctx.lineTo(width - halfWidth, halfWidth);
+            ctx.lineTo(width - halfWidth, height - halfWidth);
+            ctx.lineTo(halfWidth, height - halfWidth);
+            ctx.closePath();
+            ctx.stroke();
+        }
+        if (params.fillColor) {
+            ctx.fillStyle = params.fillColor;
+            ctx.fill();
+        }
+        if (this.textureType === Resource.TextureType.WEBGL) {
+            var gl = meta.ctx;
+            gl.bindTexture(gl.TEXTURE_2D, this.image);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
+        }
+        this.isLoaded = true;
+    },
+    roundRect: function(params, height, radius, color, borderWidth) {
+        if (typeof params !== "object") {
+            this.roundRect({
+                width: params,
+                height: height,
+                radius: radius,
+                color: color,
+                borderWidth: borderWidth
+            });
+            return;
+        }
+        if (!params) {
+            console.warn("[Resource.Texture.rect]:", "No parameters specified.");
+            return;
+        }
+        var ctx = this.ctx;
+        var width = params.width || 1;
+        var height = params.height || 1;
+        params.color = params.color || "#0000000";
+        var radius = params.radius || 1;
+        var borderWidth = params.borderWidth || 3;
+        if (!params.drawOver) {
+            this.resize(width, height);
+        }
+        if (this.textureType) {
+            this._createCachedImg();
+            ctx = this._cachedCtx;
+        }
+        ctx.strokeStyle = params.color;
+        ctx.lineWidth = borderWidth;
+        var halfWidth = Math.ceil(borderWidth / 2);
+        if (borderWidth % 2 === 1) {
+            ctx.save();
+            ctx.translate(.5, .5);
+            ctx.beginPath();
+            ctx.moveTo(halfWidth + radius, halfWidth);
+            ctx.lineTo(width - halfWidth - radius, halfWidth);
+            ctx.quadraticCurveTo(width - halfWidth, halfWidth, width - halfWidth, halfWidth + radius);
+            ctx.lineTo(width - halfWidth, height - halfWidth - radius);
+            ctx.quadraticCurveTo(width - halfWidth, height - halfWidth, width - halfWidth - radius, height - halfWidth);
+            ctx.lineTo(halfWidth + radius, height - halfWidth);
+            ctx.quadraticCurveTo(halfWidth, height - halfWidth, halfWidth, height - halfWidth - radius);
+            ctx.lineTo(halfWidth, radius + halfWidth);
+            ctx.quadraticCurveTo(halfWidth, halfWidth, halfWidth + radius, halfWidth);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.restore();
+        } else {
+            ctx.beginPath();
+            ctx.moveTo(halfWidth + radius, halfWidth);
+            ctx.lineTo(width - halfWidth - radius, halfWidth);
+            ctx.quadraticCurveTo(width - halfWidth, halfWidth, width - halfWidth, halfWidth + radius);
+            ctx.lineTo(width - halfWidth, height - halfWidth - radius);
+            ctx.quadraticCurveTo(width - halfWidth, height - halfWidth, width - halfWidth - radius, height - halfWidth);
+            ctx.lineTo(halfWidth + radius, height - halfWidth);
+            ctx.quadraticCurveTo(halfWidth, height - halfWidth, halfWidth, height - halfWidth - radius);
+            ctx.lineTo(halfWidth, radius + halfWidth);
+            ctx.quadraticCurveTo(halfWidth, halfWidth, halfWidth + radius, halfWidth);
+            ctx.closePath();
+            ctx.stroke();
+        }
+        if (params.fillColor) {
+            ctx.fillStyle = params.fillColor;
+            ctx.fill();
+        }
+        if (this.textureType === Resource.TextureType.WEBGL) {
+            var gl = meta.ctx;
+            gl.bindTexture(gl.TEXTURE_2D, this.image);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
+        }
+        this.isLoaded = true;
+    },
+    bazier: function(color, path, params) {
+        this.isLoaded = true;
+    },
+    emulateAnim: function(type, frames) {
+        if (!this._isLoaded) {
+            console.warn("[Resource.Texture.emulateAnim]:", "Texture is not loaded yet.");
+            return;
+        }
+        var animType = Resource.AnimType;
+        if (type === animType.NONE) {
+            this._anim = null;
+        } else {
+            this._anim = {
+                type: type
+            };
+            this.isAnimated = true;
+            this.numFrames = frames;
+            if (type === animType.LINEAR_H) {
+                this._anim.fill = this.trueWidth / (frames - 1);
+            } else if (type === animType.LINEAR_V) {
+                this._anim.fill = this.trueHeight / (frames - 1);
+            } else if (type === animType.RADIAL) {
+                console.log("[Resource.Texture.emulateAnim]:", "RADIAL is currently unsupported type.");
+                this._anim.halfWidth = this.trueFullWidth / 2;
+                this._anim.halfHeight = this.trueFullHeight / 2;
+                this._anim.fill = Math.PI * 2 / (frames - 1);
+                this._anim.length = Math.sqrt(this._anim.halfWidth * this._anim.halfWidth + this._anim.halfHeight * this._anim.halfHeight) + 1 | 0;
+            } else if (type === animType.RADIAL_TOP_LEFT || type === animType.RADIAL_TOP_RIGHT || type === animType.RADIAL_BOTTOM_LEFT || type === animType.RADIAL_BOTTOM_RIGHT) {
+                this._anim.fill = Math.PI * 2 / ((frames - 1) * 4);
+                this._anim.length = Math.sqrt(this.trueFullWidth * this.trueFullWidth + this.trueFullHeight * this.trueFullHeight) + 1 | 0;
+            }
+        }
+        this.isLoaded = true;
+    },
+    gradient: function(data) {
+        if (!data) {
+            console.warn("[Resource.Texture.gradient]:", "No data specified.");
+            return;
+        }
+        if (!data.colors || !data.colors.length) {
+            console.warn("[Resource.Texture.gradient]:", "No data.colors specified.");
+            return;
+        }
+        var ctx = this.ctx;
+        data.dirX = data.dirX || 0;
+        data.dirY = data.dirY || 0;
+        data.width = data.width || this.trueFullWidth || 1;
+        data.height = data.height || this.trueFullHeight || 1;
+        if (!data.drawOver) {
+            this.resize(data.width, data.height);
+        }
+        if (this.textureType) {
+            this._createCachedImg();
+            ctx = this._cachedCtx;
+        }
+        var colors = data.colors;
+        var numColors = colors.length;
+        var x1, x2, y1, y2;
+        if (data.dirX < 0) {
+            x1 = this.trueFullWidth;
+            x2 = 0;
+        } else {
+            x1 = 0;
+            x2 = this.trueFullWidth * data.dirX;
+        }
+        if (data.dirY < 0) {
+            y1 = this.trueFullHeight;
+            y2 = 0;
+        } else {
+            y1 = 0;
+            y2 = this.trueFullHeight * data.dirY;
+        }
+        var gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+        for (var i = 0; i < numColors; i++) {
+            gradient.addColorStop(colors[i][0], colors[i][1]);
+        }
+        ctx.fillStyle = gradient;
+        ctx.clearRect(0, 0, this.trueFullWidth, this.trueFullHeight);
+        ctx.fillRect(0, 0, this.trueFullWidth, this.trueFullHeight);
+        if (this.textureType) {
+            var gl = meta.ctx;
+            gl.bindTexture(gl.TEXTURE_2D, this.image);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
+        }
+        this.isLoaded = true;
+    },
+    grid: function(params, cellHeight, numCellsX, numCellsY) {
+        if (typeof params === "number") {
+            this.grid({
+                cellWidth: params,
+                cellHeight: cellHeight,
+                numCellsX: numCellsX,
+                numCellsY: numCellsY
+            });
+            return;
+        }
+        if (!params) {
+            console.warn("[Resource.Texture.grid]:", "No params specified.");
+            return;
+        }
+        var cellWidth = params.cellWidth || 1;
+        var cellHeight = params.cellHeight || 1;
+        var numCellsX = params.numCellsX || 1;
+        var numCellsY = params.numCellsY || 1;
+        params.x = params.x || 0;
+        params.y = params.y || 0;
+        params.color = params.color || "#000000";
+        params.borderWidth = params.borderWidth || 1;
+        params.drawOver = params.drawOver || false;
+        var width = params.x + params.cellWidth * params.numCellsX + 1;
+        var height = params.y + params.cellHeight * params.numCellsY + 1;
+        if (!params.drawOver) {
+            this.resize(width, height);
+        }
+        var ctx = this.ctx;
+        if (this.textureType) {
+            this._createCachedImg();
+            ctx = this._cachedCtx;
+        }
+        ctx.strokeStyle = params.color;
+        ctx.lineWidth = params.borderWidth;
+        ctx.save();
+        ctx.translate(.5, .5);
+        for (var x = 0; x < numCellsX + 1; x++) {
+            ctx.moveTo(x * cellHeight, 0);
+            ctx.lineTo(x * cellHeight, height);
+        }
+        for (var y = 0; y < numCellsY + 1; y++) {
+            ctx.moveTo(0, y * cellHeight);
+            ctx.lineTo(width, y * cellHeight);
+        }
+        ctx.stroke();
+        ctx.restore();
+        if (this.textureType) {
+            var gl = meta.ctx;
+            gl.bindTexture(gl.TEXTURE_2D, this.image);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
+        }
+        this.isLoaded = true;
+    },
+    onTextureEvent: function(event, data) {
+        if (event === Resource.Event.LOADED) {
+            this.tile(data);
+            data.unsubscribe(this);
+        }
+    },
+    construct: function(data) {
+        if (!data) {
+            console.warn("[Resource.Texture.buildMatrix]:", "No parameters specified.");
+            return;
+        }
+        this._constructTex(data, "center");
+        this._constructTex(data, "left");
+        this._constructTex(data, "right");
+        data.width = data.width || this.trueFullWidth;
+        data.height = data.height || this.trueFullHeight;
+        this.resize(data.width, data.height);
+        console.log(this.trueWidth, this.trueHeight);
+        var left = data.width / 2 - data.center.width / 2 | 0;
+        var top = data.height / 2 - data.center.height / 2 | 0;
+        console.log(left);
+        var ctx = this.ctx;
+        ctx.drawImage(data.center, left, top);
+        if (this.textureType) {
+            var gl = meta.ctx;
+            gl.bindTexture(gl.TEXTURE_2D, this.image);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
+        }
+        this.isLoaded = true;
+    },
+    _constructTex: function(data, texture) {
+        if (data[texture] && typeof data[texture] === "string") {
+            data[texture] = Resource.ctrl.getTexture(data[texture]);
+            if (!data[texture]) {
+                console.warn("[Resource.Texture.buildMatrix]:", "Undefined texture for: " + texture);
+                return;
+            }
+            data[texture] = data[texture].image;
+        }
+    },
+    generateAlphaMask: function() {
+        if (!this._isLoaded) {
+            console.warn("[Resource.Texture.generateMask]:", "Texture is not loaded yet.");
+            return;
+        }
+        if (this.textureType !== 0) {
+            console.warn("[Resource.Texture.generateMask]:", "Only canvas textures are supported currently.");
+            return;
+        }
+        var alphaMask = new Resource.Texture(Resource.TextureType.CANVAS);
+        alphaMask.resize(this.trueFullWidth, this.trueFullHeight);
+        var imgData = this.ctx.getImageData(0, 0, this.trueFullWidth, this.trueFullHeight);
+        var data = imgData.data;
+        var numBytes = data.length;
+        for (var i = 0; i < numBytes; i += 4) {
+            data[i] = 255;
+            data[i + 1] = 255;
+            data[i + 2] = 255;
+        }
+        alphaMask.ctx.putImageData(imgData, 0, 0);
+        alphaMask.isLoaded = true;
+        return alphaMask;
+    },
+    onTextureCacheEvent: function(data, event) {
+        if (event === Resource.Event.LOADED) {
+            data.unsubscribe(this);
+            if (this._loadCache.name === "drawOver") {
+                this.drawOver(this._loadCache.texture, this._loadCache.x, this._loadCache.y);
+            } else {
+                this[this._loadCache.name](this._loadCache.data);
+            }
+            this._loadCache = null;
+        }
+    },
+    set x(value) {
+        if (!this.ptr) {
+            this._x = 0;
+            return;
+        }
+        if (this.textureType) {
+            this._xRatio = 1 / this.ptr.trueFullWidth;
+            this._x = this._xRatio * value;
+        } else {
+            this._x = value;
+        }
+    },
+    set y(value) {
+        if (!this.ptr) {
+            this._y = 0;
+            return;
+        }
+        if (this.textureType) {
+            this._yRatio = 1 / this.ptr.trueFullHeight;
+            this._y = this._yRatio * value;
+        } else {
+            this._y = value;
+        }
+    },
+    get x() {
+        return this._x;
+    },
+    get y() {
+        return this._y;
+    },
+    set offsetX(x) {
+        this._offsetX = x;
+        if (this._isLoaded) {
+            this.emit(this, Resource.Event.CHANGED);
+        }
+    },
+    set offsetY(y) {
+        this._offsetY = y;
+        if (this._isLoaded) {
+            this.emit(this, Resource.Event.CHANGED);
+        }
+    },
+    get offsetX() {
+        return this._offsetX;
+    },
+    get offsetY() {
+        return this._offsetY;
+    },
+    set bgTexture(texture) {
+        if (typeof texture === "string") {
+            var obj = Resource.ctrl.getTexture(texture);
+            if (!obj) {
+                console.warn("[Resource.Texture.bgTexture]:", "No such texture found: " + texture);
+                return;
+            }
+            texture = obj;
+        }
+        this._bgTexture = texture;
+        this.isLoaded = true;
+    },
+    get bgTexture() {
+        return this._bgTexture;
+    },
+    type: Resource.Type.TEXTURE,
+    canvas: null,
+    ctx: null,
+    _bgTexture: null,
+    vbo: null,
+    _vertices: null,
+    _x: 0,
+    _y: 0,
+    _xRatio: 0,
+    _yRatio: 0,
+    _width: 0,
+    _height: 0,
+    fullWidth: 0,
+    fullHeight: 0,
+    _widthRatio: 0,
+    _heightRatio: 0,
+    _offsetX: 0,
+    _offsetY: 0,
+    unitRatio: 1,
+    fps: 0,
+    numFrames: 1,
+    numFramesX: 1,
+    numFramesY: 1,
+    isAnimated: false,
+    isLoop: false,
+    autoPlay: true,
+    isAnimReverse: false,
+    isEmulateReverse: false,
+    fromAtlas: false,
+    isReloading: false,
+    _tmpImg: null,
+    _tmpCtx: null,
+    _cachedImg: null,
+    _cachedCtx: null,
+    _anim: null,
+    _frames: null,
+    _loadCache: null,
+    _canvasCache: null,
+    _maxResCanvasCache: null,
+    _maxResCtxCache: null
+});
+
+"use strict";
+
+Resource.Sound = Resource.Basic.extend({
+    init: function(param, path) {
+        if (typeof param === "string") {
+            path = param;
+            param = void 0;
+        }
+        if (path) {
+            var wildCardIndex = path.lastIndexOf(".");
+            if (wildCardIndex !== -1 && path.length - wildCardIndex <= 5) {
+                this.format = path.substr(wildCardIndex + 1, path.length - wildCardIndex - 1);
+                path = path.substr(0, wildCardIndex);
+            }
+            this.path = Resource.ctrl.rootPath + path;
+        }
+        this._instances = [];
+        var self = this;
+        if (meta.device.isAudioAPI) {
+            this._request = new XMLHttpRequest();
+            this._request.responseType = "arraybuffer";
+            this._request.onreadystatechange = function() {
+                self._onStateChange();
+            };
+        } else {
+            this._context = this._getInstance();
+            this._context.audio.addEventListener("error", function() {
+                if (!self.format) {
+                    self._loadNextExtension();
+                } else {
+                    self._onLoadFailed();
+                }
+            });
+            this._numInstancesUsed = 0;
+        }
+    },
+    load: function() {
+        if (this.isLoading) {
+            return;
+        }
+        this.isLoading = true;
+        this.isLoaded = false;
+        Resource.ctrl.addToLoad(this);
+        var resourceCtrl = Resource.ctrl;
+        if (!resourceCtrl.isSyncLoading) {
+            if (!this.syncLoading) {
+                resourceCtrl.isSyncLoading = true;
+            }
+            this._loadNextExtension();
+        } else {
+            resourceCtrl.addToQueue(this);
+        }
+    },
+    forceLoad: function() {
+        this._loadNextExtension();
+    },
+    _loadNextExtension: function() {
+        var url;
+        if (this.format) {
+            url = this.path;
+        } else {
+            var audioFormats = meta.device.audioFormats;
+            this._requestFormat++;
+            if (this._requestFormat > audioFormats.length) {
+                this._onLoadFailed();
+                return;
+            }
+            url = this.path + "." + meta.device.audioFormats[this._requestFormat - 1];
+        }
+        this._loadFromUrl(url);
+    },
+    _loadFromUrl: function(url) {
+        this._request.open("GET", url, true);
+        this._request.send();
+    },
+    _loadFromUrl_legacy: function(url) {
+        this._context.audio.src = url;
+        this._context.audio.load();
+    },
+    _clear: function() {
+        this._request.onreadystatechange = null;
+        this._request = null;
+    },
+    _clear_legacy: function() {},
+    _onStateChange: function() {
+        if (this._request.readyState === 4) {
+            if (this._request.status === 200) {
+                var self = this;
+                this._context.decodeAudioData(this._request.response, function(buffer) {
+                    self._onDecodeSuccess(buffer);
+                }, function() {
+                    self._onDecodeError();
+                });
+                this._request = null;
+            } else {
+                if (!this.format) {
+                    this._loadNextExtension();
+                } else {
+                    this._onLoadFailed();
+                }
+            }
+        }
+    },
+    _onDecodeSuccess: function(buffer) {
+        if (!this.format) {
+            this.path += "." + meta.device.audioFormats[this._requestFormat - 1];
+        }
+        this._buffer = buffer;
+        this._isLoading = false;
+        this._clear();
+        this.isLoaded = true;
+        Resource.ctrl.loadSuccess(this);
+        var numInstances = this._instances.length;
+        for (var i = 0; i < numInstances; i++) {
+            this._createSource(this._instances[i]);
+        }
+    },
+    _onDecodeError: function() {
+        if (!this.format) {
+            this.path += "." + meta.device.audioFormats[this._requestFormat - 1];
+        }
+        console.warn("[Resource.Sound.load]:", "Error decoding file: " + this.path);
+        this._isLoading = false;
+        this._clear();
+        Resource.ctrl.loadFailed(this);
+    },
+    _onLoadFailed: function() {
+        if (!this.format) {
+            var format = meta.device.audioFormats[this._requestFormat - 1];
+            if (format) {
+                this.path += "." + format;
+            }
+        }
+        console.warn("[Resource.Sound.load]:", "Error loading file: " + this.path);
+        this._isLoading = false;
+        this._clear();
+        Resource.ctrl.loadFailed(this);
+    },
+    play: function(isLoop, time) {
+        var instance = this._getInstance();
+        instance.isLoop = isLoop || false;
+        instance.play(time);
+    },
+    stop: function() {
+        for (var i = 0; i < this._numInstancesUsed; i++) {
+            this._instances[i]._stop();
+        }
+        this._numInstancesUsed = 0;
+    },
+    pause: function() {
+        for (var i = 0; i < this._numInstancesUsed; i++) {
+            this._instances[i].pause();
+        }
+    },
+    resume: function() {
+        for (var i = 0; i < this._numInstancesUsed; i++) {
+            this._instances[i].resume();
+        }
+    },
+    _createSource: function(instance) {
+        var gainNode = this._context.createGain();
+        gainNode.connect(this._context.destination);
+        var source = this._context.createBufferSource();
+        source.buffer = this._buffer;
+        source.loop = instance._isLoop;
+        source.connect(gainNode);
+        if (!source.start) {
+            source.start = source.noteOn;
+        }
+        if (!source.stop) {
+            source.stop = source.noteOff;
+        }
+        var self = this;
+        source.onended = function() {
+            self._clearInstance(instance);
+        };
+        instance.source = source;
+        instance.gainNode = gainNode;
+        return source;
+    },
+    _createInstance: function() {
+        return new Resource.AudioInstance();
+    },
+    _createInstance_legacy: function() {
+        return new Resource.AudioInstance_legacy(this);
+    },
+    _getInstance: function() {
+        if (this._instances.length === this._numInstancesUsed) {
+            this._instances.length += 1;
+            this._instances[this._numInstancesUsed] = this._createInstance();
+        }
+        var instance = this._instances[this._numInstancesUsed];
+        instance.id = this._numInstancesUsed;
+        this._numInstancesUsed++;
+        return instance;
+    },
+    _clearInstance: function(instance) {
+        this._numInstancesUsed--;
+        var lastInstance = this._instances[this._numInstancesUsed];
+        lastInstance.id = instance.id;
+        this._instances[instance.id] = lastInstance;
+    },
+    set volume(value) {
+        if (this._volume === value) {
+            return;
+        }
+        this._volume = value;
+        var numInstances = this._instances.length;
+        for (var i = 0; i < numInstances; i++) {
+            this._instances[i].volume = value;
+        }
+    },
+    get volume() {
+        return this._volume;
+    },
+    get isPlaying() {
+        if (this._numInstancesUsed > 0) {
+            return true;
+        }
+        return false;
+    },
+    type: Resource.Type.SOUND,
+    format: "",
+    _instances: null,
+    _numInstancesUsed: 0,
+    _autoIsLoop: false,
+    _autoTime: 0,
+    _context: null,
+    _buffer: null,
+    _request: null,
+    _requestFormat: 0,
+    _volume: 1,
+    _isInQueue: false,
+    _syncLoading: false
+});
+
+Resource.AudioInstance = function() {
+    this.id = -1;
+    this.source = null;
+    this.gainNode = null;
+    this.auto;
+    this._volume = 1;
+    this._mixedVolume = 1;
+};
+
+Resource.AudioInstance.prototype = {
+    set volume(value) {
+        this._mixedVolume = this._volume * value;
+        this.gainNode.gain.value = this._mixedVolume;
+    },
+    get volume() {
+        return this._volume;
+    },
+    get mixedVolume() {
+        return this._mixedVolume;
+    }
+};
+
+Resource.AudioInstance_legacy = function(parent) {
+    this.id = -1;
+    this.parent = parent;
+    this.isPlaying = false;
+    this.isLoop = false;
+    this._canPlay = false;
+    this._metaLoaded = false;
+    this._isLoaded = false;
+    this._volume = 1;
+    this._mixedVolume = 1;
+    this.audio = new Audio();
+    this.audio.preload = "auto";
+    this._addEvents(parent);
+};
+
+Resource.AudioInstance_legacy.prototype = {
+    play: function(time) {
+        this.isPlaying = true;
+        if (this._isLoaded) {
+            this.audio.currentTime = time || 0;
+            this.audio.play();
+        } else {
+            this._autoPlay = true;
+        }
+    },
+    stop: function() {
+        this.isPlaying = false;
+        this.isLoop = false;
+        this.audio.pause();
+        this.parent._clearInstance(this);
+    },
+    _stop: function() {
+        this.isPlaying = false;
+        this.isLoop = false;
+        this.audio.pause();
+    },
+    pause: function() {
+        this.isPlaying = false;
+        this.audio.pause();
+    },
+    resume: function() {
+        this.isPlaying = true;
+        this.audio.play();
+    },
+    _addEvents: function() {
+        var self = this;
+        var canPlayFunc = function() {
+            self.audio.removeEventListener("canplaythrough", canPlayFunc);
+            self._canPlay = true;
+            if (meta.device.support.onloadedmetadata && self._metaLoaded) {
+                self._onLoaded();
+            }
+        };
+        this.audio.addEventListener("canplaythrough", canPlayFunc, false);
+        if (meta.device.support.onloadedmetadata) {
+            var metaFunc = function() {
+                self.audio.removeEventListener("loadedmetadata", metaFunc);
+                self._metaLoaded = true;
+                if (self._canPlay) {
+                    self._onLoaded();
+                }
+            };
+            this.audio.addEventListener("loadedmetadata", metaFunc, false);
+        }
+        this.audio.addEventListener("ended", function() {
+            self._onEnd();
+        }, false);
+        if (this.parent._isLoaded) {
+            this.audio.src = this.parent.path;
+            this.audio.load();
+        }
+    },
+    _onLoaded: function() {
+        if (!this.parent._isLoaded) {
+            if (!this.parent.format) {
+                this.parent.path += "." + meta.device.audioFormats[this.parent._requestFormat - 1];
+            }
+            this.parent._isLoading = false;
+            this.parent.isLoaded = true;
+            var instance;
+            var instances = this.parent._instances;
+            var numInstances = this.parent._instances.length;
+            for (var i = 1; i < numInstances; i++) {
+                instance = instances[i];
+                instance.audio.src = this.parent.path;
+                instance.audio.load();
+            }
+            Resource.ctrl.loadSuccess(parent);
+            Resource.ctrl.loadNextFromQueue();
+        }
+        this._isLoaded = true;
+        if (this._autoPlay) {
+            this.audio.play();
+        }
+    },
+    _onEnd: function() {
+        if (this.isLoop) {
+            this.audio.play();
+            this.audio.currentTime = 0;
+        } else {
+            if (this.isPlaying) {
+                this.isPlaying = false;
+                this.parent._clearInstance(this);
+            }
+        }
+    },
+    set currentTime(time) {
+        if (!this.isPlaying) {
+            this.audio.play();
+            this.audio.currentTime = time || 0;
+            this.audio.pause();
+        } else {
+            this.audio.currentTime = time || 0;
+        }
+    },
+    get currentTime() {
+        return this.audio.currentTime;
+    },
+    set volume(value) {
+        if (value > 1) {
+            value = 1;
+        } else if (value < 0) {
+            value = 0;
+        }
+        this._mixedVolume = this._volume * value;
+        this.audio.volume = this._mixedVolume;
+    },
+    get volume() {
+        return this._volume;
+    },
+    get mixedVolume() {
+        return this._mixedVolume;
+    },
+    _autoPlay: false
+};
+
+"use strict";
+
+Resource.SpriteSheet = Resource.Basic.extend({
+    init: function(param, path) {
+        if (typeof param === "string") {
+            path = param;
+            param = void 0;
+        } else {
+            for (var key in param) {
+                this[key] = param[key];
+            }
+        }
+        if (path) {
+            var wildCardIndex = path.lastIndexOf(".");
+            if (wildCardIndex !== -1 && path.length - wildCardIndex <= 5) {
+                this.format = path.substr(wildCardIndex + 1, path.length - wildCardIndex - 1);
+                path = path.substr(0, wildCardIndex);
+            }
+            this.path = Resource.ctrl.rootPath + path;
+            if (!this.format) {
+                this.format = "xml";
+            }
+        }
+    },
+    load: function() {
+        if (this.isLoading) {
+            return;
+        }
+        this.isLoading = true;
+        this.isLoaded = false;
+        this._isAtlasLoaded = false;
+        if (!this.texture) {
+            this.texture = new Resource.Texture(this.path);
+        } else if (typeof this.texture === "string") {
+            this.texture = new Resource.Texture(this.texture);
+        }
+        if (!this.texture._isLoaded) {
+            this.texture.subscribe(this, this._onTextureEvent);
+            if (!this.texture._isLoading) {
+                this.texture.load();
+            }
+        }
+        var self = this;
+        var atlasPath = this.path + "." + this.format;
+        this._request = new XMLHttpRequest();
+        this._request.open("GET", atlasPath, true);
+        this._request.onreadystatechange = function() {
+            self._onStateChange();
+        };
+        this._request.send();
+        Resource.ctrl.addToLoad(this);
+    },
+    loadData: function(data, format) {
+        format = format || this.format;
+        if (!format) {
+            format = "xml";
+        }
+        this.format = format;
+        this.isLoaded = true;
+        if (format === "xml") {
+            var parser = new DOMParser();
+            var xml = parser.parseFromString(data, "text/xml");
+            return this.loadXML(xml);
+        } else if (format === "json") {
+            var json = JSON.parse(data);
+            return this.loadJSON(json);
+        } else if (format === "plist") {
+            var parser = new DOMParser();
+            var plist = parser.parseFromString(data, "text/xml");
+            return this.loadPlist(plist);
+        } else {
+            console.warn("[Resource.SpriteSheet.loadData]:", "Trying to load an unsupported format - " + this.format);
+        }
+        return false;
+    },
+    loadXML: function(xml) {
+        if (!xml) {
+            console.warn("[Resource.SpriteSheet.loadXML]:", "Invalid XML file.");
+            return false;
+        }
+        var childNodes = xml.documentElement.childNodes;
+        var numNodes = childNodes.length;
+        var node;
+        for (var i = 0; i < numNodes; i++) {
+            node = childNodes[i];
+            if (node.nodeName === "SubTexture") {
+                this._loadXML_Starling(node);
+            } else if (node.nodeName === "sprite") {
+                this._loadXML_genericXML(node);
+            } else if (node.nodeName === "dict") {
+                return this.loadPlist(xml);
+            }
+        }
+        return true;
+    },
+    _loadXML_Starling: function(node) {
+        var texture = new Resource.Texture();
+        texture.fromAtlas = true;
+        texture.ptr = this.texture;
+        texture.name = node.getAttribute("name");
+        texture.x = node.getAttribute("x");
+        texture.y = node.getAttribute("y");
+        texture.resize(node.getAttribute("width"), node.getAttribute("height"));
+        texture.isLoaded = true;
+        Resource.ctrl.add(texture);
+    },
+    _loadXML_genericXML: function(node) {
+        var texture = new Resource.Texture();
+        texture.fromAtlas = true;
+        texture.ptr = this.texture;
+        texture.name = node.getAttribute("n");
+        texture.x = node.getAttribute("x");
+        texture.y = node.getAttribute("y");
+        texture.resize(node.getAttribute("w"), node.getAttribute("h"));
+        texture.isLoaded = true;
+        Resource.ctrl.add(texture);
+    },
+    loadPlist: function(plist) {
+        if (!plist) {
+            console.warn("[Resource.SpriteSheet.loadPlist]:", "Invalid Plist file.");
+            return false;
+        }
+        var childNodes = plist.documentElement.childNodes;
+        var numNodes = childNodes.length;
+        var node;
+        for (var i = 0; i < numNodes; i++) {
+            node = childNodes[i];
+            if (node.nodeName === "dict") {
+                return this._loadPlist_dict(node);
+            }
+        }
+    },
+    _loadPlist_dict: function(node) {
+        var nodes = node.childNodes;
+        var numNodes = nodes.length;
+        var command = "";
+        for (var i = 0; i < numNodes; i++) {
+            node = nodes[i];
+            if (node.nodeName === "key") {
+                command = node.textContent;
+            } else if (node.nodeName === "dict") {
+                if (!command) {
+                    continue;
+                }
+                if (command === "frames") {
+                    this._loadPlist_frames(node);
+                }
+            }
+        }
+    },
+    _loadPlist_frames: function(node) {
+        var nodes = node.childNodes;
+        var numNodes = nodes.length;
+        var name = "";
+        for (var i = 0; i < numNodes; i++) {
+            node = nodes[i];
+            if (node.nodeName === "key") {
+                name = node.textContent;
+            } else if (node.nodeName === "dict") {
+                this._loadPlist_frame(node, name);
+            }
+        }
+    },
+    _loadPlist_frame: function(node, name) {
+        var texture = new Resource.Texture();
+        texture.fromAtlas = true;
+        texture.ptr = this.texture;
+        texture.name = name;
+        var nodes = node.childNodes;
+        var numNodes = nodes.length;
+        var command = "", data;
+        for (var i = 0; i < numNodes; i++) {
+            node = nodes[i];
+            if (node.nodeName === "key") {
+                command = node.textContent;
+            } else if (node.nodeName === "string") {
+                if (command === "frame") {
+                    data = node.textContent.match(/[0-9]+/g);
+                    texture.x = parseInt(data[0]);
+                    texture.y = parseInt(data[1]);
+                    texture.resize(parseInt(data[2]), parseInt(data[3]));
+                    texture.isLoaded = true;
+                    Resource.ctrl.add(texture);
+                    return;
+                }
+            }
+        }
+    },
+    loadJSON: function(json) {
+        if (!json) {
+            console.warn("[Resource.SpriteSheet.loadFromJSON]:", "Invalid JSON file.");
+            return false;
+        }
+        if (json.frames instanceof Array) {
+            this._loadJSON_array(json);
+        } else {
+            this._loadJSON_hash(json);
+        }
+        return true;
+    },
+    _loadJSON_array: function(json) {
+        var frame, texture;
+        var frames = json.frames;
+        var numFrames = frames.length;
+        for (var i = 0; i < numFrames; i++) {
+            frame = frames[i];
+            texture = new Resource.Texture();
+            texture.fromAtlas = true;
+            texture.ptr = this.texture;
+            texture.name = frame.filename;
+            frame = frame.frame;
+            texture.x = frame.x;
+            texture.y = frame.y;
+            texture.resize(frame.w, frame.h);
+            texture.isLoaded = true;
+            Resource.ctrl.add(texture);
+        }
+    },
+    _loadJSON_hash: function(json) {
+        var frame, texture;
+        var frames = json.frames;
+        for (var key in frames) {
+            frame = frames[key].frame;
+            texture = new Resource.Texture();
+            texture.fromAtlas = true;
+            texture.ptr = this.texture;
+            texture.name = key;
+            texture.x = frame.x;
+            texture.y = frame.y;
+            texture.resize(frame.w, frame.h);
+            texture.isLoaded = true;
+            Resource.ctrl.add(texture);
+        }
+    },
+    loadAtlas: function() {
+        if (typeof this.atlas !== "object") {
+            console.warn("[Resource.SpriteSheet.loadFromAtlas]:", "Incorrect atlas object, expected to be an Array.");
+            return false;
+        }
+        var frames = [];
+        var item, texture, name;
+        var numItems = this.atlas.length;
+        for (var i = 0; i < numItems; i++) {
+            item = this.atlas[i];
+            name = item.name || this.params;
+            if (!name) {
+                console.warn("[Resource.SpriteSheet.loadFromAtlas]:", "No name defined for atlas item in " + this.name + " spritesheet.");
+                continue;
+            }
+            item.x = item.x || this.params.x || 0;
+            item.y = item.y || this.params.y || 0;
+            item.width = item.width || this.params.width || 1;
+            item.height = item.height || this.params.height || 1;
+            frames.push(item);
+            texture = new Resource.Texture();
+            texture.fromAtlas = true;
+            texture.ptr = this.texture;
+            texture.name = name;
+            texture.x = item.x;
+            texture.y = item.y;
+            texture.resize(item.width, item.height);
+            texture.numFrames = item.numFrames || this.params.numFrames || 1;
+            texture.isLoaded = true;
+            Resource.ctrl.add(texture);
+        }
+        this.texture._frames = frames;
+        this.atlas = null;
+        this.isLoaded = true;
+        return true;
+    },
+    _onTextureEvent: function(data, event) {
+        if (event === Resource.Event.LOADED) {
+            this.texture.unsubscribe(this);
+            if (this._isAtlasLoaded) {
+                this.loadData(this._response, this.format);
+                Resource.ctrl.loadSuccess(this);
+                this._response = null;
+            }
+        }
+    },
+    _onStateChange: function() {
+        if (this._request.readyState === 4) {
+            if (this._request.status === 200) {
+                this._isAtlasLoaded = true;
+                this._response = this._request.response;
+                this._request = null;
+                if (this.texture._isLoaded) {
+                    this.loadData(this._response, this.format);
+                    Resource.ctrl.loadSuccess(this);
+                    this._response = null;
+                }
+            } else {
+                this._isLoading = false;
+                this._request.onreadystatechange = null;
+                this._request = null;
+                Resource.ctrl.loadFailed(this);
+            }
+        }
+    },
+    type: Resource.Type.SPRITE_SHEET,
+    format: "",
+    atlas: null,
+    params: null,
+    texture: null,
+    _request: null,
+    _response: null,
+    _isAtlasLoaded: false
+});
+
+"use strict";
+
+Resource.Font = Resource.Basic.extend({
+    init: function(param, path) {
+        if (typeof param === "string") {
+            path = param;
+            param = void 0;
+        } else {
+            for (var key in param) {
+                this[key] = param[key];
+            }
+        }
+        if (path) {
+            var wildCardIndex = path.lastIndexOf(".");
+            if (wildCardIndex !== -1 && path.length - wildCardIndex <= 5) {
+                this.format = path.substr(wildCardIndex + 1, path.length - wildCardIndex - 1);
+                path = path.substr(0, wildCardIndex);
+            }
+            this.path = Resource.ctrl.rootPath + path;
+            if (!this.format) {
+                this.format = "fnt";
+            }
+        }
+    },
+    load: function() {
+        console.log("load");
+    },
+    type: Resource.Type.FONT,
+    format: ""
+});
+
+"use strict";
+
+window.Entity = {};
+
+Entity.Controller = meta.Controller.extend({
+    init: function() {
+        var entityProto = Entity.Geometry.prototype;
+        entityProto._entityCtrl = this;
+        entityProto._parent = this;
+        this.InputFlag = entityProto.InputFlag;
+        this.entities = [];
+        this.entitiesToUpdate = [];
+        this.entitiesToRemove = [];
+        this.entitiesRemoveUpdate = [];
+        this.detachBuffer = [];
+        this._centerTex = new Resource.Texture();
+        this._centerTex.fillRect({
+            color: "#ff0000",
+            width: 6,
+            height: 6
+        });
+        var scope = meta;
+        this._chnOnDown = scope.createChannel(Entity.Event.INPUT_DOWN);
+        this._chnOnUp = scope.createChannel(Entity.Event.INPUT_UP);
+        this._chnOnClick = scope.createChannel(Entity.Event.CLICK);
+        this._chnOnDbClick = scope.createChannel(Entity.Event.DBCLICK);
+        this._chnOnDrag = scope.createChannel(Entity.Event.DRAG);
+        this._chnOnDragStart = scope.createChannel(Entity.Event.DRAG_START);
+        this._chnOnDragEnd = scope.createChannel(Entity.Event.DRAG_END);
+        this._chnOnHover = scope.createChannel(Entity.Event.HOVER);
+        this._chnOnHoverEnter = scope.createChannel(Entity.Event.HOVER_ENTER);
+        this._chnOnHoverExit = scope.createChannel(Entity.Event.HOVER_EXIT);
+        scope.subscribe(this, scope.Event.RESIZE, this.onResize);
+        scope.subscribe(this, scope.Event.CAMERA_MOVE, this.onMove);
+        scope.subscribe(this, scope.Event.ADAPT, this.onAdapt);
+        this.volume = scope.camera.volume;
+        this.onMove(scope.camera, null);
+    },
+    load: function() {
+        meta.subscribe(this, [ Input.Event.DOWN, Input.Event.UP ], this.onInput, meta.Priority.HIGH);
+        meta.subscribe(this, Input.Event.DBCLICK, this.onInputDbCLick, meta.Priority.HIGH);
+        meta.subscribe(this, Input.Event.MOVE, this.onInputMove, meta.Priority.HIGH);
+    },
+    update: function(tDelta) {
+        this.updateFlag |= 0;
+        var i, n, entity;
+        var children, numChildren;
+        if (this._flags & this.Flag.UPDATE_HOVER) {
+            this._checkHover(Input.ctrl.getEvent());
+            this._flags &= ~this.Flag.UPDATE_HOVER;
+        }
+        for (i = 0; i < this.numEntitiesToUpdate; i++) {
+            entity = this.entitiesToUpdate[i];
+            if (entity.isPaused || entity.isRemoved) {
+                continue;
+            }
+            if (entity.update) {
+                entity.update(tDelta);
+            }
+            if (entity.components) {
+                entity._updateComponents(tDelta);
+            }
+        }
+        if (this.numDetachItems) {
+            for (i = 0; i < this.numDetachItems; i++) {
+                entity = this.detachBuffer[i];
+                children = entity._parent.children;
+                numChildren = children.length;
+                if (numChildren === 0) {
+                    continue;
+                }
+                for (n = 0; n < numChildren; n++) {
+                    if (children[n] === entity) {
+                        children[n] = children[numChildren - 1];
+                        children.pop();
+                        break;
+                    }
+                }
+            }
+            this.detachBuffer.length = 0;
+            this.numDetachItems = 0;
+        }
+        if (this.entitiesToRemove.length) {
+            this._removeEntities(this.entitiesToRemove);
+            this.entitiesToRemove.length = 0;
+        }
+        if (this.numEntitiesRemoveUpdate) {
+            var tmpEntity;
+            for (i = 0; i < this.numEntitiesRemoveUpdate; i++) {
+                entity = this.entitiesRemoveUpdate[i];
+                this.entitiesRemoveUpdate[i] = null;
+                if ((entity._removeFlag & 4) !== 4) {
+                    continue;
+                }
+                this.numEntitiesToUpdate--;
+                tmpEntity = this.entitiesToUpdate[this.numEntitiesToUpdate];
+                tmpEntity._updateNodeID = entity._updateNodeID;
+                this.entitiesToUpdate[entity._updateNodeID] = tmpEntity;
+                this.entitiesToUpdate[this.numEntitiesToUpdate] = null;
+                entity._removeFlag &= ~4;
+                entity._updateNodeID = -1;
+            }
+            this.numEntitiesRemoveUpdate = 0;
+        }
+        if (this.needDepthSort) {
+            this.entities.sort(this._sortEntities);
+            this.needDepthSort = false;
+        }
+        this.updateFlag &= ~1;
+    },
+    _addToDrawBounds: function() {
+        this.numShowBounds++;
+        this.isNeedRender = true;
+    },
+    _removeToDrawBounds: function() {
+        this.numShowBounds--;
+        this.isNeedRender = true;
+    },
+    addEntities: function(entities) {
+        if (entities instanceof Array) {
+            var numEntities = entities.length;
+            this.entities.length += numEntities;
+            for (var i = 0; i < numEntities; i++) {
+                this._addEntity(entities[i]);
+            }
+        } else {
+            if (entities instanceof Entity.Geometry) {
+                this.entities.length++;
+                this._addEntity(entities);
+            } else {
+                console.warn("(Entity.Controller.addEntities) Invalid type for entities");
+                return;
+            }
+        }
+        this._flags |= this.Flag.UPDATE_HOVER;
+        this.isNeedRender = true;
+    },
+    _addEntity: function(entity) {
+        if (entity.isRemoved) {
+            return;
+        }
+        if (entity._flags & entity.Flag.ADDED) {
+            return;
+        }
+        this.entities[this.numEntities++] = entity;
+        entity._flags |= entity.Flag.ADDED;
+        if (!entity.texture) {
+            entity.isLoaded = true;
+        }
+        if (entity.update) {
+            entity.isUpdating = true;
+        }
+        if (entity.isNeedStyle) {
+            entity._style.update(entity);
+        }
+        if (entity.totalZ !== 0) {
+            this.needDepthSort = true;
+        }
+        if (entity.isLoaded) {
+            entity._onResize(this);
+        }
+        if (entity.children) {
+            var numChildren = entity.children.length;
+            for (var i = 0; i < numChildren; i++) {
+                this._addEntity(entity.children[i]);
+            }
+        }
+    },
+    removeEntities: function(entities) {
+        if (entities instanceof Array) {
+            if (this.updateFlag) {
+                var numEntities = entities.length;
+                this.entitiesToRemove.length += numEntities;
+                for (var i = 0; i < numEntities; i++) {
+                    this.entitiesToRemove.push(entities[i]);
+                }
+            } else {
+                this._removeEntities(entities);
+            }
+        } else {
+            if (entities instanceof Entity.Geometry) {
+                if (this.updateFlag) {
+                    this.entitiesToRemove.push(entities);
+                } else {
+                    for (var n = 0; n < this.numEntities; n++) {
+                        if (this.entities[n] === entities) {
+                            this.numEntities--;
+                            this.entities[n] = this.entities[this.numEntities];
+                            this.entities.pop();
+                            if (entities.children) {
+                                this._removeEntities(entities.children);
+                            }
+                            break;
+                        }
+                    }
+                }
+            } else {
+                console.warn("(Entity.Controller.removeEntities) Invalid type for entities");
+                return;
+            }
+        }
+        this._flags |= this.Flag.UPDATE_HOVER;
+        this.isNeedRender = true;
+        this.needDepthSort = true;
+    },
+    _removeEntities: function(buffer) {
+        var entity, n;
+        var numItems = buffer.length;
+        for (var i = 0; i < numItems; i++) {
+            entity = buffer[i];
+            for (n = 0; n < this.numEntities; n++) {
+                if (!(entity._flags & entity.Flag.ADDED)) {
+                    continue;
+                }
+                if (this.entities[n] === entity) {
+                    this.numEntities--;
+                    this.entities[n] = this.entities[this.numEntities];
+                    this.entities.pop();
+                    entity &= ~entity.Flag.ADDED;
+                    if (entity.children) {
+                        this._removeEntities(entity.children);
+                    }
+                    break;
+                }
+            }
+        }
+    },
+    _addToUpdating: function(entity) {
+        if (!entity) {
+            console.warn("(Entity.Controller._addToUpdating) Invalid or object is null.");
+            return;
+        }
+        if ((entity._removeFlag & 4) === 4) {
+            entity._removeFlag &= ~4;
+            return true;
+        } else if (entity._updateNodeID !== -1) {
+            return false;
+        }
+        entity._updateNodeID = this.numEntitiesToUpdate;
+        if (this.entitiesToUpdate.length === this.numEntitiesToUpdate) {
+            this.entitiesToUpdate.length += 8;
+        }
+        this.entitiesToUpdate[this.numEntitiesToUpdate] = entity;
+        this.numEntitiesToUpdate++;
+        return true;
+    },
+    _removeFromUpdating: function(entity) {
+        if (!entity) {
+            console.warn("[Entity.Controller._addToUpdating]:", "Invalid or object is null.");
+            return;
+        }
+        if (entity._updateNodeID === -1 || (entity._removeFlag & 4) === 4) {
+            return false;
+        }
+        if (this.entitiesRemoveUpdate.length === this.numEntitiesRemoveUpdate) {
+            this.entitiesRemoveUpdate.length += 4;
+        }
+        entity._removeFlag |= 4;
+        this.entitiesRemoveUpdate[this.numEntitiesRemoveUpdate] = entity;
+        this.numEntitiesRemoveUpdate++;
+        return true;
+    },
+    _sortEntities: function(a, b) {
+        return a.totalZ - b.totalZ;
+    },
+    getFromVolume: function(volume) {
+        var entity;
+        var currNode = this.entities.last.prev;
+        var lastNode = this.entities.first;
+        for (;currNode !== lastNode; currNode = currNode.prev) {
+            entity = currNode.entity;
+            if (!entity.pickable) {
+                continue;
+            }
+            if (entity.volume === volume) {
+                continue;
+            }
+            if (entity.volume.vsAABB(volume)) {
+                return entity;
+            }
+        }
+        return null;
+    },
+    getFromPoint: function(x, y, exclude) {
+        var entity;
+        var currNode = this.entities.last.prev;
+        var lastNode = this.entities.first;
+        for (;currNode !== lastNode; currNode = currNode.prev) {
+            entity = currNode.entity;
+            if (!entity.pickable) {
+                continue;
+            }
+            if (entity === exclude) {
+                continue;
+            }
+            if (entity.volume.vsPoint(x, y)) {
+                return entity;
+            }
+        }
+        return null;
+    },
+    getFromEntity: function(entity) {
+        return this.getFromVolume(entity.volume);
+    },
+    cacheEntity: meta.emptyFuncParam,
+    uncacheEntity: meta.emptyFuncParam,
+    onResize: function(data, event) {
+        for (var i = 0; i < this.numEntities; i++) {
+            this.entities[i]._onResize(this);
+        }
+        this.isNeedRender = true;
+    },
+    onMove: function(data, event) {
+        var volume = data.volume;
+        this.prevStartCellX = this.startCellX;
+        this.prevStartCellY = this.startCellY;
+        this.prevEndCellX = this.endCellX;
+        this.prevEndCellY = this.endCellY;
+        this.startCellX = Math.floor(volume.minX / this._cellSizeX);
+        this.startCellY = Math.floor(volume.minY / this._cellSizeY);
+        this.endCellX = Math.floor(volume.maxX / this._cellSizeX);
+        this.endCellY = Math.floor(volume.maxY / this._cellSizeY);
+        var loopStartX = Math.min(this.prevStartCellX, this.startCellX);
+        var loopStartY = Math.min(this.prevStartCellY, this.startCellY);
+        var loopEndX = Math.max(this.prevEndCellX, this.endCellX);
+        var loopEndY = Math.max(this.prevEndCellY, this.endCellY);
+        var index, cell;
+        for (var y = loopStartY; y < loopEndY; y++) {
+            for (var x = loopStartX; x < loopEndX; x++) {
+                index = x | y << 16;
+            }
+        }
+        this.x = data._x | 0;
+        this.y = data._y | 0;
+        this.isNeedRender = true;
+    },
+    onAdapt: function(data, event) {
+        for (var i = 0; i < this.numEntities; i++) {
+            this.entities[i].adapt();
+        }
+    },
+    onInput: function(data, event) {
+        if (!this.enablePicking) {
+            return;
+        }
+        this._checkHover(data);
+        var inputEvent = Input.Event;
+        if (inputEvent.DOWN === event) {
+            if (!this.hoverEntity || !this.hoverEntity.clickable) {
+                return;
+            }
+            data.entity = this.hoverEntity;
+            this.pressedEntity = this.hoverEntity;
+            this.pressedEntity._inputFlags |= this.InputFlag.PRESSED;
+            if (this.pressedEntity._style) {
+                this.pressedEntity._onDown.call(this.pressedEntity, data);
+            }
+            this.pressedEntity.onDown.call(this.pressedEntity, data);
+            this._chnOnDown.emit(data, Entity.Event.INPUT_DOWN);
+        } else if (inputEvent.UP === event) {
+            if (this.pressedEntity && this.pressedEntity.clickable) {
+                data.entity = this.hoverEntity;
+                this.pressedEntity._inputFlags &= ~this.InputFlag.PRESSED;
+                if (this.pressedEntity._style) {
+                    this.pressedEntity._onUp.call(this.pressedEntity, event);
+                }
+                this.pressedEntity.onUp.call(this.pressedEntity, event);
+                this._chnOnUp.emit(this.pressedEntity, Entity.Event.INPUT_UP);
+                if (this.pressedEntity === this.hoverEntity) {
+                    this.pressedEntity._onClick.call(this.pressedEntity, data);
+                    this.pressedEntity.onClick.call(this.pressedEntity, data);
+                    this._chnOnClick.emit(data, Entity.Event.CLICK);
+                }
+                if (this.pressedEntity._inputFlags & this.InputFlag.DRAGGED) {
+                    data.entity = this.pressedEntity;
+                    this.pressedEntity._inputFlags &= ~this.InputFlag.DRAGGED;
+                    if (this.pressedEntity._style) {
+                        this.pressedEntity._onDragEnd.call(this.pressedEntity, data);
+                    }
+                    this.pressedEntity.onDragEnd.call(this.pressedEntity, data);
+                    this._chnOnDragEnd.emit(data, Entity.Event.DRAG_END);
+                    data.entity = this.hoverEntity;
+                }
+                this.pressedEntity = null;
+            }
+        }
+    },
+    onInputDbCLick: function(data, event) {
+        if (!this.enablePicking) {
+            return;
+        }
+        this._checkHover(data);
+        if (this.hoverEntity) {
+            this.hoverEntity._onDbClick.call(this.hoverEntity, data);
+            this.hoverEntity.onDbClick.call(this.hoverEntity, data);
+            this._chnOnDbClick.emit(data, Entity.Event.DBCLICK);
+            data.entity = this.hoverEntity;
+        } else {
+            data.entity = null;
+        }
+    },
+    _checkHover: function(data) {
+        var entity;
+        for (var i = this.numEntities - 1; i >= 0; i--) {
+            entity = this.entities[i];
+            if (!entity.pickable) {
+                continue;
+            }
+            if (entity.isInside(data.x, data.y)) {
+                if (this.hoverEntity !== entity) {
+                    if (this.hoverEntity) {
+                        data.entity = this.hoverEntity;
+                        this.hoverEntity._inputFlags &= ~this.InputFlag.HOVER;
+                        if (this.hoverEntity._style) {
+                            this.hoverEntity._onHoverExit.call(this.hoverEntity, data);
+                        }
+                        this.hoverEntity.onHoverExit.call(this.hoverEntity, data);
+                        this._chnOnHoverExit.emit(data, Entity.Event.HOVER_EXIT);
+                    }
+                    data.entity = entity;
+                    entity._inputFlags |= this.InputFlag.HOVER;
+                    if (entity._style) {
+                        entity._onHoverEnter.call(entity, data);
+                    }
+                    entity.onHoverEnter.call(entity, data);
+                    this._chnOnHoverEnter.emit(data, Entity.Event.HOVER_ENTER);
+                    this.hoverEntity = entity;
+                } else {
+                    data.entity = entity;
+                    entity.onHover.call(entity, data);
+                    this._chnOnHover.emit(data, Entity.Event.HOVER);
+                }
+                data.entity = null;
+                return;
+            }
+        }
+        if (this.hoverEntity) {
+            data.entity = this.hoverEntity;
+            this.hoverEntity._inputFlags &= ~this.InputFlag.HOVER;
+            if (this.hoverEntity._style) {
+                this.hoverEntity._onHoverExit.call(this.hoverEntity, data);
+            }
+            this.hoverEntity.onHoverExit.call(this.hoverEntity, data);
+            this._chnOnHoverExit.emit(data, Entity.Event.HOVER_EXIT);
+        }
+        this.hoverEntity = null;
+    },
+    _checkDrag: function(data) {
+        if (this.pressedEntity && this.pressedEntity.clickable) {
+            data.entity = this.pressedEntity;
+            if (!(this.pressedEntity._inputFlags & this.InputFlag.DRAGGED)) {
+                this.pressedEntity._inputFlags |= this.InputFlag.DRAGGED;
+                if (this.pressedEntity._style) {
+                    this.pressedEntity._onDragStart.call(this.pressedEntity, data);
+                }
+                this.pressedEntity.onDragStart.call(this.pressedEntity, data);
+                this._chnOnDragStart.emit(data, Entity.Event.DRAG_START);
+                return false;
+            }
+            this.pressedEntity.onDrag.call(this.pressedEntity, data);
+            this._chnOnDrag.emit(data, Entity.Event.DRAG);
+            return false;
+        }
+        return true;
+    },
+    onInputMove: function(data, event) {
+        if (!this.enablePicking) {
+            return;
+        }
+        this._checkHover(data);
+        if (!this._checkDrag(data)) {
+            data.entity = this.hoverEntity;
+            return;
+        }
+        data.entity = this.hoverEntity;
+    },
+    getByID: function(id) {
+        var buffer = this.entities.buffer;
+        var num = this.entities.length;
+        for (var n = 0; n < num; n++) {
+            if (id === buffer[n].id) {
+                return buffer[n];
+            }
+        }
+    },
+    getByName: function(name) {
+        var buffer = this.entities.buffer;
+        var num = this.entities.length;
+        for (var n = 0; n < num; n++) {
+            if (name === buffer[n].name) {
+                return buffer[n];
+            }
+        }
+    },
+    getUniqueID: function() {
+        return ++this._uniqueID;
+    },
+    set cellMagnitue(value) {
+        if (this._cellMagnitue === value) {
+            return;
+        }
+        this._cellMagnitue = value;
+        this._cellSizeX = 128 * value;
+        this._cellSizeY = 128 * value;
+        this.isNeedRender = true;
+    },
+    get cellMagnitue() {
+        return this._cellMagnitue;
+    },
+    Flag: {
+        UPDATE_HOVER: 128
+    },
+    InputFlag: null,
+    _x: 0,
+    _y: 0,
+    totalZ: 0,
+    _depthNode: null,
+    totalAngleRad: 0,
+    totalAlpha: 1,
+    totalScaleX: 1,
+    totalScaleY: 1,
+    volume: null,
+    pivotX: 0,
+    pivotY: 0,
+    _flags: 0,
+    cells: null,
+    _cellSizeX: 128,
+    _cellSizeY: 128,
+    _cellMagnitue: 1,
+    startCellX: 0,
+    startCellY: 0,
+    endCellX: 0,
+    endCellY: 0,
+    prevStartCellX: 0,
+    prevStartCellY: 0,
+    prevEndCellX: 0,
+    prevEndCellY: 0,
+    _numCellX: 0,
+    _numCellY: 0,
+    entities: null,
+    numEntities: 0,
+    updateFlag: 0,
+    entitiesToCheck: null,
+    entitiesToRemove: null,
+    entitiesToUpdate: null,
+    entitiesRemoveUpdate: null,
+    detachBuffer: null,
+    dynamicEntities: null,
+    numEntitiesToCheck: 0,
+    numEntitiesToUpdate: 0,
+    numEntitiesRemoveUpdate: 0,
+    numShowBounds: 0,
+    numDetachItems: 0,
+    isLoaded: true,
+    _parent: null,
+    childOffsetX: 0,
+    childOffsetY: 0,
+    hoverEntity: null,
+    pressedEntity: null,
+    isNeedRender: true,
+    needDepthSort: false,
+    enablePicking: true,
+    showBounds: false,
+    showCells: false,
+    _uniqueID: 0,
+    _centerTex: null,
+    _chnOnDown: null,
+    _chnOnUp: null,
+    _chnOnClick: null,
+    _chnOnDbClick: null,
+    _chnOnDrag: null,
+    _chnOnDragStart: null,
+    _chnOnDragEnd: null,
+    _chnOnHover: null,
+    _chnOnHoverEnter: null,
+    _chnOnHoverExit: null
+});
+
+"use strict";
+
+Entity.Event = {
+    INPUT_UP: "entityUp",
+    INPUT_DOWN: "entityDown",
+    CLICK: "entityClick",
+    DBCLICK: "entityDbClick",
+    DRAG: "drag",
+    DRAG_START: "dragStart",
+    DRAG_END: "dragEnd",
+    HOVER: "hover",
+    HOVER_ENTER: "hoverEnter",
+    HOVER_EXIT: "hoverExit",
+    STATE_CHANGE: "stateChange"
+};
+
+Entity.PositionType = {
+    CENTER: 0,
+    TOP_LEFT: 1,
+    TOP_RIGHT: 2,
+    BOTTOM_LEFT: 3,
+    BOTTOM_RIGHT: 4,
+    TOP: 5,
+    BOTTOM: 6,
+    LEFT: 7,
+    RIGHT: 8
+};
+
+"use strict";
+
+meta.Renderer = meta.Class.extend({
+    addEntity: function(entity) {
+        this.entities.push(entity);
+        this.needRender = true;
+    },
+    addEntities: function(entities) {
+        var numEntities = entities.length;
+        for (var i = 0; i < numEntities; i++) {
+            this.entities.push(entities[i]);
+        }
+        this.needRender = true;
+    },
+    getUniqueID: function() {
+        return this._uniqueID++;
+    },
+    entities: [],
+    needRender: true,
+    _uniqueID: 0
+});
+
+"use strict";
+
+meta.CanvasRenderer = meta.Renderer.extend({
+    init: function() {
+        this.engine = meta.engine;
+        this.ctx = this.engine.canvas.getContext("2d");
+        this.engine.ctx = this.ctx;
+    },
+    render: function(tDelta) {
+        this.clear();
+        var numEntities = this.entities.length;
+        for (var i = 0; i < numEntities; i++) {
+            this.drawEntity(this.entities[i]);
+        }
+        this.needRender = false;
+    },
+    clear: function() {
+        this.ctx.fillStyle = "#ddd";
+        this.ctx.fillRect(0, 0, this.engine.width, this.engine.height);
+    },
+    drawEntity: function(entity) {
+        if (entity.texture.canvas.width === 0) {
+            entity.texture.canvas.width = 1;
+            entity.texture.canvas.height = 1;
+        }
+        var volume = entity.volume;
+        this.ctx.drawImage(entity.texture.canvas, Math.floor(volume.minX), Math.floor(volume.minY));
+    },
+    engine: null,
+    ctx: null
+});
+
+"use strict";
+
+Entity.Geometry = meta.Class.extend({
+    _init: function(params) {
+        this.volume = new meta.math.AdvAABB(0, 0, 0, 0);
+        this._parent = this._entityCtrl;
+        this._initParams(params);
+    },
+    _initParams: function(params) {
+        if (params) {
+            if (typeof params === "object") {
+                if (params instanceof Resource.Texture) {
+                    this.texture = params;
+                } else if (params instanceof Entity.Geometry) {
+                    this.texture = params.texture;
+                } else {
+                    for (var key in params) {
+                        this[key] = params[key];
+                    }
+                }
+            } else if (typeof params === "string") {
+                this.texture = params;
+            }
+        }
+    },
+    get parent() {
+        return this._parent;
+    },
+    remove: function() {
+        if (this._parent === this._entityCtrl) {
+            this._view.detach(this);
+        } else {
+            this.removeCore();
+        }
+    },
+    removeCore: function() {
+        if (this.isRemoved) {
+            return;
+        }
+        this.isUpdating = false;
+        this.isRemoved = true;
+        this._view = null;
+        if (this._texture) {
+            this._texture.unsubscribe(this);
+        }
+        if (this._tween) {
+            this._tween.clear();
+            this._tween.owner = null;
+        }
+        this.removeChildren();
+        this.removeComponents();
+    },
+    removeChildren: function() {
+        if (!this.children) {
+            return;
+        }
+        var numChildren = this.children.length;
+        for (var i = 0; i < numChildren; i++) {
+            this.children[i].removeCore();
+        }
+    },
+    clone: function() {
+        var clone = new Entity.Geometry();
+        for (var key in this) {
+            if (clone[key] === this[key]) {
+                continue;
+            }
+            clone[key] = this[key];
+        }
+        clone.id = this._entityCtrl.getUniqueID();
+        return clone;
+    },
+    draw: function(ctx) {
+        this._draw(ctx);
+    },
+    _draw: function(ctx) {
+        this._drawDefault(ctx);
+    },
+    _drawDefault: function(ctx) {
+        if (!this._texture) {
+            return;
+        }
+        var unitSize = this.meta.unitSize;
+        if (!this._texture.isAnimated) {
+            this._texture.draw(ctx, (this.drawX | 0) * unitSize, (this.drawY | 0) * unitSize);
+        } else {
+            this._texture.drawFrame(ctx, (this.drawX | 0) * unitSize, (this.drawY | 0) * unitSize, this._currFrame, this.isEmulateReverse);
+        }
+    },
+    _drawTransform: function(ctx) {
+        if (!this._texture) {
+            return;
+        }
+        ctx.save();
+        ctx.globalAlpha = this.totalAlpha;
+        var unitSize = this.meta.unitSize;
+        var posX = (this.volume.x - this.pivotX) * unitSize;
+        var posY = (this.volume.y - this.pivotY) * unitSize;
+        if (this.isChild) {
+            var parentOffsetX = (this._parent.volume.x - this._parent.pivotX) * unitSize;
+            var parentOffsetY = (this._parent.volume.y - this._parent.pivotY) * unitSize;
+            ctx.translate(parentOffsetX, parentOffsetY);
+            ctx.rotate(this._parent.totalAngleRad);
+            ctx.translate(-parentOffsetX, -parentOffsetY);
+        }
+        ctx.translate(posX, posY);
+        ctx.rotate(this._angleRad);
+        ctx.scale(this.totalScaleX * this._flipX, this.totalScaleY * this._flipY);
+        ctx.translate(-posX, -posY);
+        if (!this.texture.isAnimated) {
+            this._texture.draw(ctx, (this.drawX | 0) * unitSize, (this.drawY | 0) * unitSize);
+        } else {
+            this._texture.drawFrame(ctx, (this.drawX | 0) * unitSize, (this.drawY | 0) * unitSize, this._currFrame, this.isEmulateReverse);
+        }
+        ctx.restore();
+    },
+    renderBounds: function(ctx) {
+        if (isCached !== entity._isCached) {
+            if (entity.isCached || entity.isHighlight) {
+                ctx.strokeStyle = "#339933";
+            } else {
+                ctx.strokeStyle = "#ff0000";
+            }
+            isCached = !isCached;
+        }
+        ctx.save();
+        pivotOffsetX = entity.volume.x - entity.pivotX;
+        pivotOffsetY = entity.volume.y - entity.pivotY;
+        if (!entity.isChild) {
+            parentOffsetX = entity._parent.volume.x - entity._parent.pivotX;
+            parentOffsetY = entity._parent.volume.y - entity._parent.pivotY;
+            ctx.translate(parentOffsetX, parentOffsetY);
+            ctx.rotate(entity._parent.totalAngleRad);
+            ctx.scale(this.totalScaleX * this._flipX, this.totalScaleY * this._flipY);
+            ctx.translate(-parentOffsetX, -parentOffsetY);
+        }
+        ctx.translate(pivotOffsetX, pivotOffsetY);
+        ctx.rotate(entity._angleRad);
+        ctx.scale(this.totalScaleX * this._flipX, this.totalScaleY * this._flipY);
+        ctx.translate(-pivotOffsetX, -pivotOffsetY);
+        this._centerTex.draw(ctx, pivotOffsetX - 3, pivotOffsetY - 3);
+        ctx.restore();
+    },
+    drawBounds: function(ctx) {
+        this.volume.draw(ctx);
+    },
+    update: null,
+    _updateComponents: function(tDelta) {
+        var comp;
+        var numComponents = this.components.length;
+        for (var n = 0; n < numComponents; n++) {
+            comp = this.components[n];
+            if (comp.update) {
+                comp.update(tDelta);
+            }
+        }
+    },
+    _updateAnim: function(tDelta) {
+        if (this.animSpeed <= 0 || this._texture.numFrames < 2) {
+            return;
+        }
+        var delay = 1 / (this.fps * this.animSpeed);
+        this._tAnim += tDelta;
+        if (this._tAnim < delay) {
+            return;
+        }
+        this.isNeedDraw = true;
+        var numFrames = this._tAnim / delay | 0;
+        this._tAnim -= delay * numFrames;
+        if (!this._isAnimReverse) {
+            this._currFrame += numFrames;
+            if (this._currFrame >= this._texture.numFrames) {
+                if (this.pauseAtEnd) {
+                    this.isAnimating = false;
+                    this._currFrame = this._texture.numFrames - 1;
+                } else if (!this.isLoop && !this._texture.isLoop) {
+                    this.isAnimating = false;
+                    this._currFrame = 0;
+                } else {
+                    this._currFrame = this._currFrame % this._texture.numFrames;
+                }
+                if (this.onAnimEnd) {
+                    this.onAnimEnd();
+                }
+            }
+        } else {
+            this._currFrame -= numFrames;
+            if (this._currFrame < 0) {
+                if (this.pauseAtEnd) {
+                    this.isAnimating = false;
+                    this._currFrame = 0;
+                } else if (!this.isLoop && !this._texture.isLoop) {
+                    this.isAnimating = false;
+                    this._currFrame = this._texture.numFrames - 1;
+                } else {
+                    this._currFrame = (this._texture.numFrames + this._currFrame) % this._texture.numFrames;
+                }
+                if (this.onAnimEnd) {
+                    this.onAnimEnd();
+                }
+            }
+        }
+    },
+    play: function(isLoop, fps) {
+        if (!this.texture || !this.texture.isAnimated) {
+            return;
+        }
+        if (isLoop) {
+            this.isLoop = true;
+        } else {
+            this.isLoop = false;
+        }
+        this.fps = fps || this.texture.fps;
+        this.currFrame = 0;
+        this.isAnimating = true;
+        this.pauseAtEnd = false;
+        this._isAnimReverse = false;
+    },
+    playAndPause: function(fps) {
+        this.play(false, fps);
+        this.pauseAtEnd = true;
+    },
+    playReverse: function(isLoop, fps) {
+        if (!this.texture) {
+            return;
+        }
+        this.play(isLoop, fps);
+        this.currFrame = this.texture.numFrames - 1;
+        this._isAnimReverse = true;
+    },
+    playReverseAndPause: function(fps) {
+        this.playReverse(false, fps);
+        this.pauseAtEnd = true;
+    },
+    stop: function() {
+        if (this._texture) {
+            this.isLoop = this._texture.isLoop;
+            if (this._isAnimReverse) {
+                this.currFrame = this._texture.numFrames - 1;
+            } else {
+                this.currFrame = 0;
+            }
+        } else {
+            this.isLoop = false;
+            this.currFrame = 0;
+        }
+        this.isAnimating = false;
+    },
+    pause: function() {
+        this.isAnimating = false;
+    },
+    resume: function() {
+        this.isAnimating = true;
+    },
+    forcePosition: function(x, y) {
+        this._x = x;
+        this._y = y;
+        this.updatePos();
+    },
+    updatePos: function() {
+        this.drawX = this.core.x;
+        this.drawY = this.core.y;
+        this.isNeedDraw = true;
+    },
+    updatePosType: function() {
+        if (this.positionType === 0) {
+            return;
+        }
+        if (this.positionType === 1) {
+            this._x = this.typeX + this.volume.halfWidth | 0;
+            this._y = this.typeY + this.volume.halfHeight | 0;
+        } else if (this.positionType === 2) {
+            this._x = this.typeX - this.volume.halfWidth | 0;
+            this._y = this.typeY + this.volume.halfHeight | 0;
+        } else if (this.positionType === 3) {
+            this._x = this.typeX + this.volume.halfWidth | 0;
+            this._y = this.typeY - this.volume.halfHeight | 0;
+        } else if (this.positionType === 4) {
+            this._x = this.typeX - this.volume.halfWidth | 0;
+            this._y = this.typeY - this.volume.halfHeight | 0;
+        } else if (this.positionType === 5) {
+            this._y = this.typeY + this.volume.halfHeight | 0;
+        } else if (this.positionType === 6) {
+            this._y = this.typeY - this.volume.halfHeight | 0;
+        } else if (this.positionType === 7) {
+            this._x = this.typeX + this.volume.halfWidth | 0;
+        } else if (this.positionType === 8) {
+            this._x = this.typeX - this.volume.halfWidth | 0;
+        }
+    },
+    updateFromTexture: function() {
+        var unitRatio = this.meta.unitRatio;
+        this.volume.resize(this._texture.trueWidth * unitRatio, this._texture.trueHeight * unitRatio);
+        this.updatePivot();
+        this.updatePosType();
+        this.updatePos();
+        if (this.children) {
+            var numChildren = this.children.length;
+            for (var i = 0; i < numChildren; i++) {
+                var child = this.children[i];
+                if (child.positionType) {
+                    child.updatePosType();
+                }
+                child.updateAnchor();
+            }
+        }
+    },
+    adapt: function() {
+        if (!this._texture) {
+            this.volume.unitSize = meta.unitSize;
+            this.updatePosType();
+            this.updatePos();
+        }
+    },
+    position: function(x, y) {
+        this.core.x = x;
+        this.core.y = y;
+    },
+    move: function(deltaX, deltaY) {
+        var newX = this._x + deltaX;
+        var newY = this._y + deltaY;
+        if (this._x === newX && this._y === newY) {
+            return;
+        }
+        this.forcePosition(newX, newY);
+    },
+    moveForward: function(delta) {
+        var newX = this._x + delta * Math.cos(this._angleRad - 1.57079);
+        var newY = this._y + delta * Math.sin(this._angleRad - 1.57079);
+        if (this._x === newX && this._y === newY) {
+            return;
+        }
+        this.forcePosition(newX, newY);
+    },
+    moveDirected: function(delta, angleOffset) {
+        var newX = this._x + -delta * Math.cos(this._angleRad - 1.57079 + angleOffset);
+        var newY = this._y + -delta * Math.sin(this._angleRad - 1.57079 + angleOffset);
+        if (this._x === newX && this._y === newY) {
+            return;
+        }
+        this.forcePosition(newX, newY);
+    },
+    strafe: function(delta) {
+        var newX = this._x + -delta * Math.cos(this._angleRad + Math.PI);
+        var newY = this._y + -delta * Math.sin(this._angleRad + Math.PI);
+        if (this._x === newX && this._y === newY) {
+            return;
+        }
+        this.forcePosition(newX, newY);
+    },
+    positionTopLeft: function(x, y) {
+        if (this._x === x && this._y === y && this.positionType === 1) {
+            return;
+        }
+        this.positionType = 1;
+        this.typeX = x;
+        this.typeY = y;
+        this._x = this.typeX + this.volume.halfWidth | 0;
+        this._y = this.typeY + this.volume.halfHeight | 0;
+        this.updatePos();
+    },
+    positionTopRight: function(x, y) {
+        if (this._x === x && this._y === y && this.positionType === 2) {
+            return;
+        }
+        this.positionType = 2;
+        this.typeX = x;
+        this.typeY = y;
+        this._x = this.typeX - this.volume.halfWidth | 0;
+        this._y = this.typeY + this.volume.halfHeight | 0;
+        this.updatePos();
+    },
+    positionBottomLeft: function(x, y) {
+        if (this._x === x && this._y === y && this.positionType === 3) {
+            return;
+        }
+        this.positionType = 3;
+        this.typeX = x;
+        this.typeY = y;
+        this._x = this.typeX + this.volume.halfWidth | 0;
+        this._y = this.typeY - this.volume.halfHeight | 0;
+        this.updatePos();
+    },
+    positionBottomRight: function(x, y) {
+        if (this._x === x && this._y === y && this.positionType === 4) {
+            return;
+        }
+        this.positionType = 4;
+        this.typeX = x;
+        this.typeY = y;
+        this._x = this.typeX - this.volume.halfWidth | 0;
+        this._y = this.typeY - this.volume.halfHeight | 0;
+        this.updatePos();
+    },
+    positionTop: function(x, y) {
+        if (this._x === x && this._y === y && this.positionType === 5) {
+            return;
+        }
+        this.positionType = 5;
+        this.typeX = x;
+        this.typeY = y;
+        this._x = x;
+        this._y = this.typeY + this.volume.halfHeight | 0;
+        this.updatePos();
+    },
+    positionBottom: function(x, y) {
+        if (this._x === x && this._y === y && this.positionType === 6) {
+            return;
+        }
+        this.positionType = 6;
+        this.typeX = x;
+        this.typeY = y;
+        this._x = x;
+        this._y = this.typeY - this.volume.halfHeight | 0;
+        this.updatePos();
+    },
+    positionLeft: function(x, y) {
+        if (this._x === x && this._y === y && this.positionType === 7) {
+            return;
+        }
+        this.positionType = 7;
+        this.typeX = x;
+        this.typeY = y;
+        this._x = this.typeX + this.volume.halfWidth | 0;
+        this._y = y;
+        this.updatePos();
+    },
+    positionRight: function(x, y) {
+        if (this._x === x && this._y === y && this.positionType === 8) {
+            return;
+        }
+        this.positionType = 8;
+        this.typeX = x;
+        this.typeY = y;
+        this._x = this.typeX - this.volume.halfWidth | 0;
+        this._y = y;
+        this.updatePos();
+    },
+    topLeft: function(x, y) {
+        if (this._x === x && this._y === y && this.positionType === 1) {
+            return;
+        }
+        this.positionType = 1;
+        this.typeX = x;
+        this.typeY = y;
+        this._x = this.typeX + this.volume.halfWidth | 0;
+        this._y = this.typeY + this.volume.halfHeight | 0;
+        this.updatePos();
+    },
+    topRight: function(x, y) {
+        if (this._x === x && this._y === y && this.positionType === 2) {
+            return;
+        }
+        this.positionType = 2;
+        this.typeX = x;
+        this.typeY = y;
+        this._x = this.typeX - this.volume.halfWidth | 0;
+        this._y = this.typeY + this.volume.halfHeight | 0;
+        this.updatePos();
+    },
+    bottomLeft: function(x, y) {
+        if (this._x === x && this._y === y && this.positionType === 3) {
+            return;
+        }
+        this.positionType = 3;
+        this.typeX = x;
+        this.typeY = y;
+        this._x = this.typeX + this.volume.halfWidth | 0;
+        this._y = this.typeY - this.volume.halfHeight | 0;
+        this.updatePos();
+    },
+    bottomRight: function(x, y) {
+        if (this._x === x && this._y === y && this.positionType === 4) {
+            return;
+        }
+        this.positionType = 4;
+        this.typeX = x;
+        this.typeY = y;
+        this._x = this.typeX - this.volume.halfWidth | 0;
+        this._y = this.typeY - this.volume.halfHeight | 0;
+        this.updatePos();
+    },
+    set top(y) {
+        this.positionTop(this._x, y);
+    },
+    set bottom(y) {
+        this.positionBottom(this._x, y);
+    },
+    set left(x) {
+        this.positionLeft(x, this._y);
+    },
+    set right(x) {
+        this.positionRight(x, this._y);
+    },
+    get top() {
+        return this.volume.minY;
+    },
+    get bottom() {
+        return this.volume.maxY;
+    },
+    get left() {
+        return this.volume.minX;
+    },
+    get right() {
+        return this.volume.maxX;
+    },
+    pivot: function(x, y) {
+        if (y === void 0) {
+            y = x;
+        }
+        this.pivotRatioX = x;
+        this.pivotRatioY = y;
+        this.updatePivot();
+        this.updatePos();
+    },
+    updatePivot: function() {
+        this.pivotSrcX = -this.pivotRatioX * this._flipX * this.volume.initHalfWidth;
+        this.pivotSrcY = -this.pivotRatioY * this._flipY * this.volume.initHalfHeight;
+        this.pivotX = this.pivotSrcX * this._scaleX;
+        this.pivotY = this.pivotSrcY * this._scaleY;
+        if (this.children) {
+            this.childPivotX = (-this.pivotRatioX - 1) * this.volume.halfWidth;
+            this.childPivotY = (-this.pivotRatioY - 1) * this.volume.halfHeight;
+        }
+    },
+    pivotPx: function(x, y) {
+        if (y === void 0) {
+            y = x;
+        }
+        this.pivotX = x;
+        this.pivotY = y;
+        if (this.children) {
+            this.childOffsetX = this._x + pivotX + this._anchorPosX;
+            this.childOffsetY = this._y + pivotY + this._anchorPosY;
+        }
+        this.updatePos();
+    },
+    pivotCenter: function(x, y) {
+        if (this.pivotRatioX !== 0 || this.pivotRatioY !== 0) {
+            this._x = x;
+            this._y = y;
+            this.pivot(0, 0);
+            return;
+        }
+        if (this._x === x && this._y === y) {
+            return;
+        }
+        this.forcePosition(x, y);
+    },
+    pivotTopLeft: function(x, y) {
+        if (this.pivotRatioX !== -1 || this.pivotRatioY !== -1) {
+            this._x = x;
+            this._y = y;
+            this.pivot(-1, -1);
+            return;
+        }
+        if (this._x === x && this._y === y) {
+            return;
+        }
+        this.forcePosition(x, y);
+    },
+    pivotTopRight: function(x, y) {
+        if (this.pivotRatioX !== 1 || this.pivotRatioY !== -1) {
+            this._x = x;
+            this._y = y;
+            this.pivot(1, -1);
+            return;
+        }
+        if (this._x === x && this._y === y) {
+            return;
+        }
+        this.forcePosition(x, y);
+    },
+    pivotBottomLeft: function(x, y) {
+        if (this.pivotRatioX !== -1 || this.pivotRatioY !== 1) {
+            this._x = x;
+            this._y = y;
+            this.pivot(-1, 1);
+            return;
+        }
+        if (this._x === x && this._y === y) {
+            return;
+        }
+        this.forcePosition(x, y);
+    },
+    pivotBottomRight: function(x, y) {
+        if (this.pivotRatioX !== 1 || this.pivotRatioY !== 1) {
+            this._x = x;
+            this._y = y;
+            this.pivot(1, 1);
+            return;
+        }
+        if (this._x === x && this._y === y) {
+            return;
+        }
+        this.forcePosition(x, y);
+    },
+    pivotTop: function(x, y) {
+        if (this.pivotRatioX !== 0 || this.pivotRatioY !== -1) {
+            this._x = x;
+            this._y = y;
+            this.pivot(0, -1);
+            return;
+        }
+        if (this._x === x && this._y === y) {
+            return;
+        }
+        this.forcePosition(x, y);
+    },
+    pivotBottom: function(x, y) {
+        if (this.pivotRatioX !== 0 || this.pivotRatioY !== 1) {
+            this._x = x;
+            this._y = y;
+            this.pivot(0, 1);
+            return;
+        }
+        if (this._x === x && this._y === y) {
+            return;
+        }
+        this.forcePosition(x, y);
+    },
+    pivotLeft: function(x, y) {
+        if (this.pivotRatioX !== -1 || this.pivotRatioY !== 0) {
+            this._x = x;
+            this._y = y;
+            this.pivot(-1, 0);
+            return;
+        }
+        if (this._x === x && this._y === y) {
+            return;
+        }
+        this.forcePosition(x, y);
+    },
+    pivotRight: function(x, y) {
+        if (this.pivotRatioX !== 1 || this.pivotRatioY !== 0) {
+            this._x = x;
+            this._y = y;
+            this.pivot(1, 0);
+            return;
+        }
+        if (this._x === x && this._y === y) {
+            return;
+        }
+        this.forcePosition(x, y);
+    },
+    anchor: function(x, y) {
+        if (y === void 0) {
+            y = x;
+        }
+        if (this._anchorX === x && this._anchorY === y) {
+            return;
+        }
+        this._anchorX = x;
+        this._anchorY = y;
+        this._flags |= this.Flag.ANCHOR;
+        this.updateAnchor();
+    },
+    updateAnchor: function() {
+        if (this._flags & this.Flag.IGNORE_ZOOM) {
+            this._anchorPosX = this._parent.volume.width * (1 / this._parent.volume.scaleX) * this._anchorX + .5 | 0;
+            this._anchorPosY = this._parent.volume.height * (1 / this._parent.volume.scaleY) * this._anchorY + .5 | 0;
+        } else {
+            this._anchorPosX = this._parent.volume.width * this._anchorX + .5 | 0;
+            this._anchorPosY = this._parent.volume.height * this._anchorY + .5 | 0;
+        }
+        this.updatePos();
+    },
+    dragStart: function(x, y) {
+        this._dragOffsetX = this._x + this._anchorPosX - x;
+        this._dragOffsetY = this._y + this._anchorPosY - y;
+    },
+    dragEnd: function() {
+        this._dragOffsetX = 0;
+        this._dragOffsetY = 0;
+    },
+    dragTo: function(x, y) {
+        x -= this._anchorPosX - this._dragOffsetX;
+        y -= this._anchorPosY - this._dragOffsetY;
+        if (this._x === x && this._y === y) {
+            return;
+        }
+        this.forcePosition(x, y);
+    },
+    isInside: function(x, y) {
+        return this.volume.vsBorderPoint(x - this.offsetX, y - this.offsetY);
+    },
+    _isInsideDefault: function(x, y) {
+        return this.volume.vsBorderPoint(x - this.offsetX, y - this.offsetY);
+    },
+    _isInsideTransform: function(x, y) {
+        var centerX = this._anchorPosX + this._parent.childOffsetX;
+        var centerY = this._anchorPosY + this._parent.childOffsetY;
+        if (!this.isChild) {
+            centerX += this._x;
+            centerY += this._y;
+        }
+        var offsetX = x - centerX;
+        var offsetY = y - centerY;
+        var sin = Math.sin(-this._angleRad);
+        var cos = Math.cos(-this._angleRad);
+        var newX = offsetX * cos - offsetY * sin + centerX;
+        var newY = offsetY * cos + offsetX * sin + centerY;
+        return this.volume.vsBorderPoint(newX, newY);
+    },
+    vsEntity: function(entity) {
+        return this.volume.vsAABB(entity.volume);
+    },
+    resize: function(width, height) {
+        if (height === void 0) {
+            height = this.volume.height;
+        }
+        this.volume.resize(width, height);
+        if (this.children) {
+            var numChildren = this.children.length;
+            for (var i = 0; i < numChildren; i++) {
+                this.children[i]._onResize(this);
+            }
+        }
+    },
+    _onTextureEvent: function(data, event) {
+        var resEvent = Resource.Event;
+        if (event === resEvent.LOADED) {
+            this.updateFromTexture();
+            this.isLoaded = true;
+        } else if (event === resEvent.UNLOADED) {
+            this.isLoaded = false;
+        } else if (event === resEvent.RESIZE) {
+            this.updateFromTexture();
+        } else if (event === resEvent.CHANGED) {
+            this.updateFromTexture();
+        }
+        this.isNeedDraw = true;
+    },
+    _onResAllLoaded: function(data, event) {
+        if (typeof this._texture === "string") {
+            var texture = meta.getTexture(this._texture);
+            if (!texture) {
+                console.warn("[Entity.Geometry._onResAllLoaded]:", "Could not find texture with a name: " + this._texture);
+                this._texture = null;
+            } else {
+                this.texture = texture;
+            }
+            meta.unsubscribe(this, Resource.Event.ALL_LOADED);
+        }
+    },
+    attach: function(entity, isRelative) {
+        if (!entity) {
+            console.error("(Entity.Geometry.attach) Invalid child object passed.");
+            return;
+        }
+        if (entity.isChild) {
+            console.error("(Entity.Geometry.attach) Entity is already a child of someone else.");
+            return;
+        }
+        if (entity.isRemoved) {
+            console.error("(Entity.Geometry.attach) Entity is marked as removed ro to be removed.");
+            return;
+        }
+        if (entity._view && (entity._view !== this._view || !entity.isChild)) {
+            entity._view._removeFromBuffer(entity);
+        }
+        if (isRelative) {
+            entity.move(-this._x - this._anchorPosX - this.pivotX + this.volume.halfWidth, -this._y - this._anchorPosY - this.pivotY + this.volume.halfHeight);
+        }
+        entity._parent = this;
+        entity.isChild = true;
+        entity.ignoreZoom = this.ignoreZoom;
+        entity.disableDebug = this.disableDebug;
+        entity._view = this._view;
+        if (this.clipVolume && !entity.clipVolume) {
+            entity.clip(this.clipVolume);
+        }
+        if (!this.pickable) {
+            entity.pickable = false;
+        }
+        if (!this.clickable) {
+            entity.clickable = false;
+        }
+        entity.updateAngle();
+        entity.updateAlpha();
+        if (this.totalScaleX !== 1 || this.totalScaleY !== 1) {
+            entity.updateScale();
+        }
+        entity.updateZ();
+        if (!this.children) {
+            this.children = [ entity ];
+            this.childPivotX = (-this.pivotRatioX - 1) * this.volume.halfWidth;
+            this.childPivotY = (-this.pivotRatioY - 1) * this.volume.halfHeight;
+            this.childOffsetX = this._x + this.childPivotX + this._anchorPosX;
+            this.childOffsetY = this._y + this.childPivotY + this._anchorPosY;
+            var parent = this._parent;
+            while (parent) {
+                this.childOffsetX += parent.childOffsetX;
+                this.childOffsetY += parent.childOffsetY;
+                parent = parent._parent;
+            }
+            this.updatePos();
+        } else {
+            this.children.push(entity);
+        }
+        if (entity._flags & this.Flag.ANCHOR) {
+            entity.updateAnchor();
+        }
+        if (this._flags & this.Flag.IGNORE_ZOOM) {
+            entity.ignoreZoom = this.ignoreZoom;
+        }
+        entity.updatePos();
+        if (this._view && this._view._isActive) {
+            this._entityCtrl.addEntities(entity);
+        }
+        this.onChildAdded(entity);
+        entity.onParentAdded(this);
+    },
+    detach: function(entity) {
+        if (entity) {
+            if (!this.children) {
+                return;
+            }
+            var child;
+            var numChildren = this.children.length;
+            for (var i = 0; i < numChildren; i++) {
+                child = this.children[i];
+                if (child.isRemoved) {
+                    continue;
+                }
+                if (child === entity) {
+                    child._parent = this._entityCtrl;
+                    child._view = null;
+                    child.isChild = false;
+                    this._view.add(child);
+                    child.move(this._x + this._anchorPosX + this.pivotX - this.volume.halfWidth, this._y + this._anchorPosY + this.pivotY - this.volume.halfHeight);
+                    this.onChildRemoved(child);
+                    child.onParentRemoved(this);
+                    return;
+                }
+            }
+        } else {
+            if (!this.isChild) {
+                return;
+            }
+            this._parent.detach(this);
+        }
+    },
+    detachChildren: function() {
+        if (!this.children) {
+            return;
+        }
+        var i;
+        var child;
+        var numChildren = this.children.length;
+        for (i = 0; i < numChildren; i++) {
+            child = this.children[i];
+            if (child.isRemoved) {
+                continue;
+            }
+            child._parent = this._entityCtrl;
+            child._view = null;
+            child.isChild = false;
+            this._view.add(child);
+            child.move(this._x + this._anchorPosX + this.pivotX - this.volume.halfWidth, this._y + this._anchorPosY + this.pivotY - this.volume.halfHeight);
+            this.onChildRemoved(child);
+            child.onParentRemoved(this);
+        }
+        this.children.length = 0;
+    },
+    detachExact: function() {
+        var child;
+        var numChildren = this.children.length;
+        for (var i = 0; i < numChildren; i++) {
+            child = this.children[i];
+            if (child.isRemoved) {
+                continue;
+            }
+            child._x += this.childOffsetX;
+            child._y += this.childOffsetY;
+            child._parent = this._entityCtrl;
+            child._view = null;
+            child.isChild = false;
+            this._view.add(child);
+            child.forcePosition(child._x, child._y);
+            this.onChildRemoved(child);
+            child.onParentRemoved(this);
+        }
+        this.children.length = 0;
+    },
+    clip: function(minX, minY, maxX, maxY) {
+        if (typeof minX === "object") {
+            if (minX instanceof meta.math.AdvAABB || minX instanceof meta.math.AABB) {
+                this.clipVolume = minX;
+            } else {
+                this.clipVolume = minX.volume;
+            }
+        } else {
+            this.clipVolume = new meta.math.AdvAABB(minX, minY, maxX, maxY);
+        }
+        if (this.children) {
+            var numChildren = this.children.length;
+            for (var i = 0; i < numChildren; i++) {
+                this.children[i].clip(this.clipVolume);
+            }
+        }
+        this.isNeedDraw = true;
+        return this.clipVolume;
+    },
+    _onClick: meta.emptyFuncParam,
+    _onDbClick: meta.emptyFuncParam,
+    _onDown: function(param) {
+        this._action = "pressed";
+        this._style.updateAction(this);
+    },
+    _onUp: function(param) {
+        if (this._inputFlags > 0) {
+            if (this._inputFlags & this.InputFlag.DRAGGED) {
+                this._action = "drag";
+            } else if (this._inputFlags & this.InputFlag.HOVER) {
+                this._action = "hover";
+            } else {
+                console.warn("[Entity.Geometry._onAction_hoverExit]:", "Unhandled action caught: " + this._inputFlags);
+                this._action = "";
+            }
+        } else {
+            this._action = "";
+        }
+        this._style.updateAction(this);
+    },
+    _onDragStart: function() {
+        this._action = "drag";
+        this._style.updateAction(this);
+    },
+    _onDragEnd: function() {
+        if (this._inputFlags > 0) {
+            if (this._inputFlags & this.InputFlag.PRESSED) {
+                this._action = "pressed";
+            } else if (this._inputFlags & this.InputFlag.HOVER) {
+                this._action = "hover";
+            } else {
+                console.warn("[Entity.Geometry._onAction_hoverExit]:", "Unhandled action caught: " + this._inputFlags);
+                this._action = "";
+            }
+        } else {
+            this._action = "";
+        }
+        this._style.updateAction(this);
+    },
+    _onHoverEnter: function() {
+        this._action = "hover";
+        this._style.updateAction(this);
+    },
+    _onHoverExit: function() {
+        if (this._inputFlags > 0) {
+            if (this._inputFlags & this.InputFlag.DRAGGED) {
+                this._action = "drag";
+            } else if (this._inputFlags & this.InputFlag.PRESSED) {
+                this._action = "pressed";
+            } else {
+                console.warn("[Entity.Geometry._onAction_hoverExit]:", "Unhandled action caught: " + this._inputFlags);
+                this._action = "";
+            }
+        } else {
+            this._action = "";
+        }
+        this._style.updateAction(this);
+    },
+    onDown: meta.emptyFuncParam,
+    onUp: meta.emptyFuncParam,
+    onClick: meta.emptyFuncParam,
+    onDbClick: meta.emptyFuncParam,
+    onDrag: meta.emptyFuncParam,
+    onDragStart: meta.emptyFuncParam,
+    onDragEnd: meta.emptyFuncParam,
+    onHover: meta.emptyFuncParam,
+    onHoverEnter: meta.emptyFuncParam,
+    onHoverExit: meta.emptyFuncParam,
+    onAnimEnd: null,
+    onChildAdded: meta.emptyFuncParam,
+    onChildRemoved: meta.emptyFuncParam,
+    onParentAdded: meta.emptyFuncParam,
+    onParentRemoved: meta.emptyFuncParam,
+    _onChange: meta.emptyFunc,
+    onChange: meta.emptyFunc,
+    addComponent: function(name, comp, params) {
+        if (!comp && typeof comp !== "Object") {
+            console.warn("[Entity.Geometry.addComponent]:", "No component specified.");
+            return null;
+        }
+        var newComp = new comp();
+        newComp.owner = this;
+        this[name] = newComp;
+        if (params) {
+            for (key in params) {
+                newComp[key] = params[key];
+            }
+        }
+        if (!this.components) {
+            this.components = [ newComp ];
+        } else {
+            this.components.push(newComp);
+        }
+        if (newComp.load) {
+            newComp.load();
+        }
+        if (newComp.update && !this._isUpdating) {
+            this.isUpdating = true;
+        }
+        return newComp;
+    },
+    removeComponent: function(comp) {
+        if (!comp) {
+            console.warn("[Entity.Geometry.removeComponent]:", "No component specified.");
+            return;
+        }
+        if (!this.components) {
+            console.warn("[Entity.Geometry.removeComponent]:", "No such component found:", comp);
+            return;
+        }
+        var entityComp = this[comp];
+        this[comp] = null;
+        if (!entityComp) {
+            console.warn("[Entity.Geometry.removeComponent]:", "No such component found:", comp);
+            return;
+        }
+        if (entityComp.unload) {
+            entityComp.unload();
+        }
+        var numComponents = this.components.length;
+        for (var i = 0; i < numComponents; i++) {
+            if (this.components[i] === entityComp) {
+                this.components[i] = this.components[numComponents - 1];
+                this.components.pop();
+                break;
+            }
+        }
+    },
+    removeComponents: function() {
+        if (!this.components) {
+            return;
+        }
+        var component;
+        var numComponents = this.components.length;
+        for (var n = 0; n < numComponents; n++) {
+            component = this.components[n];
+            if (component.unload) {
+                component.unload();
+            }
+        }
+        this.components.length = 0;
+    },
+    distanceToEntity: function(entity) {
+        var x = entity.volume.x - this.volume.x;
+        var y = entity.volume.y - this.volume.y;
+        return Math.sqrt(x * x + y * y);
+    },
+    lookAt: function(x, y) {
+        this.angleRad = -Math.atan2(x - (this.volume.x + this.pivotX), y - (this.volume.y - this.pivotY)) + Math.PI;
+    },
+    lookAtEntity: function(entity) {
+        this.lookAt(entity.volume.x, entity.volume.y);
+    },
+    getLookAt: function(x, y) {
+        return -Math.atan2(x - (this.volume.x + this.pivotX), y - (this.volume.y - this.pivotY)) + Math.PI;
+    },
+    subscribe: function(owner, func) {
+        if (!this.chn) {
+            this.chn = meta.createChannel("__ent" + this.id);
+        }
+        this.chn.subscribe(owner, func);
+    },
+    unsubscribe: function(owner) {
+        if (!this.chn) {
+            return;
+        }
+        this.chn.unsubscribe(owner);
+        if (this.chn.numSubs === 0) {
+            this.chn.remove();
+            this.chn = null;
+        }
+    },
+    emit: function(data, event) {
+        if (this.chn) {
+            this.chn.emit(data, event);
+        }
+    },
+    print: function(str) {
+        str = str || "";
+        console.log("[Entity", this.name + ":" + this.id + "]", str);
+    },
+    get view() {
+        return this._view;
+    },
+    get absX() {
+        return this.volume.x;
+    },
+    get absY() {
+        return this.volume.y;
+    },
+    get width() {
+        return this.volume.width;
+    },
+    get height() {
+        return this.volume.height;
+    },
+    set anchorX(x) {
+        this.anchor(x, this._anchorY);
+    },
+    set anchorY(y) {
+        this.anchor(this._anchorX, y);
+    },
+    get anchorX() {
+        return this._anchorX;
+    },
+    get anchorY() {
+        return this._anchorY;
+    },
+    offset: function(x, y) {
+        if (this._offsetX === x && this._offsetY === y) {
+            return;
+        }
+        this._offsetX = x;
+        this._offsetY = y;
+        this.updatePos();
+    },
+    set offsetX(value) {
+        if (this._offsetX === value) {
+            return;
+        }
+        this._offsetX = value;
+        this.updatePos();
+    },
+    set offsetY(value) {
+        if (this._offsetY === value) {
+            return;
+        }
+        this._offsetY = value;
+        this.updatePos();
+    },
+    get offsetX() {
+        return this._offsetX;
+    },
+    get offsetY() {
+        return this._offsetY;
+    },
+    set isAnchor(value) {
+        if ((this._flags & this.Flag.ANCHOR) === value) {
+            return;
+        }
+        if (!value) {
+            this._anchorX = 0;
+            this._anchorY = 0;
+            this._anchorPosX = 0;
+            this._anchorPosY = 0;
+            this._flags ^= this.Flag.ANCHOR;
+        } else {
+            this._flags |= this.Flag.ANCHOR;
+        }
+        this.isNeedDraw = true;
+    },
+    get isAnchor() {
+        return this._flags & this.Flag.ANCHOR;
+    },
+    get centerX() {
+        return this._x + this._parent.childOffsetX + this.textureOffsetX;
+    },
+    get centerY() {
+        return this._y + this._parent.childOffsetY + this.textureOffsetY;
+    },
+    set z(value) {
+        this._z = value;
+        this.updateZ();
+        if (this._view) {
+            this._entityCtrl.needDepthSort = true;
+        }
+    },
+    get z() {
+        return this._z;
+    },
+    updateZ: function() {
+        var newZ = this._parent.totalZ + this._z + 1;
+        if (this._view) {
+            newZ += this._view._z;
+        }
+        if (this.totalZ === newZ) {
+            return;
+        }
+        this.totalZ = newZ;
+        if (this.children) {
+            var numChildren = this.children.length;
+            for (var i = 0; i < numChildren; i++) {
+                this.children[i].updateZ();
+            }
+        }
+    },
+    set texture(texture) {
+        if (typeof texture === "string") {
+            if (this._texture && this._texture.name === texture) {
+                return;
+            }
+            var textureName = texture;
+            texture = meta.getTexture(textureName);
+            if (!texture) {
+                this._texture = textureName;
+                meta.subscribe(this, Resource.Event.ALL_LOADED, this._onResAllLoaded);
+                return;
+            }
+        } else if (this._texture === texture) {
+            return;
+        }
+        if (this._texture instanceof Resource.Texture) {
+            this._texture.unsubscribe(this);
+        }
+        if (texture) {
+            if (!(texture instanceof Resource.Texture)) {
+                console.warn("[Entity.Geometry.texture]:", "Texture should extend Resource.Texture class.");
+                return null;
+            }
+            this._texture = texture;
+            this._texture.subscribe(this, this._onTextureEvent);
+            this.textureOffsetX = this._texture._offsetX;
+            this.textureOffsetY = this._texture._offsetY;
+            if (!this._texture._isLoaded) {
+                this.isLoaded = false;
+                if (!this._texture.isLoading) {
+                    this._texture.load();
+                }
+            } else {
+                this.isLoaded = true;
+                this.updateFromTexture();
+            }
+            if (texture.isAnimated) {
+                if (!this.isAnimating) {
+                    this.isAnimating = texture.autoPlay;
+                }
+                if (texture.isEmulateReverse) {
+                    this.isEmulateReverse = true;
+                }
+                this.isAnimReverse = texture.isAnimReverse;
+            }
+            return texture;
+        } else {
+            this._texture = null;
+            this.isLoaded = false;
+        }
+    },
+    get texture() {
+        return this._texture;
+    },
+    set isNeedDraw(value) {
+        if (!this._isLoaded) {
+            return;
+        }
+        this._isNeedDraw = value;
+        this._tChange = Date.now();
+        meta.renderer.needRender = true;
+    },
+    get isNeedDraw() {
+        return this._isNeedDraw;
+    },
+    updateStyle: function() {
+        if (!this._style) {
+            return;
+        }
+        this._style.update(this);
+    },
+    setState: function(name, texture, params) {
+        if (texture) {
+            if (!params) {
+                params = {
+                    texture: texture
+                };
+            }
+        }
+        if (!this._style) {
+            name = "*";
+            this._style = new meta.Style();
+            this._styleParams = {};
+        }
+        this._style.setState(name, texture);
+    },
+    set style(style) {
+        if (this._style) {
+            for (var key in this._styleParams) {
+                this[key] = this._styleParams[key];
+            }
+        }
+        if (style instanceof meta.Style) {
+            this._style = style;
+        } else {
+            this._style = new meta.Style(style);
+        }
+        if (style) {
+            this.isNeedStyle = true;
+        } else {
+            this.isNeedStyle = false;
+        }
+    },
+    get style() {
+        return this._style;
+    },
+    set state(value) {
+        if (!value) {
+            value = "*";
+        }
+        if (this._state === value) {
+            return;
+        }
+        this._state = value;
+        this._onChange();
+        this.onChange();
+        if (this.chn) {
+            this.chn.emit(Entity.Event.STATE_CHANGE, this);
+        }
+        if (this._style) {
+            if (value === null) {
+                this._styleState = null;
+                this._styleAction = null;
+                this.isNeedStyle = false;
+                this.texture = null;
+            } else {
+                this.isNeedStyle = true;
+            }
+        }
+    },
+    set action(value) {
+        if (this._action === value) {
+            return;
+        }
+        this._action = value;
+        if (this._style) {
+            this._style.updateAction(this);
+        }
+    },
+    get state() {
+        return this._state;
+    },
+    get action() {
+        return this._action;
+    },
+    updateAlpha: function() {
+        var alpha;
+        if (this._flags & this.Flag.IGNORE_PARENT_ALPHA) {
+            alpha = this._alpha;
+        } else {
+            alpha = this._alpha * this._parent.totalAlpha;
+        }
+        if (this.totalAlpha === alpha) {
+            return;
+        }
+        this.totalAlpha = alpha;
+        if (this.children) {
+            var numChildren = this.children.length;
+            for (var i = 0; i < numChildren; i++) {
+                var child = this.children[i];
+                if (child._flag & this.Flag.IGNORE_PARENT_ALPHA) {
+                    return;
+                }
+                child.updateAlpha();
+            }
+        }
+        this._draw = this._drawTransform;
+        this.isNeedDraw = true;
+    },
+    set alpha(value) {
+        if (this._alpha === value) {
+            return;
+        }
+        this._alpha = value;
+        this.updateAlpha();
+    },
+    get alpha() {
+        return this._alpha;
+    },
+    set ignoreParentAlpha(value) {
+        this._flags |= this.Flag.IGNORE_PARENT_ALPHA;
+    },
+    get ignoreParentAlpha() {
+        return this._flags & this.Flag.IGNORE_PARENT_ALPHA;
+    },
+    updateAngle: function() {
+        var angleRad;
+        if (this._flags & this.Flag.IGNORE_PARENT_ANGLE) {
+            angleRad = this._angleRad;
+        } else {
+            angleRad = this._angleRad + this._parent.totalAngleRad;
+        }
+        if (angleRad === this.totalAngleRad) {
+            return;
+        }
+        this.totalAngleRad = angleRad;
+        if (this.children) {
+            var numChildren = this.children.length;
+            for (var i = 0; i < numChildren; i++) {
+                var child = this.children[i];
+                if (child._flags & this.Flag.IGNORE_PARENT_ANGLE) {
+                    continue;
+                }
+                child.updateAngle();
+            }
+        }
+        this._draw = this._drawTransform;
+        this.isInside = this._isInsideTransform;
+        this.isNeedDraw = true;
+    },
+    set angle(value) {
+        value = meta.math.degToRad(value);
+        if (this._angleRad === value) {
+            return;
+        }
+        this._angleRad = value;
+        this.updateAngle();
+    },
+    get angle() {
+        return meta.math.radToDeg(this._angleRad);
+    },
+    set angleRad(value) {
+        if (this._angleRad === value) {
+            return;
+        }
+        this._angleRad = value;
+        this.updateAngle();
+    },
+    get angleRad() {
+        return this._angleRad;
+    },
+    set ignoreParentAngle(value) {
+        this._flags |= this.Flag.IGNORE_PARENT_ANGLE;
+    },
+    get ignoreParentAngle() {
+        return this._flags & this.Flag.IGNORE_PARENT_ANGLE;
+    },
+    updateScale: function() {
+        var scaleX, scaleY;
+        if (this._flags & this.Flag.IGNORE_PARENT_SCALE) {
+            scaleX = this._scaleX;
+            scaleY = this._scaleY;
+        } else {
+            scaleX = this._scaleX * this._parent.totalScaleX;
+            scaleY = this._scaleY * this._parent.totalScaleY;
+        }
+        if (scaleX === this.totalScaleX && scaleY === this.totalScaleY) {
+            return;
+        }
+        this.totalScaleX = scaleX;
+        this.totalScaleY = scaleY;
+        this.pivotX = this.pivotSrcX * scaleX;
+        this.pivotY = this.pivotSrcY * scaleY;
+        this.volume.scalePivoted(this.totalScaleX, this.totalScaleY, this.drawSrcX + this.pivotX, this.drawSrcY + this.pivotY);
+        if (this.children) {
+            var child;
+            var numChildren = this.children.length;
+            for (var i = 0; i < numChildren; i++) {
+                child = this.children[i];
+                if (child._flag & this.Flag.IGNORE_PARENT_SCALE) {
+                    continue;
+                }
+                child.updateScale();
+            }
+        }
+        this.updatePivot();
+        this._draw = this._drawTransform;
+        this.isInside = this._isInsideTransform;
+        this.isNeedDraw = true;
+    },
+    scale: function(x, y) {
+        y = y || x;
+        this._scaleX = x;
+        this._scaleY = y;
+        this.updateScale();
+        this.updatePos();
+    },
+    set scaleX(value) {
+        this._scaleX = value;
+        this.updateScale();
+        this.updatePos();
+    },
+    set scaleY(value) {
+        this._scaleY = value;
+        this.updateScale();
+        this.updatePos();
+    },
+    get scaleX() {
+        return this._scaleX;
+    },
+    get scaleY() {
+        return this._scaleY;
+    },
+    set ignoreParentScale(value) {
+        this._flags |= this.Flag.IGNORE_PARENT_SCALE;
+    },
+    get ignoreParentScale() {
+        return this._flags & this.Flag.IGNORE_PARENT_SCALE;
+    },
+    flip: function(x, y) {
+        if (x === void 0 && y === void 0) {
+            x = -this._flipX;
+            y = this._flipY;
+        } else {
+            x = x !== void 0 ? x : 1;
+            y = y !== void 0 ? y : 1;
+        }
+        x = x | 0;
+        y = y | 0;
+        if (x > 1) {
+            x = 1;
+        } else if (x < -1) {
+            x = -1;
+        } else if (x === 0) {
+            x = 1;
+        }
+        if (y > 1) {
+            y = 1;
+        } else if (y < -1) {
+            y = -1;
+        } else if (y === 0) {
+            y = 1;
+        }
+        if (x === this._flipX && y === this._flipY) {
+            return;
+        }
+        this._flipX = x;
+        this._flipY = y;
+        this._draw = this._drawTransform;
+        this.isInside = this._isInsideTransform;
+        this.isNeedDraw = true;
+    },
+    set flipX(x) {
+        this.flip(x, this._flipY);
+    },
+    set flipY(y) {
+        this.flip(this._flipX, y);
+    },
+    get flipX() {
+        return this._flipX;
+    },
+    get flipY() {
+        return this._flipY;
+    },
+    set visible(value) {
+        if (this.isVisible === value) {
+            return;
+        }
+        this.isVisible = value;
+        this._entityCtrl.isNeedRender = true;
+        if (this.children) {
+            var numChildren = this.children.length;
+            for (var i = 0; i < numChildren; i++) {
+                this.children[i].visible = value;
+            }
+        }
+    },
+    get visible() {
+        return this.isVisible;
+    },
+    set isLoaded(value) {
+        if (this._isLoaded === value) {
+            return;
+        }
+        this._isLoaded = value;
+        if (value) {
+            if (this.ready) {
+                this.ready();
+            }
+            var i, num;
+            if (this.components) {
+                var comp;
+                num = this.components.length;
+                for (i = 0; i < num; i++) {
+                    comp = this.components[i];
+                    if (comp.ready) {
+                        comp.ready();
+                    }
+                }
+            }
+            if (this.children) {
+                num = this.children.length;
+                for (i = 0; i < num; i++) {
+                    this.children[i]._onResize(this);
+                }
+            }
+        }
+    },
+    get isLoaded() {
+        return this._isLoaded;
+    },
+    set isUpdating(value) {
+        if (this._isUpdating === value) {
+            return;
+        }
+        this._isUpdating = value;
+        if (value) {
+            this._entityCtrl._addToUpdating(this);
+        } else {
+            this._entityCtrl._removeFromUpdating(this);
+        }
+    },
+    get isUpdating() {
+        return this._isUpdating;
+    },
+    set currFrame(index) {
+        if (!this._texture) {
+            this._currFrame = index;
+        } else {
+            var frame = index % this._texture.numFrames;
+            if (frame === this._currFrame) {
+                return;
+            }
+            this._currFrame = frame;
+            this.isNeedDraw = true;
+        }
+    },
+    get currFrame() {
+        return this._currFrame;
+    },
+    set isAnimReverse(value) {
+        this._isAnimReverse = value;
+        if (value && this._texture) {
+            this.currFrame = this._texture.numFrames - 1;
+        } else {
+            this.currFrame = 0;
+        }
+    },
+    get isAnimReverse() {
+        return this._isAnimReverse;
+    },
+    set tween(obj) {
+        if (!this._tweenCache) {
+            this._tweenCache = new meta.Tween.Cache(this);
+        }
+        if (obj instanceof meta.Tween.Link) {
+            this._tweenCache.tween = obj.tween;
+        } else if (obj instanceof meta.Tween) {
+            this._tweenCache.tween = obj;
+        } else {
+            console.warn("[Entity.Geometry.set::tween]:", "Ivalid object! Should be meta.Tween or meta.Tween.Link object.");
+            return;
+        }
+        var tween = this._tweenCache.tween;
+        if (tween.autoPlay) {
+            tween.cache = this._tweenCache;
+            tween.play();
+        }
+    },
+    get tween() {
+        if (!this._tweenCache) {
+            this._tweenCache = new meta.Tween.Cache(this);
+            this._tweenCache.tween = new meta.Tween();
+        }
+        this._tweenCache.tween.cache = this._tweenCache;
+        return this._tweenCache.tween;
+    },
+    _onResize: function(data) {
+        if (this.onResize) {
+            this.onResize(data);
+        }
+        if (this._flags & this.Flag.ANCHOR) {
+            this._onResize_anchor(data);
+        }
+    },
+    onResize: null,
+    _onResize_anchor: function() {
+        this.updateAnchor();
+    },
+    set isCached(value) {
+        if (this._isCached === value) {
+            return;
+        }
+    },
+    get isCached() {
+        return this._isCached;
+    },
+    click: function() {
+        var inputEvent = Input.ctrl.getEvent();
+        this._onClick(inputEvent);
+        this.onClick(inputEvent);
+    },
+    set hover(value) {
+        var inputEvent = Input.ctrl.getEvent();
+        if (value) {
+            if ((this._inputFlags & this.InputFlag.HOVER) === 0) {
+                this._inputFlags |= this.InputFlag.HOVER;
+                this._onHoverEnter(inputEvent);
+                this.onHoverEnter(inputEvent);
+            } else {
+                this._onHover(inputEvent);
+                this.onHover(inputEvent);
+            }
+        } else {
+            this._inputFlags &= ~this.InputFlag.HOVER;
+            this._onHoverExit(inputEvent);
+            this.onHoverExit(inputEvent);
+        }
+    },
+    set pressed(value) {
+        if (!!(this._inputFlags & this.InputFlag.PRESSED) === value) {
+            return;
+        }
+        var inputEvent = Input.ctrl.getEvent();
+        if (value) {
+            this._inputFlags |= this.InputFlag.PRESSED;
+            this._onDown(inputEvent);
+            this.onDown(inputEvent);
+        } else {
+            this._inputFlags &= ~this.InputFlag.PRESSED;
+            this._onUp(inputEvent);
+            this.onUp(inputEvent);
+        }
+    },
+    set dragged(value) {
+        var inputEvent = Input.ctrl.getEvent();
+        if (value) {
+            if ((this._inputFlags & this.InputFlag.DRAGGED) === 0) {
+                this._inputFlags |= this.InputFlag.DRAGGED;
+                this._onDragStart(inputEvent);
+                this.onDragStart(inputEvent);
+            } else {
+                this._onDrag(inputEvent);
+                this.onDrag(inputEvent);
+            }
+        } else {
+            this._inputFlags &= ~this.InputFlag.DRAGGED;
+            this._onDragEnd(inputEvent);
+            this.onDragEnd(inputEvent);
+        }
+    },
+    get hover() {
+        return !!(this._inputFlags & this.InputFlag.HOVER);
+    },
+    get pressed() {
+        return !!(this._inputFlags & this.InputFlag.PRESSED);
+    },
+    get dragged() {
+        return !!(this._inputFlags & this.InputFlag.DRAGGED);
+    },
+    set ignoreZoom(value) {
+        if (!!(this._flags & this.Flag.IGNORE_ZOOM) === value) {
+            return;
+        }
+        if (this._flags & this.Flag.ANCHOR) {
+            this.updateAnchor();
+        }
+        if (value) {
+            this._flags |= this.Flag.IGNORE_ZOOM;
+        } else {
+            this._flags &= ~this.Flag.IGNORE_ZOOM;
+        }
+        this.isNeedDraw = true;
+    },
+    get ignoreZoom() {
+        return !!(this._flags & this.Flag.IGNORE_ZOOM);
+    },
+    set showBounds(value) {
+        if (!!(this._flags & this.Flag.SHOW_BOUNDS) === value) {
+            return;
+        }
+        if (value) {
+            this._flags |= this.Flag.SHOW_BOUNDS;
+            this._entityCtrl._addToDrawBounds();
+        } else {
+            this._flags &= ~this.Flag.SHOW_BOUNDS;
+            this._entityCtrl._removeToDrawBounds();
+        }
+    },
+    get showBounds() {
+        return !!(this._flags & this.Flag.SHOW_BOUNDS);
+    },
+    set disableDebug(value) {
+        if (!!(this._flags & this.Flag.DISABLE_DEBUG) === value) {
+            return;
+        }
+        if (value) {
+            this._flags |= this.Flag.DISABLE_DEBUG;
+        } else {
+            this._flags &= ~this.Flag.DISABLE_DEBUG;
+        }
+        this.isNeedDraw = true;
+    },
+    get disableDebug() {
+        return !!(this._flags & this.Flag.DISABLE_DEBUG);
+    },
+    set cursor(value) {
+        meta.engine.cursor = value;
+    },
+    get cursor() {
+        return meta.engine.cursor;
+    },
+    Flag: {
+        ADDED: 2,
+        REMOVED: 4,
+        ANCHOR: 128,
+        IGNORE_ZOOM: 256,
+        IGNORE_PARENT_ANGLE: 512,
+        IGNORE_PARENT_SCALE: 1024,
+        IGNORE_PARENT_ALPHA: 2048,
+        SHOW_BOUNDS: 4096,
+        DISABLE_DEBUG: 16384
+    },
+    InputFlag: {
+        HOVER: 1,
+        PRESSED: 2,
+        DRAGGED: 4
+    },
+    Core: function() {
+        this.viewIndex = -1;
+    },
+    meta: meta,
+    core: null,
+    x: 0,
+    y: 0,
+    _entityCtrl: null,
+    _tmpX: 0,
+    _tmpY: 0,
+    id: -1,
+    type: 0,
+    name: "unknown",
+    _parent: null,
+    _view: null,
+    _checkID: -1,
+    _updateNodeID: -1,
+    _updateAnimNodeID: -1,
+    _removeFlag: 0,
+    _flags: 0,
+    _inputFlags: 0,
+    chn: null,
+    _z: 0,
+    totalZ: 0,
+    typeX: 0,
+    typeY: 0,
+    _anchorX: 0,
+    _anchorY: 0,
+    _anchorPosX: 0,
+    _anchorPosY: 0,
+    _dragOffsetX: 0,
+    _dragOffsetY: 0,
+    drawX: 0,
+    drawY: 0,
+    drawSrcX: 0,
+    drawSrcY: 0,
+    _offsetX: 0,
+    _offsetY: 0,
+    textureOffsetX: 0,
+    textureOffsetY: 0,
+    pivotX: 0,
+    pivotY: 0,
+    pivotRatioX: 0,
+    pivotRatioY: 0,
+    pivotSrcX: 0,
+    pivotSrcY: 0,
+    childOffsetX: 0,
+    childOffsetY: 0,
+    childPivotX: 0,
+    childPivotY: 0,
+    _cellIndex: 0,
+    _style: null,
+    _styleState: null,
+    _styleAction: null,
+    _styleParams: null,
+    _styleActionParams: null,
+    _state: "*",
+    _action: "",
+    _tweenCache: null,
+    volume: null,
+    clipVolume: null,
+    positionType: 0,
+    _angleRad: 0,
+    _scaleX: 1,
+    _scaleY: 1,
+    _flipX: 1,
+    _flipY: 1,
+    _alpha: 1,
+    totalAngleRad: 0,
+    totalScaleX: 1,
+    totalScaleY: 1,
+    totalAlpha: 1,
+    _texture: null,
+    vbo: null,
+    vertices: null,
+    components: null,
+    children: null,
+    pickable: true,
+    clickable: true,
+    fps: 0,
+    animSpeed: 1,
+    _currFrame: 0,
+    isAnimating: false,
+    isLoop: false,
+    _isAnimReverse: false,
+    isEmulateReverse: false,
+    _tAnim: 0,
+    pauseAtEnd: false,
+    _tChange: 0,
+    isAdded: false,
+    _isLoaded: false,
+    isVisible: true,
+    isPaused: false,
+    isChild: false,
+    isRemoved: false,
+    _isUpdating: false,
+    _isNeedDraw: false,
+    isNeedStyle: false,
+    _isNeedOffset: false,
+    _cacheIndex: -1,
+    _isHighlight: false,
+    __transformed: false,
+    body: null
+});
+
+Entity.New = meta.Class.extend({
+    init: function(texture) {
+        this.volume = new meta.math.AABB(0, 0, 0, 0);
+        this.texture = texture;
+    },
+    position: function(x, y) {
+        this.volume.set(x, y);
+    },
+    move: function(x, y) {
+        this.volume.set(this.volume.x + x, this.volume.y + y);
+    },
+    set x(x) {
+        this.volume.set(x, this.volume.y);
+    },
+    set y(y) {
+        this.volume.set(this.volume.x, y);
+    },
+    get x() {
+        return this.volume.x;
+    },
+    get y() {
+        return this.volume.y;
+    },
+    get left() {
+        return this.volume.minX;
+    },
+    get right() {
+        return this.volume.maxY;
+    },
+    get top() {
+        return this.volume.minY;
+    },
+    get bottom() {
+        return this.volume.maxY;
+    },
+    pivot: function(x, y) {
+        this.volume.pivot(x, y);
+    },
+    set pivotX(x) {
+        this.volume.pivot(x, this._pivotY);
+    },
+    set pivotY(y) {
+        this.volume.pivot(this._pivotX, y);
+    },
+    get pivotX() {
+        return this.volume.pivotX;
+    },
+    get pivotY() {
+        return this.volume.pivotY;
+    },
+    onTextureEvent: function(data, event) {
+        var resEvent = Resource.Event;
+        if (event === resEvent.LOADED) {
+            this.loaded = true;
+        } else if (event === resEvent.UNLOADED) {
+            this.loaded = false;
+        }
+        this.updateFromTexture();
+    },
+    updateFromTexture: function() {
+        if (this._texture) {
+            this.volume.resize(this._texture.width, this._texture.height);
+        } else {
+            this.volume.resize(0, 0);
+        }
+    },
+    set texture(tex) {
+        if (this._texture) {
+            this._texture.unsubscribe(this);
+        }
+        this._texture = tex;
+        if (tex) {
+            tex.subscribe(this, this.onTextureEvent);
+            if (tex._loaded) {
+                this.updateFromTexture();
+                this.loaded = true;
+            }
+        } else {
+            this.loaded = false;
+        }
+    },
+    get texture() {
+        return this._texture;
+    },
+    set needRender(value) {
+        this._needRender = value;
+        if (value) {
+            meta.renderer.needRender = true;
+        }
+    },
+    get needRender() {
+        return this._needRender;
+    },
+    _x: 0,
+    _y: 0,
+    _scaleX: 1,
+    _scaleY: 1,
+    _texture: null,
+    loaded: true,
+    _body: null,
+    __type: 0
+});
+
+"use strict";
+
+Entity.Text = Entity.Geometry.extend({
+    init: function(params) {
+        this.texture = new Resource.Texture();
+        this._texture.resize(this._fontSize, this._fontSize);
+        var type = typeof params;
+        if (type === "string" || type === "number") {
+            this.setText(params);
+        } else {
+            this.setText("");
+        }
+    },
+    _initParams: function(params) {},
+    setText: function(text) {
+        this._text = text;
+        var ctx;
+        if (this._texture.textureType === Resource.TextureType.WEBGL) {
+            ctx = this._texture._tmpCtx;
+        } else {
+            ctx = this._texture.ctx;
+        }
+        ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
+        var metrics = ctx.measureText(this._text);
+        var width = metrics.width + this.outlineWidth * 2;
+        this.resize(width, this._fontSize * 1.2);
+        if (this._texture.textureType === Resource.TextureType.WEBGL) {
+            this._texture._tmpImg.width = width;
+            this._texture._tmpImg.height = this._fontSize * 1.2;
+        }
+        ctx.clearRect(0, 0, this.volume.width, this.volume.height);
+        ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
+        ctx.fillStyle = this._color;
+        ctx.textBaseline = "top";
+        ctx.fillText(text, this.outlineWidth, 0);
+        if (this.isOutline) {
+            ctx.lineWidth = this._outlineWidth;
+            ctx.strokeStyle = this._outlineColor;
+            ctx.strokeText(text, this.outlineWidth, 0);
+        }
+        if (this._texture.textureType === Resource.TextureType.WEBGL) {
+            var gl = meta.ctx;
+            gl.bindTexture(gl.TEXTURE_2D, this._texture.image);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._texture._tmpImg);
+        }
+        if (!this._texture._isLoaded) {
+            this._texture.isLoaded = true;
+        }
+        this.isNeedDraw = true;
+    },
+    resize: function(width, height) {
+        width = width || 1;
+        height = height || this.volume.height;
+        this._texture.resize(width, height);
+    },
+    setFont: function(font) {
+        this._font = font;
+        this.setText(this._text);
+    },
+    setSize: function(size) {
+        this._fontSize = size;
+        this._fontSizePx = size + "px";
+        this.setText(this._text);
+    },
+    setColor: function(color) {
+        this._color = color;
+        this.setText(this._text);
+    },
+    setOutlineColor: function(color) {
+        this._outlineColor = color;
+        this.isOutline = true;
+    },
+    setOutlineWidth: function(width) {
+        this._outlineWidth = width;
+        if (this._isOutline) {
+            this.setText(this._text);
+        }
+    },
+    setStyle: function(style) {
+        this._style = style;
+        this.setText(this._text);
+    },
+    set text(text) {
+        this.setText(text);
+    },
+    get text() {
+        return this._text;
+    },
+    set font(font) {
+        this.setFont(font);
+    },
+    get font() {
+        return this._font;
+    },
+    set size(size) {
+        this.setSize(size);
+    },
+    get size() {
+        return this._fontSize;
+    },
+    set color(color) {
+        this.setColor(color);
+    },
+    get color() {
+        return this._color;
+    },
+    set outlineColor(color) {
+        this.setOutlineColor(color);
+    },
+    get outlineColor() {
+        return this._outlineColor;
+    },
+    set outlineWidth(width) {
+        this.setOutlineWidth(width);
+    },
+    get outlineWidth() {
+        return this._outlineWidth;
+    },
+    set style(style) {
+        this.setStyle(style);
+    },
+    get style() {
+        return this._style;
+    },
+    set isOutline(value) {
+        if (this._isOutline === value) {
+            return;
+        }
+        this._isOutline = value;
+        this.setText(this._text);
+    },
+    get isOutline() {
+        return this._isOutline;
+    },
+    _text: "",
+    _font: "Verdana",
+    _fontSize: 14,
+    _fontSizePx: "14px",
+    _color: "#000000",
+    _outlineColor: "#ffffff",
+    _outlineWidth: 1,
+    _style: "",
+    _isOutline: false
+});
+
+"use strict";
+
+window.Input = {};
+
+Input.Controller = meta.Controller.extend({
+    init: function() {
+        this.engine = meta.engine;
+        this.keys = new Array(this.numKeys);
+        this.inputs = new Array(this.numInputs);
+        this.touches = [];
+        this._event = {
+            event: null,
+            x: 0,
+            y: 0,
+            prevScreenX: 0,
+            prevScreenY: 0,
+            screenX: 0,
+            screenY: 0,
+            keyCode: 0,
+            entity: null
+        };
+        this.addEventListeners();
+        this._loadIgnoreKeys();
+        meta.subscribe(this, meta.Event.FOCUS, this.onFocus);
+    },
+    release: function() {
+        this.removeEventListeners();
+        meta.unsubscribe(this, meta.Event.FOCUS, this.onFocus);
+    },
+    onKeyDown: function(event) {
+        if (window.top && this._iFrameKeys[event.keyCode]) {
+            event.preventDefault();
+        }
+        if (this._cmdKeys[event.keyCode] !== void 0) {
+            this._numCmdKeys++;
+        }
+        if (this._ignoreKeys[event.keyCode] !== void 0 && this._numCmdKeys <= 0) {
+            event.preventDefault();
+        }
+        if (this.blockInput) {
+            return;
+        }
+        if (this.isStickyKeys && this.keys[event.keyCode]) {
+            return;
+        }
+        this.keys[event.keyCode] = true;
+        this._event.event = event;
+        this._event.prevScreenX = 0;
+        this._event.prevScreenY = 0;
+        this._event.screenX = 0;
+        this._event.screenY = 0;
+        this._event.x = 0;
+        this._event.y = 0;
+        this._event.keyCode = event.keyCode;
+        this._chnKeyDown.emit(this._event, Input.Event.KEY_DOWN);
+        if (this._callbacks && this._callbacks[event.keyCode]) {
+            var cbs = this._callbacks[event.keyCode];
+            var numCbs = cbs.length;
+            for (var i = 0; i < numCbs; i++) {
+                cbs[i]();
+            }
+        }
+        if (this.keyRepeat) {
+            if (!this._inputTimer) {
+                var self = this;
+                this._inputTimer = meta.addTimer(this, function() {
+                    self._event.keyCode = self._repeatKey;
+                    self._chnKeyDown.emit(self._event, Input.Event.KEY_DOWN);
+                }, this.keyRepeat);
+            }
+            this._repeatKey = event.keyCode;
+            this._inputTimer.resume();
+            this._inputTimer.tAccumulator = 0;
+        }
+    },
+    onKeyUp: function(event) {
+        if (window.top && this._iFrameKeys[event.keyCode]) {
+            event.preventDefault();
+        }
+        if (this._cmdKeys[event.keyCode] !== void 0 && this.keys[event.keyCode]) {
+            this._numCmdKeys--;
+        }
+        if (this._ignoreKeys[event.keyCode] === void 0 && this._numCmdKeys <= 0) {
+            event.preventDefault();
+        }
+        if (this.blockInput) {
+            return;
+        }
+        this.keys[event.keyCode] = false;
+        this._event.event = event;
+        this._event.prevScreenX = 0;
+        this._event.prevScreenY = 0;
+        this._event.prevX = 0;
+        this._event.prevY = 0;
+        this._event.x = 0;
+        this._event.y = 0;
+        this._event.keyCode = event.keyCode;
+        this._chnKeyUp.emit(this._event, Input.Event.KEY_UP);
+        if (this.keyRepeat && this._inputTimer) {
+            this._inputTimer.pause();
+        }
+    },
+    onMouseDown: function(event) {
+        if (this.blockInput) {
+            return;
+        }
+        this.inputs[event.button] = true;
+        var scope = meta;
+        var camera = scope.camera;
+        var screenX = (event.pageX - this.engine.offsetLeft) * this.engine.scaleX * window.devicePixelRatio;
+        var screenY = (event.pageY - this.engine.offsetTop) * this.engine.scaleY * window.devicePixelRatio;
+        var x = screenX * camera.zoomRatio - camera._x | 0;
+        var y = screenY * camera.zoomRatio - camera._y | 0;
+        this._event.event = event;
+        this._event.prevScreenX = screenX;
+        this._event.prevScreenY = screenY;
+        this._event.screenX = screenX;
+        this._event.screenY = screenY;
+        this._event.x = x;
+        this._event.y = y;
+        this._event.keyCode = event.button;
+        this._chnInputDown.emit(this._event, Input.Event.DOWN);
+        this._event.entity = null;
+    },
+    onMouseUp: function(event) {
+        if (this.blockInput) {
+            return;
+        }
+        this.inputs[event.button] = false;
+        var scope = meta;
+        var camera = scope.camera;
+        var screenX = (event.pageX - this.engine.offsetLeft) * this.engine.scaleX * window.devicePixelRatio;
+        var screenY = (event.pageY - this.engine.offsetTop) * this.engine.scaleY * window.devicePixelRatio;
+        var x = screenX * camera.zoomRatio - camera._x | 0;
+        var y = screenY * camera.zoomRatio - camera._y | 0;
+        this._event.event = event;
+        this._event.prevScreenX = this._event.screenX;
+        this._event.prevScreenY = this._event.screenY;
+        this._event.screenX = screenX;
+        this._event.screenY = screenY;
+        this._event.x = x;
+        this._event.y = y;
+        this._event.keyCode = event.button;
+        this._chnInputUp.emit(this._event, Input.Event.UP);
+        this._chnInputClick.emit(this._event, Input.Event.CLICK);
+        this._event.entity = null;
+    },
+    onMouseMove: function(event) {
+        event.preventDefault();
+        if (this.blockInput) {
+            return;
+        }
+        var scope = meta;
+        var camera = scope.camera;
+        var screenX = (event.pageX - this.engine.offsetLeft) * this.engine.scaleX * window.devicePixelRatio;
+        var screenY = (event.pageY - this.engine.offsetTop) * this.engine.scaleY * window.devicePixelRatio;
+        var x = screenX * camera.zoomRatio - camera._x | 0;
+        var y = screenY * camera.zoomRatio - camera._y | 0;
+        this._event.event = event;
+        this._event.prevScreenX = this._event.screenX;
+        this._event.prevScreenY = this._event.screenY;
+        this._event.screenX = screenX;
+        this._event.screenY = screenY;
+        this._event.x = x;
+        this._event.y = y;
+        this._event.keyCode = -1;
+        this.inputX = x;
+        this.inputY = y;
+        this._chnInputMove.emit(this._event, Input.Event.MOVE);
+        this._event.entity = null;
+    },
+    onMouseDbClick: function(event) {
+        if (this.blockInput) {
+            return;
+        }
+        this.inputs[event.button] = false;
+        var scope = meta;
+        var camera = scope.camera;
+        var screenX = (event.pageX - this.engine.offsetLeft) * this.engine.scaleX * window.devicePixelRatio;
+        var screenY = (event.pageY - this.engine.offsetTop) * this.engine.scaleY * window.devicePixelRatio;
+        var x = screenX * camera.zoomRatio - camera._x | 0;
+        var y = screenY * camera.zoomRatio - camera._y | 0;
+        this._event.event = event;
+        this._event.prevScreenX = this._event.screenX;
+        this._event.prevScreenY = this._event.screenY;
+        this._event.screenX = screenX;
+        this._event.screenY = screenY;
+        this._event.x = x;
+        this._event.y = y;
+        this._event.keyCode = event.button;
+        this._chnInputDbClick.emit(this._event, Input.Event.DBCLICK);
+        this._event.entity = null;
+    },
+    onTouchDown: function(event) {
+        event.preventDefault();
+        var scope = meta;
+        var camera = scope.camera;
+        var touch, screenX, screenY, x, y;
+        var changedTouches = event.changedTouches;
+        var numTouches = changedTouches.length;
+        for (var i = 0; i < numTouches; i++) {
+            touch = event.changedTouches[i];
+            this.touches.push(touch.identifier);
+            this.numTouches++;
+            screenX = (touch.pageX - this.engine.offsetLeft) * this.engine.scaleX * window.devicePixelRatio;
+            screenY = (touch.pageY - this.engine.offsetTop) * this.engine.scaleY * window.devicePixelRatio;
+            x = screenX * camera.zoomRatio - camera._x | 0;
+            y = screenY * camera.zoomRatio - camera._y | 0;
+            this._event.event = event;
+            this._event.prevScreenX = screenX;
+            this._event.prevScreenY = screenY;
+            this._event.screenX = screenX;
+            this._event.screenY = screenY;
+            this._event.x = x;
+            this._event.y = y;
+            this._event.keyCode = this.numTouches - 1;
+            this._chnInputDown.emit(this._event, Input.Event.DOWN);
+            this._event.entity = null;
+        }
+    },
+    onTouchUp: function(event) {
+        event.preventDefault();
+        var scope = meta;
+        var camera = scope.camera;
+        var touch, id, screenX, screenY, x, y;
+        var changedTouches = event.changedTouches;
+        var numTouches = changedTouches.length;
+        for (var i = 0; i < numTouches; i++) {
+            touch = event.changedTouches[i];
+            id = this._getTouchID(touch.identifier);
+            if (id === -1) {
+                continue;
+            }
+            this.touches.splice(id, 1);
+            this.numTouches--;
+            screenX = (touch.pageX - this.engine.offsetLeft) * this.engine.scaleX * window.devicePixelRatio;
+            screenY = (touch.pageY - this.engine.offsetTop) * this.engine.scaleY * window.devicePixelRatio;
+            x = screenX * camera.zoomRatio - camera._x | 0;
+            y = screenY * camera.zoomRatio - camera._y | 0;
+            this._event.event = event;
+            if (id === 0) {
+                this._event.prevScreenX = this._event.screenX;
+                this._event.prevScreenY = this._event.screenY;
+            } else {
+                this._event.prevScreenX = screenX;
+                this._event.prevScreenY = screenY;
+            }
+            this._event.screenX = screenX;
+            this._event.screenY = screenY;
+            this._event.x = x;
+            this._event.y = y;
+            this._event.keyCode = id;
+            this._chnInputDown.emit(this._event, Input.Event.UP);
+            this._chnInputClick.emit(this._event, Input.Event.CLICK);
+            this._event.entity = null;
+        }
+    },
+    onTouchMove: function(event) {
+        event.preventDefault();
+        var scope = meta;
+        var camera = scope.camera;
+        var touch, id, screenX, screenY, x, y;
+        var changedTouches = event.changedTouches;
+        var numTouches = changedTouches.length;
+        for (var i = 0; i < numTouches; i++) {
+            touch = event.changedTouches[i];
+            id = this._getTouchID(touch.identifier);
+            if (id === -1) {
+                continue;
+            }
+            screenX = (touch.pageX - this.engine.offsetLeft) * this.engine.scaleX * window.devicePixelRatio;
+            screenY = (touch.pageY - this.engine.offsetTop) * this.engine.scaleY * window.devicePixelRatio;
+            x = screenX * camera.zoomRatio - camera._x | 0;
+            y = screenY * camera.zoomRatio - camera._y | 0;
+            this._event.event = event;
+            if (id === 0) {
+                this._event.prevScreenX = this._event.screenX;
+                this._event.prevScreenY = this._event.screenY;
+                this.inputX = x;
+                this.inputY = y;
+            } else {
+                this._event.prevScreenX = screenX;
+                this._event.prevScreenY = screenY;
+            }
+            this._event.screenX = screenX;
+            this._event.screenY = screenY;
+            this._event.x = x;
+            this._event.y = y;
+            this._event.keyCode = id;
+            this._chnInputMove.emit(this._event, Input.Event.MOVE);
+            this._event.entity = null;
+        }
+    },
+    onFocus: function(event, data) {
+        if (data === false) {
+            this.resetInput();
+        }
+    },
+    isDown: function(keyCode) {
+        return this.keys[keyCode];
+    },
+    isInputDown: function(keyCode) {
+        return this.inputs[keyCode];
+    },
+    addEventListeners: function() {
+        var self = this;
+        this._chnKeyDown = meta.createChannel(Input.Event.KEY_DOWN);
+        this._chnKeyUp = meta.createChannel(Input.Event.KEY_UP);
+        this._chnInputDown = meta.createChannel(Input.Event.DOWN);
+        this._chnInputUp = meta.createChannel(Input.Event.UP);
+        this._chnInputMove = meta.createChannel(Input.Event.MOVE);
+        this._chnInputClick = meta.createChannel(Input.Event.CLICK);
+        this._chnInputDbClick = meta.createChannel(Input.Event.DBCLICK);
+        this._onKeyDown = function(event) {
+            self.onKeyDown(event);
+        };
+        this._onKeyUp = function(event) {
+            self.onKeyUp(event);
+        };
+        this._onMouseDown = function(event) {
+            self.onMouseDown(event);
+        };
+        this._onMouseUp = function(event) {
+            self.onMouseUp(event);
+        };
+        this._onMouseDbClick = function(event) {
+            self.onMouseDbClick(event);
+        };
+        this._onMouseMove = function(event) {
+            self.onMouseMove(event);
+        };
+        this._onTouchDown = function(event) {
+            self.onTouchDown(event);
+        };
+        this._onTouchUp = function(event) {
+            self.onTouchUp(event);
+        };
+        this._onTouchMove = function(event) {
+            self.onTouchMove(event);
+        };
+        this._onTouchCancel = function(event) {
+            self.onTouchCancel(event);
+        };
+        window.addEventListener("mousedown", this._onMouseDown);
+        window.addEventListener("mouseup", this._onMouseUp);
+        window.addEventListener("mousemove", this._onMouseMove);
+        window.addEventListener("dblclick", this._onMouseDbClick);
+        window.addEventListener("touchstart", this._onTouchDown);
+        window.addEventListener("touchend", this._onTouchUp);
+        window.addEventListener("touchmove", this._onTouchMove);
+        window.addEventListener("touchcancel", this._onTouchUp);
+        window.addEventListener("touchleave", this._onTouchUp);
+        if (meta.device.support.onkeydown) {
+            window.addEventListener("keydown", this._onKeyDown);
+        }
+        if (meta.device.support.onkeyup) {
+            window.addEventListener("keyup", this._onKeyUp);
+        }
+    },
+    removeEventListeners: function() {
+        window.removeEventListener("mousedown", this._onMouseDown);
+        window.removeEventListener("mouseup", this._onMouseUp);
+        window.removeEventListener("mousemove", this._onMouseMove);
+        window.removeEventListener("dblclick", this._onMouseDbClick);
+        window.removeEventListener("touchstart", this._onTouchDown);
+        window.removeEventListener("touchend", this._onTouchUp);
+        window.removeEventListener("touchmove", this._onTouchMove);
+        window.removeEventListener("touchcancel", this._onTouchUp);
+        window.removeEventListener("touchleave", this._onTouchUp);
+        if (meta.device.support.onkeydown) {
+            window.removeEventListener("keydown", this._onKeyDown);
+        }
+        if (meta.device.support.onkeyup) {
+            window.removeEventListener("keyup", this._onKeyUp);
+        }
+    },
+    resetInput: function() {
+        var i;
+        this._event.event = null;
+        this._event.prevX = 0;
+        this._event.prevY = 0;
+        this._event.x = 0;
+        this._event.y = 0;
+        this._event.keyCode = 0;
+        for (i = 0; i < this.numKeys; i++) {
+            if (this.keys[i]) {
+                this.keys[i] = false;
+                this._event.keyCode = i;
+                this._chnKeyUp.emit(this._event, Input.Event.KEYUP);
+            }
+        }
+        for (i = 0; i < this.numInputs; i++) {
+            if (this.inputs[i]) {
+                this.inputs[i] = false;
+                this._event.keyCode = i;
+                this._chnInputUp.emit(this._event, Input.Event.UP);
+            }
+        }
+        this._numCmdKeys = 0;
+        if (this.numTouches) {
+            for (i = 0; i < this.numTouches; i++) {
+                this._event.keyCode = i;
+                this._chnInputUp.emit(this._event, Input.Event.UP);
+            }
+            this.touches.length = 0;
+            this.numTouches = 0;
+        }
+    },
+    onKey: function(key, cb) {
+        if (!this._callbacks) {
+            this._callbacks = {};
+            this._callbacks[key] = [ cb ];
+        } else {
+            if (!this._callbacks[key]) {
+                this._callbacks[key] = [ cb ];
+            } else {
+                this._callbacks[key].push(cb);
+            }
+        }
+    },
+    getEvent: function() {
+        this._event.event = null;
+        this._event.prevScreenX = this._event.screenX;
+        this._event.prevScreenY = this._event.screenY;
+        this._event.screenX = this.screenX;
+        this._event.screenY = this.screenY;
+        this._event.x = this.inputX;
+        this._event.y = this.inputY;
+        this._event.keyCode = -1;
+        return this._event;
+    },
+    _loadIgnoreKeys: function() {
+        this._ignoreKeys = [];
+        this._ignoreKeys[8] = 1;
+        this._ignoreKeys[9] = 1;
+        this._ignoreKeys[13] = 1;
+        this._ignoreKeys[17] = 1;
+        this._ignoreKeys[91] = 1;
+        this._ignoreKeys[38] = 1;
+        this._ignoreKeys[39] = 1;
+        this._ignoreKeys[40] = 1;
+        this._ignoreKeys[37] = 1;
+        this._ignoreKeys[112] = 1;
+        this._ignoreKeys[113] = 1;
+        this._ignoreKeys[114] = 1;
+        this._ignoreKeys[115] = 1;
+        this._ignoreKeys[116] = 1;
+        this._ignoreKeys[117] = 1;
+        this._ignoreKeys[118] = 1;
+        this._ignoreKeys[119] = 1;
+        this._ignoreKeys[120] = 1;
+        this._ignoreKeys[121] = 1;
+        this._ignoreKeys[122] = 1;
+        this._ignoreKeys[123] = 1;
+        this._ignoreKeys[124] = 1;
+        this._ignoreKeys[125] = 1;
+        this._ignoreKeys[126] = 1;
+        this._cmdKeys = [];
+        this._cmdKeys[91] = 1;
+        this._cmdKeys[17] = 1;
+        this._iFrameKeys = [];
+        this._iFrameKeys[37] = 1;
+        this._iFrameKeys[38] = 1;
+        this._iFrameKeys[39] = 1;
+        this._iFrameKeys[40] = 1;
+    },
+    _getTouchID: function(eventTouchID) {
+        for (var i = 0; i < this.numTouches; i++) {
+            if (this.touches[i] === eventTouchID) {
+                return i;
+            }
+        }
+        return -1;
+    },
+    engine: null,
+    keys: null,
+    inputs: null,
+    touches: null,
+    blockInput: false,
+    isStickyKeys: true,
+    keyRepeat: 0,
+    _inputTimer: null,
+    _repeatKey: 0,
+    numKeys: 256,
+    numInputs: 10,
+    numTouches: 0,
+    inputX: 0,
+    inputY: 0,
+    _event: null,
+    _onKeyDown: null,
+    _onKeyUp: null,
+    _onMouseDown: null,
+    _onMouseUp: null,
+    _onMouseMove: null,
+    _onMouseDbClick: null,
+    _onTouchDown: null,
+    _onTouchUp: null,
+    _onTouchMove: null,
+    _onTouchCancel: null,
+    _chnKeyDown: null,
+    _chnKeyUp: null,
+    _chnInputDown: null,
+    _chnInputUp: null,
+    _chnInputMove: null,
+    _chnInputDbClick: null,
+    _ignoreKeys: null,
+    _cmdKeys: null,
+    _iFrameKeys: null,
+    _numCmdKeys: 0,
+    _callbacks: null
+});
+
+"use strict";
+
+Input.Event = {
+    KEY_DOWN: "keydown",
+    KEY_UP: "keyup",
+    DOWN: "down",
+    UP: "up",
+    MOVE: "move",
+    CLICK: "click",
+    DBCLICK: "dbclick"
+};
+
+Input.Key = {
+    A: 65,
+    B: 66,
+    C: 67,
+    D: 68,
+    E: 69,
+    F: 70,
+    G: 71,
+    H: 72,
+    I: 73,
+    J: 74,
+    K: 75,
+    L: 76,
+    M: 77,
+    N: 78,
+    O: 79,
+    P: 80,
+    Q: 81,
+    R: 82,
+    S: 83,
+    T: 84,
+    U: 85,
+    V: 86,
+    W: 87,
+    X: 88,
+    Y: 89,
+    Z: 90,
+    "[": 91,
+    BACKSPACE: 8,
+    TAB: 9,
+    ENTER: 13,
+    SHIFT: 16,
+    ESC: 27,
+    SPACE: 32,
+    NUM_0: 48,
+    NUM_1: 49,
+    NUM_2: 50,
+    NUM_3: 51,
+    NUM_4: 52,
+    NUM_5: 53,
+    NUM_6: 54,
+    NUM_7: 55,
+    NUM_8: 56,
+    NUM_9: 57,
+    DELETE: 127,
+    PLUS: 187,
+    MINUS: 189,
+    ARROW_LEFT: 37,
+    ARROW_UP: 38,
+    ARROW_RIGHT: 39,
+    ARROW_DOWN: 40,
+    BUTTON_LEFT: 0,
+    BUTTON_MIDDLE: 1,
+    BUTTON_RIGHT: 2
+};
+
+"use strict";
+
+var Physics = {};
+
+Physics.Manifold = function() {
+    this.a = null;
+    this.b = null;
+    this.normal = new meta.math.Vector2(0, 0);
+    this.penetration = 0;
+};
+
+Physics.Controller = meta.Controller.extend({
+    update: function(tDelta) {
+        var item, item2, n, result;
+        var numItems = this.items.length;
+        for (var i = 0; i < numItems; i++) {
+            item = this.items[i];
+            item.updateItem(tDelta, this.manifold);
+            if (!item.owner.visible) {
+                continue;
+            }
+            for (n = i + 1; n < numItems; n++) {
+                item2 = this.items[n];
+                if (!item2.owner.visible) {
+                    continue;
+                }
+                if (item.flag === item2.flag) {
+                    continue;
+                }
+                result = this.overlapAABB(item.volume, item2.volume);
+                if (result) {
+                    if (item.owner.onCollision) {
+                        this.manifold.a = item.owner;
+                        this.manifold.b = item2.owner;
+                        item.owner.onCollision(this.manifold);
+                    }
+                    if (item2.owner.onCollision) {
+                        this.manifold.a = item2.owner;
+                        this.manifold.b = item.owner;
+                        item2.owner.onCollision(this.manifold);
+                    }
+                }
+            }
+        }
+    },
+    overlapAABB: function(a, b) {
+        var diffX = b.minX - a.minX;
+        var diffY = b.minY - a.minY;
+        var extentA = (a.maxX - a.minX) / 2;
+        var extentB = (b.maxX - b.minX) / 2;
+        var overlapX = extentA + extentB - Math.abs(diffX);
+        if (overlapX > 0) {
+            extentA = (a.maxY - a.minY) / 2;
+            extentB = (b.maxY - b.minY) / 2;
+            var overlapY = extentA + extentB - Math.abs(diffY);
+            if (overlapY > 0) {
+                if (overlapX < overlapY) {
+                    if (diffX < 0) {
+                        this.manifold.normal.set(-1, 0);
+                    } else {
+                        this.manifold.normal.set(1, 0);
+                    }
+                    this.manifold.penetration = overlapX;
+                    return true;
+                } else {
+                    if (diffY < 0) {
+                        this.manifold.normal.set(0, -1);
+                    } else {
+                        this.manifold.normal.set(0, 1);
+                    }
+                    this.manifold.penetration = overlapY;
+                    return true;
+                }
+            }
+        }
+        return false;
+    },
+    add: function(entity) {
+        if (!(entity instanceof Entity.Geometry)) {
+            console.warn("(Physics.Controller.add) Object should be a part of Entity.Geometry:", entity);
+            return;
+        }
+        this.items.push(entity.addComponent("body", Physics.Body));
+    },
+    items: [],
+    manifold: new Physics.Manifold(),
+    _relativeVel: new meta.math.Vector2(0, 0),
+    _impulseX: 0,
+    _impulseY: 0,
+    _percent: .8,
+    _slop: .01
+});
+
+"use strict";
+
+Physics.Body = function() {
+    this._mass = 100;
+    this.invMass = .01;
+    this.restitution = .6;
+    this.velocity = new meta.math.Vector2(0, 0);
+};
+
+Physics.Body.prototype = {
+    load: function() {
+        this.volume = this.owner.volume;
+    },
+    updateVolume: function() {},
+    updateItem: function(tDelta, manifold) {
+        this.speed += this.acceleration * tDelta;
+        if (this.speed > this.maxSpeed) {
+            this.speed = this.maxSpeed;
+        }
+        var volume = this.owner.volume;
+        if (this.haveTarget) {
+            var distance = meta.math.length(volume.x, volume.y, this.targetX, this.targetY);
+            if (distance <= this.speed * tDelta) {
+                this.owner.position(this.targetX, this.targetY);
+                this.stop();
+            } else {
+                this._helperVec.x = this.targetX - volume.x;
+                this._helperVec.y = this.targetY - volume.y;
+                this._helperVec.normalize();
+                this.velocity.x = this._helperVec.x * this.speed;
+                this.velocity.y = this._helperVec.y * this.speed;
+            }
+        }
+        this.owner.move(this.velocity.x * tDelta, this.velocity.y * tDelta);
+        this.volume.set(volume.x, volume.y);
+        if (this.enableWorldBounds) {
+            var newX = volume.x;
+            var newY = volume.y;
+            if (this.volume.minX < 0) {
+                newX = this.volume.x - this.volume.minX;
+                this.velocity.x = -this.velocity.x;
+                manifold.normal.set(1, 0);
+            } else if (this.volume.maxX > meta.world.width) {
+                newX += meta.world.width - this.volume.maxX;
+                this.velocity.x = -this.velocity.x;
+                manifold.normal.set(-1, 0);
+            }
+            if (this.volume.minY < 0) {
+                newY = this.volume.y - this.volume.minY;
+                this.velocity.y = -this.velocity.y;
+                manifold.normal.set(0, 1);
+            } else if (this.volume.maxY > meta.world.height) {
+                newY += meta.world.height - this.volume.maxY;
+                this.velocity.y = -this.velocity.y;
+                manifold.normal.set(0, -1);
+            }
+            this.owner.position(newX, newY);
+            this.volume.set(newX, newY);
+        }
+    },
+    moveTo: function(x, y, speed, moveToCB) {
+        this.targetX = x;
+        this.targetY = y;
+        this.haveTarget = true;
+        this.speed = speed || 600;
+        this.moveToCB = moveToCB || null;
+    },
+    stop: function() {
+        this.speed = 0;
+        this.acceleration = 0;
+        this.velocity.x = 0;
+        this.velocity.y = 0;
+        if (this.haveTarget) {
+            if (this.moveToCB) {
+                this.moveToCB.call(this.owner);
+                this.moveToCB = null;
+            }
+            this.haveTarget = false;
+        }
+    },
+    set mass(value) {
+        this._mass = value;
+        if (value === 0) {
+            this.invMass = 0;
+        } else {
+            this.invMass = 1 / value;
+        }
+    },
+    get mass() {
+        return this._mass;
+    },
+    enableWorldBounds: false,
+    ghost: false,
+    targetX: 0,
+    targetY: 0,
+    haveTarget: false,
+    moveToCB: null,
+    maxSpeed: Number.MAX_VALUE,
+    acceleration: 0,
+    onCollision: null,
+    _helperVec: new meta.math.Vector2(0, 0)
+};
+
+"use strict";
+
+var UI = {};
+
+UI.Controller = meta.Controller.extend({
+    init: function() {
+        var buttonTex = new Resource.Texture();
+        buttonTex.fillRect({
+            color: "#111",
+            width: 120,
+            height: 30
+        });
+        var buttonOnHoverTex = new Resource.Texture();
+        buttonOnHoverTex.fillRect({
+            color: "#ff0000",
+            width: 120,
+            height: 30
+        });
+        this.coreStyle = {
+            button: {
+                "*:hover": {
+                    cursor: "pointer"
+                },
+                "*:pressed, *:drag": {
+                    cursor: "pointer",
+                    offsetX: 1,
+                    offsetY: 1
+                }
+            },
+            checkbox: {
+                "*:hover": {
+                    cursor: "pointer"
+                },
+                "*:pressed, *:drag": {
+                    cursor: "pointer",
+                    offsetX: 1,
+                    offsetY: 1
+                }
+            }
+        };
+        this.style = {
+            button: {
+                "*": {
+                    texture: buttonTex
+                },
+                "*:hover": {
+                    texture: buttonOnHoverTex,
+                    cursor: "pointer"
+                },
+                "*:pressed": {
+                    texture: buttonOnHoverTex,
+                    cursor: "pointer",
+                    offsetX: 1,
+                    offsetY: 1
+                }
+            },
+            checkbox: {
+                "*": {
+                    texture: buttonTex
+                },
+                "*:hover": {
+                    texture: buttonOnHoverTex,
+                    cursor: "pointer"
+                },
+                "*:pressed": {
+                    texture: buttonOnHoverTex,
+                    cursor: "pointer",
+                    offsetX: 1,
+                    offsetY: 1
+                },
+                "[off]": {
+                    texture: buttonTex
+                },
+                "[on]": {
+                    texture: buttonOnHoverTex
+                }
+            }
+        };
+    },
+    coreStyle: null,
+    style: null
+});
+
+"use strict";
+
+UI.Button = Entity.Geometry.extend({
+    _initParams: function(params) {
+        if (params) {
+            this.style = meta.createStyle(params, UI.ctrl.coreStyle.button);
+        } else {
+            this.style = UI.ctrl.style.button;
+        }
+    },
+    set text(str) {
+        if (!this._text) {
+            this._text = new Entity.Text(str);
+            this._text.size = 12;
+            this._text.color = "#ffffff";
+            this.attach(this._text);
+            this._text.anchor(.5);
+            this._text.pickable = false;
+        } else {
+            this._text.setText(str);
+        }
+    },
+    get text() {
+        if (!this._text) {
+            return "";
+        }
+        return this._text._text;
+    },
+    _text: null
+});
+
+"use strict";
+
+UI.Checkbox = Entity.Geometry.extend({
+    _initParams: function(params) {
+        if (params) {
+            this.style = meta.createStyle(params, UI.ctrl.coreStyle.checkbox);
+        } else {
+            this.style = UI.ctrl.style.checkbox;
+        }
+        var self = this;
+        var entity = new Entity.Geometry();
+        entity.style = this._style.childStyle;
+        entity.anchor(.5);
+        entity.pickable = false;
+        entity.onChange = function() {
+            self._onChildChange(this);
+        };
+        this.attach(entity);
+        this.state = "off";
+        this._onClick = this.toggle;
+    },
+    toggle: function() {
+        var child = this.children[0];
+        if (this.group) {
+            child.state = "on";
+        } else {
+            if (child.state === "on") {
+                child.state = "off";
+            } else {
+                child.state = "on";
+            }
+        }
+    },
+    _onChange: function() {
+        this.children[0].state = this._state;
+        if (this.group && this._state === "on") {
+            this.group._onStateChange(this);
+        }
+    },
+    _onChildChange: function(child) {
+        this.state = this.children[0]._state;
+    },
+    set checked(value) {
+        this.state = value ? "on" : "off";
+    },
+    get checked() {
+        return this._state === "on";
+    },
+    set text(str) {
+        if (!this._text) {
+            this._text = new Entity.Text(str);
+            this._text.size = 12;
+            this._text.color = "#ffffff";
+            this.attach(this._text);
+            this._text.anchor(.5);
+            this._text.pickable = false;
+        } else {
+            this._text.setText(str);
+        }
+    },
+    get text() {
+        if (!this._text) {
+            return "";
+        }
+        return this._text._text;
+    },
+    _text: null,
+    group: null,
+    value: ""
+});
+
+"use strict";
+
+UI.ProgressBar = Entity.Geometry.extend({
+    init: function() {
+        this.texture = new Resource.Texture();
+        this.volume.resize(300, 30);
+        this.buildElement();
+    },
+    buildElement: function() {
+        this.texture.fillRect({
+            width: this.width,
+            height: this.height,
+            color: "white"
+        });
+    },
+    updateElement: function() {},
+    set min(value) {
+        if (this._min === value) {
+            return;
+        }
+        this._min = value;
+        this.updateElement();
+    },
+    set max(value) {
+        if (this._max === value) {
+            return;
+        }
+        this._max = value;
+        this.updateElement();
+    },
+    set value(value) {
+        if (this._value === value) {
+            return;
+        }
+        this._value = value;
+        this.updateElement();
+    },
+    get min() {
+        return this._min;
+    },
+    get max() {
+        return this._max;
+    },
+    get value() {
+        return this._value;
+    },
+    _min: 0,
+    _max: 100,
+    _value: 0
+});
+
+"use strict";
+
+UI.Group = Entity.Geometry.extend({
+    add: function(entity) {
+        if (entity.group) {
+            entity.detach();
+        }
+        if (!this.children) {
+            entity.state = "on";
+            this._value = entity.value;
+        }
+        this.attach(entity);
+        entity.group = this;
+    },
+    _onStateChange: function(entity) {
+        this.prevValue = this._value;
+        this._value = entity.value;
+        var child;
+        var numChildren = this.children.length;
+        for (var i = 0; i < numChildren; i++) {
+            child = this.children[i];
+            if (child === entity) {
+                continue;
+            }
+            this.children[i].state = "off";
+        }
+        this.onChange(this);
+    },
+    set value(_value) {
+        if (this.children) {
+            var numChildren = this.children.length;
+            for (var n = 0; n < numChildren; n++) {
+                if (this.children[n].value === _value) {
+                    this.children[n].state = "on";
+                    break;
+                }
+            }
+        }
+    },
+    get value() {
+        return this._value;
+    },
+    prevValue: "",
+    _value: ""
+});
+
+"use strict";
+
+meta.createEngine = function() {
+    meta.onDomLoad(function() {
+        meta.engine.create();
+    });
+};
+
+(function() {
+    if (!meta.autoInit) {
+        return;
+    }
+    meta.createEngine();
+})();

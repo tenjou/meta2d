@@ -390,7 +390,7 @@ meta.unregisterAll = function()
  */
 meta.onDomLoad = function(func)
 {
-	if((document.readyState === "interactive" || document.readyState === "complete") && !meta.debug) {
+	if((document.readyState === "interactive" || document.readyState === "complete")) {
 		func();
 		return;
 	}
@@ -402,7 +402,6 @@ meta.onDomLoad = function(func)
 
 	window.addEventListener("DOMContentLoaded", cbFunc);
 };
-
 
 /**
  * Get enum key as string.
@@ -483,7 +482,7 @@ meta.loadScript = function(src, onLoad)
 		meta.cache.scripts.push({ s: src, c: onLoad });
 	}
 	else {
-		meta._loadScript({ s: src, c: callback });
+		meta._loadScript({ s: src, c: onLoad });
 	}
 };
 

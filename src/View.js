@@ -77,10 +77,10 @@ meta.View.prototype =
 	 */
 	attach: function(entity)
 	{
-		if(!(entity instanceof Entity.Geometry)) {
-			console.warn("(meta.View.attach) Object should have inherited Entity.Geometry class.");
-			return;
-		}
+		// if(!(entity instanceof Entity.Geometry)) {
+		// 	console.warn("(meta.View.attach) Object should have inherited Entity.Geometry class.");
+		// 	return;
+		// }
 
 		if(entity.isRemoved) {
 			console.warn("(meta.View.attach) Removed entity can not be added to the view.");
@@ -117,8 +117,8 @@ meta.View.prototype =
 			entity.isLoaded = true;
 		}	
 
-		if(this._isActive && Renderer.ctrl.isLoaded) {
-			Renderer.ctrl.addEntities(entity);
+		if(this._isActive && meta.engine.isReady) {
+			meta.renderer.addEntity(entity);
 		}
 	},
 
@@ -363,7 +363,7 @@ meta.View.prototype =
 			}			
 		}
 
-		Renderer.ctrl.addEntities(this.entities);
+		meta.renderer.addEntities(this.entities);
 
 		if(this.views)
 		{
@@ -610,7 +610,12 @@ meta.detachView = function(view)
 	meta.cache.view.detachView(view);
 };
 
-Object.defineProperty(meta, "view", {
+Object.defineProperty(meta, "view", 
+{
+	set: function(view) {
+		meta.setView(view);
+	},
+
     get: function() {
 		return meta.cache.view;
 	}    
