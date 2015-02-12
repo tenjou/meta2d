@@ -1,36 +1,5 @@
 "use strict";
 
-/**
- * @namespace
- * @property engine {meta.Engine} Instance of the engine object.
- * @property loader {meta.Loader} Instance of the loader object.
- * @property device {meta.Device} Instance of the device object.
- * @property controllers {Array} Added controllers to the engine.
- * @property channel {Object} Dictionary with created channels.
- * @property shader {Object} Dictionary with created shaders.
- * @property element {DOM}
- * @property version {string} Version.
- * @property enablemeta {Boolean} Create default meta tags in DOMs head.
- * @property enableWebGL {Boolean} Enable WebGL acceleration if possible.
- * @property modules {Object} List with installed modules.
- * @property importUrl {String} Default path from where modules are imported from.
- */
-
-meta.channels = {};
-meta.loadingView = null;
-meta.world = null;
-
-meta.enableAdaptive = true;
-meta.tUpdate = 1000 / 60;
-meta.unitSize = 1;
-meta.unitRatio = 1;
-meta.maxUnitSize = 1;
-meta.maxUnitRatio = 1;
-meta.utils = {};
-meta.modules = {};
-meta.importUrl = "http://meta.infinite-games.com/store/";
-
-
 meta.engine = 
 {
 	/**
@@ -45,12 +14,11 @@ meta.engine =
 		this._createRenderer();
 		this._printInfo();
 
-		if(meta.autoMetaTags) {
+		if(this.autoMetaTags) {
 			this._addMetaTags();
 		}
 
-		meta.camera = new meta.Camera();	
-
+		// Channels:
 		this.chn = {
 			resize: meta.createChannel(meta.Event.RESIZE),
 			adapt: meta.createChannel(meta.Event.FULLSCREEN),
@@ -59,41 +27,46 @@ meta.engine =
 			debug: meta.createChannel(meta.Event.DEBUG)
 		};
 
-		this.sortAdaptions();
-		this.onResize();
-
-		meta.world = new meta.World(this.width, this.height);
-
-		//
+		// Callbacks:
 		var self = this;
-		this._onResizeCB = function(event) { console.log("resize2"); self.onResize(); };
-		this._onFocusCB = function(event) { self.onFocusChange(true); };
-		this._onBlurCB = function(event) { self.onFocusChange(false); };
+		this.cb = {
+			resize: function(event) { self.onResize(); },
+			focus: function(event) { self.onFocusChange(true); },
+			blur: function(event) { self.onFocusChange(false); }
+		};
 
-		window.addEventListener("resize", this._onResizeCB, false);
-		window.addEventListener("orientationchange", this._onResizeCB, false);
+		window.addEventListener("resize", this.cb.resize, false);
+		window.addEventListener("orientationchange", this.cb.resize, false);	
 
-		// Page Visibility API.
+		// Page Visibility API:
 		if(meta.device.hidden) {
-			this._onVisibilityChangeCB = function() { self.onVisibilityChange(); };
-			document.addEventListener(meta.device.visibilityChange, this._onVisibilityChangeCB);
+			this.cb.visibilityChange = function() { self.onVisibilityChange(); };
+			document.addEventListener(meta.device.visibilityChange, this.cb.visibilityChange);
 		}
 		else {
-			window.addEventListener("focus", this._onFocusCB);
-			window.addEventListener("blur", this._onBlurCB);
-		}
+			window.addEventListener("focus", this.cb.focus);
+			window.addEventListener("blur", this.cb.blur);
+		}	
 
-		// Fullscreen API.
+		// Fullscreen API:
 		if(meta.device.support.fullScreen) {
-			this._onFullScreenChangeCB = function() { self.onFullScreenChangeCB(); };
-			document.addEventListener(meta.device.fullScreenOnChange, this._onFullScreenChangeCB);
+			this.cb.fullscreen = function() { self.cb.fullscreen(); };
+			document.addEventListener(meta.device.fullScreenOnChange, this.cb.fullscreen);
 		}
 
-		this.tNow = Date.now();
-		this.start();
+		meta.subscribe(this, Input.Event.KEY_DOWN, this.onKeyDown);
+
+		meta.camera = new meta.Camera();
+
+		this.sortAdaptions();
+		this.onResize();
+		
+		meta.world = new meta.World(this.width, this.height);		
+
+		this._initAll();
 	},
 
-	start: function()
+	_initAll: function()
 	{
 		var cache = meta.cache;
 
@@ -109,24 +82,29 @@ meta.engine =
 		// cache.views["loading"] = loadingView;
 		// cache.loadingView = loadingView;	
 
-		var numFuncs = cache.initBuffer.length;
+		var numFuncs = cache.initFuncs.length;
 		for(var i = 0; i < numFuncs; i++) {
-			cache.initBuffer[i]();
+			cache.initFuncs[i]();
 		}
 
 		this._addCorePlugins();
-		this.isInited = true;
+		this.inited = true;
 
 		console.log(" ");
 
-		this._load();
+		this._loadAll();
 	},
 
-	_load: function()
+	_loadAll: function()
 	{
-		console.log("%c(Loading started)", "background: #eee; font-weight: bold;");
+		if(meta.device.support.consoleCSS) {
+			console.log("%c(Loading started)", "background: #eee; font-weight: bold;");
+		}
+		else {
+			console.log("(Loading started)");
+		}
 
-		this.isLoading = true;
+		this.loading = true;
 
 		if(!meta._loadAllScripts()) {
 			this._continueLoad();
@@ -135,12 +113,11 @@ meta.engine =
 
 	_continueLoad: function()
 	{
-		var i;
 		var cache = meta.cache;
 
-		var numFuncs = cache.loadBuffer.length;
-		for(i = 0; i < numFuncs; i++) {
-			cache.loadBuffer[i]();
+		var numFuncs = cache.loadFuncs.length;
+		for(var i = 0; i < numFuncs; i++) {
+			cache.loadFuncs[i]();
 		}
 
 		var ctrl;
@@ -149,79 +126,113 @@ meta.engine =
 		{
 			ctrl = this.controllers[i];
 			ctrl.load();
-			ctrl.isLoaded = true;
+			ctrl.loaded = true;
 		}
 
-		this.isCtrlLoaded = true;
-		meta.cache.view.isActive = true;
-		this.isLoading = false;
+		this.loadedCtrls = true;
+		console.log("active");
+		meta.cache.view.active = true;
+		this.loading = false;
 
 		if(Resource.ctrl.numToLoad === 0) {
-			this.onResourcesLoaded();
+			this.onReady();
 		}
 	},
 
-	update: function()
+	onReady: function()
 	{
-		this.updateFrameID++;
-		this.tNow = Date.now();
-		var tDelta = this.tNow - this.tUpdate;
+		this.loaded = true;
 
-		if(this.pause) { tDelta = 0; }
-		if(tDelta > 250) { tDelta = 250; }
-
-		var tDeltaF = tDelta / 1000;
-
-		meta.renderer.update(tDeltaF);
-
-		if(meta.update) {
-			meta.update(tDeltaF);
+		if(meta.device.support.consoleCSS) {
+			console.log("%c(Loading ended)", "background: #eee; font-weight: bold;");
+		}
+		else {
+			console.log("(Loading ended)");
 		}
 
-		// Update controllers.
+		//
 		var numCtrl = this.controllers.length;
 		for(var i = 0; i < numCtrl; i++) {
-			this.controllers[i].update(tDeltaF);
+			this.controllers[i].ready();
 		}
 
-		// Remove flagged controllers.
-		if(this.controllersToRemove.length)
-		{
-			var ctrlToRemove;
-			var numCtrls = this.controllers.length;
-			var numCtrlsToRemove = this.controllersToRemove.length;
-			for(var n = 0; n < numCtrlsToRemove; n++)
-			{
-				ctrlToRemove = this.controllersToRemove[n];
+		this.ready = true;
 
-				for(i = 0; i < numCtrls; i++)
-				{
-					if(this.controllers[i] === ctrlToRemove) {
-						this.controllers[i] = this.controllers[numCtrls - 1];
-						this.controllers.pop();
-						break;
-					}
-				}
+		var numFuncs = meta.cache.readyFuncs.length;
+		for(var i = 0; i < numFuncs; i++) {
+			meta.cache.readyFuncs[i]();
+		}
+
+		this._startMainLoop();
+	},
+
+	_startMainLoop: function()
+	{
+		this.time.update = Date.now();
+
+		var self = this;
+		this._renderLoop = function() { self.render(); };
+		this._updateLoop = function() { self.update(); };
+		this.update();
+		this.render();
+	},	
+
+	update: function()
+	{
+		this.time.frameIndex++;
+		var tNow = Date.now();
+
+		// Calculate tDelta:
+		if(this.time.pause) {
+			this.time.delta = 0;
+			this.time.deltaF = 0;
+		}
+		else 
+		{
+			this.time.delta = tNow - this.time.update;
+			if(this.time.delta > this.time.maxDelta) {
+				this.time.delta = this.time.maxDelta;
 			}
 
-			this.controllersToRemove.length = 0;
+			this.time.delta *= this.time.scale;
+			this.time.deltaF = this.time.delta / 1000;
 		}
 
-		this._updateTimers(tDelta);
+		var tDelta = this.time.deltaF;
+		
+		// Process all update functions:
+		var funcs = this.meta.cache.updateFuncs;
+		var numFuncs = funcs.length;
+		for(var i = 0; i < numFuncs; i++) {
+			funcs[i](tDelta);
+		}
 
-		this.tUpdate = this.tNow;
-		var tSample = Date.now();
-		var tSleep = Math.max(0, meta.tUpdate - (tSample - this.tNow));
-		window.setTimeout(this._updateLoop, tSleep);
+		// // Process all controller update functions:
+		// var ctrls = this.meta.cache.ctrlUpdateFuncs;
+		// var numCtrls = ctrls.length;
+		// for(i = 0; i < numCtrls; i++) {
+		// 	ctrls[i].update(tDelta);
+		// }	
+
+		this.meta.renderer.update(tDelta);
+
+		this._updateTimers(this.time.delta);
+
+		this.time.update = tNow;
+		var tElapsed = Date.now();
+		var tSleep = Math.max(0, this.time.updateFreq - (tElapsed - tNow));
+		window.setTimeout(this._updateLoop, tSleep);	
 	},
 
 	_updateTimers: function(tDelta)
 	{
-		var timer, i;
-		for(i = 0; i < this._numTimers; i++)
+		var timer;
+		var removed = false;
+		var numTimers = this.timers.length;
+		for(var i = numTimers - 1; i > -1; i--)
 		{
-			timer = this._timers[i];
-			if(timer.isPaused) { continue; }
+			timer = this.timers[i];
+			if(timer.paused) { continue; }
 
 			timer.tAccumulator += tDelta;
 
@@ -239,67 +250,49 @@ meta.engine =
 				{
 					timer.numTimes--;
 
-					if(timer.numTimes <= 0) {
-						this._timersToRemove.push(timer);
+					if(timer.numTimes <= 0) 
+					{
+						removed = true;
+						numTimers--;
+						if(numTimers > 0) {
+							this.timers[timer.__index] = this.timers[numTimers];
+							this.timers[timer.__index].__index = timer.__index;
+							i--;
+						}
 						break;
 					}
 				}
 			}
 		}
 
-		// Remove timers that are listed.
-		if(this._timersToRemove.length)
-		{
-			var timerToRemove;
-			var numTimersToRemove = this._timersToRemove.length;
-			for(i = 0; i < numTimersToRemove; i++)
-			{
-				timerToRemove = this._timersToRemove[i];
-
-				for(var n = 0; n < this._numTimers; n++)
-				{
-					timer = this._timers[n]
-
-					if(timer.id === timerToRemove.id)
-					{
-						if(timer.onRemove) {
-							timer.onRemove();
-						}
-
-						this._timers[n] = this._timers[this._numTimers-1];
-						this._timers.pop();
-						this._numTimers--;
-						break;
-					}
-				}
-			}
+		if(removed) {
+			this.timers.length = numTimers;
 		}
 	},
 
 	render: function()
 	{
-		this.frameID++;
-
 		var tNow = Date.now();
-		var tDelta = tNow - this.tRender;
-		if(tDelta > 250) { tDelta = 250; }
-
+		var tDelta = tNow - this.time.render;
 		var tDeltaF = tDelta / 1000;
 
-		if(tNow - this.tFPS >= 1000) {
-			this.tFPS = tNow;
+		if(tNow - this.time.fps >= 1000) {
+			this.time.fps = tNow;
 			this.fps = this._fpsCounter;
 			this._fpsCounter = 0;
 		}
 
 		meta.renderer.render(tDeltaF);
 
-		if(meta.render) {
-			meta.render(tDeltaF);
-		}		
+		// Process all render functions:
+		var funcs = this.meta.cache.renderFuncs;
+		var numFuncs = funcs.length;
+		for(var i = 0; i < numFuncs; i++) {
+			funcs[i](tDeltaF);
+		}	
 
 		this._fpsCounter++;
-		this.tRender = tNow;
+		this.time.render = tNow;
 
 		requestAnimationFrame(this._renderLoop);
 	},
@@ -366,28 +359,14 @@ meta.engine =
 		this.chn.adapt.emit(newResolution, meta.Event.ADAPT);
 
 		return true;
-	},
+	},	
 
-	onResourcesLoaded: function()
+	onKeyDown: function(data, event) 
 	{
-		this.isLoaded = true;
-
-		console.log("%c(Loading ended)", "background: #eee; font-weight: bold;");
-
-		//
-		var numCtrl = this.controllers.length;
-		for(var i = 0; i < numCtrl; i++) {
-			this.controllers[i].ready();
+		if(data.keyCode === Input.Key.TILDE) {
+			meta.debug = !meta.cache.debug;
+			meta.renderer.needRender = true;
 		}
-
-		this.isReady = true;
-
-		var numFuncs = meta.cache.readyBuffer.length;
-		for(var i = 0; i < numFuncs; i++) {
-			meta.cache.readyBuffer[i]();
-		}
-
-		this._start();
 	},
 
 	/* Resizing */
@@ -454,7 +433,7 @@ meta.engine =
 
 	onFocusChange: function(value)
 	{
-		this.isFocus = value;
+		this.focus = value;
 		if(this.enablePauseOnBlur) {
 			this.pause = !value;
 		}
@@ -474,24 +453,22 @@ meta.engine =
 
 	onFullScreenChangeCB: function()
 	{
-		var isFullScreen = document.fullscreenElement || document.webkitFullscreenElement ||
+		var fullscreen = document.fullscreenElement || document.webkitFullscreenElement ||
 				document.mozFullScreenElement || document.msFullscreenElement;
-		meta.device.isFullScreen = !!isFullScreen;
+		meta.device.fullscreen = !!fullscreen;
 	},
 
-	onCtxLost: function()
-	{
+	onCtxLost: function() {
 		console.log("(Context lost)");
 	},
 
-	onCtxRestored: function()
-	{
+	onCtxRestored: function() {
 		console.log("(Context restored)");
 	},
 
 	_addMetaTags: function()
 	{
-		if(meta.cache.metaTagsAdded) { return; }
+		if(this.metaTagsAdded) { return; }
 
 		var contentType = document.createElement("meta");
 		contentType.setAttribute("http-equiv", "Content-Type");
@@ -519,7 +496,7 @@ meta.engine =
 		appleStatusBar.setAttribute("content", "black-translucent");
 		document.head.appendChild(appleStatusBar);
 
-		meta.cache.metaTagsAdded = true;
+		this.metaTagsAdded = true;
 	},
 
 	_createRenderer: function()
@@ -566,21 +543,6 @@ meta.engine =
 		meta.register("Physics");
 	},
 
-	_start: function()
-	{
-		var self = this;
-
-		this._updateLoop = function() { self.update(); };
-		this._renderLoop = function() { self.render(); };
-
-		this.tUpdate = Date.now();
-		this.tRender = this.tUpdate;
-		this.tFPS = this.tUpdate;
-
-		setTimeout(this._updateLoop);
-		requestAnimationFrame(this._renderLoop);
-	},
-
 	_printInfo: function()
 	{
 		if(meta.device.support.consoleCSS)
@@ -605,15 +567,16 @@ meta.engine =
 		}		
 	},	
 
+	/* Fullscreen */
 	fullscreen: function(value)
 	{
 		var device = meta.device;
-		if(device.isFulScreen === value) { return; }
+		if(device.fullscreen === value) { return; }
 
 		if(value) 
 		{
 			if(!device.support.fullScreen) {
-				console.warn("[meta.engine.enterFullScreen]:", "Device does not support fullscreen.");
+				console.warn("(meta.engine.enterFullScreen): Device does not support fullscreen mode");
 				return;
 			}
 
@@ -625,7 +588,7 @@ meta.engine =
 	},
 
 	toggleFullscreen: function() {
-		this.fullscreen(!meta.device.isFullScreen);
+		this.fullscreen(!meta.device.fullscreen);
 	},
 
 	/* Container */
@@ -654,7 +617,7 @@ meta.engine =
     set imageSmoothing(value) 
     {
     	meta.cache.imageSmoothing = value;
-		if(this.isReady) {
+		if(this.inited) {
 			this.onResize();
 		}
     },
@@ -663,55 +626,14 @@ meta.engine =
 		return meta.cache.imageSmoothing;
 	},
 
+	/* Cursor */
 	set cursor(value) {
 		meta.element.style.cursor = value;
 	},
 
 	get cursor() {
 		return meta.element.style.cursor;
-	},	
-
-
-	set bgColor(hex)
-	{
-		if(meta.engine.isWebGL)
-		{
-			if(hex.length === 3) {
-				hex += hex.substr(1, 3);
-			}
-
-			var color = meta.hexToRgb(hex);
-			if(color.r > 0) {
-				color.r = color.r / 255;
-			}
-			if(color.g > 0) {
-				color.g = color.g / 255;
-			}
-			if(color.b > 0) {
-				color.b = color.b / 255;
-			}
-
-			if(this._bgTransparent) {
-				meta.ctx.clearColor(0, 0, 0, 0);
-			}
-			else {
-				meta.ctx.clearColor(color.r, color.g, color.b, 1.0);
-			}
-		}
-		else {
-			this._bgColor = hex;
-		}
 	},
-
-	get bgColor() { return this._bgColor; },
-
-	set bgTransparent(value) {
-		this._bgTransparent = value;
-		this.bgColor = this._bgColor;
-	},
-
-	get bgTransparent() { return this._bgTransparent; },
-
 
 	//
 	elementStyle: "padding:0; margin:0;",
@@ -719,8 +641,8 @@ meta.engine =
 		"-webkit-backface-visibility:hidden; -webkit-perspective: 1000; " +
 		"-webkit-touch-callout: none; -webkit-user-select: none; zoom: 1;",
 
-
 	meta: meta,
+	time: meta.time,
 
 	_container: null,
 	width: 0, height: 0,
@@ -731,90 +653,36 @@ meta.engine =
 	ctx: null,
 
 	chn: null,
+	cb: null,
 
-	controllers: [],
-	controllersToRemove: [],
+	autoInit: true,
+	autoMetaTags: true,	
 
-	_timers: [],
-	_timersToRemove: [],
-	_numTimers: 0,
-
-	_onResizeCB: null,
-	_onVisibilityChangeCB: null,
-	_onFullScreenChangeCB: null,
-	_onFocusCB: null,
-	_onBlurCB: null,
-	_onCtxLostCB: null,
-	_onCtxRestoredCB: null,
-
-	isFocus: false,
-	isWebGL: false,
-	isInited: false,
-	isLoaded: false,
-	isLoading: false,
-	isCtrlLoaded: false,
-	isReady: false,
-
+	inited: false,
+	loading: false,
+	loaded: false,
+	loadedCtrls: false,
+	ready: false,
+	focus: false,
 	pause: false,
-
-	projection: null,
+	webgl: false,
 
 	_updateLoop: null,
 	_renderLoop: null,
-	tUpdate: 0,
-	tRender: 0,
-	tFPS: 0,
-	tNow: 0,
+
+	controllers: [],
+	controllersToRemove: [],	
+
+	timers: [],
+
 	fps: 0,
 	_fpsCounter: 0,
 
-	frameID: 0,
-	updateFrameID: 0,
-
 	enablePauseOnBlur: true,
 
-	_bgColor: "#ddd",
-	_bgTransparent: false		
-}
-
-Object.defineProperty(meta, "init", {
-    set: function(func) 
-    {
-		meta.cache.initBuffer.push(func);
-		if(meta.engine && meta.engine.isInited) {
-			func();
-		}
-    }
-});
-
-Object.defineProperty(meta, "load", {
-    set: function(func) 
-    {
-		meta.cache.loadBuffer.push(func);
-		if(meta.engine && meta.engine.isLoaded) {
-			func();
-		}
-    }   
-});
-
-Object.defineProperty(meta, "ready", {
-    set: function(func) 
-    {
-		meta.cache.readyBuffer.push(func);
-		if(meta.engine && meta.engine.isReady) {
-			func();
-		}
-    }   
-});
-
-/**
- * Render function. Called before all controllers.
- * @param tDelta {Number} Delta time between frames.
- */
-meta.render = null;
-
-/**
- * Update function. Called before all controllers.
- * @param tDelta {Number} Delta time between frames.
- */
-meta.update = null;
+	enableAdaptive: true,
+	unitSize: 1,
+	unitRatio: 1,
+	maxUnitSize: 1,
+	maxUnitRatio: 1		
+};

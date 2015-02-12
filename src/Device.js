@@ -29,7 +29,7 @@ meta.Device = function()
 	this.fullScreenRequest = null;
 	this.fullScreenExit = null;
 	this.fullScreenOnChange = null;
-	this.isFullScreen = false;
+	this.fullscreen = false;
 
 	this.load();
 };

@@ -61,6 +61,8 @@ Input.Key = {
 	PLUS: 187,
 	MINUS: 189,
 
+	TILDE: 222,
+
 	ARROW_LEFT: 37,
 	ARROW_UP: 38,
 	ARROW_RIGHT: 39,

@@ -6,8 +6,8 @@ meta.math.AABB = function(x, y, width, height)
 	this.y = y || 0;	
 	this.width = width || 0;
 	this.height = height || 0;
-	this.halfWidth = this.width * 0.5;
-	this.halfHeight = this.height * 0.5;
+	this.initWidth = this.width;
+	this.initHeight = this.height;
 
 	this.minX = this.x;
 	this.minY = this.y;
@@ -25,8 +25,6 @@ meta.math.AABB.prototype =
 		this.minY = this.y - this.pivotPosY;
 		this.maxX = this.minX + this.width;
 		this.maxY = this.minY + this.height;
-
-		meta.renderer.needRender = true;
 	},
 
 	move: function(x, y)
@@ -35,19 +33,69 @@ meta.math.AABB.prototype =
 		this.minY += y;
 		this.maxX += x;
 		this.maxY += y;
+	},
 
-		meta.renderer.needRender = true;
+	updatePos: function() 
+	{
+		if(this.scaleX > 0) {
+			this.pivotPosX = this.pivotX * this.width;	
+		}	
+		else {
+			this.pivotPosX = (1.0 - this.pivotX) * this.width;	
+		}
+
+		if(this.scaleY > 0) {
+			this.pivotPosY = this.pivotY * this.height;
+		}
+		else {
+			this.pivotPosY = (1.0 - this.pivotY) * this.height;		
+		}
+
+		this.minX = this.x - this.pivotPosX;
+		this.minY = this.y - this.pivotPosY;
+		this.maxX = this.minX + this.width;
+		this.maxY = this.minY + this.height;					
+	},	
+
+	updatePosTransform: function()
+	{
+		if(this.scaleX > 0) {
+			this.pivotPosX = this.pivotX * this.width;	
+		}	
+		else {
+			this.pivotPosX = (1.0 - this.pivotX) * this.width;	
+		}
+
+		if(this.scaleY > 0) {
+			this.pivotPosY = this.pivotY * this.height;
+		}
+		else {
+			this.pivotPosY = (1.0 - this.pivotY) * this.height;		
+		}
+
+		this.minX = this.x - this.pivotPosX;
+		this.minY = this.y - this.pivotPosY;
+		this.maxX = this.minX + this.width;
+		this.maxY = this.minY + this.height;
+
+		var sin = Math.sin(this.angle);
+		var cos = Math.cos(this.angle);
+		this.m11 = cos * this.scaleX;
+		this.m12 = sin * this.scaleX;
+		this.m21 = -sin * this.scaleY;
+		this.m22 = cos * this.scaleY;
 	},
 
 	resize: function(width, height)
 	{
-		this.width = width || 0;
-		this.height = height || 0;
-		this.halfWidth = this.width * 0.5;
-		this.halfHeight = this.height * 0.5;		
+		this.initWidth = width;
+		this.initHeight = height;
+		this.initPivotPosX = width * this.pivotX;
+		this.initPivotPosY = height * this.pivotY;
+		this.width = width * this.scaleX | 0;
+		this.height = height * this.scaleY | 0;	
 
 		this.updatePos();
-		meta.renderer.needRender = true;
 	},
 
 	pivot: function(x, y)
@@ -56,61 +104,54 @@ meta.math.AABB.prototype =
 
 		this.pivotX = x;
 		this.pivotY = y;
+		this.initPivotPosX = this.initWidth * this.pivotX;
+		this.initPivotPosY = this.initHeight * this.pivotY;		
 
-		this.updatePos();
-		meta.renderer.needRender = true;		
+		this.updatePos();	
 	},
 
-	updatePos: function() 
+	rotate: function(angle)
 	{
-		if(this.scaleX > 0) {
-			this.pivotPosX = this.pivotX * this.width;
-		}	
-		else {
-			this.pivotPosX = (1.0 - this.pivotX) * this.width;
-		}
+		this.angle = angle;
 
-		if(this.scaleY > 0) {
-			this.pivotPosY = this.pivotY * this.height;
-		}
-		else {
-			this.pivotPosY = (1.0 - this.pivotY) * this.height;
-		}
+		var sin = Math.sin(angle);
+		var cos = Math.cos(angle);
+		this.m11 = cos * this.scaleX;
+		this.m12 = sin * this.scaleX;
+		this.m21 = -sin * this.scaleY;
+		this.m22 = cos * this.scaleY;
+	},
 
-		this.minX = this.x - this.pivotPosX;
-		this.minY = this.y - this.pivotPosY;
-		this.maxX = this.minX + this.width;
-		this.maxY = this.minY + this.height;				
+	scale: function(x, y)
+	{
+		//if(this.scaleX === x && this.scaleY === y) { return; }
+
+		this.scaleX = x * this.flipX;
+		this.scaleY = y * this.flipY;
+		this.width = Math.floor(this.initWidth * x);
+		this.height = Math.floor(this.initHeight * y);
+		
+		this.updatePosTransform();
 	},
 
 	flip: function(x, y)
 	{
-		if(x === void(0) && y === void(0)) {
-			x = -this.scaleX;
-			y = this.scaleY;
+		if(x === void(0)) {
+			this.flipX = -this.flipX;
+			this.scaleX *= -1.0;
 		}
-		else
-		{
-			x = (x !== void(0)) ? x : 1.0;
-			y = (y !== void(0)) ? y : 1.0;
+		else if(this.flipX !== x) {
+			this.flipX = x;
+			this.scaleX *= -1.0;
 		}
 
-		x = x | 0;
-		y = y | 0;
+		if(y === void(0)) {}
+		else if(this.flipY !== y) {
+			this.flipY = y;
+			this.scaleY *= -1.0;
+		}			
 
-		if(x > 1.0) { x = 1.0; }
-		else if(x < -1.0) { x = -1.0; }
-		else if(x === 0.0) { x = 1.0; }
-
-		if(y > 1.0) { y = 1.0; }
-		else if(y < -1.0) { y = -1.0; }
-		else if(y === 0.0) { y = 1.0; }
-
-		if(x === this.scaleX && y === this.scaleY) { return; }
-
-		this.scaleX = x;
-		this.scaleY = y;
-		this.updatePos();
+		this.updatePosTransform();
 	},
 
 	vsAABB: function(src)
@@ -236,7 +277,15 @@ meta.math.AABB.prototype =
 
 
 	//
+	parentX: 0, parentY: 0,
+
 	pivotX: 0, pivotY: 0,
 	pivotPosX: 0, pivotPosY: 0,
-	scaleX: 1, scaleY: 1
+	initPivotPosX: 0, initPivotPosY: 0,
+
+	scaleX: 1, scaleY: 1,
+	flipX: 1, flipY: 1,
+	angle: 0,
+
+	m11: 1, m12: 0, m21: 0, m22: 1
 };

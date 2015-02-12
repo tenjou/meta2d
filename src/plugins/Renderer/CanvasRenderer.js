@@ -11,7 +11,7 @@ meta.CanvasRenderer = meta.Renderer.extend
 
 	render: function(tDelta)
 	{
-		//if(!this.needRender) { return; }
+		if(!this.needRender) { return; }
 
 		this.clear();
 
@@ -20,6 +20,9 @@ meta.CanvasRenderer = meta.Renderer.extend
 			this.drawEntity(this.entities[i]);
 		}
 
+		this.ctx.resetTransform();
+
+		/* Debug */
 		if(this.meta.cache.debug) 
 		{
 			this.ctx.save();
@@ -33,14 +36,37 @@ meta.CanvasRenderer = meta.Renderer.extend
 
 			this.ctx.restore();
 		}
+		else if(this.numDebug > 0) 
+		{
+			this.ctx.save();
+			this.ctx.lineWidth = 2;
+			this.ctx.strokeStyle = "red";
+			this.ctx.fillStyle = "red";
+
+			var entity;
+			for(i = 0; i < numEntities; i++) 
+			{
+				entity = this.entities[i];
+				if(entity.__debug) {
+					this.drawVolume(entity);
+				}
+			}
+
+			this.ctx.restore();
+		}
 
 		this.needRender = false;
 	},
 
-	clear: function()
+	clear: function() 
 	{
-		this.ctx.fillStyle = "#ddd";
-		this.ctx.fillRect(0, 0, this.engine.width, this.engine.height);
+		if(this._transparent) {
+			this.ctx.clearRect(0, 0, this.engine.width, this.engine.height);
+		}
+		else {
+			this.ctx.fillStyle = this._bgColor;
+			this.ctx.fillRect(0, 0, this.engine.width, this.engine.height);
+		}
 	},
 
 	drawEntity: function(entity)
@@ -48,23 +74,28 @@ meta.CanvasRenderer = meta.Renderer.extend
 		var volume = entity.volume;
 
 		if(entity.__type === 0) {
-			this.ctx.drawImage(entity.texture.canvas, Math.floor(volume.minX), Math.floor(volume.minY));
+			this.ctx.drawImage(entity.texture.canvas, volume.minX | 0, volume.minY | 0);
 		}
 		else if(entity.__type === 1) 
 		{
-			this.ctx.save();
+			// this.ctx.save();
 
 			this.ctx.globalAlpha = entity._alpha;
 
-			this.ctx.translate(volume.x, volume.y);
-			this.ctx.rotate(entity._angleRad);
-		  	this.ctx.translate(volume.halfWidth - volume.pivotPosX, volume.halfHeight - volume.pivotPosY);
-			this.ctx.scale(volume.scaleX, volume.scaleY);
-		  	this.ctx.translate(-volume.halfWidth, -volume.halfHeight);
+			this.ctx.setTransform(
+				volume.m11, volume.m12, 
+				volume.m21, volume.m22,
+				volume.x, volume.y);
 
-			this.ctx.drawImage(entity.texture.canvas, 0, 0);
+			this.ctx.drawImage(entity.texture.canvas, -volume.initPivotPosX, -volume.initPivotPosY);
 
-			this.ctx.restore();
+			this.ctx.globalAlpha = 1.0;
+
+			//this.ctx.restore();
+		}
+		else if(entity.__type === 2)
+		{
+
 		}
 	},
 
@@ -80,7 +111,7 @@ meta.CanvasRenderer = meta.Renderer.extend
 			this.ctx.save();
 
 			this.ctx.translate(volume.x, volume.y);
-			this.ctx.rotate(entity._angleRad);
+			this.ctx.rotate(entity.volume.angle);
 			this.ctx.translate(-volume.x, -volume.y);
 
 			this._drawVolume(volume);
@@ -91,10 +122,10 @@ meta.CanvasRenderer = meta.Renderer.extend
 
 	_drawVolume: function(volume) 
 	{
-		var minX = volume.minX;
-		var minY = volume.minY;
-		var maxX = volume.maxX;
-		var maxY = volume.maxY - 1;		
+		var minX = Math.floor(volume.minX);
+		var minY = Math.floor(volume.minY);
+		var maxX = Math.floor(volume.maxX);
+		var maxY = Math.floor(volume.maxY - 1);		
 
 		this.ctx.beginPath();
 		this.ctx.moveTo(minX, minY);
@@ -106,6 +137,8 @@ meta.CanvasRenderer = meta.Renderer.extend
 
 		this.ctx.fillRect(volume.x - 3, volume.y - 3, 6, 6);
 	},
+
+	updateBgColor: function() {},
 
 	//
 	engine: null,

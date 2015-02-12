@@ -131,9 +131,9 @@ Resource.Controller = meta.Controller.extend
 	 */
 	addToLoad: function(resource)
 	{
-		resource.isLoading = true;
+		resource.loading = true;
 
-		if(!meta.engine.isReady) {
+		if(!meta.engine.ready) {
 			this.numToLoad++;
 		}
 	},
@@ -154,13 +154,13 @@ Resource.Controller = meta.Controller.extend
 		resource.isLoading = false;
 		resource.inUse = true;
 
-		if(!meta.engine.isReady)
+		if(!meta.engine.ready)
 		{
 			this.numToLoad--;
 			this.numLoaded++;
 
-			if(this.numToLoad === 0 && !meta.engine.isLoading) {
-				meta.engine.onResourcesLoaded();
+			if(this.numToLoad === 0 && !meta.engine.loading) {
+				meta.engine.onReady();
 				this._chn_allLoaded.emit(this, Resource.Event.ALL_LOADED);
 			}
 		}
@@ -172,14 +172,14 @@ Resource.Controller = meta.Controller.extend
 	 */
 	loadFailed: function(resource)
 	{
-		resource.isLoading = false;
+		resource.loading = false;
 
-		if(!meta.engine.isReady)
+		if(!meta.engine.ready)
 		{
 			this.numToLoad--;
 
-			if(this.numToLoad === 0 && !meta.engine.isLoading) {
-				meta.engine.onResourcesLoaded();
+			if(this.numToLoad === 0 && !meta.engine.loading) {
+				meta.engine.onReady();
 				this._chn_allLoaded.emit(this, Resource.Event.ALL_LOADED);
 			}
 		}

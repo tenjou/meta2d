@@ -29,7 +29,7 @@ meta.View = function(name)
 	this._z = 0;
 	this._tween = null;
 
-	this._isActive = false;
+	this._active = false;
 };
 
 meta.View.prototype =
@@ -56,7 +56,7 @@ meta.View.prototype =
 			}
 		}
 
-		this.isActive = false;
+		this.active = false;
 		this._unregisterFromEngine();
 
 		var entity;
@@ -83,7 +83,7 @@ meta.View.prototype =
 		// }
 
 		if(entity.isRemoved) {
-			console.warn("(meta.View.attach) Removed entity can not be added to the view.");
+			console.warn("(meta.View.add) Removed entity can not be added to the view.");
 			return;
 		}
 
@@ -117,7 +117,7 @@ meta.View.prototype =
 			entity.isLoaded = true;
 		}	
 
-		if(this._isActive && meta.engine.isReady) {
+		if(this._active && meta.engine.ready) {
 			meta.renderer.addEntity(entity);
 		}
 	},
@@ -170,7 +170,7 @@ meta.View.prototype =
 		this.entities[this.numEntities] = replaceEntity;
 		this.entities.pop();
 
-		if(this._isActive) {
+		if(this._active) {
 			Renderer.ctrl.removeEntities(entity);
 		}
 	},
@@ -207,7 +207,7 @@ meta.View.prototype =
 			return;
 		}
 
-		if(view._isActive) {
+		if(view._active) {
 			console.warn("(meta.View.attach) Can't attach an active view.");
 			return;
 		}
@@ -224,8 +224,8 @@ meta.View.prototype =
 		this.views.push(view);
 		view.parentView = this;
 
-		if(this._isActive) {
-			view.isActive = true;
+		if(this._active) {
+			view.active = true;
 		}
 	},
 
@@ -277,7 +277,7 @@ meta.View.prototype =
 			}
 		}
 
-		view.isActive = false;
+		view.active = false;
 		view.parentView = null;		
 	},
 
@@ -290,7 +290,7 @@ meta.View.prototype =
 		var numViews = this.views.length;
 		for(var i = 0; i < numViews; i++) {
 			view = this.views[i];
-			view.isActive = false;
+			view.active = false;
 			view.parentView = null;
 		}
 
@@ -312,8 +312,8 @@ meta.View.prototype =
 			this.controllers.push(ctrl);
 		}
 
-		if(!this._isActive) { return; }
-		if(this.parentView && !this.parentView._isActive) { return; }
+		if(!this._active) { return; }
+		if(this.parentView && !this.parentView._active) { return; }
 
 		meta.addCtrl(ctrl);
 	},
@@ -329,7 +329,7 @@ meta.View.prototype =
 		{
 			if(this.controllers[i].name === ctrlName)
 			{
-				if(this._isActive) {
+				if(this._active) {
 					meta.unregister(ctrlName);
 				}
 
@@ -354,7 +354,7 @@ meta.View.prototype =
 	{
 		var n;
 
-		// Add controllers to the engine.
+		// Add controllers to the engine:
 		if(this.controllers) 
 		{
 			var numControllers = this.controllers.length;
@@ -369,7 +369,7 @@ meta.View.prototype =
 		{
 			var numViews = this.views.length;
 			for(n = 0; n < numViews; n++) {
-				this.views[n].isActive = true;
+				this.views[n].active = true;
 			}
 		}		
 	},
@@ -378,7 +378,7 @@ meta.View.prototype =
 	{
 		var n;
 
-		// Remove controllers from the engine.
+		// Remove controllers from the engine:
 		if(this.controllers)
 		{
 			var numControllers = this.controllers.length;
@@ -393,15 +393,15 @@ meta.View.prototype =
 		{
 			var numViews = this.views.length;
 			for(n = 0; n < numViews; n++) {
-				this.views[n].isActive = false;
+				this.views[n].active = false;
 			}
 		}
 	},
 
 
-	set isActive(value)
+	set active(value)
 	{
-		if(this._isActive === value) { return; }
+		if(this._active === value) { return; }
 		
 		if(value) {
 			this._makeActive();
@@ -410,10 +410,10 @@ meta.View.prototype =
 			this._makeInactive();
 		}
 
-		this._isActive = value;
+		this._active = value;
 	},
 
-	get isActive() { return this._isActive; },
+	get active() { return this._active; },
 
 
 	set x(value)
@@ -531,7 +531,7 @@ meta.setView = function(view)
 		}
 	}
 
-	if(view.isActive) { 
+	if(view.active) { 
 		return;
 	}
 

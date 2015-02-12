@@ -23,6 +23,8 @@ meta.Timer.prototype =
 	 * Remove timer.
 	 */
 	remove: function() {
+		this.owner = null;
+		this.func = null;
 		this.numTimes = 0;
 	},
 
@@ -30,20 +32,20 @@ meta.Timer.prototype =
 	 * Pause timer.
 	 */
 	pause: function() {
-		this.isPaused = true;
+		this.paused = true;
 	},
 
 	/**
 	 * Resume timer.
 	 */
 	resume: function() {
-		this.isPaused = false;
+		this.paused = false;
 		this.tStart = Date.now();
 	},
 
 	//
 	onRemove: null,
-	isPaused: false
+	paused: false
 };
 
 /**
@@ -63,10 +65,9 @@ meta.addTimer = function(owner, func, tDelta, numTimes)
 		owner = window;
 	} 
 
-
 	var newTimer = new meta.Timer(owner, func, tDelta, numTimes);
-	meta.engine._timers.push(newTimer);
-	meta.engine._numTimers++;
+	newTimer.__index = meta.engine.timers.length;
+	meta.engine.timers.push(newTimer);
 
 	return newTimer;
 };

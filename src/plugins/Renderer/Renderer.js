@@ -43,11 +43,15 @@ meta.Renderer = meta.Class.extend
 	addEntity: function(entity)
 	{
 		this.entities.push(entity);
+
 		if(entity.update) {
 			this.addEntityToUpdate(entity);
 		}
 		if(entity._z !== 0) {
 			this.needSortDepth;
+		}
+		if(entity.__debug) {
+			this.numDebug++;
 		}
 
 		this.needRender = true;
@@ -94,6 +98,22 @@ meta.Renderer = meta.Class.extend
 		return this.__uniqueID++;
 	},
 
+	set bgColor(hex) {
+		this._bgColor = hex;
+		this.updateBgColor();
+		this.needRender = true;
+	},
+
+	get bgColor() { return this._bgColor; },
+
+	set transparent(value) {
+		this._transparent = value;
+		this.updateBgColor();
+		this.needRender = true;
+	},
+
+	get transparent() { return this._transparent; },	
+
 	//
 	meta: meta,
 
@@ -103,6 +123,11 @@ meta.Renderer = meta.Class.extend
 
 	needRender: true,
 	needSortDepth: false,
+
+	numDebug: 0,
+
+	_bgColor: "#ddd",
+	_transparent: false,	
 
 	__uniqueID: 0,
 	__updating: false

@@ -16,33 +16,19 @@ Entity.Text = Entity.Geometry.extend
 		}	
 	},
 
-	_initParams: function(params) {},
-
+	initFromParam: function() {},
 
 	setText: function(text)
 	{
 		this._text = text;
 
-		var ctx;
-		if(this._texture.textureType === Resource.TextureType.WEBGL) {
-			ctx = this._texture._tmpCtx;
-		}
-		else {
-			ctx = this._texture.ctx;
-		}
-
+		var ctx = this._texture.ctx;
 		ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
 
 		var metrics = ctx.measureText(this._text);
 		var width = metrics.width + (this.outlineWidth * 2);
 		this.resize(width, this._fontSize * 1.2);
 
-		if(this._texture.textureType === Resource.TextureType.WEBGL) {
-			this._texture._tmpImg.width = width;
-			this._texture._tmpImg.height = this._fontSize * 1.2;
-		}
-
-		// Redraw cached texture.
 		ctx.clearRect(0, 0, this.volume.width, this.volume.height);
 		ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
 		ctx.fillStyle = this._color;
@@ -54,12 +40,6 @@ Entity.Text = Entity.Geometry.extend
 			ctx.lineWidth = this._outlineWidth;
 			ctx.strokeStyle = this._outlineColor;
 			ctx.strokeText(text, this.outlineWidth, 0);
-		}
-
-		if(this._texture.textureType === Resource.TextureType.WEBGL) {
-			var gl = meta.ctx;
-			gl.bindTexture(gl.TEXTURE_2D, this._texture.image);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._texture._tmpImg);
 		}
 
 		if(!this._texture._isLoaded) {
