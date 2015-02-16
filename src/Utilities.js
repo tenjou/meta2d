@@ -134,11 +134,11 @@ meta._preloadResource = function(strType, buffer, folderPath)
 	{
 		var numResources = buffer.length;
 		for(var i = 0; i < numResources; i++) {
-			meta._addResource(strType, buffer[i], folderPath).load();
+			meta._addResource(strType, buffer[i], folderPath);
 		}
 	}
 	else if(typeof(buffer) === "object" || typeof(buffer) === "string") {
-		meta._addResource(strType, buffer, folderPath).load();
+		meta._addResource(strType, buffer, folderPath);
 	}
 	else {
 		return false;
@@ -151,8 +151,12 @@ meta._addResource = function(strType, data, folderPath)
 {
 	var resource;
 
-	if(typeof(data) === "object") {
-		resource = new Resource[strType](data, folderPath + data.path);
+	if(typeof(data) === "object") 
+	{
+		if(data.path) {
+			data.path = folderPath + data.path;
+		}
+		resource = new Resource[strType](data);
 	}
 	else {
 		resource = new Resource[strType](folderPath + data);

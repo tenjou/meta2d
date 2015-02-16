@@ -11,12 +11,33 @@ meta.CanvasRenderer = meta.Renderer.extend
 
 	render: function(tDelta)
 	{
+		var numEntities = this.entitiesAnim.length;
+		for(var i = 0; i < numEntities; i++) {
+			this.entitiesAnim[i].anim(tDelta);
+		}
+			
+		var numRemove = this.entitiesAnimRemove.length;
+		if(numRemove > 0) 
+		{
+			for(i = 0; i < numEntities; i++) {
+				this.entitiesAnim[this.entitiesAnimRemove[i]] = this.entitiesAnim[numEntities - 1];
+				this.entitiesAnim.pop();
+			}
+
+			this.entitiesAnimRemove.length = 0;
+		}
+
 		if(!this.needRender) { return; }
+
+		var camera = meta.camera;
 
 		this.clear();
 
-		var numEntities = this.entities.length;
-		for(var i = 0; i < numEntities; i++) {
+		this.ctx.save();
+		this.ctx.translate(camera._x, camera._y);
+
+		numEntities = this.entities.length;
+		for(i = 0; i < numEntities; i++) {
 			this.drawEntity(this.entities[i]);
 		}
 
@@ -56,6 +77,8 @@ meta.CanvasRenderer = meta.Renderer.extend
 		}
 
 		this.needRender = false;
+
+		this.ctx.restore();
 	},
 
 	clear: function() 
@@ -71,29 +94,40 @@ meta.CanvasRenderer = meta.Renderer.extend
 
 	drawEntity: function(entity)
 	{
+		var texture = entity._texture;
+		if(!texture) { return; }
+
 		var volume = entity.volume;
+		var anim = entity.anim;
 
-		if(entity.__type === 0) {
-			this.ctx.drawImage(entity.texture.canvas, volume.minX | 0, volume.minY | 0);
-		}
-		else if(entity.__type === 1) 
+		if(volume.__type === 0) 
 		{
-			// this.ctx.save();
-
+			if(anim.frames > 1) {
+				texture.drawFrame(this.ctx, volume.minX | 0, volume.minY | 0, anim._frame);
+			}
+			else {
+				this.ctx.drawImage(texture.canvas, volume.minX | 0, volume.minY | 0);
+			}
+		}
+		else if(volume.__type === 1) 
+		{
 			this.ctx.globalAlpha = entity._alpha;
 
 			this.ctx.setTransform(
 				volume.m11, volume.m12, 
 				volume.m21, volume.m22,
-				volume.x, volume.y);
+				volume.x | 0, volume.y | 0);
 
-			this.ctx.drawImage(entity.texture.canvas, -volume.initPivotPosX, -volume.initPivotPosY);
+			if(anim.frames > 1) {
+				texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, entity._frame);
+			}
+			else {
+				this.ctx.drawImage(texture.canvas, -volume.initPivotPosX, -volume.initPivotPosY);
+			}			
 
 			this.ctx.globalAlpha = 1.0;
-
-			//this.ctx.restore();
 		}
-		else if(entity.__type === 2)
+		else if(volume.__type === 2)
 		{
 
 		}
@@ -103,10 +137,10 @@ meta.CanvasRenderer = meta.Renderer.extend
 	{
 		var volume = entity.volume;
 
-		if(entity.__type === 0) {
+		if(volume.__type === 0) {
 			this._drawVolume(volume);
 		}
-		else if(entity.__type === 1) 
+		else if(volume.__type === 1) 
 		{
 			this.ctx.save();
 

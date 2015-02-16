@@ -18,8 +18,7 @@ window.Input = {};
  * @memberof! <global>
  */
 Input.Controller = meta.Controller.extend
-( /** @lends Input.Controller.prototype */ {
-
+({
 	/**
 	 * @description Constructor.
 	 */
@@ -94,7 +93,7 @@ Input.Controller = meta.Controller.extend
 		this._event.y = 0;
 		this._event.keyCode = event.keyCode;
 
-		this._chnKeyDown.emit(this._event, Input.Event.KEY_DOWN);
+		this.chn.keyDown.emit(this._event, Input.Event.KEY_DOWN);
 
 		if(this._callbacks && this._callbacks[event.keyCode]) 
 		{
@@ -112,7 +111,7 @@ Input.Controller = meta.Controller.extend
 				var self = this;
 				this._inputTimer = meta.addTimer(this, function() {
 					self._event.keyCode = self._repeatKey;
-					self._chnKeyDown.emit(self._event, Input.Event.KEY_DOWN);
+					self.chn.keyDown.emit(self._event, Input.Event.KEY_DOWN);
 				}, this.keyRepeat);
 			}
 
@@ -155,7 +154,7 @@ Input.Controller = meta.Controller.extend
 		this._event.y = 0;
 		this._event.keyCode = event.keyCode;
 
-		this._chnKeyUp.emit(this._event, Input.Event.KEY_UP);
+		this.chn.keyUp.emit(this._event, Input.Event.KEY_UP);
 
 		if(this.keyRepeat && this._inputTimer) {
 			this._inputTimer.pause();
@@ -189,7 +188,7 @@ Input.Controller = meta.Controller.extend
 		this._event.y = y;
 		this._event.keyCode = event.button;
 
-		this._chnInputDown.emit(this._event, Input.Event.DOWN);
+		this.chn.inputDown.emit(this._event, Input.Event.DOWN);
 		this._event.entity = null;
 	},
 
@@ -219,8 +218,8 @@ Input.Controller = meta.Controller.extend
 		this._event.y = y;
 		this._event.keyCode = event.button;
 
-		this._chnInputUp.emit(this._event, Input.Event.UP);
-		this._chnInputClick.emit(this._event, Input.Event.CLICK);
+		this.chn.inputUp.emit(this._event, Input.Event.UP);
+		this.chn.inputClick.emit(this._event, Input.Event.CLICK);
 		this._event.entity = null;
 	},
 
@@ -253,7 +252,7 @@ Input.Controller = meta.Controller.extend
 		this.inputX = x;
 		this.inputY = y;
 
-		this._chnInputMove.emit(this._event, Input.Event.MOVE);
+		this.chn.inputMove.emit(this._event, Input.Event.MOVE);
 		this._event.entity = null;
 	},
 
@@ -283,7 +282,7 @@ Input.Controller = meta.Controller.extend
 		this._event.y = y;
 		this._event.keyCode = event.button;
 
-		this._chnInputDbClick.emit(this._event, Input.Event.DBCLICK);
+		this.chn.inputDbClick.emit(this._event, Input.Event.DBCLICK);
 		this._event.entity = null;
 	},
 
@@ -321,7 +320,7 @@ Input.Controller = meta.Controller.extend
 			this._event.y = y;
 			this._event.keyCode = this.numTouches-1;
 
-			this._chnInputDown.emit(this._event, Input.Event.DOWN);
+			this.chn.inputDown.emit(this._event, Input.Event.DOWN);
 			this._event.entity = null;
 		}
 	},
@@ -369,8 +368,8 @@ Input.Controller = meta.Controller.extend
 			this._event.y = y;
 			this._event.keyCode = id;
 
-			this._chnInputDown.emit(this._event, Input.Event.UP);
-			this._chnInputClick.emit(this._event, Input.Event.CLICK);
+			this.chn.inputDown.emit(this._event, Input.Event.UP);
+			this.chn.inputClick.emit(this._event, Input.Event.CLICK);
 			this._event.entity = null;
 		}
 	},
@@ -417,7 +416,7 @@ Input.Controller = meta.Controller.extend
 			this._event.y = y;
 			this._event.keyCode = id;
 
-			this._chnInputMove.emit(this._event, Input.Event.MOVE);
+			this.chn.inputMove.emit(this._event, Input.Event.MOVE);
 			this._event.entity = null;
 		}
 	},
@@ -460,41 +459,46 @@ Input.Controller = meta.Controller.extend
 	{
 		var self = this;
 
-		this._chnKeyDown = meta.createChannel(Input.Event.KEY_DOWN);
-		this._chnKeyUp = meta.createChannel(Input.Event.KEY_UP);
-		this._chnInputDown = meta.createChannel(Input.Event.DOWN);
-		this._chnInputUp = meta.createChannel(Input.Event.UP);
-		this._chnInputMove = meta.createChannel(Input.Event.MOVE);
-		this._chnInputClick = meta.createChannel(Input.Event.CLICK);
-		this._chnInputDbClick = meta.createChannel(Input.Event.DBCLICK);
+		this.chn = {
+			keyDown: meta.createChannel(Input.Event.KEY_DOWN),
+			keyUp: meta.createChannel(Input.Event.KEY_UP),
+			inputDown: meta.createChannel(Input.Event.DOWN),
+			inputUp: meta.createChannel(Input.Event.UP),
+			inputMove: meta.createChannel(Input.Event.MOVE),
+			inputClick: meta.createChannel(Input.Event.CLICK),
+			inputDbClick: meta.createChannel(Input.Event.DBCLICK)
+		};
 
-		this._onKeyDown = function(event) { self.onKeyDown(event); };
-		this._onKeyUp = function(event) { self.onKeyUp(event); };
-		this._onMouseDown = function(event) { self.onMouseDown(event); };
-		this._onMouseUp = function(event) { self.onMouseUp(event); };
-		this._onMouseDbClick = function(event) { self.onMouseDbClick(event); };
-		this._onMouseMove = function(event) { self.onMouseMove(event); };
-		this._onTouchDown = function(event) { self.onTouchDown(event); };
-		this._onTouchUp = function(event) { self.onTouchUp(event); };
-		this._onTouchMove = function(event) { self.onTouchMove(event); };
-		this._onTouchCancel = function(event) { self.onTouchCancel(event); };
+		this.func = 
+		{
+			keyDown: function(event) { self.onKeyDown(event); },
+			keyUp: function(event) { self.onKeyUp(event); },
+			mouseDown: function(event) { self.onMouseDown(event); },
+			mouseUp: function(event) { self.onMouseUp(event); },
+			mouseDbClick: function(event) { self.onMouseDbClick(event); },
+			mouseMove: function(event) { self.onMouseMove(event); },
+			touchDown: function(event) { self.onTouchDown(event); },
+			touchUp: function(event) { self.onTouchUp(event); },
+			touchMove: function(event) { self.onTouchMove(event); },
+			touchCancel: function(event) { self.onTouchCancel(event); }
+		};
 
-		window.addEventListener("mousedown", this._onMouseDown);
-		window.addEventListener("mouseup", this._onMouseUp);
-		window.addEventListener("mousemove", this._onMouseMove);
-		window.addEventListener("dblclick", this._onMouseDbClick);
-		window.addEventListener("touchstart", this._onTouchDown);
-		window.addEventListener("touchend", this._onTouchUp);
-		window.addEventListener("touchmove", this._onTouchMove);
-		window.addEventListener("touchcancel", this._onTouchUp);
-		window.addEventListener("touchleave", this._onTouchUp);
+		window.addEventListener("mousedown", this.func.mouseDown);
+		window.addEventListener("mouseup", this.func.mouseUp);
+		window.addEventListener("mousemove", this.func.mouseMove);
+		window.addEventListener("dblclick", this.func.mouseDbClick);
+		window.addEventListener("touchstart", this.func.touchDown);
+		window.addEventListener("touchend", this.func.touchUp);
+		window.addEventListener("touchmove", this.func.touchMove);
+		window.addEventListener("touchcancel", this.func.touchUp);
+		window.addEventListener("touchleave", this.func.touchUp);
 
 		if(meta.device.support.onkeydown)	{
-			window.addEventListener("keydown", this._onKeyDown);
+			window.addEventListener("keydown", this.func.keyDown);
 		}
 
 		if(meta.device.support.onkeyup)	{
-			window.addEventListener("keyup", this._onKeyUp);
+			window.addEventListener("keyup", this.func.keyUp);
 		}
 	},
 
@@ -503,22 +507,22 @@ Input.Controller = meta.Controller.extend
 	 */
 	removeEventListeners: function()
 	{
-		window.removeEventListener("mousedown", this._onMouseDown);
-		window.removeEventListener("mouseup", this._onMouseUp);
-		window.removeEventListener("mousemove", this._onMouseMove);
-		window.removeEventListener("dblclick", this._onMouseDbClick);
-		window.removeEventListener("touchstart", this._onTouchDown);
-		window.removeEventListener("touchend", this._onTouchUp);
-		window.removeEventListener("touchmove", this._onTouchMove);
-		window.removeEventListener("touchcancel", this._onTouchUp);
-		window.removeEventListener("touchleave", this._onTouchUp);
+		window.removeEventListener("mousedown", this.func.mouseDown);
+		window.removeEventListener("mouseup", this.func.mouseUp);
+		window.removeEventListener("mousemove", this.on.mouseMove);
+		window.removeEventListener("dblclick", this.on.mouseDbClick);
+		window.removeEventListener("touchstart", this.on.touchDown);
+		window.removeEventListener("touchend", this.on.touchUp);
+		window.removeEventListener("touchmove", this.on.touchMove);
+		window.removeEventListener("touchcancel", this.on.touchUp);
+		window.removeEventListener("touchleave", this.on.touchUp);
 
 		if(meta.device.support.onkeydown)	{
-			window.removeEventListener("keydown", this._onKeyDown);
+			window.removeEventListener("keydown", this.on.keyDown);
 		}
 
 		if(meta.device.support.onkeyup)	{
-			window.removeEventListener("keyup", this._onKeyUp);
+			window.removeEventListener("keyup", this.on.keyUp);
 		}
 	},
 
@@ -543,7 +547,7 @@ Input.Controller = meta.Controller.extend
 			if(this.keys[i]) {
 				this.keys[i] = false;
 				this._event.keyCode = i;
-				this._chnKeyUp.emit(this._event, Input.Event.KEYUP);
+				this.chn.keyUp.emit(this._event, Input.Event.KEYUP);
 			}
 		}
 
@@ -553,7 +557,7 @@ Input.Controller = meta.Controller.extend
 			if(this.inputs[i]) {
 				this.inputs[i] = false;
 				this._event.keyCode = i;
-				this._chnInputUp.emit(this._event, Input.Event.UP);
+				this.chn.inputUp.emit(this._event, Input.Event.UP);
 			}
 		}
 
@@ -564,7 +568,7 @@ Input.Controller = meta.Controller.extend
 		{
 			for(i = 0; i < this.numTouches; i++) {
 				this._event.keyCode = i;
-				this._chnInputUp.emit(this._event, Input.Event.UP);
+				this.chn.inputUp.emit(this._event, Input.Event.UP);
 			}
 
 			this.touches.length = 0;
@@ -615,21 +619,10 @@ Input.Controller = meta.Controller.extend
 		this._ignoreKeys[17] = 1;
 		this._ignoreKeys[91] = 1;
 		this._ignoreKeys[38] = 1; this._ignoreKeys[39] = 1; this._ignoreKeys[40] = 1; this._ignoreKeys[37] = 1;
-		this._ignoreKeys[112] = 1;
-		this._ignoreKeys[113] = 1;
-		this._ignoreKeys[114] = 1;
-		this._ignoreKeys[115] = 1;
-		this._ignoreKeys[116] = 1;
-		this._ignoreKeys[117] = 1;
-		this._ignoreKeys[118] = 1;
-		this._ignoreKeys[119] = 1;
-		this._ignoreKeys[120] = 1;
-		this._ignoreKeys[121] = 1;
-		this._ignoreKeys[122] = 1;
-		this._ignoreKeys[123] = 1;
+
 		this._ignoreKeys[124] = 1;
 		this._ignoreKeys[125] = 1;
-		this._ignoreKeys[126] = 1;
+		this._ignoreKeys[126] = 1;		
 
 		this._cmdKeys = [];
 		this._cmdKeys[91] = 1;
@@ -641,6 +634,34 @@ Input.Controller = meta.Controller.extend
 		this._iFrameKeys[39] = 1;
 		this._iFrameKeys[40] = 1;
 	},
+
+	_ignoreFKeys: function(value) 
+	{
+		this._ignoreKeys[112] = value;
+		this._ignoreKeys[113] = value;
+		this._ignoreKeys[114] = value;
+		this._ignoreKeys[115] = value;
+		this._ignoreKeys[116] = value;
+		this._ignoreKeys[117] = value;
+		this._ignoreKeys[118] = value;
+		this._ignoreKeys[119] = value;
+		this._ignoreKeys[120] = value;
+		this._ignoreKeys[121] = value;
+		this._ignoreKeys[122] = value;
+		this._ignoreKeys[123] = value;
+	},
+
+	set ignoreFKeys(flag) 
+	{
+		if(flag) {
+			this._ignoreFKeys(1);
+		}
+		else {
+			this._ignoreFKeys(0);
+		}
+	},
+
+	get ignoreFKeys() { return !!this._ignoreKeys[112]; },
 
 	_getTouchID: function(eventTouchID)
 	{
@@ -654,9 +675,10 @@ Input.Controller = meta.Controller.extend
 		return -1;
 	},
 
-
 	//
-	engine: null,
+	engine: meta.engine,
+	chn: null,
+	func: null,
 
 	keys: null,
 	inputs: null,
@@ -676,24 +698,6 @@ Input.Controller = meta.Controller.extend
 	inputX: 0, inputY: 0,
 
 	_event: null,
-
-	_onKeyDown: null,
-	_onKeyUp: null,
-	_onMouseDown: null,
-	_onMouseUp: null,
-	_onMouseMove: null,
-	_onMouseDbClick: null,
-	_onTouchDown: null,
-	_onTouchUp: null,
-	_onTouchMove: null,
-	_onTouchCancel: null,
-
-	_chnKeyDown: null,
-	_chnKeyUp: null,
-	_chnInputDown: null,
-	_chnInputUp: null,
-	_chnInputMove: null,
-	_chnInputDbClick: null,
 
 	_ignoreKeys: null,
 	_cmdKeys: null,

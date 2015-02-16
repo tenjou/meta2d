@@ -29,12 +29,29 @@ Resource.Texture = Resource.Basic.extend
 	 * @param path {String=} Texture path.
 	 * @function
 	 */
-	init: function(path)
+	init: function(data)
 	{
 		this.generate();
 
-		if(path) {
-			this.load(path);
+		// If argument is string threat as path:
+		var type = typeof(data);
+		if(type === "string") {
+			this.load(data);
+		}
+		else if(type === "object") 
+		{
+			for(var key in data) {
+				this[key] = data[key];
+			}
+
+			if(this.framesX > 1 || this.framesY > 1) {
+				this.frames = this.framesX * this.framesY;
+				this.animated = true;
+			}
+
+			if(this.path) {
+				this.load(this.path);
+			}
 		}
 	},
 
@@ -168,8 +185,8 @@ Resource.Texture = Resource.Basic.extend
 		this.trueFullHeight = height;
 
 		if(this.animated) {
-			this.trueWidth = width / this.numFramesX;
-			this.trueHeight = height / this.numFramesY;
+			this.trueWidth = width / this.framesX;
+			this.trueHeight = height / this.framesY;
 		}
 		else {
 			this.trueWidth = width;
@@ -186,7 +203,7 @@ Resource.Texture = Resource.Basic.extend
 
 		if(this._loaded)
 		{
-			if(this.canvas.width > 0 && this.canvas.height > 0)
+			if(this.canvas.width > 1 && this.canvas.height > 1)
 			{
 				this._tmpImg.width = this.canvas.width;
 				this._tmpImg.height = this.canvas.height;
@@ -234,10 +251,10 @@ Resource.Texture = Resource.Basic.extend
 	draw: function(ctx, x, y)
 	{
 		if(!this.fromAtlas) {
-			ctx.drawImage(this.image, x, y);
+			ctx.drawImage(this.canvas, x, y);
 		}
 		else {
-			ctx.drawImage(this.ptr.image, this._x, this._y, this.trueWidth, this.trueHeight, x, y, this.trueWidth, this.trueHeight);
+			ctx.drawImage(this.ptr.canvas, this._x, this._y, this.trueWidth, this.trueHeight, x, y, this.trueWidth, this.trueHeight);
 		}
 	},
 
@@ -252,9 +269,9 @@ Resource.Texture = Resource.Basic.extend
 	 */
 	drawFrame: function(ctx, x, y, frame)
 	{
-		this.ctx.drawImage(this.image,
-			(this.trueWidth * (frame % this.numFramesX)),
-			(this.trueHeight * Math.floor(frame / this.numFramesX)),
+		ctx.drawImage(this.canvas,
+			(this.trueWidth * (frame % this.framesX)),
+			(this.trueHeight * Math.floor(frame / this.framesX)),
 			this.trueWidth, this.trueHeight, x, y, this.trueWidth, this.trueHeight);
 	},
 
@@ -267,32 +284,12 @@ Resource.Texture = Resource.Basic.extend
 	},
 
 	/**
-	 * Clear texture without sending emit.
-	 * @function
-	 */
-	clearSilent: function()
-	{
-		if(this.textureType === Resource.TextureType.WEBGL)
-		{
-			this._tmpCtx.clearRect(0, 0, this.trueFullWidth, this.trueFullHeight);
-
-			var gl = meta.ctx;
-			gl.bindTexture(gl.TEXTURE_2D, this.image);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
-		}
-		else {
-			this.ctx.clearRect(0, 0, this.trueFullWidth, this.trueFullHeight);
-		}
-	},
-
-
-	/**
 	 * Draw over texture
 	 */
 	drawOver: function(texture, x, y) 
 	{
 		if(!texture) {
-			console.warn("[Resource.Texture.drawOver]:", "No texture specified.");
+			console.warn("(Resource.Texture.drawOver) No texture specified.");
 			return;
 		}
 
@@ -303,7 +300,7 @@ Resource.Texture = Resource.Basic.extend
 		{
 			var obj = meta.getTexture(texture);
 			if(!obj) {
-				console.warn("[Resource.Texture.drawOver]:", "No such texture with name - " + texture);
+				console.warn("(Resource.Texture.drawOver) No such texture with name - " + texture);
 				return;
 			}
 			texture = obj;	
@@ -415,6 +412,13 @@ Resource.Texture = Resource.Basic.extend
 	get offsetX() { return this._offsetX; },
 	get offsetY() { return this._offsetY; },
 
+	getData: function() {
+		return this.ctx.getImageData(0, 0, this.trueWidth, this.trueHeight).data;
+	},
+
+	getPixelAt: function(x, y) {
+		return this.ctx.getImageData(x, y, 1, 1).data;
+	},
 
 	//
 	type: Resource.Type.TEXTURE,
@@ -430,16 +434,17 @@ Resource.Texture = Resource.Basic.extend
 	_offsetX: 0, _offsetY: 0,
 	unitRatio: 1,
 
-	fps: 0,
-	numFrames: 1,
-	numFramesX: 1,
-	numFramesY: 1,
+	fps: 9,
+	frames: 1,
+	framesX: 1,
+	framesY: 1,
 
 	animated: false,
-	looped: false,
-	autoPlay: true,
+	
 	reversed: false,
 	fromAtlas: false,
+	loop: false,
+	autoPlay: true,
 
 	reloading: false,
 

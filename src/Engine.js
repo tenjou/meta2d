@@ -122,17 +122,16 @@ meta.engine =
 
 		var ctrl;
 		var numCtrl = this.controllers.length;
-		for(i = 0; i < numCtrl; i++) 
-		{
+		for(i = 0; i < numCtrl; i++) {
 			ctrl = this.controllers[i];
 			ctrl.load();
 			ctrl.loaded = true;
 		}
 
 		this.loadedCtrls = true;
-		console.log("active");
-		meta.cache.view.active = true;
 		this.loading = false;
+		meta.cache.view.active = true;
+		meta.renderer.load();
 
 		if(Resource.ctrl.numToLoad === 0) {
 			this.onReady();

@@ -14,8 +14,7 @@ var Resource = {};
  * @memberof! <global>
  */
 Resource.Controller = meta.Controller.extend
-( /** @lends Resource.Controller.prototype */ {
-
+({
 	/**
 	 * Constructor.
 	 */
@@ -131,6 +130,7 @@ Resource.Controller = meta.Controller.extend
 	 */
 	addToLoad: function(resource)
 	{
+		this.loading = true;
 		resource.loading = true;
 
 		if(!meta.engine.ready) {
@@ -306,5 +306,7 @@ Resource.Controller = meta.Controller.extend
 
 	_chn_added: null,
 	_chn_allLoaded: null,
-	_uniqueID: 0
+	_uniqueID: 0,
+
+	loading: false
 });

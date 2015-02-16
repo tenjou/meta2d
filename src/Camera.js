@@ -256,6 +256,7 @@ meta.Camera.prototype =
 		}
 
 		this._chnMove.emit(this, scope.Event.CAMERA_MOVE);
+		meta.renderer.needRender = true;
 	},
 
 

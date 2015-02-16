@@ -14,7 +14,6 @@
  */
 Resource.Basic = meta.Class.extend
 ({
-
 	_init: function() {
 		this.id = Resource.ctrl.getUniqueID();
 	},

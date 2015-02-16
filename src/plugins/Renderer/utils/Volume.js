@@ -1,21 +1,21 @@
 "use strict";
 
-meta.math.AABB = function(x, y, width, height)
+meta.Volume = function()
 {
-	this.x = x || 0;
-	this.y = y || 0;	
-	this.width = width || 0;
-	this.height = height || 0;
-	this.initWidth = this.width;
-	this.initHeight = this.height;
+	this.x = 0;
+	this.y = 0;	
+	this.width = 0;
+	this.height = 0;
+	this.initWidth = 0;
+	this.initHeight = 0;
 
-	this.minX = this.x;
-	this.minY = this.y;
-	this.maxX = this.x + this.width;
-	this.maxY = this.y + this.height;
+	this.minX = 0;
+	this.minY = 0;
+	this.maxX = 0;
+	this.maxY = 0;
 };
 
-meta.math.AABB.prototype =
+meta.Volume.prototype = 
 {
 	set: function(x, y)
 	{
@@ -78,12 +78,12 @@ meta.math.AABB.prototype =
 		this.maxX = this.minX + this.width;
 		this.maxY = this.minY + this.height;
 
-		var sin = Math.sin(this.angle);
-		var cos = Math.cos(this.angle);
-		this.m11 = cos * this.scaleX;
-		this.m12 = sin * this.scaleX;
-		this.m21 = -sin * this.scaleY;
-		this.m22 = cos * this.scaleY;
+		this.m11 = this.cos * this.scaleX;
+		this.m12 = this.sin * this.scaleX;
+		this.m21 = -this.sin * this.scaleY;
+		this.m22 = this.cos * this.scaleY;
+
+		this.__type = 1;
 	},
 
 	resize: function(width, height)
@@ -114,12 +114,14 @@ meta.math.AABB.prototype =
 	{
 		this.angle = angle;
 
-		var sin = Math.sin(angle);
-		var cos = Math.cos(angle);
-		this.m11 = cos * this.scaleX;
-		this.m12 = sin * this.scaleX;
-		this.m21 = -sin * this.scaleY;
-		this.m22 = cos * this.scaleY;
+		this.sin = Math.sin(angle);
+		this.cos = Math.cos(angle);
+		this.m11 = this.cos * this.scaleX;
+		this.m12 = this.sin * this.scaleX;
+		this.m21 = -this.sin * this.scaleY;
+		this.m22 = this.cos * this.scaleY;
+
+		this.__type = 1;
 	},
 
 	scale: function(x, y)
@@ -156,14 +158,6 @@ meta.math.AABB.prototype =
 
 	vsAABB: function(src)
 	{
-		if(this.maxX < src.minX || this.minX > src.maxX) { return false; }
-		if(this.maxY < src.minY || this.minY > src.maxY) { return false; }
-
-		return true;
-	},
-
-	vsBorderAABB: function(src)
-	{
 		if(this.maxX <= src.minX || this.minX >= src.maxX) { return false; }
 		if(this.maxY <= src.minY || this.minY >= src.maxY) { return false; }
 
@@ -175,28 +169,19 @@ meta.math.AABB.prototype =
 		if(this.maxX < src.minX || this.minX > src.maxX) { return 0; }
 		if(this.maxY < src.minY || this.minY > src.maxY) { return 0; }
 
-		if(this.minX > src.minX || this.minY > src.minY) { return 1; }
-		if(this.maxX < src.maxX || this.maxY < src.maxY) { return 1; }
+		if(this.minX >= src.minX || this.minY >= src.minY) { return 1; }
+		if(this.maxX <= src.maxX || this.maxY <= src.maxY) { return 1; }
 
 		return 2;
 	},
 
 	vsPoint: function(x, y)
 	{
-		if(this.minX > x || this.maxX < x) { return false; }
-		if(this.minY > y || this.maxY < y) { return false; }
-
-		return true;
-	},
-
-	vsBorderPoint: function(x, y)
-	{
 		if(this.minX >= x || this.maxX <= x) { return false; }
 		if(this.minY >= y || this.maxY <= y) { return false; }
 
 		return true;
-	},
-
+	},	
 
 	getSqrDistance: function(x, y)
 	{
@@ -224,7 +209,6 @@ meta.math.AABB.prototype =
 		return sqDist;
 	},
 
-
 	getDistanceVsAABB: function(aabb)
 	{
 		var centerX = this.minX + ((this.maxX - this.minX) / 2);
@@ -237,12 +221,6 @@ meta.math.AABB.prototype =
 
 		return Math.sqrt((diffX * diffX) + (diffY * diffY));
 	},
-
-
-	isUndefined: function() {
-		return (this.maxY === void(0));
-	},
-
 
 	genCircle: function() 
 	{
@@ -260,21 +238,19 @@ meta.math.AABB.prototype =
 		return new meta.math.Circle(this.x, this.y, radius);
 	},	
 
-
 	print: function(str)
 	{
 		if(str)
 		{
-			console.log("(AABB) " + str + " minX: " + this.minX + " minY: " + this.minY
+			console.log("(Volume) " + str + " minX: " + this.minX + " minY: " + this.minY
 				+ " maxX: " + this.maxX + " maxY: " + this.maxY);
 		}
 		else
 		{
-			console.log("(AABB) minX: " + this.minX + " minY: " + this.minY
+			console.log("(Volume) minX: " + this.minX + " minY: " + this.minY
 				+ " maxX: " + this.maxX + " maxY: " + this.maxY);
 		}
 	},
-
 
 	//
 	parentX: 0, parentY: 0,
@@ -286,6 +262,8 @@ meta.math.AABB.prototype =
 	scaleX: 1, scaleY: 1,
 	flipX: 1, flipY: 1,
 	angle: 0,
+	sin: 0, cos: 1,
 
-	m11: 1, m12: 0, m21: 0, m22: 1
+	m11: 1, m12: 0, m21: 0, m22: 1,
+	__type: 0
 };

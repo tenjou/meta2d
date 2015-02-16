@@ -1,8 +1,10 @@
+"use strict";
+
 Entity.Geometry = meta.Class.extend
 ({
-	_init: function(texture) 
-	{
-		this.volume = new meta.math.AABB(0, 0, 0, 0);
+	_init: function(texture) {
+		this.volume = new meta.Volume();
+		this.anim = new meta.Anim();
 		this.initFromParam(texture);
 	},
 
@@ -12,7 +14,7 @@ Entity.Geometry = meta.Class.extend
 		{
 			var newTexture = Resource.ctrl.getTexture(texture);
 			if(!newTexture) {
-				console.warn("(Entity.Geometry) Could not apply texture with a name of - " + texture);
+				console.warn("(Entity.Geometry) Unavailable texture - " + texture);
 			}
 			else {
 				this.texture = newTexture;
@@ -77,54 +79,63 @@ Entity.Geometry = meta.Class.extend
 
 	get z() { return this._z; },
 
-	pivot: function(x, y) { 
+	/* Pivot */
+	pivot: function(x, y) 
+	{
+		if(y === void(0)) { y = x; }
+
 		this.volume.pivot(x, y); 
+		meta.renderer.needRender = true;
 	},
 
-	set pivotX(x) { this.volume.pivot(x, this._pivotY); },
-	set pivotY(y) { this.volume.pivot(this._pivotX, y); },
+	set pivotX(x) { 
+		this.volume.pivot(x, this._pivotY); 
+		meta.renderer.needRender = true;
+	},
+	set pivotY(y) { 
+		this.volume.pivot(this._pivotX, y); 
+		meta.renderer.needRender = true;
+	},
 	get pivotX() { return this.volume.pivotX; },
 	get pivotY() { return this.volume.pivotY; },
 
+	/* Rotation */
 	set angle(value)
 	{
 		value = (value * Math.PI) / 180;
 		if(this.volume.angle === value) { return; }
 		
 		this.volume.rotate(value);
-		this.__type = 1;
 		meta.renderer.needRender = true;
 	},
-
-	get angle() { return (this.volume.angle * 180) / Math.PI; },
 
 	set angleRad(value)
 	{
 		if(this.volume.angle === value) { return; }
 
 		this.volume.rotate(value);
-		this.__type = 1;
 		meta.renderer.needRender = true;
-	},
+	},	
 
+	get angle() { return (this.volume.angle * 180) / Math.PI; },
 	get angleRad() { return this.volume.angle; },
 
 	/* Scale */
-	scale: function(x, y) {
+	scale: function(x, y) 
+	{
+		if(y === void(0)) { y = x; }
+
 		this.volume.scale(x, y);
-		this.__type = 1;
 		this.updatePos();
 	},
 
 	set scaleX(x) {
 		this.volume.scale(x, this.volume.scaleY);
-		this.__type = 1;
 		this.updatePos();
 	},
 
 	set scaleY(y) {
 		this.volume.scale(this.volume.scaleX, y);
-		this.__type = 1;
 		this.updatePos();
 	},
 
@@ -136,10 +147,8 @@ Entity.Geometry = meta.Class.extend
 	 * @param x {Number=} Flip by X axis. Valid inputs: -1.0 or 1.0.
 	 * @param y {Number=} Flip by Y axis. Valid inputs: -1.0 or 1.0.
 	 */
-	flip: function(x, y) 
-	{
+	flip: function(x, y) {
 		this.volume.flip(x, y);
-		this.__type = 1;
 		meta.renderer.needRender = true;		
  	},
 
@@ -150,7 +159,7 @@ Entity.Geometry = meta.Class.extend
 
 	set alpha(value) {
 		this._alpha = value;
-		this.__type = 1;
+		this.volume.__type = 1;
 		meta.renderer.needRender = true;
 	},
 
@@ -206,6 +215,8 @@ Entity.Geometry = meta.Class.extend
 		else {
 			this.loaded = false;
 		}
+
+		this.anim.set(tex);
 	},
 
 	get texture() { return this._texture; },
@@ -268,6 +279,122 @@ Entity.Geometry = meta.Class.extend
 
 	get state() { return this._state; },
 
+	/* Input */
+	set pickable(value)
+	{
+		if(this._pickable === value) { return; }
+		this._pickable = value;
+
+		if(value) {
+			meta.renderer.addPicking(this);
+		}
+		else {
+			meta.renderer.removePicking(this);
+		}
+	},
+
+	get pickable() { return this._pickable; },
+
+	isPointInside: function(x, y) 
+	{
+		if(this.__type == 1) 
+		{
+			var volume = this.volume;
+			var offsetX = x - volume.x;
+			var offsetY = y - volume.y;
+			x = offsetX * volume.cos + offsetY * volume.sin + volume.x;
+			y = offsetY * volume.cos - offsetX * volume.sin + volume.y;
+		}
+
+		return this.volume.vsPoint(x, y);
+	},
+
+	isPointInsidePx: function(x, y) 
+	{
+		var volume = this.volume;
+		if(volume.__type == 1) 
+		{
+			var offsetX = x - volume.x;
+			var offsetY = y - volume.y;
+			x = offsetX * volume.cos + offsetY * volume.sin + volume.x;
+			y = offsetY * volume.cos - offsetX * volume.sin + volume.y;
+		}
+
+		if(!this.volume.vsPoint(x, y)) {
+			return false;
+		}
+
+		var offsetX = (x - volume.minX) / volume.scaleX | 0;
+		var offsetY = (y - volume.minY) / volume.scaleY | 0;
+		var pixel = this._texture.getPixelAt(offsetX, offsetY);
+		if(pixel[3] > 50) {
+			return true;
+		}
+
+		return false;
+	},
+
+	/**
+	 * Callback if entity has been pressed.
+	 * @function
+	 */
+	onDown: null,
+
+	/**
+	 * Callback if press on entity ended.
+	 * @function
+	 */
+	onUp: null,
+
+	/**
+	 * Callback if entity has been clicked.
+	 * @function
+	 */
+	onClick: null,	
+
+	/**
+	 * Callback if entity has been double clicked on.
+	 * @function
+	 */
+	onDbClick: null,		
+
+	/**
+	 * Callback if entity is being dragged.
+	 * @function
+	 */
+	onDrag: null,
+
+	/**
+	 * Callback if started drag on the entity.
+	 * @function
+	 */
+	onDragStart: null,	
+
+	/**
+	 * Callback if ended drag on the entity.
+	 * @function
+	 */
+	onDragEnd: null,	
+
+	/**
+	 * Callback if input is moving on top of entity.
+	 * @function
+	 */
+	onHover: null,
+
+	/**
+	 * Callback if input entered in entity bounds.
+	 * @function
+	 */
+	onHoverEnter: null,
+
+	/**
+	 * Callback if input left entity bounds.
+	 * @function
+	 */
+	onHoverExit: null,
+
+	/* Debug */
 	set debug(value) 
 	{
 		if(this.__debug === value) { return; }
@@ -294,12 +421,17 @@ Entity.Geometry = meta.Class.extend
 
 	_body: null,
 	children: null,
+	anim: null,
 
-	_showBounds: false,
-	_state: "",
+	_state: "*",
+	_style: null,
+
+	_pickable: false,
+	hover: false,
+	pressed: false,
+	dragged: false,
 
 	__added: false,
 	__debug: false,
-	__type: 0,
 	__updateIndex: -1
 });
