@@ -15,54 +15,9 @@ Resource.SVG = Resource.Texture.extend
 	 * @param color {String=} Color of the rect.
 	 * @function
 	 */
-	fillRect: function(params, height, color)
-	{
-		if(!params) {
-			console.warn("[Resource.Texture.fillRect]:", "No parameters specified.");
-			return;
-		}
-
-		if(typeof(params) === "number")
-		{
-			this.fillRect({
-				width: params,
-				height: height,
-				color: color
-			});
-			return;
-		}
-
-		var scope = meta;
-		var ctx = this.ctx;
-
-		params.x = params.x || 0;
-		params.y = params.y || 0;
-		var width = (params.width || this.trueFullWidth || 1) + params.x;
-		var height = (params.height || this.trueFullHeight || 1) + params.y;
-
-		// if(meta.maxUnitSize > 1) {
-		// 	width *= Math.ceil(scope.maxUnitSize);
-		// 	height *= Math.ceil(scope.maxUnitSize);
-		// 	console.log(width, height, params);
-		// }
-
-		this.upResize(width, height);
-
-		if(this.textureType) {
-			this._createCachedImg();
-			ctx = this._cachedCtx;
-		}
-
-		ctx.fillStyle = (params.color || "#000000");
-		ctx.fillRect(params.x, params.y, width, height);
-
-		if(this.textureType) {
-			var gl = scope.ctx;
-			gl.bindTexture(gl.TEXTURE_2D, this.image);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
-		}
-
-		this.isLoaded = true;
+	fillRect: function(x, y, width, height) {
+		this.ctx.fillRect(x, y, width, height);
+		this.loaded = true;
 	},
 
 
@@ -715,5 +670,15 @@ Resource.SVG = Resource.Texture.extend
 			this.tile(data);
 			data.unsubscribe(this);
 		}
-	},	
+	},
+
+	set fillStyle(hex) {
+		this._fillStyle = hex;
+		this.ctx.fillStyle = hex;
+	},
+
+	get fillStyle() { return this._fillStyle; },
+
+	//
+	_fillStyle: "#000"
 });

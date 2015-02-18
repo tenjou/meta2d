@@ -237,8 +237,8 @@ Input.Controller = meta.Controller.extend
 		var camera = scope.camera;
 		var screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
 		var screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
-		var x = ((screenX * camera.zoomRatio) - camera._x) | 0;
-		var y = ((screenY * camera.zoomRatio) - camera._y) | 0;
+		var x = ((screenX - camera._x) * camera.zoomRatio) | 0;
+		var y = ((screenY - camera._y) * camera.zoomRatio) | 0;
 
 		this._event.event = event;
 		this._event.prevScreenX = this._event.screenX;

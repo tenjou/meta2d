@@ -113,6 +113,8 @@ meta.engine =
 
 	_continueLoad: function()
 	{
+		meta.renderer.load();
+
 		var cache = meta.cache;
 
 		var numFuncs = cache.loadFuncs.length;
@@ -131,7 +133,6 @@ meta.engine =
 		this.loadedCtrls = true;
 		this.loading = false;
 		meta.cache.view.active = true;
-		meta.renderer.load();
 
 		if(Resource.ctrl.numToLoad === 0) {
 			this.onReady();
@@ -168,6 +169,7 @@ meta.engine =
 	_startMainLoop: function()
 	{
 		this.time.update = Date.now();
+		this.time.render = this.time.update;
 
 		var self = this;
 		this._renderLoop = function() { self.render(); };
@@ -411,11 +413,13 @@ meta.engine =
 		this.canvas.height = height;
 		this.canvas.style.width = (width * this.scaleX) + "px";
 		this.canvas.style.height = (height * this.scaleY) + "px";
-		//this.ctx.imageSmoothingEnabled = meta.cache.imageSmoothing;
 
-		// this.ctx.mozImageSmoothingEnabled = false
-		// this.ctx.webkitImageSmoothingEnabled = false;		
-
+		this.ctx.imageSmoothingEnabled = meta.cache.imageSmoothing;
+		this.ctx.webkitImageSmoothingEnabled = meta.cache.imageSmoothing;
+		this.ctx.mozImageSmoothingEnabled = meta.cache.imageSmoothing;
+		this.ctx.msImageSmoothingEnabled = meta.cache.imageSmoothing;
+		this.ctx.oImageSmoothingEnabled = meta.cache.imageSmoothing;
+		
 		this._updateOffset();
 		this.chn.resize.emit(this, meta.Event.RESIZE);
 		

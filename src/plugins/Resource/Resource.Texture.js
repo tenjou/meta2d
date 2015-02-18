@@ -125,7 +125,7 @@ Resource.Texture = Resource.Basic.extend
 
 		img.src = this.fullPath;
 
-		// Resource.ctrl.addToLoad(this);
+		Resource.ctrl.addToLoad(this);
 
 		// var self = this;
 		// var img = new Image();
@@ -420,6 +420,12 @@ Resource.Texture = Resource.Basic.extend
 		return this.ctx.getImageData(x, y, 1, 1).data;
 	},
 
+	applyCanvas: function(canvas) {
+		this.canvas = canvas;
+		this.ctx = canvas.getContext("2d");
+		this.resize(canvas.width, canvas.height);
+	},
+
 	//
 	type: Resource.Type.TEXTURE,
 
@@ -438,13 +444,8 @@ Resource.Texture = Resource.Basic.extend
 	frames: 1,
 	framesX: 1,
 	framesY: 1,
-
-	animated: false,
 	
-	reversed: false,
 	fromAtlas: false,
-	loop: false,
-	autoPlay: true,
 
 	reloading: false,
 

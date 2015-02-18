@@ -2,8 +2,19 @@
 
 meta.Renderer = meta.Class.extend
 ({
+	init: function() 
+	{
+		this.holder = new Entity.Geometry();
+
+		Entity.Geometry.prototype.renderer = this;
+		Entity.Geometry.prototype.parent = this.holder;
+	},
+
 	load: function() 
 	{
+		this.engine = meta.engine;
+		this.camera = meta.camera;
+
 		this.chn = {
 			onDown: meta.createChannel(Entity.Event.INPUT_DOWN),
 			onUp: meta.createChannel(Entity.Event.INPUT_UP),
@@ -19,7 +30,13 @@ meta.Renderer = meta.Class.extend
 
 		meta.subscribe(this, [ Input.Event.DOWN, Input.Event.UP ], this.onInput, meta.Priority.HIGH);
 		meta.subscribe(this, Input.Event.MOVE, this.onInputMove, meta.Priority.HIGH);
-		meta.subscribe(this, Input.Event.DBCLICK, this.onInputDbClick, meta.Priority.HIGH);		
+		meta.subscribe(this, Input.Event.DBCLICK, this.onInputDbClick, meta.Priority.HIGH);
+
+		meta.subscribe(this, meta.Event.RESIZE, this.onResize);
+		meta.subscribe(this, meta.Event.ADAPT, this.onAdapt);	
+		meta.subscribe(this, meta.Event.CAMERA_MOVE, this.onCameraMove);
+
+		this.holder.resize(this.camera.volume.width, this.camera.volume.height);
 	},
 
 	update: function(tDelta)
@@ -58,7 +75,7 @@ meta.Renderer = meta.Class.extend
 	},
 
 	_sortEntities: function(a, b) {
-		return a.z - b.z;
+		return a.totalZ - b.totalZ;
 	},	
 
 	addEntity: function(entity)
@@ -72,10 +89,6 @@ meta.Renderer = meta.Class.extend
 		if(entity._z !== 0) {
 			this.needSortDepth = true;
 		}
-		// if(entity.anim.speed > 0) {
-		// 	this.addAnim(entity);
-		// }
-
 		if(entity._pickable) {
 			this.addPicking(entity);
 		}
@@ -83,6 +96,10 @@ meta.Renderer = meta.Class.extend
 			this.numDebug++;
 		}
 
+		if(entity.children) {
+			this.addEntities(entity.children);
+		}
+		
 		this.needRender = true;
 	},
 
@@ -119,21 +136,20 @@ meta.Renderer = meta.Class.extend
 		entity.__updateIndex = -1;
 	},
 
-	addAnim: function(entity)
+	addAnim: function(anim)
 	{
-		if(!entity.__added) { return; }
-		if(entity.__animIndex !== -1) { return; }
+		if(anim.__index !== -1) { return; }
 
-		entity.__animIndex = this.entitiesAnim.length;
-		this.entitiesAnim.push(entity);
+		anim.__index = this.entitiesAnim.length;
+		this.entitiesAnim.push(anim);
 	},
 
-	removeAnim: function(entity)
+	removeAnim: function(anim)
 	{
-		if(entity.__animIndex === -1) { return; }
+		if(anim.__index === -1) { return; }
 
-		this.entitiesAnimRemove.push(entity.__animIndex);
-		entity.__animIndex = -1;
+		this.entitiesAnimRemove.push(anim.__index);
+		anim.__index = -1;
 	},
 
 	addPicking: function(entity) 
@@ -380,8 +396,12 @@ meta.Renderer = meta.Class.extend
 				this.chn.onDragStart.emit(data, Entity.Event.DRAG_START);
 			}
 			// DRAG
-			else {
-				this.pressedEntity.onDrag.call(this.pressedEntity, data);
+			else 
+			{
+				if(this.pressedEntity.onDrag) {
+					this.pressedEntity.onDrag.call(this.pressedEntity, data);
+				}
+				
 				this.chn.onDrag.emit(data, Entity.Event.DRAG);				
 			}
 
@@ -390,6 +410,24 @@ meta.Renderer = meta.Class.extend
 
 		return true;
 	},	
+
+	onResize: function(data, event) 
+	{
+		this.holder.resize(data.width, data.height);
+
+		var numEntities = this.entities.length;
+		for(var i = 0; i < numEntities; i++) {
+			this.entities[i].updateAnchor();
+		}
+	},
+
+	onAdapt: function(data, event) {
+
+	},
+
+	onCameraMove: function(data, event) {
+		this.needRender = true;
+	},
 
 	/**
 	 * Get unique id.
@@ -417,7 +455,10 @@ meta.Renderer = meta.Class.extend
 
 	//
 	meta: meta,
+	engine: null,
+	camera: null,
 	chn: null,
+	holder: null,
 
 	entities: [],
 	entitiesToUpdate: [],

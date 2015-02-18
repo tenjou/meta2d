@@ -1,62 +1,67 @@
 "use strict";
 
-meta.Anim = function()
-{
+meta.Anim = function() {
 	this.texture = null;
-	this._tAnim = 0;
-	this._frame = 0;	
-	this._fps = 0;
-	this.looped = false;
-	this.__animIndex = -1;
 };
 
 meta.Anim.prototype =
 {
 	set: function(texture) 
 	{
-		if(!texture || !texture.animated) {
-			meta.renderer.removeAnim(this);
+		// If texture was removed from entity:
+		if(!texture) 
+		{
+			if(this.__index !== -1) {
+				meta.renderer.removeAnim(this);
+			}
+			this.texture = null;
 			return;
 		}
 
-		console.log("set")
-
 		this.texture = texture;	
-		this.looped = texture.looped;
-		this.reverse = texture.reverse;
-		this._fps = texture.fps;
 
-		if(this.reverse) {
-			
-		}
-		else {
-			this._frame = 0;
-		}
+		if(texture.frames > 0)
+		{
+			this.fps = texture.fps;	
 
-		if(texture.autoPlay) {
-			meta.renderer.addAnim(this);
+			if(this.reverse) {
+				this._frame = texture.frames - 1;
+			}
+			else {
+				this._frame = 0;
+			}
+
+			// If texture is animated but not animating:
+			if(this.autoPlay && this.__index === -1) {		
+				meta.renderer.addAnim(this);
+			}			
 		}
 	},
 
-	play: function(loop)
+	play: function(loop) 
 	{
 		this.loop = loop || false;
-		
+
 		meta.renderer.addAnim(this);
 	},
 
-	pause: function()
-	{
+	pause: function() {
 		meta.renderer.removeAnim(this);
 	},
 
-	resume: function()
-	{
+	resume: function() {
 		meta.renderer.addAnim(this);
 	},
 
 	stop: function()
 	{
+		if(this.reverse) {
+			this._frame = texture.frames - 1;
+		}
+		else {
+			this._frame = 0;
+		}
+
 		meta.renderer.removeAnim(this);
 	},
 
@@ -64,34 +69,30 @@ meta.Anim.prototype =
 
 	anim: function(tDelta)
 	{
-//		if(this.animSpeed <= 0.0 || this._texture.numFrames < 2) { return; }
+		this.__tAnim += tDelta;
+		if(this.__tAnim < this.__delay) { return; }
 
-		var delay = 1.0 / (this.fps * this.animSpeed);
-
-		this._tAnim += tDelta;
-		if(this._tAnim < delay) { return; }
-
-		var frames = this._tAnim / delay | 0;
-		this._tAnim -= (delay * frames);
+		var frames = this.__tAnim / this.__delay | 0;
+		this.__tAnim -= (frames * this.__delay);
 
 		meta.renderer.needRender = true;
 
 		if(!this.reverse)
 		{
-			this._currFrame += frames;
+			this._frame += frames;
 
-			if(this._currFrame >= this._texture.frames)
+			if(this._frame >= this.texture.frames)
 			{
-				if(this.pauseAtEnd) {
-					this.animating = false;
-					this._frame = this._texture.numFrames - 1;					
+				if(this.pauseLastFrame) {
+					meta.renderer.removeAnim(this);
+					this._frame = this.textures.frames - 1;					
 				}				
-				else if(!this.isLoop && !this._texture.isLoop) {
-					this.animating = false;
+				else if(!this.loop) {
+					meta.renderer.removeAnim(this);
 					this._frame = 0;
 				}
 				else {
-					this._frame = this._frame % this._texture.frames;
+					this._frame = this._frame % this.texture.frames;
 				}
 
 				if(this.onEnd) {
@@ -103,30 +104,26 @@ meta.Anim.prototype =
 		{
 			this._frame -= frames;
 
-			if(this._currFrame < 0)
+			if(this._frame < 0)
 			{
-				if(this.pauseAtEnd) {
-					this.isAnimating = false;
-					this._currFrame = 0;
+				if(this.pauseLastFrame) {
+					meta.renderer.removeAnim(this);
+					this._frame = 0;
 				}				
-				else if(!this.isLoop && !this._texture.isLoop) {
-					this.isAnimating = false;
-					this._currFrame = this._texture.numFrames - 1;
+				else if(!this.loop) {
+					meta.renderer.removeAnim(this);
+					this._frame = this.texture.frames - 1;
 				}
 				else {
-					this._currFrame = (this.texture.frames + this._frame) % this._texture.numFrames;
+					this._frame = (this.texture.frames + this._frame) % this.texture.frames;
 				}				
 
-				if(this.onAnimEnd) {
-					this.onAnimEnd();
+				if(this.onEnd) {
+					this.onEnd();
 				}
 			}
 		}
 	},	
-
-	updateSpeed: function() {
-		th
-	},
 
 	set frame(frame) {
 		this._frame = frame;
@@ -137,9 +134,17 @@ meta.Anim.prototype =
 
 	set fps(fps) {
 		this._fps = fps;
+		this.__delay = 1.0 / (fps * this._speed);
 	},
 
 	get fps() { this._fps; },
+
+	set speed(speed) {
+		this._speed = speed;
+		this.__delay = 1.0 / (fps * this._speed);
+	},
+
+	get speed() { return this._speed; },
 
 	set paused(value) 
 	{
@@ -156,7 +161,14 @@ meta.Anim.prototype =
 	},
 
 	//
-	speed: 1,
+	loop: true,
 	reverse: false,
-	animating: false
+	autoPlay: true,
+	pauseLastFrame: false,
+	_fps: 0,
+	_speed: 1,
+	_frame: 0,
+	__index: -1,
+	__delay: 0,
+	__tAnim: 0
 };

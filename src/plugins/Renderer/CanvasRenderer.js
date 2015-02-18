@@ -4,9 +4,10 @@ meta.CanvasRenderer = meta.Renderer.extend
 ({
 	init: function() 
 	{
-		this.engine = meta.engine;
-		this.ctx = this.engine.canvas.getContext("2d");
-		this.engine.ctx = this.ctx;
+		this._super();
+
+		this.ctx = meta.engine.canvas.getContext("2d");
+		meta.engine.ctx = this.ctx;
 	},
 
 	render: function(tDelta)
@@ -27,21 +28,17 @@ meta.CanvasRenderer = meta.Renderer.extend
 			this.entitiesAnimRemove.length = 0;
 		}
 
-		if(!this.needRender) { return; }
-
-		var camera = meta.camera;
+		//if(!this.needRender) { return; }
 
 		this.clear();
 
 		this.ctx.save();
-		this.ctx.translate(camera._x, camera._y);
+		this.ctx.setTransform(this.camera._zoom, 0, 0, this.camera._zoom, this.camera._x | 0, this.camera._y | 0);
 
 		numEntities = this.entities.length;
 		for(i = 0; i < numEntities; i++) {
 			this.drawEntity(this.entities[i]);
 		}
-
-		this.ctx.resetTransform();
 
 		/* Debug */
 		if(this.meta.cache.debug) 
@@ -102,7 +99,7 @@ meta.CanvasRenderer = meta.Renderer.extend
 
 		if(volume.__type === 0) 
 		{
-			if(anim.frames > 1) {
+			if(texture.frames > 0) {
 				texture.drawFrame(this.ctx, volume.minX | 0, volume.minY | 0, anim._frame);
 			}
 			else {
@@ -113,19 +110,20 @@ meta.CanvasRenderer = meta.Renderer.extend
 		{
 			this.ctx.globalAlpha = entity._alpha;
 
-			this.ctx.setTransform(
+			this.ctx.transform(
 				volume.m11, volume.m12, 
 				volume.m21, volume.m22,
-				volume.x | 0, volume.y | 0);
+				volume.absX | 0, volume.absY | 0);
 
-			if(anim.frames > 1) {
-				texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, entity._frame);
+			if(texture.frames > 0) {
+				texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, anim._frame);
 			}
 			else {
 				this.ctx.drawImage(texture.canvas, -volume.initPivotPosX, -volume.initPivotPosY);
 			}			
 
 			this.ctx.globalAlpha = 1.0;
+			this.ctx.setTransform(this.camera._zoom, 0, 0, this.camera._zoom, this.camera._x | 0, this.camera._y | 0);
 		}
 		else if(volume.__type === 2)
 		{
@@ -144,9 +142,9 @@ meta.CanvasRenderer = meta.Renderer.extend
 		{
 			this.ctx.save();
 
-			this.ctx.translate(volume.x, volume.y);
+			this.ctx.translate(volume.absX, volume.absY);
 			this.ctx.rotate(entity.volume.angle);
-			this.ctx.translate(-volume.x, -volume.y);
+			this.ctx.translate(-volume.absX, -volume.absY);
 
 			this._drawVolume(volume);
 
@@ -169,12 +167,8 @@ meta.CanvasRenderer = meta.Renderer.extend
 		this.ctx.lineTo(minX, minY - 1);
 		this.ctx.stroke();	
 
-		this.ctx.fillRect(volume.x - 3, volume.y - 3, 6, 6);
+		this.ctx.fillRect(volume.absX - 3, volume.absY - 3, 6, 6);
 	},
 
-	updateBgColor: function() {},
-
-	//
-	engine: null,
-	ctx: null
+	updateBgColor: function() {}
 });

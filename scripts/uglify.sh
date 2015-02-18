@@ -16,7 +16,6 @@ cat meta.js \
 	Enum.js \
 	Macros.js \
 	utils/Ajax.js \
-	utils/LinkedList.js \
 	math/Math.js \
 	math/Vector2.js \
 	math/AABB.js \
@@ -39,6 +38,8 @@ cat meta.js \
 	plugins/Entity/Enum.js \
 	plugins/Renderer/Renderer.js \
 	plugins/Renderer/CanvasRenderer.js \
+	plugins/Renderer/utils/Anim.js \
+	plugins/Renderer/utils/Volume.js \
 	plugins/Entity/Entity.Geometry.js \
 	plugins/Entity/Entity.Text.js \
 	plugins/Input/Input.Controller.js \
@@ -51,4 +52,5 @@ cat meta.js \
 	plugins/UI/UI.ProgressBar.js \
 	plugins/UI/UI.Group.js \
 	Loader.js \
-	| uglifyjs --output ../versions/meta.nightly.latest.js -b
+	| uglifyjs --output ../versions/meta.nightly.latest.js --mangle -c dead_code=false,unused=false,side_effects=false --screw-ie8
+

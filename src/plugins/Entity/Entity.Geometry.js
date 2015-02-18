@@ -31,16 +31,22 @@ Entity.Geometry = meta.Class.extend
 	{
 		if(this.children) 
 		{
-			this.volume.parentX = this.parent.volume.parentX + this.volume.x;
-			this.volume.parentY = this.parent.volume.parentY + this.volume.y;
-
+			var child, childVolume;
 			var numChildren = this.children.length;
-			for(var i = 0; i < numChildren; i++) {
-				this.children[i];
+			for(var i = 0; i < numChildren; i++) 
+			{
+				child = this.children[i];
+				if(child.ignoreParentPos) { continue; }
+
+				childVolume = child.volume;
+				childVolume.parentX = this.volume.minX;
+				childVolume.parentY = this.volume.minY;
+				childVolume.updatePos();
+				child.updatePos();
 			}
 		}
 
-		meta.renderer.needRender = true;
+		this.renderer.needRender = true;
 	},
 
 	position: function(x, y) { 
@@ -71,8 +77,17 @@ Entity.Geometry = meta.Class.extend
 
 	set z(z) 
 	{
-		if(this._z === z) { return; }
+		//if(this._z === z) { return; }
 		this._z = z;
+		this.totalZ = z + this.parentZ;
+
+		if(this.children) {
+			var parentZ = this.totalZ + 1;
+			var numChildren = this.children.length;
+			for(var i = 0; i < numChildren; i++) {
+				this.children[i].totalZ = parentZ + this.children[i]._z;
+			}
+		}
 
 		meta.renderer.needSortDepth = true;
 	},
@@ -98,6 +113,35 @@ Entity.Geometry = meta.Class.extend
 	},
 	get pivotX() { return this.volume.pivotX; },
 	get pivotY() { return this.volume.pivotY; },
+
+	anchor: function(x, y)
+	{
+		if(y === void(0)) { y = x; }
+
+		this._anchorX = x;
+		this._anchorY = y;
+		this.updateAnchor();
+	},
+
+	updateAnchor: function() {
+		this.volume.anchorPosX = (this.parent.volume.width) * this._anchorX;
+		this.volume.anchorPosY = (this.parent.volume.height) * this._anchorY;
+		this.volume.updatePos();
+		this.updatePos();
+	},
+
+	set anchorX(x) {
+		this._anchorX = x;
+		this.updateAnchor();
+	},
+
+	set anchorY(y) {
+		this._anchorY = y;
+		this.updateAnchor();
+	},
+
+	get anchorX() { return this._anchorX; },
+	get anchroY() { return this._anchorY; },
 
 	/* Rotation */
 	set angle(value)
@@ -126,6 +170,15 @@ Entity.Geometry = meta.Class.extend
 		if(y === void(0)) { y = x; }
 
 		this.volume.scale(x, y);
+	
+
+		if(this.children) {
+			var numChildren = this.children.length;
+			for(var i = 0; i < numChildren; i++) {
+				this.children[i].updateAnchor();
+			}
+		}
+
 		this.updatePos();
 	},
 
@@ -160,10 +213,26 @@ Entity.Geometry = meta.Class.extend
 	set alpha(value) {
 		this._alpha = value;
 		this.volume.__type = 1;
-		meta.renderer.needRender = true;
+		this.renderer.needRender = true;
 	},
 
 	get alpha() { return this._alpha; },	
+
+	resize: function(width, height) 
+	{
+		this.volume.resize(width, height);
+		this.updatePos();
+
+		if(this.children) 
+		{
+			var numChildren = this.children.length;
+			for(var i = 0; i < numChildren; i++) {
+				this.children[i].updateAnchor();
+			}	
+		}
+
+		this.renderer.needRender = true;
+	},
 
 	/**
 	 * Callback for texture events.
@@ -240,21 +309,27 @@ Entity.Geometry = meta.Class.extend
 		}
 
 		if(!this.children) {
-			this.children[ entity ];
+			this.children = [ entity ];
 		}
 		else {
 			this.children.push(entity);
 		}
 
+		entity.totalZ = this.totalZ + 1;
+
+		entity.parent = this;
+		entity.updateAnchor();
 		this.updatePos();
 
-		meta.renderer.needRender = true;
+		if(this._view && this._view._active) {
+			this.renderer.addEntity(entity);
+		}		
 	},
 
 	detach: function(entity)
 	{
 
-		meta.renderer.needRender = true;
+		this.renderer.needRender = true;
 	},
 
 	detachAll: function()
@@ -263,12 +338,11 @@ Entity.Geometry = meta.Class.extend
 
 		var numChildren = this.children.length;
 		for(var i = 0; i < numChildren; i++) {
-			//this.children[i]
+			this.detach(this.children[i]);
 		}
 
 		this.children = null;
-
-		meta.renderer.needRender = true;
+		this.renderer.needRender = true;
 	},
 
 	set state(name)
@@ -413,9 +487,14 @@ Entity.Geometry = meta.Class.extend
 	get debug() { return this.__debug; },
 
 	//
+	renderer: null,
+	parent: null,
+	_view: null,
+
 	_texture: null,
-	_z: 0,
-	_alpha: 1,
+	_z: 0, parentZ: 0, totalZ: 0,
+	_alpha: 1, parentAlpha: 0, totalAlpha: 0,
+	_anchorX: 0, _anchorY: 0,
 
 	loaded: true,
 
@@ -430,6 +509,11 @@ Entity.Geometry = meta.Class.extend
 	hover: false,
 	pressed: false,
 	dragged: false,
+
+	ignoreParentPos: false,
+	ignoreParentZ: false,
+	ignoreParentAngle: false,
+	ignoreParentAlpha: false,
 
 	__added: false,
 	__debug: false,
