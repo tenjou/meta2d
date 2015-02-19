@@ -235,6 +235,13 @@ meta.createCtrl = function(ctrlName, view)
 	ctrl.name = name;
 	ctrl.view = view;
 
+	if(meta.engine.loadedCtrls) {
+		ctrl.load();
+	} 
+	if(meta.engine.ready) {
+		ctrl.ready();
+	}
+
 	return ctrl;
 };
 

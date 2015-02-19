@@ -9,19 +9,16 @@ Entity.Text = Entity.Geometry.extend
 
 		var type = typeof(params);
 		if(type === "string" || type === "number") {
-			this.setText(params);
+			this._text = params;
 		}	
-		else {
-			this.setText("");
-		}	
+		
+		this.updateTxt();
 	},
 
 	initFromParam: function() {},
 
-	setText: function(text)
+	updateTxt: function()
 	{
-		this._text = text;
-
 		var ctx = this._texture.ctx;
 		ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
 
@@ -34,104 +31,160 @@ Entity.Text = Entity.Geometry.extend
 		ctx.fillStyle = this._color;
 		ctx.textBaseline = "top";
 
-		ctx.fillText(text, this.outlineWidth, 0);
+		if(this._shadow) {
+			ctx.shadowColor = this._shadowColor;
+			ctx.shadowOffsetX = this._shadowOffsetX;
+			ctx.shadowOffsetY = this._shadowOffsetY;
+			ctx.shadowBlur = this._shadowBlur;
+		}
 
-		if(this.isOutline) {
+		ctx.fillText(this._text, this._outlineWidth, 0);
+
+		if(this._outline) {
 			ctx.lineWidth = this._outlineWidth;
 			ctx.strokeStyle = this._outlineColor;
-			ctx.strokeText(text, this.outlineWidth, 0);
+			ctx.strokeText(this._text, this._outlineWidth, 0);
 		}
 
-		if(!this._texture._isLoaded) {
-			this._texture.isLoaded = true;
+		if(!this._texture._loaded) {
+			this._texture.loaded = true;
 		}
 
-		this.isNeedDraw = true;
+		this.renderer.needRender = true;
 	},
 
-	resize: function(width, height)
-	{
-		width = width || 1;
-		height = height || this.volume.height;
-
-		this._texture.resize(width, height);
+	set text(text) { 
+		this._text = text;
+		this.updateTxt();
 	},
 
-	setFont: function(font) {
-		this._font = font;
-		this.setText(this._text);
-	},
-
-	setSize: function(size) {
-		this._fontSize = size;
-		this._fontSizePx = size + "px";
-		this.setText(this._text);
-	},
-
-	setColor: function(color) {
-		this._color = color;
-		this.setText(this._text);
-	},
-
-	setOutlineColor: function(color) {
-		this._outlineColor = color;
-		this.isOutline = true;
-	},
-
-	setOutlineWidth: function(width)
-	{
-		this._outlineWidth = width;
-		if(this._isOutline) {
-			this.setText(this._text);
-		}
-	},
-
-	setStyle: function(style) {
-		this._style = style;
-		this.setText(this._text);
-	},
-
-
-	set text(text) { this.setText(text); },
 	get text() { return this._text; },
 
-	set font(font) { this.setFont(font); },
-	get font() { return this._font; },
-
-	set size(size) { this.setSize(size); },
-	get size() { return this._fontSize; },
-
-	set color(color) { this.setColor(color); },
-	get color() { return this._color; },
-
-	set outlineColor(color) { this.setOutlineColor(color); },
-	get outlineColor() { return this._outlineColor; },
-
-	set outlineWidth(width) { this.setOutlineWidth(width); },
-	get outlineWidth() { return this._outlineWidth; },
-
-	set style(style) { this.setStyle(style); },
-	get style() { return this._style; },
-
-	set isOutline(value)
-	{
-		if(this._isOutline === value) { return; }
-		this._isOutline = value;
-		this.setText(this._text);
+	set font(font) {
+		this._font = font;
+		this.updateTxt();
 	},
 
-	get isOutline() { return this._isOutline; },
+	get font() { return this._font; },
 
+	set size(size) { 
+		this._fontSize = size;
+		this._fontSizePx = size + "px";
+		this.updateTxt();
+	},
+
+	get size() { return this._fontSize; },
+
+	set color(color) {
+		this._color = color;
+		this.updateTxt();
+	},
+
+	get color() { return this._color; },
+
+	set outlineColor(color) { 
+		this._outlineColor = color;
+		this.outline = true;
+	},
+
+	get outlineColor() { return this._outlineColor; },
+
+	set outlineWidth(width) 
+	{ 
+		if(this._outlineWidth === width) { return; }
+		this._outlineWidth = width;
+
+		if(this._outline) {
+			this.updateTxt();
+		}
+	},
+
+	get outlineWidth() { return this._outlineWidth; },
+
+	set style(style) 
+	{ 
+		if(this._style === style) { return; }
+		this._style = style;
+		
+		this.updateTxt();
+	},
+
+	get style() { return this._style; },
+
+	set outline(value)
+	{
+		if(this._outline === value) { return; }
+		this._outline = value;
+
+		this.updateTxt();
+	},
+
+	get outline() { return this._outline; },
+
+	set shadow(value) 
+	{
+		if(this._shadow === value) { return; }
+		this._shadow = value;
+
+		this.updateTxt();
+	}, 
+
+	get shadow() { return this._shadow; },
+
+	set shadowColor(value) 
+	{
+		if(this._shadowColor === value) { return; }
+		this._shadowColor = value;
+
+		this.updateTxt();
+	},
+
+	get shadowColor() { return this._shadowColor; },
+
+	set shadowBlur(value)
+	{
+		if(this._shadowBlur === value) { return; }
+		this._shadowBlur = value;
+
+		this.updateTxt();
+	},
+
+	get shadowBlur() { return this._shadowBlur; },
+
+	set shadowOffsetX(value)
+	{
+		if(this._shadowOffsetX === value) { return; }
+		this._shadowOffsetX = value;
+
+		this.updateTxt();
+	},
+
+	set shadowOffsetY(value)
+	{
+		if(this._shadowOffsetY === value) { return; }
+		this._shadowOffsetY = value;
+
+		this.updateTxt();
+	},	
+
+	get shadowOffsetX() { return this._shadowOffsetY; },
+	get shadowOffsetY() { return this._shadowOffsetY; },
 
 	//
 	_text: "",
 	_font: "Verdana",
-	_fontSize: 14,
-	_fontSizePx: "14px",
+	_fontSize: 12,
+	_fontSizePx: "12px",
 	_color: "#000000",
-	_outlineColor: "#ffffff",
-	_outlineWidth: 1,
 	_style: "",
 
-	_isOutline: false
+	_outline: false,
+	_outlineColor: "#ffffff",
+	_outlineWidth: 1,
+
+	_shadow: false,
+	_shadowColor: "#000000",
+	_shadowBlur: 2,
+	_shadowOffsetX: 1,
+	_shadowOffsetY: 1
 });

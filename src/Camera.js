@@ -240,8 +240,8 @@ meta.Camera.prototype =
 		var scope = meta;
 		var diffX = (data.screenX - data.prevScreenX);
 		var diffY = (data.screenY - data.prevScreenY);
-		this._x += diffX;
-		this._y += diffY;
+		this._x -= diffX;
+		this._y -= diffY;
 		this.volume.move(-diffX, -diffY);
 		this._wasMoved = true;
 

@@ -32,9 +32,9 @@ meta.Tween.prototype =
 
 			// If owner is removed or simply not set.
 			if(!cache.owner) { return this; }
-			if(cache.owner.isRemoved) { return this; }
+			if(cache.owner.removed) { return this; }
 
-			cache.isPaused = false;
+			cache.paused = false;
 			cache.numRepeat = this.numRepeat;
 			this.next();
 			this._play();
@@ -46,7 +46,7 @@ meta.Tween.prototype =
 
 	_play: function() 
 	{	
-		if(Renderer.ctrl._addToUpdating(this.cache) && this._group) {
+		if(meta.renderer.addTween(this.cache) && this._group) {
 			this._group.activeUsers++;
 		}
 	},
@@ -70,7 +70,7 @@ meta.Tween.prototype =
 
 	_stop: function(callCB) 
 	{
-		if(Renderer.ctrl._removeFromUpdating(this.cache)) 
+		if(meta.renderer.removeTween(this.cache)) 
 		{
 			if(callCB) {
 				callCB(this.cache.owner);
@@ -100,7 +100,7 @@ meta.Tween.prototype =
 			value = true;
 		}
 
-		this.cache.isPaused = value;
+		this.cache.paused = value;
 
 		return this;
 	},
@@ -110,7 +110,7 @@ meta.Tween.prototype =
 	 * @returns {meta.Tween}
 	 */
 	resume: function() {
-		this.cache.isPaused = false;
+		this.cache.paused = false;
 		return this;
 	},
 
@@ -210,7 +210,7 @@ meta.Tween.prototype =
 			link._onStart.call(this);
 		}
 
-		cache._tStart = meta.engine.tNow;
+		cache._tStart = meta.time.update;
 		cache.currLink = link;
 
 		return this;
@@ -264,7 +264,7 @@ meta.Tween.prototype =
 			return;
 		}
 
-		var tCurr = meta.engine.tNow;
+		var tCurr = meta.time.update;
 		var tFrameDelta = tCurr - cache._tFrame;
 
 		if(tFrameDelta < cache.currLink.tFrameDelay) {
@@ -376,7 +376,7 @@ meta.Tween.Cache = function(owner)
 	this.currLink = null;
 	this.numRepeat = 0;
 
-	this._updateNodeID = -1;
+	this.__index = -1;
 	this._isLinkDone = false;
 	this._tStart = 0;
 	this._tFrame = 0;	
@@ -391,8 +391,8 @@ meta.Tween.Cache.prototype =
 	},
 
 	//
-	isPaused: false,
-	isRemoved: false,
+	paused: false,
+	removed: false,
 	reverse: false,
 	_flags: 0
 };

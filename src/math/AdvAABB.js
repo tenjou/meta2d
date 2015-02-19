@@ -70,11 +70,9 @@ meta.math.AdvAABB.prototype =
 
 		this.width = this.initWidth * this.scaleX;
 		this.height = this.initHeight * this.scaleY;
-		this.halfWidth = this.width / 2;
-		this.halfHeight = this.height / 2;
 
-		this.minX = this.x - this.halfWidth;
-		this.minY = this.y - this.halfHeight;
+		this.minX = this.x;
+		this.minY = this.y;
 		this.maxX = this.minX + this.width;
 		this.maxY = this.minY + this.height;
 	},

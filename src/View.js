@@ -475,9 +475,8 @@ meta.View.prototype =
 /**
  * Create a new view. Additionally controllers can be passed for registration.
  * @param name {String} Name of the view.
- * @param ctrls {String|Array} Name of the controller or array with controllers to register.
  */
-meta.createView = function(name, ctrls)
+meta.createView = function(name)
 {
 	if(!name || typeof(name) !== "string") {
 		console.error("(meta.createView) Invalid name of the view");
@@ -492,19 +491,6 @@ meta.createView = function(name, ctrls)
 
 	view = new meta.View(name);
 	meta.cache.views[name] = view;
-
-	if(!ctrls) { return; }
-
-	if(ctrls instanceof Array) 
-	{
-		var numCtrls = ctrls.length;
-		for(var i = 0; i < numCtrls; i++) {
-			view.register(ctrls[i]);
-		}
-	}
-	else {
-		view.register(ctrls);
-	}
 };
 
 /**

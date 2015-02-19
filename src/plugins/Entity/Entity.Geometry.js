@@ -468,6 +468,129 @@ Entity.Geometry = meta.Class.extend
 	 */
 	onHoverExit: null,
 
+	addTimer: function(func, tDelta, numTimes) 
+	{
+		var timer = meta.addTimer(this, func, tDelta, numTimes);
+		if(!this.timers) {
+			this.timers = [ timer ];
+		}
+		else {
+			this.timers.push(timer);
+		}
+
+		return timer;
+	},	
+
+	set tween(obj)
+	{
+		if(!this._tweenCache) {
+			this._tweenCache = new meta.Tween.Cache(this);
+		}
+
+		if(obj instanceof meta.Tween.Link) {
+			this._tweenCache.tween = obj.tween;
+		}
+		else if(obj instanceof meta.Tween) {
+			this._tweenCache.tween = obj;
+		}
+		else {
+			console.warn("(Entity.Geometry.set::tween) Ivalid object! Should be meta.Tween or meta.Tween.Link object");
+			return;
+		}
+
+		var tween = this._tweenCache.tween;
+		if(tween.autoPlay) {
+			tween.cache = this._tweenCache;
+			tween.play();
+		}
+	},
+
+	get tween()
+	{
+		if(!this._tweenCache) {
+			this._tweenCache = new meta.Tween.Cache(this);
+			this._tweenCache.tween = new meta.Tween();
+		}
+
+		this._tweenCache.tween.cache = this._tweenCache;
+		return this._tweenCache.tween;
+	},	
+
+	addComponent: function(name, obj, params) 
+	{
+		if(this[name]) {
+			console.warn("(Entity.Sprite.addComponent) Already in use: " + name);
+			return null;
+		}
+
+		var comp = new obj();
+		comp.owner = this;
+
+		for(var key in params) {
+			comp[key] = params[key];
+		}
+
+		this[name] = comp;
+		if(!this.components) {
+			this.components = [ comp ];
+		}
+		else {
+			this.components.push(comp);
+		}
+
+		if(comp.load) {
+			comp.load();
+		}
+		if(this.isLoaded && comp.ready) {
+			comp.ready();
+		}
+
+		return comp;
+	},
+
+	removeComponent: function(name)
+	{
+		var comp = this[name];
+		if(!comp || typeof(comp) !== "object") {
+			console.warn("(Entity.Sprite.removeComponent) Invalid component in: " + name);
+			return;
+		}
+
+		// Try to find and remove the component:
+		var found = false;
+		var numComponents = this.components.length;
+		for(var i = 0; i < numComponents; i++) {
+			if(this.components[i] === comp) {
+				this.components[i] = this.components[numComponents - 1];
+				this.components.pop(); 
+				found = true;
+				break;
+			}
+		}
+
+		// Error: If no such component added:
+		if(!found) {
+			console.warn("(Entity.Sprite.removeComponent) No such components added in: " + name);
+			return;			
+		}
+
+		if(comp.unload) {
+			comp.unload();
+		}
+
+		this[name] = null;
+	},
+
+	removeAllComponents: function()
+	{
+		if(!components) { return; }
+
+		var numComponents = this.components.length;
+		for(var i = 0; i < numComponents; i++) {
+			this.removeComponent(this.components[i]);
+		}
+	},	
+
 	/* Debug */
 	set debug(value) 
 	{
@@ -504,6 +627,10 @@ Entity.Geometry = meta.Class.extend
 
 	_state: "*",
 	_style: null,
+
+	timers: null,
+	_tweenCache: null,
+	components: null,
 
 	_pickable: false,
 	hover: false,

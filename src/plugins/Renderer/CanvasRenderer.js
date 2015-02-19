@@ -28,12 +28,12 @@ meta.CanvasRenderer = meta.Renderer.extend
 			this.entitiesAnimRemove.length = 0;
 		}
 
-		//if(!this.needRender) { return; }
+		if(!this.needRender) { return; }
 
 		this.clear();
 
 		this.ctx.save();
-		this.ctx.setTransform(this.camera._zoom, 0, 0, this.camera._zoom, this.camera._x | 0, this.camera._y | 0);
+		this.ctx.setTransform(this.camera._zoom, 0, 0, this.camera._zoom, -this.camera._x | 0, -this.camera._y | 0);
 
 		numEntities = this.entities.length;
 		for(i = 0; i < numEntities; i++) {
@@ -123,7 +123,7 @@ meta.CanvasRenderer = meta.Renderer.extend
 			}			
 
 			this.ctx.globalAlpha = 1.0;
-			this.ctx.setTransform(this.camera._zoom, 0, 0, this.camera._zoom, this.camera._x | 0, this.camera._y | 0);
+			this.ctx.setTransform(this.camera._zoom, 0, 0, this.camera._zoom, -this.camera._x | 0, -this.camera._y | 0);
 		}
 		else if(volume.__type === 2)
 		{
