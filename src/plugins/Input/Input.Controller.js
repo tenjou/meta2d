@@ -174,18 +174,18 @@ Input.Controller = meta.Controller.extend
 
 		var scope = meta;
 		var camera = scope.camera;
-		var screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
-		var screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
-		var x = ((screenX * camera.zoomRatio) - camera._x) | 0;
-		var y = ((screenY * camera.zoomRatio) - camera._y) | 0;
+		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
+		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
+		this.x = ((this.screenX * camera.zoomRatio) - camera._x) | 0;
+		this.y = ((this.screenY * camera.zoomRatio) - camera._y) | 0;
 
 		this._event.event = event;
-		this._event.prevScreenX = screenX;
-		this._event.prevScreenY = screenY;
-		this._event.screenX = screenX;
-		this._event.screenY = screenY;
-		this._event.x = x;
-		this._event.y = y;
+		this._event.prevScreenX = this._event.screenX;
+		this._event.prevScreenY = this._event.screenY;
+		this._event.screenX = this.screenX;
+		this._event.screenY = this.screenY;
+		this._event.x = this.x;
+		this._event.y = this.y;
 		this._event.keyCode = event.button;
 
 		this.chn.inputDown.emit(this._event, Input.Event.DOWN);
@@ -204,18 +204,18 @@ Input.Controller = meta.Controller.extend
 
 		var scope = meta;
 		var camera = scope.camera;
-		var screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
-		var screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
-		var x = ((screenX * camera.zoomRatio) - camera._x) | 0;
-		var y = ((screenY * camera.zoomRatio) - camera._y) | 0;
+		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
+		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
+		this.x = ((this.screenX * camera.zoomRatio) - camera._x) | 0;
+		this.y = ((this.screenY * camera.zoomRatio) - camera._y) | 0;
 
 		this._event.event = event;
 		this._event.prevScreenX = this._event.screenX;
 		this._event.prevScreenY = this._event.screenY;
-		this._event.screenX = screenX;
-		this._event.screenY = screenY;
-		this._event.x = x;
-		this._event.y = y;
+		this._event.screenX = this.screenX;
+		this._event.screenY = this.screenY;
+		this._event.x = this.x;
+		this._event.y = this.y;
 		this._event.keyCode = event.button;
 
 		this.chn.inputUp.emit(this._event, Input.Event.UP);
@@ -235,22 +235,19 @@ Input.Controller = meta.Controller.extend
 
 		var scope = meta;
 		var camera = scope.camera;
-		var screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
-		var screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
-		var x = ((screenX - camera._x) * camera.zoomRatio) | 0;
-		var y = ((screenY - camera._y) * camera.zoomRatio) | 0;
+		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
+		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
+		this.x = ((this.screenX * camera.zoomRatio) - camera._x) | 0;
+		this.y = ((this.screenY * camera.zoomRatio) - camera._y) | 0;
 
 		this._event.event = event;
 		this._event.prevScreenX = this._event.screenX;
 		this._event.prevScreenY = this._event.screenY;
-		this._event.screenX = screenX;
-		this._event.screenY = screenY;
-		this._event.x = x;
-		this._event.y = y;
+		this._event.screenX = this.screenX;
+		this._event.screenY = this.screenY;
+		this._event.x = this.x;
+		this._event.y = this.y;
 		this._event.keyCode = -1;
-
-		this.inputX = x;
-		this.inputY = y;
 
 		this.chn.inputMove.emit(this._event, Input.Event.MOVE);
 		this._event.entity = null;
@@ -268,18 +265,18 @@ Input.Controller = meta.Controller.extend
 
 		var scope = meta;
 		var camera = scope.camera;
-		var screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
-		var screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
-		var x = ((screenX * camera.zoomRatio) - camera._x) | 0;
-		var y = ((screenY * camera.zoomRatio) - camera._y) | 0;
+		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
+		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
+		this.x = ((this.screenX * camera.zoomRatio) - camera._x) | 0;
+		this.y = ((this.screenY * camera.zoomRatio) - camera._y) | 0;
 
 		this._event.event = event;
 		this._event.prevScreenX = this._event.screenX;
 		this._event.prevScreenY = this._event.screenY;
-		this._event.screenX = screenX;
-		this._event.screenY = screenY;
-		this._event.x = x;
-		this._event.y = y;
+		this._event.screenX = this.screenX;
+		this._event.screenY = this.screenY;
+		this._event.x = this.x;
+		this._event.y = this.y;
 		this._event.keyCode = event.button;
 
 		this.chn.inputDbClick.emit(this._event, Input.Event.DBCLICK);
@@ -297,11 +294,12 @@ Input.Controller = meta.Controller.extend
 		var scope = meta;
 		var camera = scope.camera;
 
-		var touch, screenX, screenY, x, y;
+		var touch, screenX, screenY, x, y, id;
 		var changedTouches = event.changedTouches;
 		var numTouches = changedTouches.length;
 		for(var i = 0; i < numTouches; i++)
 		{
+			id = this.touches.length;
 			touch = event.changedTouches[i];
 			this.touches.push(touch.identifier);
 			this.numTouches++;
@@ -318,7 +316,14 @@ Input.Controller = meta.Controller.extend
 			this._event.screenY = screenY;
 			this._event.x = x;
 			this._event.y = y;
-			this._event.keyCode = this.numTouches-1;
+			this._event.keyCode = id;
+
+			if(id === 0) {
+				this.screenX = screenX;
+				this.screenY = screenY;
+				this.x = x;
+				this.y = y;
+			}
 
 			this.chn.inputDown.emit(this._event, Input.Event.DOWN);
 			this._event.entity = null;
@@ -357,6 +362,10 @@ Input.Controller = meta.Controller.extend
 			if(id === 0) {
 				this._event.prevScreenX = this._event.screenX;
 				this._event.prevScreenY = this._event.screenY;
+				this.screenX = screenX;
+				this.screenY = screenY;
+				this.x = x;
+				this.y = y;				
 			}
 			else {
 				this._event.prevScreenX = screenX;
@@ -405,6 +414,10 @@ Input.Controller = meta.Controller.extend
 				this._event.prevScreenY = this._event.screenY;
 				this.inputX = x;
 				this.inputY = y;
+				this.screenX = screenX;
+				this.screenY = screenY;
+				this.x = x;
+				this.y = y;				
 			}
 			else {
 				this._event.prevScreenX = screenX;
@@ -695,7 +708,8 @@ Input.Controller = meta.Controller.extend
 	numInputs: 10,
 	numTouches: 0,
 
-	inputX: 0, inputY: 0,
+	x: 0, y: 0,
+	screenX: 0, screenY: 0,
 
 	_event: null,
 

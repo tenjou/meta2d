@@ -90,12 +90,12 @@ var meta =
 
 		if(value) {
 			meta.emit(meta.Event.DEBUG, value, meta.Event.DEBUG);
+			meta.renderer.debugger.load();
 		}
 		else {
 			meta.emit(meta.Event.DEBUG, value, meta.Event.DEBUG);
+			meta.renderer.debugger.unload();
 		}
-
-		meta.renderer.needRender = true;
 	},
 
 	get debug() { return this.cache.debug; }

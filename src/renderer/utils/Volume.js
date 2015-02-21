@@ -115,8 +115,8 @@ meta.Volume.prototype =
 		this.initHeight = height;
 		this.initPivotPosX = width * this.pivotX | 0;
 		this.initPivotPosY = height * this.pivotY | 0;
-		this.width = width * this.scaleX | 0;
-		this.height = height * this.scaleY | 0;	
+		this.width = width * Math.abs(this.scaleX) | 0;
+		this.height = height * Math.abs(this.scaleY) | 0;	
 
 		this.updatePivotPos();
 	},

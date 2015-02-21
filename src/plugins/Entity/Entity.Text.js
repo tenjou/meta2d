@@ -10,9 +10,8 @@ Entity.Text = Entity.Geometry.extend
 		var type = typeof(params);
 		if(type === "string" || type === "number") {
 			this._text = params;
+			this.updateTxt();
 		}	
-		
-		this.updateTxt();
 	},
 
 	initFromParam: function() {},
@@ -23,8 +22,14 @@ Entity.Text = Entity.Geometry.extend
 		ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
 
 		var metrics = ctx.measureText(this._text);
-		var width = metrics.width + (this.outlineWidth * 2);
-		this.resize(width, this._fontSize * 1.2);
+		var width = metrics.width;
+		if(this._outline) {
+			width += this._outlineWidth * 2;
+		}
+		if(this._shadow) {
+			width += this._shadowOffsetX;
+		}
+		this._texture.resize(width, this._fontSize * 1.2);
 
 		ctx.clearRect(0, 0, this.volume.width, this.volume.height);
 		ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
@@ -44,10 +49,6 @@ Entity.Text = Entity.Geometry.extend
 			ctx.lineWidth = this._outlineWidth;
 			ctx.strokeStyle = this._outlineColor;
 			ctx.strokeText(this._text, this._outlineWidth, 0);
-		}
-
-		if(!this._texture._loaded) {
-			this._texture.loaded = true;
 		}
 
 		this.renderer.needRender = true;
@@ -82,25 +83,6 @@ Entity.Text = Entity.Geometry.extend
 
 	get color() { return this._color; },
 
-	set outlineColor(color) { 
-		this._outlineColor = color;
-		this.outline = true;
-	},
-
-	get outlineColor() { return this._outlineColor; },
-
-	set outlineWidth(width) 
-	{ 
-		if(this._outlineWidth === width) { return; }
-		this._outlineWidth = width;
-
-		if(this._outline) {
-			this.updateTxt();
-		}
-	},
-
-	get outlineWidth() { return this._outlineWidth; },
-
 	set style(style) 
 	{ 
 		if(this._style === style) { return; }
@@ -109,7 +91,29 @@ Entity.Text = Entity.Geometry.extend
 		this.updateTxt();
 	},
 
-	get style() { return this._style; },
+	get style() { return this._style; },	
+
+	set outlineColor(color) 
+	{ 
+		if(this._outlineColor === color) { return; }
+		this._outlineColor = color;
+		this._outline = true;
+
+		his.updateTxt();
+	},
+
+	get outlineColor() { return this._outlineColor; },
+
+	set outlineWidth(width) 
+	{ 
+		if(this._outlineWidth === width) { return; }
+		this._outlineWidth = width;
+		this._outline = true;
+		
+		this.updateTxt();
+	},
+
+	get outlineWidth() { return this._outlineWidth; },
 
 	set outline(value)
 	{
@@ -135,6 +139,7 @@ Entity.Text = Entity.Geometry.extend
 	{
 		if(this._shadowColor === value) { return; }
 		this._shadowColor = value;
+		this._shadow = true;
 
 		this.updateTxt();
 	},
@@ -145,6 +150,7 @@ Entity.Text = Entity.Geometry.extend
 	{
 		if(this._shadowBlur === value) { return; }
 		this._shadowBlur = value;
+		this._shadow = true;
 
 		this.updateTxt();
 	},
@@ -155,6 +161,7 @@ Entity.Text = Entity.Geometry.extend
 	{
 		if(this._shadowOffsetX === value) { return; }
 		this._shadowOffsetX = value;
+		this._shadow = true;
 
 		this.updateTxt();
 	},
@@ -163,6 +170,7 @@ Entity.Text = Entity.Geometry.extend
 	{
 		if(this._shadowOffsetY === value) { return; }
 		this._shadowOffsetY = value;
+		this._shadow = true;
 
 		this.updateTxt();
 	},	
@@ -176,15 +184,15 @@ Entity.Text = Entity.Geometry.extend
 	_fontSize: 12,
 	_fontSizePx: "12px",
 	_color: "#000000",
-	_style: "",
+	_style: "bold",
 
 	_outline: false,
 	_outlineColor: "#ffffff",
 	_outlineWidth: 1,
 
-	_shadow: false,
-	_shadowColor: "#000000",
-	_shadowBlur: 2,
+	_shadow: true,
+	_shadowColor: "#ffffff",
+	_shadowBlur: 1,
 	_shadowOffsetX: 1,
 	_shadowOffsetY: 1
 });

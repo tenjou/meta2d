@@ -22,8 +22,6 @@ meta.View = function(name)
 	this.views = null;
 	this.parentView = null;
 
-	this.numEntities = 0;
-
 	this._x = 0;
 	this._y = 0;
 	this._z = 0;
@@ -68,7 +66,6 @@ meta.View.prototype =
 		}
 
 		this.entities.length = 0;
-		this.numEntities = 0;
 	},
 
 	/**
@@ -77,12 +74,7 @@ meta.View.prototype =
 	 */
 	attach: function(entity)
 	{
-		// if(!(entity instanceof Entity.Geometry)) {
-		// 	console.warn("(meta.View.attach) Object should have inherited Entity.Geometry class.");
-		// 	return;
-		// }
-
-		if(entity.isRemoved) {
+		if(entity.removed) {
 			console.warn("(meta.View.add) Removed entity can not be added to the view.");
 			return;
 		}
@@ -101,21 +93,16 @@ meta.View.prototype =
 		if(this._x !== 0 || this._y !== 0) {
 			entity.updatePos();
 		}
-		
-		this.entities.push(entity);
-		this.numEntities++;
-
-		this._attachChildren(entity.children);
 
 		entity._view = this;
-		entity._viewNodeID = this.numEntities;
+		entity._viewNodeID = this.entities.length;
 		if(this._z) {
 			entity.z = entity._z;
 		}
 
-		if(!entity.texture) {
-			entity.isLoaded = true;
-		}	
+		this._attachChildren(entity.children);
+
+		this.entities.push(entity);
 
 		if(this._active && meta.engine.ready) {
 			meta.renderer.addEntity(entity);
@@ -131,7 +118,8 @@ meta.View.prototype =
 		for(var i = 0; i < numChildren; i++)
 		{
 			child = children[i];
-			if(child.isRemoved) { continue; }
+			if(child.removed) { continue; }
+
 			child._view = this;
 
 			this._attachChildren(child.children);
@@ -297,59 +285,6 @@ meta.View.prototype =
 		this.views.length = 0;
 	},
 
-	/**
-	 * Register controller to the view.
-	 * @param ctrlName {String} Controller name to register.
-	 */
-	register: function(ctrlName)
-	{
-		var ctrl = meta.createCtrl(ctrlName, this);
-
-		if(!this.controllers) {
-			this.controllers = [ ctrl ];
-		}
-		else {
-			this.controllers.push(ctrl);
-		}
-
-		if(!this._active) { return; }
-		if(this.parentView && !this.parentView._active) { return; }
-
-		meta.addCtrl(ctrl);
-	},
-
-	/**
-	 * Unregister controller to the view.
-	 * @param ctrlName {String} Controller name to unregister.
-	 */
-	unregister: function(ctrlName)
-	{
-		var numControllers = this.controllers.length;
-		for(var i = 0; i < numControllers; i++)
-		{
-			if(this.controllers[i].name === ctrlName)
-			{
-				if(this._active) {
-					meta.unregister(ctrlName);
-				}
-
-				this.controllers[i] = this.controllers[numControllers - 1];
-				this.controllers.pop();
-			}
-		}
-	},
-
-	_unregisterFromEngine: function()
-	{
-		if(this.controllers)
-		{
-			var numControllers = this.controllers.length;
-			for(var n = 0; n < numControllers; n++) {
-				meta.unregister(this.controllers[n]);
-			}
-		}
-	},
-
 	_makeActive: function()
 	{
 		var n;
@@ -387,7 +322,7 @@ meta.View.prototype =
 			}
 		}
 
-		Renderer.ctrl.removeEntities(this.entities);
+		meta.renderer.removeEntities(this.entities);
 
 		if(this.views)
 		{
@@ -469,7 +404,7 @@ meta.View.prototype =
 
 
 	//
-	controllers: null
+	entitiesUI: null
 };
 
 /**

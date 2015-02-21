@@ -39,9 +39,10 @@ Entity.Geometry = meta.Class.extend
 				if(child.ignoreParentPos) { continue; }
 
 				childVolume = child.volume;
-				childVolume.parentX = this.volume.minX;
-				childVolume.parentY = this.volume.minY;
+				childVolume.parentX = this.volume.absX | 0;
+				childVolume.parentY = this.volume.absY | 0;
 				childVolume.updatePos();
+				child.updateAnchor();
 				child.updatePos();
 			}
 		}
@@ -261,6 +262,14 @@ Entity.Geometry = meta.Class.extend
 			this.volume.resize(0, 0);
 		}
 
+		if(this.children)
+		{
+			var numChildren = this.children.length;
+			for(var i = 0; i < numChildren; i++) {
+				this.children[i].updateAnchor();
+			}
+		}
+
 		meta.renderer.needRender = true;
 	},	
 
@@ -314,6 +323,8 @@ Entity.Geometry = meta.Class.extend
 		else {
 			this.children.push(entity);
 		}
+
+		if(this.__ui) { entity.__ui = this.__ui; }
 
 		entity.totalZ = this.totalZ + 1;
 
@@ -591,6 +602,13 @@ Entity.Geometry = meta.Class.extend
 		}
 	},	
 
+	set ui(value) {
+		if(this.__ui === value) { return; }
+		this.__ui = value;
+	},
+
+	get ui() { return this.__ui; },
+
 	/* Debug */
 	set debug(value) 
 	{
@@ -627,6 +645,7 @@ Entity.Geometry = meta.Class.extend
 
 	_state: "*",
 	_style: null,
+	_ui: false,
 
 	timers: null,
 	_tweenCache: null,
@@ -644,5 +663,6 @@ Entity.Geometry = meta.Class.extend
 
 	__added: false,
 	__debug: false,
-	__updateIndex: -1
+	__ui: false,
+	__updateIndex: -1,
 });

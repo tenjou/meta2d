@@ -73,6 +73,20 @@ meta.CanvasRenderer = meta.Renderer.extend
 			this.ctx.restore();
 		}
 
+		// If there are any UI elements:
+		numEntities = this.entitiesUI.length;
+		if(numEntities > 0)
+		{
+			this.camera = this.cameraUI;
+			this.ctx.resetTransform();
+
+			for(i = 0; i < numEntities; i++) {
+				this.drawEntity(this.entitiesUI[i]);
+			}	
+
+			this.camera = this.cameraDefault;		
+		}
+
 		this.needRender = false;
 
 		this.ctx.restore();

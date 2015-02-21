@@ -223,9 +223,7 @@ Resource.Texture = Resource.Basic.extend
 			this.canvas.height = this.trueFullHeight;
 		}
 
-		if(this._loaded && !this._realoading) {
-			this.emit(this, Resource.Event.RESIZE);
-		}
+		this.loaded = true;
 	},
 
 	upResize: function(width, height)

@@ -13,7 +13,10 @@ meta.Renderer = meta.Class.extend
 	load: function() 
 	{
 		this.engine = meta.engine;
+
 		this.camera = meta.camera;
+		this.cameraDefault = this.camera;
+		this.cameraUI = new meta.Camera();
 
 		this.chn = {
 			onDown: meta.createChannel(Entity.Event.INPUT_DOWN),
@@ -37,6 +40,8 @@ meta.Renderer = meta.Class.extend
 		meta.subscribe(this, meta.Event.CAMERA_MOVE, this.onCameraMove);
 
 		this.holder.resize(this.camera.volume.width, this.camera.volume.height);
+
+		this.debugger = new meta.Debugger();
 	},
 
 	update: function(tDelta)
@@ -69,6 +74,7 @@ meta.Renderer = meta.Class.extend
 		if(this.needSortDepth) {
 			this.entities.sort(this._sortEntities);
 			this.entitiesPicking.sort(this._sortEntities);
+			this.entitiesUI.sort(this._sortEntities);
 			this.needSortDepth = false;
 			this.needRender = true;
 		}		
@@ -78,9 +84,40 @@ meta.Renderer = meta.Class.extend
 		return a.totalZ - b.totalZ;
 	},	
 
-	addEntity: function(entity)
+	addEntity: function(entity) 
 	{
-		this.entities.push(entity);
+		if(entity.__ui)
+		{
+			this.entitiesUI.push(entity);
+			this._addEntity(entity);
+
+			if(entity.children) {
+				this.addEntitiesUI(entity.children);
+			}
+		}
+		else
+		{
+			this.entities.push(entity);
+			this._addEntity(entity);
+
+			if(entity.children) {
+				this.addEntities(entity.children);
+			}			
+		}		
+	},
+
+	addEntityUI: function(entity) 
+	{
+		this.entitiesUI.push(entity);
+		this._addEntity(entity);
+
+		if(entity.children) {
+			this.addEntitiesUI(entity.children);
+		}		
+	},	
+
+	_addEntity: function(entity) 
+	{
 		entity.__added = true;
 
 		if(entity.update) {
@@ -95,12 +132,8 @@ meta.Renderer = meta.Class.extend
 		if(entity.__debug) {
 			this.numDebug++;
 		}
-
-		if(entity.children) {
-			this.addEntities(entity.children);
-		}
 		
-		this.needRender = true;
+		entity.updateAnchor();
 	},
 
 	addEntities: function(entities)
@@ -109,6 +142,24 @@ meta.Renderer = meta.Class.extend
 		for(var i = 0; i < numEntities; i++) {
 			this.addEntity(entities[i]);
 		}
+	},
+
+	addEntitiesUI: function(entities)
+	{
+		var numEntities = entities.length;
+		for(var i = 0; i < numEntities; i++) {
+			this.addEntityUI(entities[i]);
+		}
+	},
+
+	removeEntities: function(entities)
+	{
+
+	},
+
+	removeEntitiesUI: function(entities)
+	{
+
 	},
 
 	addEntityToUpdate: function(entity) 
@@ -155,12 +206,17 @@ meta.Renderer = meta.Class.extend
 	addPicking: function(entity) 
 	{
 		if(!entity.__added) { return; }
+		if(entity._pickable) { return; }
 
 		this.entitiesPicking.push(entity);
 	},
 
-	removePicking: function(entity) {
-		//this.
+	removePicking: function(entity) 
+	{
+		if(!entity.__added) { return; }
+		if(!entity._pickable) { return; }
+
+		//this.entities
 	},
 
 	/** 
@@ -413,12 +469,18 @@ meta.Renderer = meta.Class.extend
 
 	onResize: function(data, event) 
 	{
+		console.log("resize", data.width, data.height, this.holder.volume.height);
 		this.holder.resize(data.width, data.height);
 
 		var numEntities = this.entities.length;
 		for(var i = 0; i < numEntities; i++) {
 			this.entities[i].updateAnchor();
 		}
+
+		numEntities = this.entitiesUI.length;
+		for(i = 0; i < numEntities; i++) {
+			this.entitiesUI[i].updateAnchor();
+		}		
 	},
 
 	onAdapt: function(data, event) {
@@ -456,13 +518,20 @@ meta.Renderer = meta.Class.extend
 	//
 	meta: meta,
 	engine: null,
-	camera: null,
 	chn: null,
 	holder: null,
+
+	camera: null,
+	cameraDefault: null,
+	cameraUI: null,
+
+	debugger: null,
 
 	entities: [],
 	entitiesToUpdate: [],
 	removeUpdating: [],
+
+	entitiesUI: [],
 
 	entitiesAnim: [],
 	entitiesAnimRemove: [],	
