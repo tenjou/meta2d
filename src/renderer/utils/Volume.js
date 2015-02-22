@@ -106,7 +106,7 @@ meta.Volume.prototype =
 		this.m21 = -this.sin * this.scaleY;
 		this.m22 = this.cos * this.scaleY;
 
-		this.__type = 1;
+		this.__transformed = 1;
 	},
 
 	resize: function(width, height)
@@ -144,7 +144,7 @@ meta.Volume.prototype =
 		this.m21 = -this.sin * this.scaleY;
 		this.m22 = this.cos * this.scaleY;
 
-		this.__type = 1;
+		this.__transformed = 1;
 	},
 
 	scale: function(x, y)
@@ -292,5 +292,5 @@ meta.Volume.prototype =
 
 	sin: 0, cos: 1,
 	m11: 1, m12: 0, m21: 0, m22: 1,
-	__type: 0
+	__transformed: 0
 };

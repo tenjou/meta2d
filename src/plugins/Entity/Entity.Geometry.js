@@ -27,6 +27,8 @@ Entity.Geometry = meta.Class.extend
 
 	update: null,
 
+	draw: null,
+
 	updatePos: function()
 	{
 		if(this.children) 
@@ -213,7 +215,7 @@ Entity.Geometry = meta.Class.extend
 
 	set alpha(value) {
 		this._alpha = value;
-		this.volume.__type = 1;
+		this.volume.__transformed = 1;
 		this.renderer.needRender = true;
 	},
 
@@ -382,13 +384,12 @@ Entity.Geometry = meta.Class.extend
 
 	isPointInside: function(x, y) 
 	{
-		if(this.__type == 1) 
+		if(this.volume.__transformed == 1) 
 		{
-			var volume = this.volume;
-			var offsetX = x - volume.x;
-			var offsetY = y - volume.y;
-			x = offsetX * volume.cos + offsetY * volume.sin + volume.x;
-			y = offsetY * volume.cos - offsetX * volume.sin + volume.y;
+			var offsetX = x - this.volume.x;
+			var offsetY = y - this.volume.y;
+			x = offsetX * this.volume.cos + offsetY * this.volume.sin + this.volume.x;
+			y = offsetY * this.volume.cos - offsetX * this.volume.sin + this.volume.y;
 		}
 
 		return this.volume.vsPoint(x, y);
@@ -397,7 +398,7 @@ Entity.Geometry = meta.Class.extend
 	isPointInsidePx: function(x, y) 
 	{
 		var volume = this.volume;
-		if(volume.__type == 1) 
+		if(volume.__transformed == 1) 
 		{
 			var offsetX = x - volume.x;
 			var offsetY = y - volume.y;

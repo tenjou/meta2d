@@ -153,6 +153,7 @@ Input.Controller = meta.Controller.extend
 		this._event.x = 0;
 		this._event.y = 0;
 		this._event.keyCode = event.keyCode;
+		this._e
 
 		this.chn.keyUp.emit(this._event, Input.Event.KEY_UP);
 
@@ -176,8 +177,8 @@ Input.Controller = meta.Controller.extend
 		var camera = scope.camera;
 		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
 		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
-		this.x = ((this.screenX * camera.zoomRatio) - camera._x) | 0;
-		this.y = ((this.screenY * camera.zoomRatio) - camera._y) | 0;
+		this.x = (this.screenX * camera.zoomRatio) + camera._x | 0;
+		this.y = (this.screenY * camera.zoomRatio) + camera._y | 0;
 
 		this._event.event = event;
 		this._event.prevScreenX = this._event.screenX;
@@ -206,8 +207,8 @@ Input.Controller = meta.Controller.extend
 		var camera = scope.camera;
 		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
 		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
-		this.x = ((this.screenX * camera.zoomRatio) - camera._x) | 0;
-		this.y = ((this.screenY * camera.zoomRatio) - camera._y) | 0;
+		this.x = (this.screenX * camera.zoomRatio) + camera._x | 0;
+		this.y = (this.screenY * camera.zoomRatio) + camera._y | 0;
 
 		this._event.event = event;
 		this._event.prevScreenX = this._event.screenX;
@@ -237,8 +238,8 @@ Input.Controller = meta.Controller.extend
 		var camera = scope.camera;
 		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
 		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
-		this.x = ((this.screenX * camera.zoomRatio) - camera._x) | 0;
-		this.y = ((this.screenY * camera.zoomRatio) - camera._y) | 0;
+		this.x = (this.screenX * camera.zoomRatio) + camera._x | 0;
+		this.y = (this.screenY * camera.zoomRatio) + camera._y | 0;
 
 		this._event.event = event;
 		this._event.prevScreenX = this._event.screenX;
@@ -267,8 +268,8 @@ Input.Controller = meta.Controller.extend
 		var camera = scope.camera;
 		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
 		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
-		this.x = ((this.screenX * camera.zoomRatio) - camera._x) | 0;
-		this.y = ((this.screenY * camera.zoomRatio) - camera._y) | 0;
+		this.x = (this.screenX * camera.zoomRatio) + camera._x | 0;
+		this.y = (this.screenY * camera.zoomRatio) + camera._y | 0;
 
 		this._event.event = event;
 		this._event.prevScreenX = this._event.screenX;
@@ -306,8 +307,8 @@ Input.Controller = meta.Controller.extend
 
 			screenX = ((touch.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
 			screenY = ((touch.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
-			x = ((screenX * camera.zoomRatio) - camera._x) | 0;
-			y = ((screenY * camera.zoomRatio) - camera._y) | 0;
+			x = ((screenX * camera.zoomRatio) + camera._x) | 0;
+			y = ((screenY * camera.zoomRatio) + camera._y) | 0;
 
 			this._event.event = event;
 			this._event.prevScreenX = screenX;
@@ -355,8 +356,8 @@ Input.Controller = meta.Controller.extend
 
 			screenX = ((touch.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
 			screenY = ((touch.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
-			x = ((screenX * camera.zoomRatio) - camera._x) | 0;
-			y = ((screenY * camera.zoomRatio) - camera._y) | 0;
+			x = ((screenX * camera.zoomRatio) + camera._x) | 0;
+			y = ((screenY * camera.zoomRatio) + camera._y) | 0;
 
 			this._event.event = event;
 			if(id === 0) {
@@ -405,8 +406,8 @@ Input.Controller = meta.Controller.extend
 
 			screenX = ((touch.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
 			screenY = ((touch.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
-			x = ((screenX * camera.zoomRatio) - camera._x) | 0;
-			y = ((screenY * camera.zoomRatio) - camera._y) | 0;
+			x = ((screenX * camera.zoomRatio) + camera._x) | 0;
+			y = ((screenY * camera.zoomRatio) + camera._y) | 0;
 
 			this._event.event = event;
 			if(id === 0) {
