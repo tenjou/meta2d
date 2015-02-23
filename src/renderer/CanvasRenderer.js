@@ -107,12 +107,6 @@ meta.CanvasRenderer = meta.Renderer.extend
 
 	drawEntity: function(entity)
 	{
-		var texture = entity._texture;
-		if(!texture) { return; }
-
-		var volume = entity.volume;
-		var anim = entity.anim;
-
 		if(entity.draw) {
 			this.ctx.save();
 			entity.draw(this.ctx);
@@ -120,6 +114,12 @@ meta.CanvasRenderer = meta.Renderer.extend
 		}
 		else 
 		{
+			var texture = entity._texture;
+			if(!texture) { return; }
+
+			var volume = entity.volume;
+			var anim = entity.anim;
+
 			if(!volume.__transformed) 
 			{
 				if(texture.frames > 0) {

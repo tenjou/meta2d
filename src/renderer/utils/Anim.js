@@ -20,7 +20,7 @@ meta.Anim.prototype =
 
 		this.texture = texture;	
 
-		if(texture.frames > 0)
+		if(texture.frames > 1)
 		{
 			this.fps = texture.fps;	
 

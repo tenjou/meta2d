@@ -515,6 +515,11 @@ meta.Renderer = meta.Class.extend
 
 	get transparent() { return this._transparent; },	
 
+	set needRender(value) {
+		this._needRender = value;
+	},
+	get needRender() { return this._needRender; },
+
 	//
 	meta: meta,
 	engine: null,
@@ -543,7 +548,7 @@ meta.Renderer = meta.Class.extend
 	enablePicking: true,
 	enablePixelPicking: false,	
 
-	needRender: true,
+	_needRender: true,
 	needSortDepth: false,
 
 	numDebug: 0,

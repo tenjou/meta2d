@@ -407,7 +407,19 @@ meta.engine =
 			}
 		}
 
-		this.width = width | 0;
+		if(width < this.meta.cache.width) {
+			width = this.meta.cache.width;
+		}
+		if(height < this.meta.cache.height) {
+			height = this.meta.cache.height;
+		}
+
+		width = width | 0;
+		height = height | 0;		
+
+		if(this.width === width && this.height === height) { return; }
+
+		this.width = width;
 		this.height = height | 0;
 		this.canvas.width = width;
 		this.canvas.height = height;

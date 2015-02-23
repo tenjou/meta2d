@@ -18,10 +18,14 @@ meta.Debugger.prototype =
 	{
 		this.view = meta.getView("debugger");
 
-		this.holder = new Entity.Geometry();
-		this.holder.resize(200, 180);
+		var texture = new Resource.SVG();
+		texture.fillStyle = "#000";
+		texture.fillRect(0, 0, 160, 180);
+
+		this.holder = new Entity.Geometry(texture);
 		this.holder.anchor(0, 1);
 		this.holder.position(0, -180);
+		this.holder.alpha = 0.7;
 		this.holder.ui = true;
 		this.view.attach(this.holder);
 

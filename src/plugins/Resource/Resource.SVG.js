@@ -15,8 +15,30 @@ Resource.SVG = Resource.Texture.extend
 	 * @param color {String=} Color of the rect.
 	 * @function
 	 */
-	fillRect: function(x, y, width, height) {
+	fillRect: function(x, y, width, height) 
+	{
+		if(this.fullWidth < 2 && this.fullHeight < 2) {
+			this.resize(width + x, height + y);
+		}
+
 		this.ctx.fillRect(x, y, width, height);
+
+		this.loaded = true;
+	},
+
+	line: function(x1, y1, x2, y2)
+	{
+		if(this.fullWidth < 2 && this.fullHeight < 2) {
+			this.resize(x2, y2);
+			this.ctx.lineWidth = this._lineWidth;
+			this.ctx.strokeStyle = this._strokeStyle;
+		}		
+
+		this.ctx.beginPath();
+		this.ctx.moveTo(x1, y1);
+		this.ctx.lineTo(x2, y2);
+		this.ctx.stroke();
+
 		this.loaded = true;
 	},
 
@@ -672,6 +694,13 @@ Resource.SVG = Resource.Texture.extend
 		}
 	},
 
+	set lineWidth(value) {
+		this._lineWidth = value;
+		this.ctx.lineWidth = value;
+	},
+
+	get lineWidth() { return this._lineWidth; },
+
 	set fillStyle(hex) {
 		this._fillStyle = hex;
 		this.ctx.fillStyle = hex;
@@ -679,6 +708,15 @@ Resource.SVG = Resource.Texture.extend
 
 	get fillStyle() { return this._fillStyle; },
 
+	set strokeStyle(hex) {
+		this._strokeStyle = hex;
+		this.ctx.strokeStyle = hex;
+	},
+
+	get strokeStyle() { return this._strokeStyle; },	
+
 	//
-	_fillStyle: "#000"
+	_lineWidth: 2,
+	_fillStyle: "#000",
+	_strokeStyle: "#000"
 });

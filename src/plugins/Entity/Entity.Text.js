@@ -23,13 +23,17 @@ Entity.Text = Entity.Geometry.extend
 
 		var metrics = ctx.measureText(this._text);
 		var width = metrics.width;
+		var offsetX = 0;
+
 		if(this._outline) {
 			width += this._outlineWidth * 2;
+			offsetX += this._outlineWidth;
 		}
 		if(this._shadow) {
-			width += this._shadowOffsetX;
+			width += this._shadowBlur * 2;
+			offsetX += this._shadowBlur;
 		}
-		this._texture.resize(width, this._fontSize * 1.2);
+		this._texture.resize(width, this._fontSize * 1.3);
 
 		ctx.clearRect(0, 0, this.volume.width, this.volume.height);
 		ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
@@ -43,7 +47,7 @@ Entity.Text = Entity.Geometry.extend
 			ctx.shadowBlur = this._shadowBlur;
 		}
 
-		ctx.fillText(this._text, this._outlineWidth, 0);
+		ctx.fillText(this._text, offsetX, 0);
 
 		if(this._outline) {
 			ctx.lineWidth = this._outlineWidth;
@@ -180,19 +184,19 @@ Entity.Text = Entity.Geometry.extend
 
 	//
 	_text: "",
-	_font: "Verdana",
+	_font: "Tahoma",
 	_fontSize: 12,
 	_fontSizePx: "12px",
-	_color: "#000000",
-	_style: "bold",
+	_color: "#fff",
+	_style: "",
 
 	_outline: false,
-	_outlineColor: "#ffffff",
+	_outlineColor: "#000",
 	_outlineWidth: 1,
 
 	_shadow: true,
-	_shadowColor: "#ffffff",
-	_shadowBlur: 1,
-	_shadowOffsetX: 1,
-	_shadowOffsetY: 1
+	_shadowColor: "#000",
+	_shadowBlur: 3,
+	_shadowOffsetX: 0,
+	_shadowOffsetY: 0
 });
