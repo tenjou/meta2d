@@ -123,10 +123,15 @@ meta.engine =
 		}
 
 		var ctrl;
-		var numCtrl = this.controllers.length;
-		for(i = 0; i < numCtrl; i++) {
-			ctrl = this.controllers[i];
-			ctrl.load();
+		var numCtrl = this.ctrls.length;
+		for(i = 0; i < numCtrl; i++) 
+		{
+			ctrl = this.ctrls[i];
+
+			if(ctrl.load) {
+				ctrl.load();	
+			}
+			
 			ctrl.loaded = true;
 		}
 
@@ -151,9 +156,14 @@ meta.engine =
 		}
 
 		//
-		var numCtrl = this.controllers.length;
-		for(var i = 0; i < numCtrl; i++) {
-			this.controllers[i].ready();
+		var ctrl;
+		var numCtrl = this.ctrls.length;
+		for(var i = 0; i < numCtrl; i++) 
+		{
+			ctrl = this.ctrls[i];
+			if(ctrl.ready) {
+				ctrl.ready();
+			}
 		}
 
 		this.ready = true;
@@ -200,20 +210,30 @@ meta.engine =
 		}
 
 		var tDelta = this.time.deltaF;
+
+		// Controllers to remove:
+		var numCtrls = this.ctrlsRemove.length;
+		if(numCtrls) 
+		{
+			for(var i = 0; i < numCtrls; i++) {
+				this._removeCtrl(this.ctrlsRemove[i]);
+			}
+
+			this.ctrlsRemove.length = 0;
+		}
 		
 		// Process all update functions:
 		var funcs = this.meta.cache.updateFuncs;
 		var numFuncs = funcs.length;
-		for(var i = 0; i < numFuncs; i++) {
+		for(i = 0; i < numFuncs; i++) {
 			funcs[i](tDelta);
 		}
 
-		// // Process all controller update functions:
-		// var ctrls = this.meta.cache.ctrlUpdateFuncs;
-		// var numCtrls = ctrls.length;
-		// for(i = 0; i < numCtrls; i++) {
-		// 	ctrls[i].update(tDelta);
-		// }	
+		// Process all controller update functions:
+		numCtrls = this.ctrlsUpdateFuncs.length;
+		for(i = 0; i < numCtrls; i++) {
+			this.ctrlsUpdateFuncs[i].update(tDelta);
+		}	
 
 		this.meta.renderer.update(tDelta);
 
@@ -558,6 +578,40 @@ meta.engine =
 		meta.register("Physics");
 	},
 
+	_removeCtrl: function(scope)
+	{
+		var ctrl = scope.ctrl;
+		if(!ctrl) { return; }
+
+		var numCtrl, i;
+
+		if(ctrl.release) {
+			ctrl.release();
+		}
+		if(ctrl.update) 
+		{
+			numCtrl = this.ctrlsUpdateFuncs.length;
+			for(i = 0; i < numCtrl; i++) {
+				if(this.ctrlsUpdateFuncs[i] === ctrl) {
+					this.ctrlsUpdateFuncs[i] = this.ctrlsUpdateFuncs[numCtrl - 1];
+					this.ctrlsUpdateFuncs.pop();
+					break;
+				}
+			}
+		}
+
+		numCtrl = this.ctrls.length;
+		for(i = 0; i < numCtrl; i++) {
+			if(this.ctrls[i] === ctrl) {
+				this.ctrls[i] = this.ctrls[numCtrl - 1];
+				this.ctrls.pop();
+				break;
+			}
+		}
+
+		scope.ctrl = null;
+	},
+
 	_printInfo: function()
 	{
 		if(meta.device.support.consoleCSS)
@@ -685,8 +739,9 @@ meta.engine =
 	_updateLoop: null,
 	_renderLoop: null,
 
-	controllers: [],
-	controllersToRemove: [],	
+	ctrls: [],
+	ctrlsUpdateFuncs: [],
+	ctrlsRemove: [],
 
 	timers: [],
 

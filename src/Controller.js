@@ -15,46 +15,96 @@ meta.Controller = meta.Class.extend
 	 * Constructor.
 	 * @function
 	 */
-	init: meta.emptyFunc,
-
 	_init: function(view) {
 		this.view = view;
+		console.log(view);
 	},
 
 	/**
 	 * Destructor.
 	 * @function
 	 */
-	release: meta.emptyFunc,
+	release: null,
 
 	/**
-	 * (Virtual) Load view.
+	 * Load view.
 	 * @function
 	 */
-	load: meta.emptyFunc,
+	load: null,
 
 	/**
-	 * (Virtual) Unload view.
+	 * Called after all controllers are loaded.
 	 * @function
 	 */
-	unload: meta.emptyFunc,
+	ready: null,
 
 	/**
-	 * (Virtual) Called after all controllers are loaded.
-	 * @function
-	 */
-	ready: meta.emptyFunc,
-
-	/**
-	 * (Virtual) Called in regular intervals that is defined in meta.tUpdate.
+	 * Called in regular intervals that is defined in meta.tUpdate.
 	 * @function
 	 * @param tDelta {Number} The time difference between current and previous frame.
 	 */
-	update: meta.emptyFuncParam,
+	update: null,
 
 	//
 	view: null,
 	name: "unknown",
 
-	isLoaded: false
+	loaded: false
 });
+
+/**
+ * Register controller to the engine.
+ * @param ctrlName {String} Name of the controller.
+ */
+meta.register = function(ctrlName)
+{
+	var scope = window[ctrlName];
+	if(!scope && !scope.Controller) {
+		console.error("(meta.register) No such controllers found - " + ctrlName);
+		return null;
+	}	
+
+	if(scope.ctrl) {
+		console.error("(meta.register) Controller (" + ctrlName + ") is already added in scope.");
+		return null;
+	}
+
+	var ctrl = new scope.Controller(meta.view);
+	ctrl.name = ctrlName;
+
+	scope.ctrl = ctrl;
+	meta.engine.ctrls.push(ctrl);
+
+	if(ctrl.load && meta.engine.loadedCtrls) {
+		ctrl.load();
+	} 
+	if(ctrl.ready && meta.engine.ready) {
+		ctrl.ready();
+	}
+	if(ctrl.update) {
+		meta.engine.ctrlsUpdateFuncs.push(ctrl);
+	}	
+
+	return ctrl;
+};
+
+/**
+ * Urnegister controller from the engine.
+ * @param ctrlName {String} Name of the controller.
+ */
+meta.unregister = function(ctrlName)
+{
+	var scope = window[ctrlName];
+	if(!scope && !scope.Controller) {
+		console.error("(meta.unregister) No such controllers found - " + ctrlName);
+		return null;
+	}	
+
+	if(!scope.ctrl) {
+		console.error("(meta.unregister) No such controllers initialized - " + ctrlName);
+		return null;
+	}
+
+	meta.engine.ctrlsRemove.push(scope);
+};
+

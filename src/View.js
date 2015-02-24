@@ -426,6 +426,8 @@ meta.createView = function(name)
 
 	view = new meta.View(name);
 	meta.cache.views[name] = view;
+
+	return view;
 };
 
 /**
