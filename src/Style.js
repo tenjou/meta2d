@@ -188,7 +188,7 @@ meta.Style.prototype =
 	{
 		var state = this.setState(name, texture, params);
 		if(state) {
-			state.isHidden = true;
+			state.hidden = true;
 		}
 
 		return state;
@@ -201,7 +201,7 @@ meta.Style.prototype =
 	removeState: function(name)
 	{
 		if(!this.states[name]) {
-			console.warn("[meta.Brush.removeState]:", "No such state: " + name);
+			console.warn("(meta.Brush.removeState) No such state: " + name);
 			return;
 		}
 
@@ -214,14 +214,13 @@ meta.Style.prototype =
 	 */
 	update: function(entity)
 	{
-		entity.isNeedStyle = false;
 		if(!this.states) { return; }
 
 		var styleState = this.states[entity._state];
 		if(!styleState) 
 		{
 			if(!this.defaultState) {
-				console.warn("[meta.Style.update]:", "Could not get state from the style: " + entity._state);
+				console.warn("(meta.Style.update) Could not get state from the style: " + entity._state);
 				return;
 			}
 
@@ -247,12 +246,14 @@ meta.Style.prototype =
 			entityParams[key] = entity[key];
 			entity[key] = params[key];
 		}
+
+		//entity.texture = "Reaper-Walk";
 		
 		entity._styleState = styleState;
 
-		if(entity._inputFlags) {
-			this.updateAction(entity);
-		}
+		// if(entity._inputFlags) {
+		// 	this.updateAction(entity);
+		// }
 	},
 
 	updateAction: function(entity)
@@ -303,7 +304,7 @@ meta.Style.prototype =
 
 		for(var key in this.states)
 		{
-			if(!this.states[key].isHidden)
+			if(!this.states[key].hidden)
 			{
 				if(Math.random() < 1/++count) {
 					result = key;
@@ -334,7 +335,7 @@ meta.StyleState = function(name, params)
 {
 	this.name = name;
 	this.params = params;
-	this.isHidden = false;
+	this.hidden = false;
 
 	this._updateTexture();
 };
@@ -350,7 +351,7 @@ meta.StyleState.prototype =
 
 			var newTexture = meta.getTexture(texture);
 			if(!newTexture) {
-				console.warn("[meta.StyleState]:", "Could not get texture from texture name: " + texture);
+				console.warn("(meta.StyleState) Could not get texture from texture name: " + texture);
 				return;
 			}		
 

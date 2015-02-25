@@ -17,7 +17,6 @@ meta.Controller = meta.Class.extend
 	 */
 	_init: function(view) {
 		this.view = view;
-		console.log(view);
 	},
 
 	/**

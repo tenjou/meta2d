@@ -16,17 +16,6 @@ meta.CanvasRenderer = meta.Renderer.extend
 		for(var i = 0; i < numEntities; i++) {
 			this.entitiesAnim[i].anim(tDelta);
 		}
-			
-		var numRemove = this.entitiesAnimRemove.length;
-		if(numRemove > 0) 
-		{
-			for(i = 0; i < numEntities; i++) {
-				this.entitiesAnim[this.entitiesAnimRemove[i]] = this.entitiesAnim[numEntities - 1];
-				this.entitiesAnim.pop();
-			}
-
-			this.entitiesAnimRemove.length = 0;
-		}
 
 		if(!this.needRender) { return; }
 
@@ -107,6 +96,8 @@ meta.CanvasRenderer = meta.Renderer.extend
 
 	drawEntity: function(entity)
 	{
+		if(!entity._visible) { return; }
+
 		if(entity.draw) {
 			this.ctx.save();
 			entity.draw(this.ctx);
@@ -122,7 +113,7 @@ meta.CanvasRenderer = meta.Renderer.extend
 
 			if(!volume.__transformed) 
 			{
-				if(texture.frames > 0) {
+				if(texture.frames > 1) {
 					texture.drawFrame(this.ctx, volume.minX | 0, volume.minY | 0, anim._frame);
 				}
 				else {
@@ -138,7 +129,7 @@ meta.CanvasRenderer = meta.Renderer.extend
 					volume.m21, volume.m22,
 					volume.absX | 0, volume.absY | 0);
 
-				if(texture.frames > 0) {
+				if(texture.frames > 1) {
 					texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, anim._frame);
 				}
 				else {
@@ -155,6 +146,8 @@ meta.CanvasRenderer = meta.Renderer.extend
 
 	drawVolume: function(entity)
 	{
+		if(!entity._visible) { return; }
+
 		var volume = entity.volume;
 
 		if(volume.__type === 0) {

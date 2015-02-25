@@ -10,18 +10,21 @@ Entity.Geometry = meta.Class.extend
 
 	initFromParam: function(texture)
 	{
-		if(typeof(texture) === "string") 
+		if(texture)
 		{
-			var newTexture = Resource.ctrl.getTexture(texture);
-			if(!newTexture) {
-				console.warn("(Entity.Geometry) Unavailable texture - " + texture);
+			if(typeof(texture) === "string") 
+			{
+				var newTexture = Resource.ctrl.getTexture(texture);
+				if(!newTexture) {
+					console.warn("(Entity.Geometry) Unavailable texture - " + texture);
+				}
+				else {
+					this.texture = newTexture;
+				}
 			}
 			else {
-				this.texture = newTexture;
+				this.texture = texture;
 			}
-		}
-		else {
-			this.texture = texture;
 		}
 	},
 
@@ -57,7 +60,10 @@ Entity.Geometry = meta.Class.extend
 		this.updatePos();
 	},
 
-	move: function(x, y) { 
+	move: function(x, y) 
+	{
+		if(x === 0 && y === 0) { return; }
+
 		this.volume.set(this.volume.x + x, this.volume.y + y);
 		this.updatePos();
 	},
@@ -107,11 +113,11 @@ Entity.Geometry = meta.Class.extend
 	},
 
 	set pivotX(x) { 
-		this.volume.pivot(x, this._pivotY); 
+		this.volume.pivot(x, this.volume.pivotY); 
 		meta.renderer.needRender = true;
 	},
 	set pivotY(y) { 
-		this.volume.pivot(this._pivotX, y); 
+		this.volume.pivot(this.volume.pivotX, y); 
 		meta.renderer.needRender = true;
 	},
 	get pivotX() { return this.volume.pivotX; },
@@ -275,28 +281,39 @@ Entity.Geometry = meta.Class.extend
 		meta.renderer.needRender = true;
 	},	
 
-	set texture(tex)
+	set texture(texture)
 	{
 		if(this._texture) {
 			this._texture.unsubscribe(this);
 		}
 
-		this._texture = tex;
-
-		if(tex) 
+		if(texture) 
 		{
-			tex.subscribe(this, this.onTextureEvent);
+			if(typeof(texture) === "string") 
+			{
+				this._texture = Resource.ctrl.getTexture(texture);
+				if(!this._texture) {
+					console.warn("(Entity.Geometry) Unavailable texture - " + texture);
+					return;
+				}
+			}
+			else {
+				this._texture = texture;
+			}
 
-			if(tex._loaded) {
+			this._texture.subscribe(this, this.onTextureEvent);
+
+			if(this._texture._loaded) {
 				this.updateFromTexture();
 				this.loaded = true;
 			}
 		}
 		else {
+			this._texture = texture;
 			this.loaded = false;
 		}
 
-		this.anim.set(tex);
+		this.anim.set(this._texture);
 	},
 
 	get texture() { return this._texture; },
@@ -358,13 +375,57 @@ Entity.Geometry = meta.Class.extend
 		this.renderer.needRender = true;
 	},
 
+	set visible(value) 
+	{
+		if(this._visible === value) { return; }
+		this._visible = value;
+
+		this.renderer.needRender = true;
+	},
+
+	get visible() { return this._visible; },
+
 	set state(name)
 	{
 		if(this._state === name) { return; }
 		this._state = name;
+
+		if(this.onStateChange) {
+			this.onStateChange();
+		}
+
+		if(this._style) {
+			this.renderer.updateState(this);
+		}
 	},
 
 	get state() { return this._state; },
+
+	set style(style)
+	{
+		if(style)
+		{
+			if(style instanceof meta.Style) {
+				this._style = style;
+			}
+			else {
+				this._style = new meta.Style(style);
+			}
+
+			this.renderer.updateState(this);
+		}
+		else {
+			this._style = null;
+		}
+	},
+
+	get style() { return this._style; },
+
+	updateState: function() {
+		this._style.update(this);
+	},
+
+	onStateChange: null,
 
 	/* Input */
 	set pickable(value)
@@ -639,14 +700,18 @@ Entity.Geometry = meta.Class.extend
 	_anchorX: 0, _anchorY: 0,
 
 	loaded: true,
+	_removed: false,
+	_visible: true,
 
 	_body: null,
 	children: null,
 	anim: null,
 
-	_state: "*",
-	_style: null,
-	_ui: false,
+	_style: null, 
+	_styleState: null, _styleAction: null, 
+	_styleParams: null, _styleActionParams: null,
+	_state: "*", _action: "",
+	__stateIndex: -1,
 
 	timers: null,
 	_tweenCache: null,

@@ -48,12 +48,25 @@ meta.Renderer = meta.Class.extend
 	{
 		this.__updating = true;
 
+		var entity;
+		for(var i = 0; i < this.entitiesStateNum; i++) {
+			entity = this.entitiesState[i];
+			entity.__stateIndex = -1;
+			entity.updateState();
+		}
+		this.entitiesStateNum = 0;
+
 		var numEntities = this.entitiesToUpdate.length;
-		for(var i = 0; i < numEntities; i++) {
+		for(i = 0; i < numEntities; i++) {
 			this.entitiesToUpdate[i].update(tDelta);
 		}
 
 		this.__updating = false;
+
+		if(this.entitiesRemove.length > 0) {
+			this._removeEntities(this.entitiesRemove);
+			this.entitiesRemove.length = 0;
+		}	
 
 		if(this.removeUpdating.length > 0)
 		{
@@ -69,6 +82,19 @@ meta.Renderer = meta.Class.extend
 			}
 
 			this.removeUpdating.length = 0;
+		}		
+
+		if(this.entitiesAnimRemove.length > 0)
+		{
+			var numAnim = this.entitiesAnim.length;
+			numEntities = this.entitiesAnimRemove.length;
+			for(i = 0; i < numEntities; i++) {
+				numAnim--;
+				this.entitiesAnim[this.entitiesAnimRemove[i]] = this.entitiesAnim[numAnim];
+				this.entitiesAnim.pop();
+			}	
+
+			this.entitiesAnimRemove.length = 0;
 		}
 
 		if(this.needSortDepth) {
@@ -152,14 +178,77 @@ meta.Renderer = meta.Class.extend
 		}
 	},
 
-	removeEntities: function(entities)
+	removeEntity: function(entity)
 	{
+		if(!entity.__added) { return; }
 
+		if(this.__updating) {
+			
+		}
+		else {
+			var numEntities = this.entities
+		}
+
+		entity.__added = false;
 	},
 
-	removeEntitiesUI: function(entities)
+	removeEntities: function(entities)
 	{
+		if(this.__updating)
+		{
+			var entity;
+			var numRemove = entities.length;
 
+			for(var i = 0; i < numRemove; i++) {
+				entity = entities[i];
+				entity.__added = false;
+				this.entitiesRemove.push(entity);
+			}
+		}
+		else {
+			this._removeEntities(entities);
+		}
+	},
+
+	_removeEntities: function(entities)
+	{
+		var entity, n;
+		var numRemove = entities.length;
+		var numEntities = this.entities.length;
+		var numEntitiesUI = this.entitiesUI.length;
+		for(var i = 0; i < numRemove; i++) 
+		{
+			entity = entities[i];
+			entity.__added = false;
+			if(entity.__ui) 
+			{
+				for(n = 0; n < numEntitiesUI; n++) 
+				{
+					if(this.entitiesUI[n] === entity) {
+						numEntitiesUI--;
+						this.entitiesUI[n] = this.entitiesUI[numEntitiesUI];
+						this.entitiesUI.pop();
+						break;
+					}
+				}
+			}
+			else
+			{
+				for(n = 0; n < numEntities; n++) 
+				{
+					if(this.entities[n] === entity) {
+						numEntities--;
+						this.entities[n] = this.entities[numEntities];
+						this.entities.pop();
+						break;
+					}
+				}				
+			}
+
+			if(entity.children) {
+				this._removeEntities(entity.children);
+			}			
+		}
 	},
 
 	addEntityToUpdate: function(entity) 
@@ -217,6 +306,19 @@ meta.Renderer = meta.Class.extend
 		if(!entity._pickable) { return; }
 
 		//this.entities
+	},
+
+	updateState: function(entity) 
+	{
+		if(entity.__stateIndex !== -1) { return; }
+
+		if(this.entitiesStateSize === this.entitiesStateNum) {
+			this.entitiesState.length += 4;
+		}
+
+		entity.__stateIndex = this.entitiesStateNum;
+		this.entitiesState[this.entitiesStateNum] = entity;
+		this.entitiesStateNum++;
 	},
 
 	/** 
@@ -469,7 +571,6 @@ meta.Renderer = meta.Class.extend
 
 	onResize: function(data, event) 
 	{
-		console.log("resize", data.width, data.height, this.holder.volume.height);
 		this.holder.resize(data.width, data.height);
 
 		var numEntities = this.entities.length;
@@ -533,6 +634,7 @@ meta.Renderer = meta.Class.extend
 	debugger: null,
 
 	entities: [],
+	entitiesRemove: [],
 	entitiesToUpdate: [],
 	removeUpdating: [],
 
@@ -540,6 +642,10 @@ meta.Renderer = meta.Class.extend
 
 	entitiesAnim: [],
 	entitiesAnimRemove: [],	
+
+	entitiesState: new Array(4),
+	entitiesStateSize: 4,
+	entitiesStateNum: 0,
 
 	entitiesPicking: [],
 	entitiesPickingRemove: [],

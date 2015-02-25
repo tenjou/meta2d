@@ -29,7 +29,7 @@ Physics.Body.prototype =
 
 		if(this.haveTarget) 
 		{
-			var distance = meta.math.length(volume.x, volume.y, this.targetX, this.targetY);
+			var distance = meta.math.length(volume.absX, volume.absY, this.targetX, this.targetY);
 			if(distance <= (this.speed * tDelta)) {
 				this.owner.position(this.targetX, this.targetY);
 				this.stop();
@@ -48,36 +48,36 @@ Physics.Body.prototype =
 		this.owner.move(this.velocity.x * tDelta, this.velocity.y * tDelta);
 		this.volume.set(volume.x, volume.y);
 
-		if(this.enableWorldBounds)
-		{
-			var newX = volume.x;
-			var newY = volume.y;
+		// if(this.enableWorldBounds)
+		// {
+		// 	var newX = volume.x;
+		// 	var newY = volume.y;
 
-			if(this.volume.minX < 0) {
-				newX = this.volume.x - this.volume.minX;
-				this.velocity.x = -this.velocity.x;
-				manifold.normal.set(1, 0);
-			}
-			else if(this.volume.maxX > meta.world.width) {
-				newX += meta.world.width - this.volume.maxX;
-				this.velocity.x = -this.velocity.x;
-				manifold.normal.set(-1, 0);
-			}
+		// 	if(this.volume.minX < 0) {
+		// 		newX = this.volume.x - this.volume.minX;
+		// 		this.velocity.x = -this.velocity.x;
+		// 		manifold.normal.set(1, 0);
+		// 	}
+		// 	else if(this.volume.maxX > meta.world.width) {
+		// 		newX += meta.world.width - this.volume.maxX;
+		// 		this.velocity.x = -this.velocity.x;
+		// 		manifold.normal.set(-1, 0);
+		// 	}
 
-			if(this.volume.minY < 0) {
-				newY = this.volume.y - this.volume.minY;
-				this.velocity.y = -this.velocity.y;
-				manifold.normal.set(0, 1);
-			}
-			else if(this.volume.maxY > meta.world.height) {
-				newY += meta.world.height - this.volume.maxY;
-				this.velocity.y = -this.velocity.y;
-				manifold.normal.set(0, -1);
-			}
+		// 	if(this.volume.minY < 0) {
+		// 		newY = this.volume.y - this.volume.minY;
+		// 		this.velocity.y = -this.velocity.y;
+		// 		manifold.normal.set(0, 1);
+		// 	}
+		// 	else if(this.volume.maxY > meta.world.height) {
+		// 		newY += meta.world.height - this.volume.maxY;
+		// 		this.velocity.y = -this.velocity.y;
+		// 		manifold.normal.set(0, -1);
+		// 	}
 
-			this.owner.position(newX, newY);
-			this.volume.set(newX, newY);
-		}
+		// 	this.owner.position(newX, newY);
+		// 	this.volume.set(newX, newY);
+		// }
 	},	
 
 	moveTo: function(x, y, speed, moveToCB) {

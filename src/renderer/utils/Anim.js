@@ -18,10 +18,9 @@ meta.Anim.prototype =
 			return;
 		}
 
-		this.texture = texture;	
-
 		if(texture.frames > 1)
 		{
+			this.texture = texture;
 			this.fps = texture.fps;	
 
 			if(this.reverse) {
@@ -35,6 +34,9 @@ meta.Anim.prototype =
 			if(this.autoPlay && this.__index === -1) {		
 				meta.renderer.addAnim(this);
 			}			
+		}
+		else if(this.__index !== -1) {
+			meta.renderer.removeAnim(this);	
 		}
 	},
 
