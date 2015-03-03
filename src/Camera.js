@@ -21,7 +21,7 @@ meta.Camera = function()
 {
 	this._x = 0;
 	this._y = 0;
-	this.volume = new meta.math.AdvAABB(0, 0, 0, 0);
+	this.volume = new meta.math.AABB(0, 0, 0, 0);
 	this.zoomBounds = null;
 
 	this._zoom = 1.0;

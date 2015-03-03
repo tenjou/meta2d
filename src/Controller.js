@@ -44,6 +44,8 @@ meta.Controller = meta.Class.extend
 	 */
 	update: null,
 
+	render: null,
+
 	//
 	view: null,
 	name: "unknown",
@@ -58,7 +60,7 @@ meta.Controller = meta.Class.extend
 meta.register = function(ctrlName)
 {
 	var scope = window[ctrlName];
-	if(!scope && !scope.Controller) {
+	if(!scope || !scope.Controller) {
 		console.error("(meta.register) No such controllers found - " + ctrlName);
 		return null;
 	}	
@@ -82,7 +84,7 @@ meta.register = function(ctrlName)
 	}
 	if(ctrl.update) {
 		meta.engine.ctrlsUpdateFuncs.push(ctrl);
-	}	
+	}
 
 	return ctrl;
 };
@@ -94,7 +96,7 @@ meta.register = function(ctrlName)
 meta.unregister = function(ctrlName)
 {
 	var scope = window[ctrlName];
-	if(!scope && !scope.Controller) {
+	if(!scope || !scope.Controller) {
 		console.error("(meta.unregister) No such controllers found - " + ctrlName);
 		return null;
 	}	

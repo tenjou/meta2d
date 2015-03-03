@@ -28,26 +28,36 @@ Entity.Geometry = meta.Class.extend
 		}
 	},
 
+	/** 
+	 * update
+	 * @type {function}
+	 */
 	update: null,
 
+	/** 
+	 * draw
+	 * @type {function}
+	 */
 	draw: null,
 
+	/** updatePos */
 	updatePos: function()
 	{
+		this.volume.x = this._x + this._parentX + this.anchorPosX;
+		this.volume.y = this._y + this._parentY + this.anchorPosY;
+		this.volume.updatePos();
+
 		if(this.children) 
 		{
-			var child, childVolume;
+			var child;
 			var numChildren = this.children.length;
 			for(var i = 0; i < numChildren; i++) 
 			{
 				child = this.children[i];
 				if(child.ignoreParentPos) { continue; }
 
-				childVolume = child.volume;
-				childVolume.parentX = this.volume.absX | 0;
-				childVolume.parentY = this.volume.absY | 0;
-				childVolume.updatePos();
-				child.updateAnchor();
+				child._parentX = this.volume.x;
+				child._parentY = this.volume.y;
 				child.updatePos();
 			}
 		}
@@ -55,74 +65,194 @@ Entity.Geometry = meta.Class.extend
 		this.renderer.needRender = true;
 	},
 
-	position: function(x, y) { 
-		this.volume.set(x, y); 
+	/** 
+	 * position
+	 * @param x {number}
+	 * @param y {number}
+	 */
+	position: function(x, y) 
+	{
+		if(this._x === x && this._y === y) { return; }
+
+		this._x = x;
+		this._y = y;
 		this.updatePos();
 	},
 
+	/** 
+	 * move
+	 * @param x {number}
+	 * @param y {number}
+	 */
 	move: function(x, y) 
 	{
 		if(x === 0 && y === 0) { return; }
 
-		this.volume.set(this.volume.x + x, this.volume.y + y);
+		this._x += x;
+		this._y += y;
 		this.updatePos();
 	},
 
+	moveForward: function(delta)
+	{
+		var newX = this._x + (delta * Math.cos(this.volume.angle - 1.57079));
+		var newY = this._y + (delta * Math.sin(this.volume.angle - 1.57079));
+
+		if(this._x === newX && this._y === newY) { return; }
+
+		this._x = newX;
+		this._y = newY;
+		this.updatePos();
+	},
+
+	moveDirected: function(delta, angleOffset)
+	{
+		var newX = this._x + (-delta * Math.cos(this.volume.angle - 1.57079 + angleOffset));
+		var newY = this._y + (-delta * Math.sin(this.volume.angle - 1.57079 + angleOffset));
+
+		if(this._x === newX && this._y === newY) { return; }
+
+		this._x = newX;
+		this._y = newY;
+		this.updatePos();	
+	},
+
+	strafe: function(delta)
+	{
+		var newX = this._x + (-delta * Math.cos(this._angleRad + Math.PI));
+		var newY = this._y + (-delta * Math.sin(this._angleRad + Math.PI));
+
+		if(this._x === newX && this._y === newY) { return; }
+
+		this._x = newX;
+		this._y = newY;
+		this.updatePos();	
+	},	
+
+	/** 
+	 * x
+	 * @param x {number}
+	 */
 	set x(x) { 
-		this.volume.set(x, this.volume.y); 
+		this._x = x;
 		this.updatePos();
 	},
+
+	/** 
+	 * y
+	 * @param x {number}
+	 */
 	set y(y) { 
-		this.volume.set(this.volume.x, y); 
+		this._y = y;
 		this.updatePos();
 	},
-	get x() { return this.volume.x; },
-	get y() { return this.volume.y; },
 
-	get left() { return this.volume.minX; },
-	get right() { return this.volume.maxY; },
-	get top() { return this.volume.minY; },
-	get bottom() { return this.volume.maxY; },
+	/** 
+	 * x
+	 * @return {number}
+	 */	
+	get x() { return this._x; },
 
+	/** 
+	 * y
+	 * @return {number}
+	 */	
+	get y() { return this._y; },
+
+	/** 
+	 * absX
+	 * @return {number}
+	 */
+	get absX() { return this.volume.x; },
+
+	/** 
+	 * absY
+	 * @return {number}
+	 */		
+	get absY() { return this.volume.y; },
+
+	/** 
+	 * x
+	 * @param z {number}
+	 */
 	set z(z) 
 	{
-		//if(this._z === z) { return; }
+		if(this._z === z) { return; }
 		this._z = z;
-		this.totalZ = z + this.parentZ;
 
-		if(this.children) {
-			var parentZ = this.totalZ + 1;
+		this.updateZ();
+	},
+
+	/** 
+	 * z
+	 * @return {number}
+	 */	
+	get z() { return this._z; },
+
+	/** updateZ */
+	updateZ: function() 
+	{
+		this.totalZ = this._z + this._parentZ;
+
+		if(this.children) 
+		{
+			var child;
 			var numChildren = this.children.length;
 			for(var i = 0; i < numChildren; i++) {
-				this.children[i].totalZ = parentZ + this.children[i]._z;
+				child = this.children[i];
+				child._parentZ = this.totalZ + 1;
+				child.updateZ();
 			}
 		}
 
-		meta.renderer.needSortDepth = true;
+		this.renderer.needSortDepth = true;	
 	},
 
-	get z() { return this._z; },
-
-	/* Pivot */
-	pivot: function(x, y) 
-	{
-		if(y === void(0)) { y = x; }
-
+	/** 
+	 * pivot
+	 * @param x {number}
+	 * @param y {number}
+	 */
+	pivot: function(x, y) {
 		this.volume.pivot(x, y); 
 		meta.renderer.needRender = true;
 	},
 
+	/** 
+	 * pivotX
+	 * @param x {number}
+	 */
 	set pivotX(x) { 
 		this.volume.pivot(x, this.volume.pivotY); 
 		meta.renderer.needRender = true;
 	},
+
+	/** 
+	 * pivotY
+	 * @param y {number}
+	 */	
 	set pivotY(y) { 
 		this.volume.pivot(this.volume.pivotX, y); 
 		meta.renderer.needRender = true;
 	},
+
+	/** 
+	 * pivotX
+	 * @return {number}
+	 */	
 	get pivotX() { return this.volume.pivotX; },
+
+	/** 
+	 * pivotY
+	 * @return {number}
+	 */	
 	get pivotY() { return this.volume.pivotY; },
 
+	/** 
+	 * anchor
+	 * @param x {number}
+	 * @param y {number}
+	 */
 	anchor: function(x, y)
 	{
 		if(y === void(0)) { y = x; }
@@ -132,77 +262,190 @@ Entity.Geometry = meta.Class.extend
 		this.updateAnchor();
 	},
 
-	updateAnchor: function() {
-		this.volume.anchorPosX = (this.parent.volume.width) * this._anchorX;
-		this.volume.anchorPosY = (this.parent.volume.height) * this._anchorY;
+	/** updateAnchor */
+	updateAnchor: function() 
+	{
+		this.anchorPosX = (this.parent.volume.width) * this._anchorX;
+		this.anchorPosY = (this.parent.volume.height) * this._anchorY;
+		this.volume.x = this._x + this._parentX + this.anchorPosX;
+		this.volume.y = this._y + this._parentY + this.anchorPosY;
 		this.volume.updatePos();
-		this.updatePos();
+
+		if(this.children) 
+		{
+			var child;
+			var numChildren = this.children.length;
+			for(var i = 0; i < numChildren; i++) 
+			{
+				child = this.children[i];
+				if(child._ignoreParentPos) { continue; }
+
+				child._parentX = this.volume.x;
+				child._parentY = this.volume.y;
+				child.updateAnchor();
+			}
+		}		
 	},
 
+	/** 
+	 * anchorX
+	 * @param x {number}
+	 */	
 	set anchorX(x) {
 		this._anchorX = x;
 		this.updateAnchor();
 	},
 
+	/** 
+	 * anchorY
+	 * @param y {number}
+	 */		
 	set anchorY(y) {
 		this._anchorY = y;
 		this.updateAnchor();
 	},
 
+	/** 
+	 * anchorX
+	 * @return {number}
+	 */	
 	get anchorX() { return this._anchorX; },
+
+	/** 
+	 * anchorY
+	 * @return {number}
+	 */		
 	get anchroY() { return this._anchorY; },
 
-	/* Rotation */
+	/** 
+	 * angle
+	 * @param value {number}
+	 */	
 	set angle(value)
 	{
 		value = (value * Math.PI) / 180;
 		if(this.volume.angle === value) { return; }
 		
-		this.volume.rotate(value);
-		meta.renderer.needRender = true;
+		this._angle = value;
+		this.updateAngle();
 	},
 
+	/** 
+	 * angleRad
+	 * @param value {number}
+	 */	
 	set angleRad(value)
 	{
-		if(this.volume.angle === value) { return; }
+		if(this._angle === value) { return; }
 
-		this.volume.rotate(value);
-		meta.renderer.needRender = true;
+		this._angle = value;
+		this.updateAngle();
 	},	
 
+	/** 
+	 * angle
+	 * @return {number}
+	 */		
 	get angle() { return (this.volume.angle * 180) / Math.PI; },
+
+	/** 
+	 * angleRad
+	 * @return {number}
+	 */			
 	get angleRad() { return this.volume.angle; },
 
-	/* Scale */
+	/** updateAngle */
+	updateAngle: function()
+	{
+		this.volume.rotate(this._angle + this._parentAngle);
+
+		if(this.children) 
+		{
+			var child;
+			var numChildren = this.children.length;
+			for(var i = 0; i < numChildren; i++) 
+			{
+				child = this.children[i];
+				if(child._ignoreParentAngle) { continue; }
+
+				child._parentAngle = this.volume.angle;
+				child.updateAngle();
+			}
+		}
+
+		this.renderer.needRender = true;
+	},
+
+	/** 
+	 * scale
+	 * @param x {number}
+	 * @param y {number}
+	 */
 	scale: function(x, y) 
 	{
 		if(y === void(0)) { y = x; }
 
-		this.volume.scale(x, y);
+		this._scaleX = x;
+		this._scaleY = y;
+		this.updateScale();
+	},
+
+	/** updateScale */
+	updateScale: function()
+	{
+		this.volume.scale(this._scaleX * this._parentScaleX, this._scaleY * this._parentScaleY);
 	
-
-		if(this.children) {
+		if(this.children) 
+		{
+			var child;
 			var numChildren = this.children.length;
-			for(var i = 0; i < numChildren; i++) {
-				this.children[i].updateAnchor();
+			for(var i = 0; i < numChildren; i++) 
+			{
+				child = this.children[i];
+				if(child._ignoreParentScale) { continue; }
+
+				child._parentScaleX = this.volume.scaleX;
+				child._parentScaleY = this.volume.scaleY;
+				child.updateScale();
 			}
-		}
-
-		this.updatePos();
+		}		
 	},
 
-	set scaleX(x) {
-		this.volume.scale(x, this.volume.scaleY);
-		this.updatePos();
+	/** 
+	 * scaleX
+	 * @param x {number}
+	 */
+	set scaleX(x) 
+	{
+		if(this._scaleX === x) { return; }
+		this._scaleX = x;
+
+		this.updateScale();
 	},
 
-	set scaleY(y) {
-		this.volume.scale(this.volume.scaleX, y);
-		this.updatePos();
+	/** 
+	 * scaleY
+	 * @param y {number}
+	 */
+	set scaleY(y) 
+	{
+		if(this._scaleY === y) { return; }
+		this._scaleY = y;
+
+		this.updateScale();
 	},
 
-	get scaleX() { return this.volume.scaleX; },
-	get scaleY() { return this.volume.scaleY; },
+	/** 
+	 * scaleX
+	 * @return {number}
+	 */	
+	get scaleX() { return this._scaleX; },
+
+	/** 
+	 * scaleY
+	 * @return {number}
+	 */		
+	get scaleY() { return this._scaleY; },
 
 	/**
 	 * Flip entity. By default will flip horizontally.
@@ -270,15 +513,7 @@ Entity.Geometry = meta.Class.extend
 			this.volume.resize(0, 0);
 		}
 
-		if(this.children)
-		{
-			var numChildren = this.children.length;
-			for(var i = 0; i < numChildren; i++) {
-				this.children[i].updateAnchor();
-			}
-		}
-
-		meta.renderer.needRender = true;
+		this.updateAnchor();
 	},	
 
 	set texture(texture)
@@ -345,11 +580,13 @@ Entity.Geometry = meta.Class.extend
 
 		if(this.__ui) { entity.__ui = this.__ui; }
 
-		entity.totalZ = this.totalZ + 1;
-
 		entity.parent = this;
-		entity.updateAnchor();
 		this.updatePos();
+		this.updateZ();
+
+		if(this.totalAngle !== 0) {
+			this.updateAngle();
+		}
 
 		if(this._view && this._view._active) {
 			this.renderer.addEntity(entity);
@@ -592,7 +829,7 @@ Entity.Geometry = meta.Class.extend
 	addComponent: function(name, obj, params) 
 	{
 		if(this[name]) {
-			console.warn("(Entity.Sprite.addComponent) Already in use: " + name);
+			console.warn("(Entity.Geometry.addComponent) Already in use: " + name);
 			return null;
 		}
 
@@ -614,7 +851,7 @@ Entity.Geometry = meta.Class.extend
 		if(comp.load) {
 			comp.load();
 		}
-		if(this.isLoaded && comp.ready) {
+		if(this.loaded && comp.ready) {
 			comp.ready();
 		}
 
@@ -625,7 +862,7 @@ Entity.Geometry = meta.Class.extend
 	{
 		var comp = this[name];
 		if(!comp || typeof(comp) !== "object") {
-			console.warn("(Entity.Sprite.removeComponent) Invalid component in: " + name);
+			console.warn("(Entity.Geometry.removeComponent) Invalid component in: " + name);
 			return;
 		}
 
@@ -643,7 +880,7 @@ Entity.Geometry = meta.Class.extend
 
 		// Error: If no such component added:
 		if(!found) {
-			console.warn("(Entity.Sprite.removeComponent) No such components added in: " + name);
+			console.warn("(Entity.Geometry.removeComponent) No such components added in: " + name);
 			return;			
 		}
 
@@ -663,6 +900,56 @@ Entity.Geometry = meta.Class.extend
 			this.removeComponent(this.components[i]);
 		}
 	},	
+
+	/**
+	 * Rotate entoty so it looks to x, y world positions.
+	 * @param x {Number} World position on x axis to look at.
+	 * @param y {Number} World position on y axis to look at.
+	 */
+	lookAt: function(x, y) 
+	{
+		if(this._ignoreParentAngle) {
+			this.angleRad = -Math.atan2(x - this.volume.x, y - this.volume.y) + Math.PI;
+		}
+		else {
+			this.angleRad = -Math.atan2(x - this.volume.x, y - this.volume.y) + Math.PI - this.parent.volume.angle
+		}
+	},
+
+	set ignoreParentPos(value) 
+	{
+		this._ignoreParentPos = value;
+		if(value) {
+			this._parentX = 0;
+			this._parentY = 0;
+		}
+		this.updatePos();
+	},
+
+	get ignoreParentPos() { return this._ignoreParentPos; },
+
+	set ignoreParentAngle(value) 
+	{
+		this._ignoreParentAngle = value;
+		if(value) {
+			this._parentAngle = 0;
+		}
+		this.updateAngle();
+	},
+
+	get ignoreParentAngle() { return this._ignoreParentAngle; },
+
+	set ignoreParentScale(value) 
+	{
+		this._ignoreParentScale = value;
+		if(value) {
+			this._parentScaleX = 1;
+			this._parentScaleY = 1;
+		}
+		this.updateScale();
+	},
+
+	get ignoreParentScale() { return this._ignoreParentScale; },
 
 	set ui(value) {
 		if(this.__ui === value) { return; }
@@ -695,15 +982,21 @@ Entity.Geometry = meta.Class.extend
 	_view: null,
 
 	_texture: null,
-	_z: 0, parentZ: 0, totalZ: 0,
-	_alpha: 1, parentAlpha: 0, totalAlpha: 0,
+
+	_x: 0, _y: 0, _parentX: 0, _parentY: 0,
+	_z: 0, totalZ: 0, _parentZ: 0,
+	_angle: 0, _parentAngle: 0,
+	_alpha: 1, totalAlpha: 0, _parentAlpha: 0,
+	_scaleX: 1, _scaleY: 1, _parentScaleX: 1, _parentScaleY: 1,
+
 	_anchorX: 0, _anchorY: 0,
+	anchorPosX: 0, anchorPosY: 0,
 
 	loaded: true,
 	_removed: false,
 	_visible: true,
 
-	_body: null,
+	body: null,
 	children: null,
 	anim: null,
 
@@ -722,10 +1015,11 @@ Entity.Geometry = meta.Class.extend
 	pressed: false,
 	dragged: false,
 
-	ignoreParentPos: false,
-	ignoreParentZ: false,
-	ignoreParentAngle: false,
-	ignoreParentAlpha: false,
+	_ignoreParentPos: false,
+	_ignoreParentZ: false,
+	_ignoreParentAngle: false,
+	_ignoreParentAlpha: false,
+	_ignoreParentScale: false,
 
 	__added: false,
 	__debug: false,

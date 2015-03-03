@@ -1,8 +1,9 @@
 "use strict";
 
+/** @namespace */
 var meta = 
 {
-	version: "1.2.0",
+	version: "0.8.0",
 	importUrl: "http://meta.infinite-games.com/store/",
 
 	device: null,
@@ -90,11 +91,9 @@ var meta =
 
 		if(value) {
 			meta.emit(meta.Event.DEBUG, value, meta.Event.DEBUG);
-			meta.renderer.debugger.load();
 		}
 		else {
 			meta.emit(meta.Event.DEBUG, value, meta.Event.DEBUG);
-			meta.renderer.debugger.unload();
 		}
 	},
 

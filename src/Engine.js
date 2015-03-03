@@ -137,7 +137,6 @@ meta.engine =
 
 		this.loadedCtrls = true;
 		this.loading = false;
-		meta.cache.view.active = true;
 
 		if(Resource.ctrl.numToLoad === 0) {
 			this.onReady();
@@ -172,6 +171,8 @@ meta.engine =
 		for(var i = 0; i < numFuncs; i++) {
 			meta.cache.readyFuncs[i]();
 		}
+
+		meta.cache.view.active = true;
 
 		this._startMainLoop();
 	},
@@ -618,7 +619,7 @@ meta.engine =
 		{
 			console.log("%c META v" + meta.version + " ", 
 				"background: #000; color: white; font-size: 12px; padding: 2px 0 1px 0;",
-				"http://infinite-games.com ");
+				"http://meta2d.com");
 
 			console.log("%cBrowser: %c" + meta.device.name + " " + meta.device.version + "\t",
 				"font-weight: bold; padding: 2px 0 1px 0;",
@@ -630,7 +631,7 @@ meta.engine =
 		}
 		else 
 		{
-			console.log("META v" + meta.version + " http://infinite-games.com ");
+			console.log("META v" + meta.version + " http://meta2d.com ");
 			console.log("Browser: " + meta.device.name + " " + meta.device.version + "\t");
 			console.log("Renderer: Canvas ");				
 		}		

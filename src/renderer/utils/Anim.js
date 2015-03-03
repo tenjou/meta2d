@@ -171,6 +171,7 @@ meta.Anim.prototype =
 	_speed: 1,
 	_frame: 0,
 	__index: -1,
+	__removed: 0,
 	__delay: 0,
 	__tAnim: 0
 };

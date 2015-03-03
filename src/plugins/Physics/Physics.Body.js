@@ -1,6 +1,7 @@
 "use strict";
 
 Physics.Body = function() {
+	this._volume = null;
 	this._mass = 100;
 	this.invMass = 0.01;
 	this.restitution = 0.6;
@@ -10,10 +11,7 @@ Physics.Body = function() {
 Physics.Body.prototype = 
 {
 	load: function() {
-		this.volume = this.owner.volume;
-		// this.volume = new meta.math.AABB(0, 0, 80, 20)
-		// this.volume.__color = "#00ff00";
-		// meta.renderer.addBoundingVolume(this.volume);
+		this._volume = this.owner.volume;
 	},
 
 	updateVolume: function() {},
@@ -26,11 +24,13 @@ Physics.Body.prototype =
 		}
 
 		var volume = this.owner.volume;
+		this.volume.position(volume.x, volume.y);
 
 		if(this.haveTarget) 
 		{
-			var distance = meta.math.length(volume.absX, volume.absY, this.targetX, this.targetY);
+			var distance = meta.math.length(volume.x, volume.y, this.targetX, this.targetY);
 			if(distance <= (this.speed * tDelta)) {
+				this.volume.position(this.targetX, this.targetY);
 				this.owner.position(this.targetX, this.targetY);
 				this.stop();
 			}
@@ -45,39 +45,36 @@ Physics.Body.prototype =
 			}
 		}
 
-		this.owner.move(this.velocity.x * tDelta, this.velocity.y * tDelta);
-		this.volume.set(volume.x, volume.y);
+		this.volume.move(this.velocity.x * tDelta, this.velocity.y * tDelta);
 
-		// if(this.enableWorldBounds)
-		// {
-		// 	var newX = volume.x;
-		// 	var newY = volume.y;
+		if(this.worldBounds)
+		{
+			var newX = this.volume.x;
+			var newY = this.volume.y;
+			var world = meta.world;
 
-		// 	if(this.volume.minX < 0) {
-		// 		newX = this.volume.x - this.volume.minX;
-		// 		this.velocity.x = -this.velocity.x;
-		// 		manifold.normal.set(1, 0);
-		// 	}
-		// 	else if(this.volume.maxX > meta.world.width) {
-		// 		newX += meta.world.width - this.volume.maxX;
-		// 		this.velocity.x = -this.velocity.x;
-		// 		manifold.normal.set(-1, 0);
-		// 	}
+			if(this.volume.minX < 0) {
+				newX = this.volume.x - this.volume.minX;
+				manifold.normal.set(1, 0);
+			}
+			else if(this.volume.maxX > world.width) {
+				newX += world.width - this.volume.maxX;
+				manifold.normal.set(-1, 0);
+			}
 
-		// 	if(this.volume.minY < 0) {
-		// 		newY = this.volume.y - this.volume.minY;
-		// 		this.velocity.y = -this.velocity.y;
-		// 		manifold.normal.set(0, 1);
-		// 	}
-		// 	else if(this.volume.maxY > meta.world.height) {
-		// 		newY += meta.world.height - this.volume.maxY;
-		// 		this.velocity.y = -this.velocity.y;
-		// 		manifold.normal.set(0, -1);
-		// 	}
+			if(this.volume.minY < 0) {
+				newY = this.volume.y - this.volume.minY;
+				manifold.normal.set(0, 1);
+			}
+			else if(this.volume.maxY > world.height) {
+				newY += world.height - this.volume.maxY;
+				manifold.normal.set(0, -1);
+			}
 
-		// 	this.owner.position(newX, newY);
-		// 	this.volume.set(newX, newY);
-		// }
+		 	this.volume.position(newX, newY);
+		}
+
+		this.owner.position(this.volume.x, this.volume.y);
 	},	
 
 	moveTo: function(x, y, speed, moveToCB) {
@@ -106,6 +103,13 @@ Physics.Body.prototype =
 		}
 	},
 
+	set volume(volume) {
+		this._volume = volume;
+		this._volume.position(this.owner.volume.x, this.owner.volume.y);
+	},
+
+	get volume() { return this._volume; },
+
 	set mass(value) 
 	{
 		this._mass = value;
@@ -121,7 +125,7 @@ Physics.Body.prototype =
 	get mass() { return this._mass; },
 
 	//
-	enableWorldBounds: false,
+	worldBounds: false,
 	ghost: false,
 
 	targetX: 0, targetY: 0,

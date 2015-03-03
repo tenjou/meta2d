@@ -2,13 +2,12 @@
 
 /**
  * Tweening library. Have dependency on Entity.Controller.
- * @class meta.Tween
- * @property owner {Object} Object to tween.
- * @proeprty chain {Array} Buffer with meta.Tween.Link.
- * @property linkIndex {Number} Current index of the link from the chain.
- * @property currLink {meta.Tween.Link} Current active link.
- * @property numRepeat {Number} Number of repeat times.
- * @memberof! <global>
+ * @class
+ * @param owner {Object} Object to tween.
+ * @param chain {Array} Buffer with meta.Tween.Link.
+ * @param linkIndex {Number} Current index of the link from the chain.
+ * @param currLink {meta.Tween.Link} Current active link.
+ * @param numRepeat {Number} Number of repeat times.
  */
 meta.Tween = function() {
 	this.cache = null;
@@ -19,7 +18,7 @@ meta.Tween.prototype =
 {
 	/**
 	 * Start tweening.
-	 * @returns {meta.Tween}
+	 * @return {meta.Tween}
 	 */
 	play: function()
 	{

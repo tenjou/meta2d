@@ -3,7 +3,6 @@
 /**
  * Easing functions used by meta.Tween.
  * @class meta.TweenEasing
- * @memberof! <global>
  */
 meta.Tween.Easing =
 {

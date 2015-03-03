@@ -31,6 +31,11 @@ meta.CanvasRenderer = meta.Renderer.extend
 			this.drawEntity(this.entities[i]);
 		}
 
+		var numFuncs = this._renderFuncs.length;
+		for(i = 0; i < numFuncs; i++) {
+			this._renderFuncs[i].render(tDelta);
+		}
+
 		/* Debug */
 		if(this.meta.cache.debug) 
 		{
@@ -127,7 +132,7 @@ meta.CanvasRenderer = meta.Renderer.extend
 				this.ctx.transform(
 					volume.m11, volume.m12, 
 					volume.m21, volume.m22,
-					volume.absX | 0, volume.absY | 0);
+					volume.x | 0, volume.y | 0);
 
 				if(texture.frames > 1) {
 					texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, anim._frame);
@@ -157,9 +162,9 @@ meta.CanvasRenderer = meta.Renderer.extend
 		{
 			this.ctx.save();
 
-			this.ctx.translate(volume.absX, volume.absY);
+			this.ctx.translate(volume.x | 0, volume.y | 0);
 			this.ctx.rotate(entity.volume.angle);
-			this.ctx.translate(-volume.absX, -volume.absY);
+			this.ctx.translate(-volume.x | 0, -volume.y | 0);
 
 			this._drawVolume(volume);
 
@@ -182,7 +187,7 @@ meta.CanvasRenderer = meta.Renderer.extend
 		this.ctx.lineTo(minX, minY - 1);
 		this.ctx.stroke();	
 
-		this.ctx.fillRect(volume.absX - 3, volume.absY - 3, 6, 6);
+		this.ctx.fillRect(volume.x - 3, volume.y - 3, 6, 6);
 	},
 
 	updateBgColor: function() {}

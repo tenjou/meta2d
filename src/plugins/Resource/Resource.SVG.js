@@ -4,21 +4,16 @@ Resource.SVG = Resource.Texture.extend
 ({
 	/**
 	 * Fill texture with color.
-	 * @param params {Object} Parameters.
-	 * @param [params.x=0] {Number=} Offset from the left.
-	 * @param [params.y=0] {Number=} Offset from the top.
-	 * @param [params.width=this.width] {Number=} Width of rect to fill. By default will use current texture width.
-	 * @param [params.height=this.height] {Number=} Height of rect to fill. By default will use current texture height.
-	 * @param [params.color=#000000] {Hex=} Color of the filled rect.
-	 * @param [params.drawOver=false] {Boolean=} Flag - draw over previous texture content.
-	 * @param height {Number=} Height of the rect.
-	 * @param color {String=} Color of the rect.
-	 * @function
+	 * @param x {number}
+	 * @param y {number}
+	 * @param width {number}
+	 * @param height {number}
 	 */
 	fillRect: function(x, y, width, height) 
 	{
 		if(this.fullWidth < 2 && this.fullHeight < 2) {
 			this.resize(width + x, height + y);
+			this.ctx.fillStyle = this._fillStyle;
 		}
 
 		this.ctx.fillRect(x, y, width, height);
@@ -26,6 +21,13 @@ Resource.SVG = Resource.Texture.extend
 		this.loaded = true;
 	},
 
+	/**
+	 * Draw a line
+	 * @param x1 {number}
+	 * @param y1 {number}
+	 * @param x2 {number}
+	 * @param y2 {number}
+	 */
 	line: function(x1, y1, x2, y2)
 	{
 		if(this.fullWidth < 2 && this.fullHeight < 2) {
@@ -42,6 +44,26 @@ Resource.SVG = Resource.Texture.extend
 		this.loaded = true;
 	},
 
+	/**
+	 * circle
+	 * @param radius {number}
+	 */	
+	circle: function(radius)
+	{
+		if(this.fullWidth < 2 && this.fullHeight < 2) {
+			this.resize(radius * 2, radius * 2);
+			this.ctx.lineWidth = this._lineWidth;
+			this.ctx.fillStyle = this._fillStyle;
+			this.ctx.strokeStyle = this._strokeStyle;
+		}
+
+		this.ctx.beginPath();
+		this.ctx.arc(radius, radius, radius, 0, Math.PI * 2, false);
+		this.ctx.closePath();
+		this.ctx.fill();
+
+		this.loaded = true;
+	},
 
 	/**
 	 * Tile source texture on top.

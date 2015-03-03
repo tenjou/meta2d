@@ -40,8 +40,6 @@ meta.Renderer = meta.Class.extend
 		meta.subscribe(this, meta.Event.CAMERA_MOVE, this.onCameraMove);
 
 		this.holder.resize(this.camera.volume.width, this.camera.volume.height);
-
-		this.debugger = new meta.Debugger();
 	},
 
 	update: function(tDelta)
@@ -60,6 +58,26 @@ meta.Renderer = meta.Class.extend
 		for(i = 0; i < numEntities; i++) {
 			this.entitiesToUpdate[i].update(tDelta);
 		}
+
+		if(this.tweens.length > 0) 
+		{
+			var numTweens = this.tweens.length;
+			var numTweensRemove = this.tweensRemove.length;
+
+			if(numTweensRemove > 0) 
+			{
+				for(i = 0; i < numTweensRemove; i++) {
+					this.tweens[this.tweensRemove[i]] = this.tweens[--numTweens];
+				}
+
+				this.tweens.length = numTweens;
+				this.tweensRemove.length = 0;
+			}
+
+			for(i = 0; i < numTweens; i++) {
+				this.tweens[i].update(tDelta);
+			}
+		}		
 
 		this.__updating = false;
 
@@ -84,13 +102,22 @@ meta.Renderer = meta.Class.extend
 			this.removeUpdating.length = 0;
 		}		
 
+		// Remove animations:
 		if(this.entitiesAnimRemove.length > 0)
 		{
+			var index = 0, anim = null;
 			var numAnim = this.entitiesAnim.length;
 			numEntities = this.entitiesAnimRemove.length;
-			for(i = 0; i < numEntities; i++) {
+
+			for(i = 0; i < numEntities; i++) 
+			{
+				index = this.entitiesAnimRemove[i];
+				anim = this.entitiesAnim[index];
+				if(!anim.__removed) { continue; }
+
 				numAnim--;
-				this.entitiesAnim[this.entitiesAnimRemove[i]] = this.entitiesAnim[numAnim];
+				anim.__index = -1;
+				this.entitiesAnim[index] = this.entitiesAnim[numAnim];
 				this.entitiesAnim.pop();
 			}	
 
@@ -158,8 +185,6 @@ meta.Renderer = meta.Class.extend
 		if(entity.__debug) {
 			this.numDebug++;
 		}
-		
-		entity.updateAnchor();
 	},
 
 	addEntities: function(entities)
@@ -278,18 +303,24 @@ meta.Renderer = meta.Class.extend
 
 	addAnim: function(anim)
 	{
-		if(anim.__index !== -1) { return; }
+		if(anim.__removed) {
+			anim.__removed = false;
+		}
+		else
+		{
+			if(anim.__index !== -1) { return; }
 
-		anim.__index = this.entitiesAnim.length;
-		this.entitiesAnim.push(anim);
+			anim.__index = this.entitiesAnim.length;
+			this.entitiesAnim.push(anim);
+		}
 	},
 
 	removeAnim: function(anim)
 	{
-		if(anim.__index === -1) { return; }
+		if(anim.__removed) { return; }
 
 		this.entitiesAnimRemove.push(anim.__index);
-		anim.__index = -1;
+		anim.__removed = 1;
 	},
 
 	addPicking: function(entity) 
@@ -307,6 +338,26 @@ meta.Renderer = meta.Class.extend
 
 		//this.entities
 	},
+
+	addTween: function(tween) 
+	{
+		if(tween.__index > -1) { return false; }
+
+		tween.__index = this.tweens.length;
+		this.tweens.push(tween);
+
+		return true;
+	},
+
+	removeTween: function(tween) 
+	{
+		if(tween.__index === -1) { return false; }
+
+		this.tweensRemove.push(tween.__index);
+		tween.__index = -1;
+
+		return true;
+	},	
 
 	updateState: function(entity) 
 	{
@@ -573,14 +624,23 @@ meta.Renderer = meta.Class.extend
 	{
 		this.holder.resize(data.width, data.height);
 
+		var entity;
 		var numEntities = this.entities.length;
-		for(var i = 0; i < numEntities; i++) {
-			this.entities[i].updateAnchor();
+		for(var i = 0; i < numEntities; i++) 
+		{
+			entity = this.entities[i];
+			if(entity.parent !== this.holder) { continue; }
+
+			entity.updateAnchor();
 		}
 
 		numEntities = this.entitiesUI.length;
-		for(i = 0; i < numEntities; i++) {
-			this.entitiesUI[i].updateAnchor();
+		for(i = 0; i < numEntities; i++) 
+		{
+			entity = this.entitiesUI[i];
+			if(entity.parent !== this.holder) { continue; }
+
+			entity.updateAnchor();
 		}		
 	},
 
@@ -621,6 +681,22 @@ meta.Renderer = meta.Class.extend
 	},
 	get needRender() { return this._needRender; },
 
+	addRender: function(owner) {
+		this._renderFuncs.push(owner);
+	},
+
+	removeRender: function(owner) 
+	{
+		var length = this._renderFuncs.length;
+		for(var i = 0; i < length; i++) {
+			if(this._renderFuncs[i] === owner) {
+				this._renderFuncs[i] = this._renderFuncs[length - 1];
+				this._renderFuncs.pop();
+				break;
+			}
+		}
+	},	
+
 	//
 	meta: meta,
 	engine: null,
@@ -630,8 +706,6 @@ meta.Renderer = meta.Class.extend
 	camera: null,
 	cameraDefault: null,
 	cameraUI: null,
-
-	debugger: null,
 
 	entities: [],
 	entitiesRemove: [],
@@ -654,8 +728,13 @@ meta.Renderer = meta.Class.extend
 	enablePicking: true,
 	enablePixelPicking: false,	
 
+	tweens: [],
+	tweensRemove: [],
+
 	_needRender: true,
 	needSortDepth: false,
+
+	_renderFuncs: [],
 
 	numDebug: 0,
 

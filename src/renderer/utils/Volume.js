@@ -3,9 +3,7 @@
 meta.Volume = function()
 {
 	this.x = 0;
-	this.y = 0;	
-	this.absX = 0;
-	this.absY = 0;
+	this.y = 0;
 	this.width = 0;
 	this.height = 0;
 	this.initWidth = 0;
@@ -19,13 +17,15 @@ meta.Volume = function()
 
 meta.Volume.prototype = 
 {
-	set: function(x, y)
+	/** 
+	 * position
+	 * @param x {number}
+	 * @param y {number}
+	 */	
+	position: function(x, y)
 	{
 		this.x = x;
 		this.y = y;
-
-		this.absX = x + this.parentX + this.anchorPosX;
-		this.absY = y + this.parentY + this.anchorPosY;
 
 		this.minX = this.absX - this.pivotPosX;
 		this.minY = this.absY - this.pivotPosY;
@@ -33,13 +33,15 @@ meta.Volume.prototype =
 		this.maxY = this.minY + this.height;
 	},
 
+	/** 
+	 * move
+	 * @param x {number}
+	 * @param y {number}
+	 */
 	move: function(x, y)
 	{
 		this.x += x;
 		this.y += y;
-
-		this.absX += x;
-		this.absY += y;
 
 		this.minX += x;
 		this.minY += y;
@@ -47,17 +49,33 @@ meta.Volume.prototype =
 		this.maxY += y;
 	},
 
+	/** updatePos */
 	updatePos: function()
 	{
-		this.absX = this.x + this.parentX + this.anchorPosX;
-		this.absY = this.y + this.parentY + this.anchorPosY;
-
-		this.minX = this.absX - this.pivotPosX;
-		this.minY = this.absY - this.pivotPosY;
+		this.minX = this.x - this.pivotPosX;
+		this.minY = this.y - this.pivotPosY;
 		this.maxX = this.minX + this.width;
 		this.maxY = this.minY + this.height;		
 	},
 
+	/** 
+	 * pivot
+	 * @param x {number}
+	 * @param y {number}
+	 */
+	pivot: function(x, y)
+	{
+		if(y === void(0)) { y = x; }
+
+		this.pivotX = x;
+		this.pivotY = y;
+		this.initPivotPosX = this.initWidth * this.pivotX | 0;
+		this.initPivotPosY = this.initHeight * this.pivotY | 0;	
+
+		this.updatePivotPos();	
+	},	
+
+	/** updatePivotPos */
 	updatePivotPos: function() 
 	{
 		if(this.scaleX > 0) {
@@ -74,41 +92,17 @@ meta.Volume.prototype =
 			this.pivotPosY = (1.0 - this.pivotY) * this.height;		
 		}
 
-		this.minX = this.absX - this.pivotPosX;
-		this.minY = this.absY - this.pivotPosY;
+		this.minX = this.x - this.pivotPosX;
+		this.minY = this.y - this.pivotPosY;
 		this.maxX = this.minX + this.width;
 		this.maxY = this.minY + this.height;					
 	},	
 
-	updatePosTransform: function()
-	{
-		if(this.scaleX > 0) {
-			this.pivotPosX = this.pivotX * this.width;	
-		}	
-		else {
-			this.pivotPosX = (1.0 - this.pivotX) * this.width;	
-		}
-
-		if(this.scaleY > 0) {
-			this.pivotPosY = this.pivotY * this.height;
-		}
-		else {
-			this.pivotPosY = (1.0 - this.pivotY) * this.height;		
-		}
-
-		this.minX = this.absX - this.pivotPosX;
-		this.minY = this.absY - this.pivotPosY;
-		this.maxX = this.minX + this.width;
-		this.maxY = this.minY + this.height;
-
-		this.m11 = this.cos * this.scaleX;
-		this.m12 = this.sin * this.scaleX;
-		this.m21 = -this.sin * this.scaleY;
-		this.m22 = this.cos * this.scaleY;
-
-		this.__transformed = 1;
-	},
-
+	/** 
+	 * resize
+	 * @param width {number}
+	 * @param height {number}
+	 */
 	resize: function(width, height)
 	{
 		this.initWidth = width;
@@ -119,33 +113,7 @@ meta.Volume.prototype =
 		this.height = height * Math.abs(this.scaleY) | 0;	
 
 		this.updatePivotPos();
-	},
-
-	pivot: function(x, y)
-	{
-		if(this.pivotX === x && this.pivotY === y) { return; }
-
-		this.pivotX = x;
-		this.pivotY = y;
-		this.initPivotPosX = this.initWidth * this.pivotX | 0;
-		this.initPivotPosY = this.initHeight * this.pivotY | 0;	
-
-		this.updatePivotPos();	
-	},
-
-	rotate: function(angle)
-	{
-		this.angle = angle;
-
-		this.sin = Math.sin(angle);
-		this.cos = Math.cos(angle);
-		this.m11 = this.cos * this.scaleX;
-		this.m12 = this.sin * this.scaleX;
-		this.m21 = -this.sin * this.scaleY;
-		this.m22 = this.cos * this.scaleY;
-
-		this.__transformed = 1;
-	},
+	},	
 
 	scale: function(x, y)
 	{
@@ -178,6 +146,55 @@ meta.Volume.prototype =
 
 		this.updatePosTransform();
 	},
+
+	/** 
+	 * rotate
+	 * @param width {number}
+	 * @param height {number}
+	 */
+	rotate: function(angle)
+	{
+		this.angle = angle;
+
+		this.sin = Math.sin(angle);
+		this.cos = Math.cos(angle);
+		this.m11 = this.cos * this.scaleX;
+		this.m12 = this.sin * this.scaleX;
+		this.m21 = -this.sin * this.scaleY;
+		this.m22 = this.cos * this.scaleY;
+
+		this.__transformed = 1;
+	},
+
+	/** updatePosTransform */
+	updatePosTransform: function()
+	{
+		if(this.scaleX > 0) {
+			this.pivotPosX = this.pivotX * this.width;	
+		}	
+		else {
+			this.pivotPosX = (1.0 - this.pivotX) * this.width;	
+		}
+
+		if(this.scaleY > 0) {
+			this.pivotPosY = this.pivotY * this.height;
+		}
+		else {
+			this.pivotPosY = (1.0 - this.pivotY) * this.height;		
+		}
+
+		this.minX = this.x - this.pivotPosX;
+		this.minY = this.y - this.pivotPosY;
+		this.maxX = this.minX + this.width;
+		this.maxY = this.minY + this.height;
+
+		this.m11 = this.cos * this.scaleX;
+		this.m12 = this.sin * this.scaleX;
+		this.m21 = -this.sin * this.scaleY;
+		this.m22 = this.cos * this.scaleY;
+
+		this.__transformed = 1;
+	},	
 
 	vsAABB: function(src)
 	{
@@ -284,11 +301,6 @@ meta.Volume.prototype =
 	scaleX: 1, scaleY: 1,
 	flipX: 1, flipY: 1,
 	angle: 0,
-
-	parentX: 0, parentY: 0,
-	parentAngle: 0,
-	absAngle: 0,
-	absScaleX: 0, absScaleY: 0,
 
 	sin: 0, cos: 1,
 	m11: 1, m12: 0, m21: 0, m22: 1,

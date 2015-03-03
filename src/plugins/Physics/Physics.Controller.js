@@ -11,6 +11,10 @@ Physics.Manifold = function() {
 
 Physics.Controller = meta.Controller.extend
 ({
+	init: function() {
+		meta.subscribe(this, meta.Event.DEBUG, this.onDebug);
+	},
+
 	update: function(tDelta)
 	{
 		var item, item2, n, result;
@@ -50,6 +54,27 @@ Physics.Controller = meta.Controller.extend
 				}
 			}
 		}
+	},
+
+	render: function(tDelta)
+	{
+		var ctx = meta.renderer.ctx;
+		ctx.save();
+
+		ctx.fillStyle = "#00ff00";
+		ctx.globalAlpha = 0.4;
+
+		var numItems = this.items.length;
+		for(var i = 0; i < numItems; i++) {
+			this.drawVolume(ctx, this.items[i]);
+		}
+
+		ctx.restore();
+	},
+
+	drawVolume: function(ctx, item) {
+		var volume = item.volume;
+		ctx.fillRect(volume.minX | 0, volume.minY | 0, volume.width, volume.height);
 	},
 
 	overlapAABB: function(a, b)
@@ -105,8 +130,20 @@ Physics.Controller = meta.Controller.extend
 			return;
 		}
 
-		this.items.push(
-			entity.addComponent("body", Physics.Body));
+		var comp = entity.addComponent("body", Physics.Body);
+		if(comp) {
+			this.items.push(comp);
+		}
+	},
+
+	onDebug: function(value, event) 
+	{
+		if(value) {
+			meta.renderer.addRender(this);
+		}
+		else {
+			meta.renderer.removeRender(this);
+		}
 	},
 
 	//

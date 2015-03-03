@@ -19,13 +19,16 @@ cat meta.js \
 	math/Math.js \
 	math/Vector2.js \
 	math/AABB.js \
-	math/AdvAABB.js \
 	math/Circle.js \
 	math/Matrix4.js \
 	math/Random.js \
 	tween/Tween.js \
 	tween/Easing.js \
 	tween/Link.js \
+	renderer/Renderer.js \
+	renderer/CanvasRenderer.js \
+	renderer/utils/Anim.js \
+	renderer/utils/Volume.js \
 	plugins/Component/Component.js \
 	plugins/Resource/Resource.Controller.js \
 	plugins/Resource/Enum.js \
@@ -34,14 +37,12 @@ cat meta.js \
 	plugins/Resource/Resource.Sound.js \
 	plugins/Resource/Resource.SpriteSheet.js \
 	plugins/Resource/Resource.Font.js \
-	plugins/Entity/Entity.Controller.js \
+	plugins/Resource/Resource.SVG.js \
 	plugins/Entity/Enum.js \
-	plugins/Renderer/Renderer.js \
-	plugins/Renderer/CanvasRenderer.js \
-	plugins/Renderer/utils/Anim.js \
-	plugins/Renderer/utils/Volume.js \
 	plugins/Entity/Entity.Geometry.js \
 	plugins/Entity/Entity.Text.js \
+	plugins/Entity/svg/Entity.SVG.js \
+	plugins/Entity/svg/Entity.Line.js \
 	plugins/Input/Input.Controller.js \
 	plugins/Input/Enum.js \
 	plugins/Physics/Physics.Controller.js \
@@ -52,5 +53,6 @@ cat meta.js \
 	plugins/UI/UI.ProgressBar.js \
 	plugins/UI/UI.Group.js \
 	Loader.js \
+	Debugger.js \
 	| uglifyjs --output ../versions/meta.nightly.latest.js --mangle -c dead_code=false,unused=false,side_effects=false --screw-ie8
 

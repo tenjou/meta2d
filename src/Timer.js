@@ -22,7 +22,7 @@ meta.Timer.prototype =
 	/**
 	 * Remove timer.
 	 */
-	remove: function() {
+	stop: function() {
 		this.owner = null;
 		this.func = null;
 		this.numTimes = 0;
