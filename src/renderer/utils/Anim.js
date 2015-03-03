@@ -139,7 +139,7 @@ meta.Anim.prototype =
 		this.__delay = 1.0 / (fps * this._speed);
 	},
 
-	get fps() { this._fps; },
+	get fps() { return this._fps; },
 
 	set speed(speed) {
 		this._speed = speed;
