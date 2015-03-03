@@ -458,8 +458,8 @@ Entity.Geometry = meta.class.extend
 		meta.renderer.needRender = true;		
  	},
 
-	set flipX(x) { this.flip(x, this.volume.scaleY); },
-	set flipY(y) { this.flip(this.volume.scaleX, y); },
+	set flipX(x) { this.flip(x, this.volume.flipY); },
+	set flipY(y) { this.flip(this.volume.flipX, y); },
 	get flipX() { return this.volume.flipX; },
 	get flipY() { return this.volume.flipY; },
 
