@@ -936,8 +936,11 @@ Entity.Geometry = meta.class.extend
 		if(value) {
 			this._parentX = 0;
 			this._parentY = 0;
+			this.updatePos();
 		}
-		this.updatePos();
+		else {
+			this.parent.updatePos();
+		}
 	},
 
 	get ignoreParentPos() { return this._ignoreParentPos; },
@@ -947,8 +950,11 @@ Entity.Geometry = meta.class.extend
 		this._ignoreParentAngle = value;
 		if(value) {
 			this._parentAngle = 0;
+			this.updateAngle();
 		}
-		this.updateAngle();
+		else {
+			this.parent.updateAngle();
+		}
 	},
 
 	get ignoreParentAngle() { return this._ignoreParentAngle; },
@@ -959,8 +965,11 @@ Entity.Geometry = meta.class.extend
 		if(value) {
 			this._parentScaleX = 1;
 			this._parentScaleY = 1;
+			this.updateScale();
 		}
-		this.updateScale();
+		else {
+			this.parent.updateScale();
+		}
 	},
 
 	get ignoreParentScale() { return this._ignoreParentScale; },
