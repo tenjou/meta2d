@@ -19,28 +19,28 @@ meta.Timer = function(owner, func, tDelta, numTimes)
 
 meta.Timer.prototype =
 {
-	/**
-	 * Remove timer.
-	 */
+	/** Remove timer. */
 	stop: function() {
 		this.owner = null;
 		this.func = null;
 		this.numTimes = 0;
 	},
 
-	/**
-	 * Pause timer.
-	 */
+	/** Pause timer. */
 	pause: function() {
 		this.paused = true;
 	},
 
-	/**
-	 * Resume timer.
-	 */
+	/** Resume timer. */
 	resume: function() {
 		this.paused = false;
 		this.tStart = Date.now();
+	},
+
+	/** Reset timer. */
+	reset: function() {
+		this.tAccumulator = 0;
+		this.paused = false;
 	},
 
 	//
