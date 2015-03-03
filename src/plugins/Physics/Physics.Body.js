@@ -1,20 +1,19 @@
 "use strict";
 
-Physics.Body = function() {
-	this._volume = null;
-	this._mass = 100;
-	this.invMass = 0.01;
-	this.restitution = 0.6;
-	this.velocity = new meta.math.Vector2(0, 0);
-};
-
-Physics.Body.prototype = 
-{
-	load: function() {
-		this._volume = this.owner.volume;
+Physics.Body = meta.class.extend
+({
+	init: function() {
+		this.velocity = new meta.math.Vector2(0, 0);
 	},
 
-	updateVolume: function() {},
+	load: function() {
+		this._volume = this.owner.volume;
+		Physics.ctrl.items.push(this);		
+	},
+
+	unload: function() {
+
+	},
 
 	updateItem: function(tDelta, manifold)
 	{
@@ -77,6 +76,12 @@ Physics.Body.prototype =
 		this.owner.position(this.volume.x, this.volume.y);
 	},	
 
+	/**
+	 * onCollision
+	 * @type {function}
+	 */	
+	onCollision: null,
+
 	moveTo: function(x, y, speed, moveToCB) {
 		this.targetX = x;
 		this.targetY = y;
@@ -85,6 +90,7 @@ Physics.Body.prototype =
 		this.moveToCB = moveToCB || null;
 	},
 
+	/** stop */
 	stop: function() 
 	{
 		this.speed = 0;
@@ -101,7 +107,17 @@ Physics.Body.prototype =
 
 			this.haveTarget = false;
 		}
+
+		if(this.onStop) {
+			this.onStop();
+		}
 	},
+
+	/**
+	 * onStop
+	 * @type {function}
+	 */
+	onStop: null,
 
 	set volume(volume) {
 		this._volume = volume;
@@ -125,6 +141,12 @@ Physics.Body.prototype =
 	get mass() { return this._mass; },
 
 	//
+	_volume: null,
+	_mass: 100,
+	invMass: 0.01,
+	restitution: 0.6,
+	velocity: null,
+
 	worldBounds: false,
 	ghost: false,
 
@@ -135,7 +157,5 @@ Physics.Body.prototype =
 	maxSpeed: Number.MAX_VALUE,
 	acceleration: 0,
 
-	onCollision: null,
-
 	_helperVec: new meta.math.Vector2(0, 0)
-};
+});

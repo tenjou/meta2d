@@ -8,9 +8,8 @@
  * @property name {string} Name of the controller.
  * @property isLoaded {Boolean} Flag if controller is loaded.
  */
-meta.Controller = meta.Class.extend
-( /** @lends meta.Controller.prototype */ {
-
+meta.Controller = meta.class.extend
+({
 	/**
 	 * Constructor.
 	 * @function

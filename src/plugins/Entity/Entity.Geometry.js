@@ -1,6 +1,6 @@
 "use strict";
 
-Entity.Geometry = meta.Class.extend
+Entity.Geometry = meta.class.extend
 ({
 	_init: function(texture) {
 		this.volume = new meta.Volume();
@@ -394,6 +394,7 @@ Entity.Geometry = meta.Class.extend
 	updateScale: function()
 	{
 		this.volume.scale(this._scaleX * this._parentScaleX, this._scaleY * this._parentScaleY);
+		this.updateAnchor();
 	
 		if(this.children) 
 		{
@@ -828,19 +829,32 @@ Entity.Geometry = meta.Class.extend
 
 	addComponent: function(name, obj, params) 
 	{
-		if(this[name]) {
-			console.warn("(Entity.Geometry.addComponent) Already in use: " + name);
-			return null;
+		if(name instanceof Object) {
+			params = obj;
+			obj = name;
+			name = null;
 		}
 
 		var comp = new obj();
 		comp.owner = this;
 
-		for(var key in params) {
-			comp[key] = params[key];
+		if(name) 
+		{
+			if(this[name]) {
+				console.warn("(Entity.Geometry.addComponent) Already in use: " + name);
+				return null;
+			}
+
+			this[name] = comp;
+		}		
+
+		if(params) 
+		{
+			for(var key in params) {
+				comp[key] = params[key];
+			}			
 		}
 
-		this[name] = comp;
 		if(!this.components) {
 			this.components = [ comp ];
 		}

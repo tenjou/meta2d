@@ -4,8 +4,8 @@
 {
 	var initializing = false, fnTest = /\b_super\b/;
 
-	scope.meta.Class = function() {};
-	scope.meta.Class.extend = function(prop)
+	scope.meta.class = function() {};
+	scope.meta.class.extend = function(prop)
 	{
 		var _super = this.prototype;
 
@@ -65,5 +65,5 @@
 		return Class;
 	};
 
-	scope.meta["Class"] = scope.meta.Class;
+	scope.meta["class"] = scope.meta.class;
 })(typeof window !== void(0) ? window : global);

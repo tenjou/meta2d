@@ -12,7 +12,7 @@
  * @property inUse {boolean} Flag if resource is in use.
  * @memberof! <global>
  */
-Resource.Basic = meta.Class.extend
+Resource.Basic = meta.class.extend
 ({
 	_init: function() {
 		this.id = Resource.ctrl.getUniqueID();

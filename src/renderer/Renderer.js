@@ -1,6 +1,6 @@
 "use strict";
 
-meta.Renderer = meta.Class.extend
+meta.Renderer = meta.class.extend
 ({
 	init: function() 
 	{
@@ -124,6 +124,7 @@ meta.Renderer = meta.Class.extend
 			this.entitiesAnimRemove.length = 0;
 		}
 
+		// Depth sorting:
 		if(this.needSortDepth) {
 			this.entities.sort(this._sortEntities);
 			this.entitiesPicking.sort(this._sortEntities);

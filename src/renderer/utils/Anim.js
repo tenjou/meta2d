@@ -31,7 +31,7 @@ meta.Anim.prototype =
 			}
 
 			// If texture is animated but not animating:
-			if(this.autoPlay && this.__index === -1) {		
+			if(this.autoPlay) {	
 				meta.renderer.addAnim(this);
 			}			
 		}

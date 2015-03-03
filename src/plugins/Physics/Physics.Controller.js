@@ -36,15 +36,15 @@ Physics.Controller = meta.Controller.extend
 				result = this.overlapAABB(item.volume, item2.volume);
 				if(result) 
 				{
-					if(item.owner.onCollision) { 
+					if(item.onCollision) { 
 						this.manifold.a = item.owner;
 						this.manifold.b = item2.owner;
-						item.owner.onCollision(this.manifold); 
+						item.onCollision(this.manifold); 
 					}
-					if(item2.owner.onCollision) { 
+					if(item2.onCollision) { 
 						this.manifold.a = item2.owner;
 						this.manifold.b = item.owner;				
-						item2.owner.onCollision(this.manifold); 
+						item2.onCollision(this.manifold); 
 					}
 					//console.log("collision");
 					//this.resolveCollision(item, item2);
@@ -130,10 +130,7 @@ Physics.Controller = meta.Controller.extend
 			return;
 		}
 
-		var comp = entity.addComponent("body", Physics.Body);
-		if(comp) {
-			this.items.push(comp);
-		}
+		entity.addComponent("body", Physics.Body);
 	},
 
 	onDebug: function(value, event) 

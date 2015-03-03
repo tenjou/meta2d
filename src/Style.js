@@ -231,23 +231,25 @@ meta.Style.prototype =
 			return;
 		}	
 
+		var params = styleState.params;
+
 		// Revert changes of previous state.
 		var key;
 		var entityParams = entity._styleParams;
-		for(key in entityParams) {
-			entity[key] = entityParams[key];
+		for(key in entityParams) 
+		{
+			if(!params[key]) {
+				entity[key] = entityParams[key];
+			}
 		}
 		entityParams = {};
 		entity._styleParams = entityParams;	
 
 		// Apply new params.
-		var params = styleState.params;
 		for(key in params) {
 			entityParams[key] = entity[key];
 			entity[key] = params[key];
 		}
-
-		//entity.texture = "Reaper-Walk";
 		
 		entity._styleState = styleState;
 
