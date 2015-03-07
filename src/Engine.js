@@ -698,11 +698,11 @@ meta.engine =
 
 	/* Cursor */
 	set cursor(value) {
-		meta.element.style.cursor = value;
+		this._container.style.cursor = value;
 	},
 
 	get cursor() {
-		return meta.element.style.cursor;
+		return this._container.style.cursor;
 	},
 
 	//

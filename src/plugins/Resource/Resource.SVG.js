@@ -12,7 +12,7 @@ Resource.SVG = Resource.Texture.extend
 	fillRect: function(x, y, width, height) 
 	{
 		if(this.fullWidth < 2 && this.fullHeight < 2) {
-			this.resize(width + x, height + y);
+			this.resizeSilently(width + x, height + y);
 			this.ctx.fillStyle = this._fillStyle;
 		}
 
@@ -42,6 +42,30 @@ Resource.SVG = Resource.Texture.extend
 		this.ctx.stroke();
 
 		this.loaded = true;
+	},
+
+	rect: function(x, y, width, height)
+	{
+		if(this.fullWidth < 2 && this.fullHeight < 2) {
+			this.resizeSilently(width + x, height + y);
+			this.ctx.fillStyle = this._fillStyle;
+		}
+
+		this.ctx.beginPath();
+		this.ctx.rect(x, y, width, height);
+
+		if(this._fillStyle) {
+			this.ctx.fillStyle = this._fillStyle;
+			this.ctx.fill();
+		}
+
+		if(this._strokeStyle || !this._fillStyle) {
+			this.ctx.lineWidth = this._lineWidth;
+			this.ctx.strokeStyle = this._strokeStyle;
+			this.ctx.stroke();			
+		}
+
+		this.loaded = true;		
 	},
 
 	/**
@@ -153,38 +177,17 @@ Resource.SVG = Resource.Texture.extend
 	},
 
 	/**
-	 * Stroke/fill lines.
-	 * @param params {Object} Parameters.
-	 * @param params.buffer {Array} Array with line points.
-	 * @param params.color {Hex} Fill color.
-	 * @param [params.borderColor=#000000] {Hex=} Border color.
-	 * @param params.borderWidth {Number} Thickness of border line.
-	 * @param [params.lineCap="butt"] {String=} Type of line endings.
-	 * @param params.lineDash {Array} Array with sequence for dashing.
-	 * @param params.drawOver {Boolean} Flag - draw over previous texture content.
-	 * @param params.addWidth {Number} Add to width.
-	 * @param params.addHeight {Number} Add to height.	 
+	 * Stroke/fill lines.	 
 	 */
-	stroke: function(params)
-	{
-		if(!params) {
-			console.warn("[Resource.Texture.stroke]:", "No parameters specified.");
-			return;
-		}
-
-		if(!params.buffer) {
-			console.warn("[Resource.Texture.stroke]:", "No buffer defined.");
-			return;
-		}	
-
+	stroke: function(buffer)
+	{	
 		var scope = meta;	
-		var unitSize = scope.unitSize;
+		var unitSize = 1;
 
 		// Calculate bounds.
 		var minX = Number.POSITIVE_INFINITY, minY = minX, maxX = Number.NEGATIVE_INFINITY, maxY = maxX;
 
 		var item, i, x, y;
-		var buffer = params.buffer;
 		var numItems = buffer.length;
 		for(i = 0; i < numItems; i += 2)
 		{
@@ -204,31 +207,18 @@ Resource.SVG = Resource.Texture.extend
 		if(minY > 0) { minY = 0; }
 
 		var ctx = this.ctx;
-		params.addWidth = params.addWidth || 0;
-		params.addHeight = params.addHeight || 0;
-		params.lineWidth = params.lineWidth || 1;
-		if(!params.color && !params.fillColor) {
-			params.color = "#000000";
-		}
+		var halfLineWidth = this._lineWidth / 2;
+		var offsetX = -minX + halfLineWidth;
+		var offsetY = -minY + halfLineWidth;
+		this.resizeSilently((maxX - minX + this._lineWidth), 
+			maxY - minY + this._lineWidth);
 
-		var halfLineWidth = params.lineWidth / 2;
-		var offsetX = -minX + halfLineWidth + (params.addWidth * 0.5);
-		var offsetY = -minY + halfLineWidth + (params.addHeight * 0.5);
-		this.resize((maxX - minX + params.lineWidth + params.addWidth), 
-			maxY - minY + params.lineWidth);
-		//this.resize(100, 100);
-
-		if(this.textureType) {
-			this._createCachedImg();
-			ctx = this._cachedCtx;
+		ctx.lineWidth = this._lineWidth;
+		if(this._lineCap) {
+			ctx.lineCap = this._lineCap;
 		}
-
-		ctx.lineWidth = params.lineWidth;
-		if(params.lineCap) {
-			ctx.lineCap = params.lineCap;
-		}
-		if(params.lineDash) {
-			ctx.setLineDash(params.lineDash);
+		if(this._lineDash) {
+			ctx.setLineDash(this._lineDash);
 		}
 
 		ctx.beginPath();
@@ -237,24 +227,18 @@ Resource.SVG = Resource.Texture.extend
 			ctx.lineTo(buffer[i] + offsetX, buffer[i + 1] + offsetY);
 		}
 
-		if(params.fillColor) {
-			ctx.fillStyle = params.fillColor;
-			ctx.closePath();
-			ctx.fill();
+		if(this._fillStyle) {
+			this.ctx.fillStyle = this._fillStyle;
+			this.ctx.fill();
 		}
 
-		if(params.color) {
-			ctx.strokeStyle = params.color;
-			ctx.stroke();
+		if(this._strokeStyle || !this._fillStyle) {
+			this.ctx.lineWidth = this._lineWidth;
+			this.ctx.strokeStyle = this._strokeStyle;
+			this.ctx.stroke();			
 		}
 
-		if(this.textureType === Resource.TextureType.WEBGL) {
-			var gl = scope.ctx;
-			gl.bindTexture(gl.TEXTURE_2D, this.image);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
-		}
-
-		this.isLoaded = true;
+		this.loaded = true;
 	},
 
 	border: function(params)
@@ -353,80 +337,6 @@ Resource.SVG = Resource.Texture.extend
 			ctx.strokeStyle = params.borderColor;
 			ctx.stroke();
 		}		
-
-		if(this.textureType === Resource.TextureType.WEBGL) {
-			var gl = meta.ctx;
-			gl.bindTexture(gl.TEXTURE_2D, this.image);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
-		}
-
-		this.isLoaded = true;
-	},
-
-	rect: function(params, height, color, borderWidth)
-	{
-		if(typeof(params) !== "object") 
-		{
-			this.rect({ 
-				width: params, height: height,
-				color: color,
-				borderWidth: borderWidth
-			});
-			return;
-		}
-		if(!params) {
-			console.warn("[Resource.Texture.rect]:", "No parameters specified.");
-			return;
-		}
-
-		var ctx = this.ctx;
-		var width = params.width || 1;
-		var height = params.height || 1;
-		params.color = params.color || "#0000000";
-		var borderWidth = params.borderWidth || 1;
-
-		if(!params.drawOver) {
-			this.resize(width, height);
-		}		
-
-		if(this.textureType) {
-			this._createCachedImg();
-			ctx = this._cachedCtx;
-		}
-
-		ctx.strokeStyle = params.color;
-		ctx.lineWidth = borderWidth;
-
-		var halfWidth = Math.ceil(borderWidth / 2);
-
-		if(borderWidth % 2 === 1)
-		{
-			ctx.save();
-			ctx.translate(0.5, 0.5);
-			ctx.beginPath();
-			ctx.moveTo(halfWidth, halfWidth);
-			ctx.lineTo(width - halfWidth - 1, halfWidth);
-			ctx.lineTo(width - halfWidth - 1, height - halfWidth - 1);
-			ctx.lineTo(halfWidth, height - halfWidth - 1);
-			ctx.closePath();
-			ctx.stroke();
-			ctx.restore();
-		}
-		else 
-		{
-			ctx.beginPath();
-			ctx.moveTo(halfWidth, halfWidth);
-			ctx.lineTo(width - halfWidth, halfWidth);
-			ctx.lineTo(width - halfWidth, height - halfWidth);
-			ctx.lineTo(halfWidth, height - halfWidth);
-			ctx.closePath();
-			ctx.stroke();	
-		}
-
-		if(params.fillColor) {
-			ctx.fillStyle = params.fillColor;
-			ctx.fill();
-		}
 
 		if(this.textureType === Resource.TextureType.WEBGL) {
 			var gl = meta.ctx;
@@ -705,6 +615,9 @@ Resource.SVG = Resource.Texture.extend
 
 	//
 	_lineWidth: 2,
-	_fillStyle: "#000",
-	_strokeStyle: "#000"
+	_lineCap: "",
+	_lineDash: "",
+
+	_fillStyle: "",
+	_strokeStyle: ""
 });

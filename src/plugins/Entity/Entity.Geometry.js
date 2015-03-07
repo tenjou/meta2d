@@ -473,6 +473,8 @@ Entity.Geometry = meta.class.extend
 
 	resize: function(width, height) 
 	{
+		if(this.volume.width === width && this.volume.height === height) { return; }
+
 		this.volume.resize(width, height);
 		this.updatePos();
 
@@ -483,9 +485,22 @@ Entity.Geometry = meta.class.extend
 				this.children[i]._updateResize();
 			}	
 		}
-
+	
+		this.__clip = true;
+		this.volume.__transformed = true;
 		this.renderer.needRender = true;
 	},
+
+	set width(width) {
+		this.resize(width, this.volume.height);
+	},
+
+	set height(height) {
+		this.resize(this.volume.width, height);
+	},
+
+	get width() { return this.volume.width; },
+	get height() { return this.volume.height; },
 
 	_updateResize: function() 
 	{
@@ -609,6 +624,7 @@ Entity.Geometry = meta.class.extend
 
 		entity.parent = this;
 		this.updatePos();
+		entity.updateAnchor();
 		this.updateZ();
 
 		if(this.totalAngle !== 0) {
@@ -643,6 +659,14 @@ Entity.Geometry = meta.class.extend
 	{
 		if(this._visible === value) { return; }
 		this._visible = value;
+
+		if(this.children)
+		{
+			var numChildren = this.children.length;
+			for(var i = 0; i < numChildren; i++) {
+				this.children[i].visible = value;
+			}
+		}
 
 		this.renderer.needRender = true;
 	},
@@ -1108,4 +1132,5 @@ Entity.Geometry = meta.class.extend
 	__added: false,
 	__debug: false,
 	__updateIndex: -1,
+	__clip: false
 });

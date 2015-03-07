@@ -49,7 +49,7 @@ meta.CanvasRenderer = meta.Renderer.extend
 			for(i = 0; i < numEntities; i++) 
 			{
 				entity = this.entities[i];
-				if(this._debug || this.meta.cache.debug) 
+				if(entity.__debug || this.meta.cache.debug) 
 				{
 					if(entity._static) 
 					{
@@ -164,8 +164,16 @@ meta.CanvasRenderer = meta.Renderer.extend
 			if(texture.frames > 1) {
 				texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, anim._frame);
 			}
-			else {
-				this.ctx.drawImage(texture.canvas, -volume.initPivotPosX, -volume.initPivotPosY);
+			else 
+			{
+				if(entity.__clip) 
+				{
+					this.ctx.drawImage(texture.canvas, -volume.initPivotPosX, -volume.initPivotPosY, 
+						volume.width, volume.height, 0, 0, volume.width, volume.height);
+				}
+				else {
+					this.ctx.drawImage(texture.canvas, -volume.initPivotPosX, -volume.initPivotPosY);
+				}
 			}			
 
 			this.ctx.globalAlpha = 1.0;

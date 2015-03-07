@@ -25,10 +25,6 @@ Entity.Text = Entity.Geometry.extend
 		var width = metrics.width;
 		var offsetX = 0;
 
-		if(this._outline) {
-			width += this._outlineWidth * 2;
-			offsetX += this._outlineWidth;
-		}
 		if(this._shadow) {
 			width += this._shadowBlur * 2;
 			offsetX += this._shadowBlur;
@@ -52,7 +48,7 @@ Entity.Text = Entity.Geometry.extend
 		if(this._outline) {
 			ctx.lineWidth = this._outlineWidth;
 			ctx.strokeStyle = this._outlineColor;
-			ctx.strokeText(this._text, this._outlineWidth, 0);
+			ctx.strokeText(this._text, offsetX, 0);
 		}
 
 		this.renderer.needRender = true;
@@ -103,7 +99,7 @@ Entity.Text = Entity.Geometry.extend
 		this._outlineColor = color;
 		this._outline = true;
 
-		his.updateTxt();
+		this.updateTxt();
 	},
 
 	get outlineColor() { return this._outlineColor; },

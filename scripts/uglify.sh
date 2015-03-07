@@ -1,6 +1,7 @@
 #!/bin/bash
 cd ../src/
 cat meta.js \
+	Class.js \
 	Engine.js \
 	Device.js \
 	Error.js \
@@ -9,7 +10,6 @@ cat meta.js \
 	View.js \
 	Camera.js \
 	World.js \
-	Class.js \
 	Controller.js \
 	Timer.js \
 	Style.js \

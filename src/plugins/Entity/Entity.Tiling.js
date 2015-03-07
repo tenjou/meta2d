@@ -66,6 +66,8 @@ Entity.Tiling = Entity.Geometry.extend
 		var cameraVolume = meta.camera.volume;		
 		var posX = Math.abs(cameraVolume.x % this.tileTexture.fullWidth - this.tileTexture.fullWidth);
 		var posY = Math.abs(cameraVolume.y % this.tileTexture.fullHeight - this.tileTexture.fullHeight);
+		posX = 0;
+		posY = 0;
 
 		var maxTilesX = Math.ceil((this._texture.fullWidth + posX) / this.tileTexture.fullWidth);
 		var maxTilesY = Math.ceil((this._texture.fullHeight + posY) / this.tileTexture.fullHeight);

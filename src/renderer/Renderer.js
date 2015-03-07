@@ -510,14 +510,32 @@ meta.Renderer = meta.class.extend
 
 			if(this.enablePixelPicking) 
 			{
-				if(!entity.isPointInsidePx(data.x, data.y)) {
-					continue;
+				if(entity._static) 
+				{
+					if(!entity.isPointInsidePx(data.screenX, data.screenY)) {
+						continue;
+					}					
+				}
+				else 
+				{
+					if(!entity.isPointInsidePx(data.x, data.y)) {
+						continue;
+					}
 				}
 			}
 			else 
 			{
-				if(!entity.isPointInside(data.x, data.y)) {
-					continue;
+				if(entity._static) 
+				{
+					if(!entity.isPointInside(data.screenX, data.screenY)) {
+						continue;
+					}					
+				}
+				else 
+				{
+					if(!entity.isPointInside(data.x, data.y)) {
+						continue;
+					}
 				}
 			}
 
