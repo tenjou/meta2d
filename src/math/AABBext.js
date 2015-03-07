@@ -1,6 +1,6 @@
 "use strict";
 
-meta.Volume = function()
+meta.math.AABBext = function()
 {
 	this.x = 0;
 	this.y = 0;
@@ -15,7 +15,7 @@ meta.Volume = function()
 	this.maxY = 0;
 };
 
-meta.Volume.prototype = 
+meta.math.AABBext.prototype = 
 {
 	/** 
 	 * position

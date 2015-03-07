@@ -14,7 +14,7 @@ meta.CanvasRenderer = meta.Renderer.extend
 	{
 		var numEntities = this.entitiesAnim.length;
 		for(var i = 0; i < numEntities; i++) {
-			this.entitiesAnim[i].anim(tDelta);
+			this.entitiesAnim[i].update(tDelta);
 		}
 
 		if(!this.needRender) { return; }
@@ -36,33 +36,38 @@ meta.CanvasRenderer = meta.Renderer.extend
 			this._renderFuncs[i].render(tDelta);
 		}
 
+		var entity = null;
+
 		/* Debug */
-		if(this.meta.cache.debug) 
+		if(this.meta.cache.debug || this.numDebug > 0) 
 		{
 			this.ctx.save();
 			this.ctx.lineWidth = 2;
 			this.ctx.strokeStyle = "red";
 			this.ctx.fillStyle = "red";
 
-			for(i = 0; i < numEntities; i++) {
-				this.drawVolume(this.entities[i]);
-			}
-
-			this.ctx.restore();
-		}
-		else if(this.numDebug > 0) 
-		{
-			this.ctx.save();
-			this.ctx.lineWidth = 2;
-			this.ctx.strokeStyle = "red";
-			this.ctx.fillStyle = "red";
-
-			var entity;
 			for(i = 0; i < numEntities; i++) 
 			{
 				entity = this.entities[i];
-				if(entity.__debug) {
-					this.drawVolume(entity);
+				if(this._debug || this.meta.cache.debug) 
+				{
+					if(entity._static) 
+					{
+						var zoom = this.camera._zoom;
+
+						if(entity._debugger) {
+							this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+						}
+						else {
+							this.ctx.setTransform(zoom, 0, 0, zoom, 0, 0);
+						}
+						
+						this.drawVolume(entity);
+						this.ctx.setTransform(zoom, 0, 0, zoom, -this.camera._x * zoom | 0, -this.camera._y * zoom | 0);
+					}
+					else {				
+						this.drawVolume(entity);
+					}
 				}
 			}
 
@@ -110,48 +115,70 @@ meta.CanvasRenderer = meta.Renderer.extend
 		}
 		else 
 		{
-			var texture = entity._texture;
-			if(!texture) { return; }
-
-			var volume = entity.volume;
-			var anim = entity.anim;
-
-			if(!volume.__transformed) 
+			if(entity._static) 
 			{
-				if(texture.frames > 1) {
-					texture.drawFrame(this.ctx, volume.minX | 0, volume.minY | 0, anim._frame);
-				}
-				else {
-					this.ctx.drawImage(texture.canvas, volume.minX | 0, volume.minY | 0);
-				}
-			}
-			else
-			{
-				this.ctx.globalAlpha = entity._alpha;
-
-				this.ctx.transform(
-					volume.m11, volume.m12, 
-					volume.m21, volume.m22,
-					volume.x | 0, volume.y | 0);
-
-				if(texture.frames > 1) {
-					texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, anim._frame);
-				}
-				else {
-					this.ctx.drawImage(texture.canvas, -volume.initPivotPosX, -volume.initPivotPosY);
-				}			
-
-				this.ctx.globalAlpha = 1.0;
-				
 				var zoom = this.camera._zoom;
+
+				if(entity._debugger) {
+					this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+				}
+				else {
+					this.ctx.setTransform(zoom, 0, 0, zoom, 0, 0);
+				}
+				
+				this._drawEntity(entity);
 				this.ctx.setTransform(zoom, 0, 0, zoom, -this.camera._x * zoom | 0, -this.camera._y * zoom | 0);
 			}
+			else {
+				this._drawEntity(entity);
+			}
+		}
+	},
+
+	_drawEntity: function(entity)
+	{
+		var texture = entity._texture;
+		if(!texture) { return; }
+
+		var volume = entity.volume;
+		var anim = entity.anim;
+
+		if(!volume.__transformed) 
+		{
+			if(texture.frames > 1) {
+				texture.drawFrame(this.ctx, volume.minX | 0, volume.minY | 0, anim._frame);
+			}
+			else {
+				this.ctx.drawImage(texture.canvas, volume.minX | 0, volume.minY | 0);
+			}
+		}
+		else
+		{
+			this.ctx.globalAlpha = entity._alpha;
+
+			this.ctx.transform(
+				volume.m11, volume.m12, 
+				volume.m21, volume.m22,
+				volume.x | 0, volume.y | 0);
+
+			if(texture.frames > 1) {
+				texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, anim._frame);
+			}
+			else {
+				this.ctx.drawImage(texture.canvas, -volume.initPivotPosX, -volume.initPivotPosY);
+			}			
+
+			this.ctx.globalAlpha = 1.0;
+			
+			var zoom = this.camera._zoom;
+			this.ctx.setTransform(zoom, 0, 0, zoom, -this.camera._x * zoom | 0, -this.camera._y * zoom | 0);
 		}
 	},
 
 	drawVolume: function(entity)
 	{
 		if(!entity._visible) { return; }
+		if(entity._debugger) { return; }
 
 		var volume = entity.volume;
 

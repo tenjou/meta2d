@@ -56,12 +56,11 @@ meta.engine =
 
 		meta.subscribe(this, Input.Event.KEY_DOWN, this.onKeyDown);
 
+		meta.world = new meta.World(0, 0);
 		meta.camera = new meta.Camera();
 
 		this.sortAdaptions();
-		this.onResize();
-		
-		meta.world = new meta.World(this.width, this.height);		
+		this.onResize();	
 
 		this._initAll();
 	},
@@ -447,11 +446,12 @@ meta.engine =
 		this.canvas.style.width = (width * this.scaleX) + "px";
 		this.canvas.style.height = (height * this.scaleY) + "px";
 
-		this.ctx.imageSmoothingEnabled = meta.cache.imageSmoothing;
-		this.ctx.webkitImageSmoothingEnabled = meta.cache.imageSmoothing;
-		this.ctx.mozImageSmoothingEnabled = meta.cache.imageSmoothing;
-		this.ctx.msImageSmoothingEnabled = meta.cache.imageSmoothing;
-		this.ctx.oImageSmoothingEnabled = meta.cache.imageSmoothing;
+		if(this.ctx.imageSmoothingEnabled) {
+			this.ctx.imageSmoothingEnabled = meta.cache.imageSmoothing;
+		}
+		else {
+			this.ctx[meta.device.vendor + "ImageSmoothingEnabled"] = meta.cache.imageSmoothing;
+		}
 		
 		this._updateOffset();
 		this.chn.resize.emit(this, meta.Event.RESIZE);

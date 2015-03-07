@@ -153,7 +153,7 @@ Resource.Texture = Resource.Basic.extend
 			this.clear();
 		}
 
-		this.resize(img.width, img.height);
+		this.resizeSilently(img.width, img.height);
 		this.ctx.drawImage(img, 0, 0);
 		this.unitRatio = meta.unitRatio;
 
@@ -178,6 +178,13 @@ Resource.Texture = Resource.Basic.extend
 	 * @function
 	 */
 	resize: function(width, height)
+	{
+		this.resizeSilently(width, height);
+
+		this.loaded = true;
+	},
+
+	resizeSilently: function(width, height) 
 	{
 		if(this.trueFullWidth === width && this.trueFullHeight === height) { return; }
 
@@ -222,8 +229,6 @@ Resource.Texture = Resource.Basic.extend
 			this.canvas.width = this.trueFullWidth;
 			this.canvas.height = this.trueFullHeight;
 		}
-
-		this.loaded = true;
 	},
 
 	upResize: function(width, height)

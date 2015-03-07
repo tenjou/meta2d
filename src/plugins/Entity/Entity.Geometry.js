@@ -3,8 +3,8 @@
 Entity.Geometry = meta.class.extend
 ({
 	_init: function(texture) {
-		this.volume = new meta.Volume();
-		this.anim = new meta.Anim();
+		this.volume = new meta.math.AABBext();
+		this.anim = new meta.Anim(this);
 		this.initFromParam(texture);
 	},
 
@@ -480,19 +480,30 @@ Entity.Geometry = meta.class.extend
 		{
 			var numChildren = this.children.length;
 			for(var i = 0; i < numChildren; i++) {
-				this.children[i].updateAnchor();
+				this.children[i]._updateResize();
 			}	
 		}
 
 		this.renderer.needRender = true;
 	},
 
+	_updateResize: function() 
+	{
+		this.updateAnchor();
+
+		if(this.onResize) {
+			this.onResize();
+		}
+	},
+
+	onResize: null,
+
 	/**
 	 * Callback for texture events.
 	 * @param data {*} Data of the event.
 	 * @param event {*} Type of the event.
 	 */
-	onTextureEvent: function(data, event)
+	_onTextureEvent: function(data, event)
 	{
 		var resEvent = Resource.Event;
 		if(event === resEvent.LOADED) {
@@ -519,6 +530,8 @@ Entity.Geometry = meta.class.extend
 
 	set texture(texture)
 	{
+		if(this.texture === texture) { return; }
+
 		if(this._texture) {
 			this._texture.unsubscribe(this);
 		}
@@ -537,7 +550,7 @@ Entity.Geometry = meta.class.extend
 				this._texture = texture;
 			}
 
-			this._texture.subscribe(this, this.onTextureEvent);
+			this._texture.subscribe(this, this._onTextureEvent);
 
 			if(this._texture._loaded) {
 				this.updateFromTexture();
@@ -565,6 +578,18 @@ Entity.Geometry = meta.class.extend
 
 	get needRender() { return this._needRender; },
 
+	set updating(value) 
+	{
+		if(value) {
+			this.renderer.addUpdating(this);
+		}
+		else {
+			this.renderer.removeUpdating(this);
+		}
+	},
+
+	get updating() { return (this.__updateIndex > -1) ? true : false; },
+
 	attach: function(entity)
 	{
 		if(!entity) {
@@ -579,7 +604,8 @@ Entity.Geometry = meta.class.extend
 			this.children.push(entity);
 		}
 
-		if(this.__ui) { entity.__ui = this.__ui; }
+		if(this._static) { entity._static = true; }
+		if(this._debugger) { entity._debugger = true; }
 
 		entity.parent = this;
 		this.updatePos();
@@ -623,17 +649,50 @@ Entity.Geometry = meta.class.extend
 
 	get visible() { return this._visible; },
 
+	set static(value) 
+	{
+		if(this._static === value) { return; }
+		this._static = value;
+
+		if(this.children) 
+		{
+			var numChildren = this.children.length;
+			for(var i = 0; i < numChildren; i++) {
+				this.children[i].static = value;
+			}
+		}
+
+		this.renderer.needRender = true;
+	},
+
+	get static() { return this._static; },
+
+	set debugger(value) 
+	{
+		if(this._debugger === value) { return; }
+		this._debugger = value;
+
+		this.renderer.needRender = true;
+	},
+
+	get debugger() { return this._debugger; },	
+
 	set state(name)
 	{
 		if(this._state === name) { return; }
-		this._state = name;
 
-		if(this.onStateChange) {
-			this.onStateChange();
+		if(this.onStateExit) {
+			this.onStateExit();
 		}
 
+		this._state = name;
+
 		if(this._style) {
-			this.renderer.updateState(this);
+			this.updateState();
+		}
+
+		if(this.onStateEnter) {
+			this.onStateEnter();
 		}
 	},
 
@@ -650,7 +709,7 @@ Entity.Geometry = meta.class.extend
 				this._style = new meta.Style(style);
 			}
 
-			this.renderer.updateState(this);
+			this.updateState();
 		}
 		else {
 			this._style = null;
@@ -794,8 +853,16 @@ Entity.Geometry = meta.class.extend
 
 	set tween(obj)
 	{
+		if(!obj) {
+			this._tween = null;
+			return;
+		}
+
 		if(!this._tweenCache) {
 			this._tweenCache = new meta.Tween.Cache(this);
+		}
+		else {
+			this._tweenCache.stop();
 		}
 
 		if(obj instanceof meta.Tween.Link) {
@@ -818,13 +885,11 @@ Entity.Geometry = meta.class.extend
 
 	get tween()
 	{
-		if(!this._tweenCache) {
-			this._tweenCache = new meta.Tween.Cache(this);
-			this._tweenCache.tween = new meta.Tween();
+		if(this._tweenCache) {
+			return this._tweenCache.tween;
 		}
 
-		this._tweenCache.tween.cache = this._tweenCache;
-		return this._tweenCache.tween;
+		return null;
 	},	
 
 	addComponent: function(name, obj, params) 
@@ -974,13 +1039,6 @@ Entity.Geometry = meta.class.extend
 
 	get ignoreParentScale() { return this._ignoreParentScale; },
 
-	set ui(value) {
-		if(this.__ui === value) { return; }
-		this.__ui = value;
-	},
-
-	get ui() { return this.__ui; },
-
 	/* Debug */
 	set debug(value) 
 	{
@@ -1018,6 +1076,8 @@ Entity.Geometry = meta.class.extend
 	loaded: true,
 	_removed: false,
 	_visible: true,
+	_static: false,
+	_debugger: false,
 
 	body: null,
 	children: null,
@@ -1034,6 +1094,7 @@ Entity.Geometry = meta.class.extend
 	components: null,
 
 	_pickable: false,
+	__picking: false,
 	hover: false,
 	pressed: false,
 	dragged: false,
@@ -1046,6 +1107,5 @@ Entity.Geometry = meta.class.extend
 
 	__added: false,
 	__debug: false,
-	__ui: false,
 	__updateIndex: -1,
 });

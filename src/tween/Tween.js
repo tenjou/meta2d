@@ -2,11 +2,10 @@
 
 /**
  * Tweening library. Have dependency on Entity.Controller.
+ *
  * @class
  * @param owner {Object} Object to tween.
  * @param chain {Array} Buffer with meta.Tween.Link.
- * @param linkIndex {Number} Current index of the link from the chain.
- * @param currLink {meta.Tween.Link} Current active link.
  * @param numRepeat {Number} Number of repeat times.
  */
 meta.Tween = function() {
@@ -35,6 +34,7 @@ meta.Tween.prototype =
 
 			cache.paused = false;
 			cache.numRepeat = this.numRepeat;
+			cache._tFrame = meta.time.update;
 			this.next();
 			this._play();
 			this.cache = null;
@@ -52,31 +52,18 @@ meta.Tween.prototype =
 
 	/**
 	 * Stop tweening.
-	 * @returns {meta.Tween}
+	 * @return {meta.Tween}
 	 */
 	stop: function(callCB)
 	{
-		this.linkIndex = 0;
-		this._stop(callCB);	
+		this.cache.currLink = null;
+		this.cache.linkIndex = 0;
 
-		if(this.cache) {
-			this.autoPlay = false;
-			this.cache = null;	
-		}			
-	
-		return this;
-	},
-
-	_stop: function(callCB) 
-	{
 		if(meta.renderer.removeTween(this.cache)) 
 		{
 			if(callCB) {
 				callCB(this.cache.owner);
 			}
-			if(this.cache.currLink._onDone) {
-				this.cache.currLink._onDone.call(this.cache.owner);
-			}	
 
 			if(this._group)
 			{
@@ -85,7 +72,9 @@ meta.Tween.prototype =
 					this._group.callback();
 				}
 			}
-		}
+		}		
+	
+		return this;
 	},
 
 	/**
@@ -119,11 +108,8 @@ meta.Tween.prototype =
 	 */
 	clear: function()
 	{
-		this.stop();
-		this._tStart = 0;
+		this.stop(null);	
 		this.chain.length = 0;
-		this.linkIndex = 0;
-		this.currLink = null;
 
 		if(this._group) {
 			this._group.users--;
@@ -176,7 +162,12 @@ meta.Tween.prototype =
 				if(cache.numRepeat !== -1) 
 				{
 					cache.numRepeat--;
-					if(cache.numRepeat === 0) {
+					if(cache.numRepeat === 0) 
+					{
+						if(this.onDone) {
+							this.onDone.call(this.cache.owner);
+						}	
+
 						this.stop();
 						return this;
 					}
@@ -270,6 +261,8 @@ meta.Tween.prototype =
 			return;
 		}
 
+		//console.log(tFrameDelta);
+
 		var tElapsed = (tCurr - cache._tStart) / cache.currLink.duration;
 		if(tElapsed > 1.0) {
 			tElapsed = 1.0;
@@ -338,12 +331,12 @@ meta.Tween.prototype =
 	group: function(group) 
 	{
 		if(!group) {
-			console.warn("[meta.Tween.group]:", "No group name specified.");
+			console.warn("(meta.Tween.group) No group name specified.");
 			return this;
 		}
 
 		if(this._group) {
-			console.warn("[meta.Tween.group]:", "Tween already is part of a group.");
+			console.warn("(meta.Tween.group) Tween already is part of a group.");
 			return this;			
 		}
 
@@ -361,7 +354,6 @@ meta.Tween.prototype =
 	autoPlay: false,
 
 	_group: null,
-	_isReversing: false,
 	_removeFlag: 0,
 	numRepeat: 0
 };
@@ -374,8 +366,10 @@ meta.Tween.Cache = function(owner)
 	this.linkIndex = 0;
 	this.currLink = null;
 	this.numRepeat = 0;
+	this.onDone = null;
 
 	this.__index = -1;
+	this.__removed = 0;
 	this._isLinkDone = false;
 	this._tStart = 0;
 	this._tFrame = 0;	
@@ -386,6 +380,12 @@ meta.Tween.Cache.prototype =
 	update: function(tDelta) {
 		this.tween.cache = this;
 		this.tween.update(tDelta);
+		this.tween.cache = null;
+	},
+
+	stop: function() {
+		this.tween.cache = this;
+		this.tween.stop();
 		this.tween.cache = null;
 	},
 

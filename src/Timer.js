@@ -65,6 +65,11 @@ meta.addTimer = function(owner, func, tDelta, numTimes)
 		owner = window;
 	} 
 
+	if(!func) {
+		console.warn("(meta.addTimer) Invalid function passed");
+		return;
+	}
+
 	var newTimer = new meta.Timer(owner, func, tDelta, numTimes);
 	newTimer.__index = meta.engine.timers.length;
 	meta.engine.timers.push(newTimer);

@@ -100,16 +100,16 @@ Physics.Body = meta.class.extend
 
 		if(this.haveTarget) 
 		{
+			this.haveTarget = false;
+
 			if(this.moveToCB) {
 				this.moveToCB.call(this.owner);
 				this.moveToCB = null;
 			}
-
-			this.haveTarget = false;
 		}
 
 		if(this.onStop) {
-			this.onStop();
+			this.onStop.call(this.owner);
 		}
 	},
 

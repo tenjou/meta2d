@@ -2,7 +2,7 @@
 
 /**
  * Class for managing viewable region.
- * @constructor
+ * @class
  * @property [x=0] {Number} Setter/Getter. Camera left coordinate on X axis.
  * @property [y=0] {Number} Setter/Getter. Camera top coordinate on Y axis.
  * @property volume {meta.math.AdvAABB} Volume of viewable region.
@@ -19,24 +19,21 @@
  */
 meta.Camera = function()
 {
-	this._x = 0;
-	this._y = 0;
-	this.volume = new meta.math.AABB(0, 0, 0, 0);
+	this.volume = new meta.math.AABBext(0, 0, 0, 0);
 	this.zoomBounds = null;
 
+	this._autoZoom = false;
 	this._zoom = 1.0;
 	this.prevZoom = 1.0;
 	this.zoomRatio = 1.0;
-
+	
 	this._draggable = false;
-	this._isDraggable = false;
-	this._isAutoZoom = false;
+	this._dragging = false;
 
-	this._enableBorderIgnore = true;
-
-	this._enableCentering = false;
-	this._enableCenteringX = true;
-	this._enableCenteringY = true;
+	this._center = false;
+	this._centerX = true;
+	this._centerY = true;
+	this._useWorldBounds = false;
 
 	this._chnMove = null;
 	this._chnResize = null;
@@ -48,9 +45,6 @@ meta.Camera = function()
 
 meta.Camera.prototype =
 {
-	/**
-	 * Constructor.
-	 */
 	init: function()
 	{
 		this._chnMove = meta.createChannel(meta.Event.CAMERA_MOVE);
@@ -76,46 +70,46 @@ meta.Camera.prototype =
 		meta.unsubscribe(this, meta.Event.WORLD_RESIZE);
 	},
 
-
-	/**
-	 * Update camera view.
-	 */
+	/** Update camera view. */
 	updateView: function()
 	{
-		if(this._isAutoZoom) {
+		if(this._autoZoom) {
 			this.updateAutoZoom();
 		}
 		else {
 			this.updateZoom();
 		}
 
+		var world = meta.world;
+
 		/* Initial position */
 		if(!this._wasMoved)
 		{
-			if(this._enableCentering)
+			var moveX = 0;
+			var moveY = 0;
+
+			if(this._center)
 			{
-				var world = meta.world;
-
-				if(this._enableCenteringX) {
-					this._x = Math.floor((this.volume.width - world.width) / 2);
+				if(this._centerX) {
+					moveX = Math.floor((this.volume.width - world.width) / 2);
 				}
 				else {
-					this._x = 0;
+					moveX = 0;
 				}
 
-				if(this._enableCenteringY) {
-					this._y = Math.floor((this.volume.height - world.height) / 2);
+				if(this._centerY) {
+					moveY = Math.floor((this.volume.height - world.height) / 2);
 				}
 				else {
-					this._y = 0;
+					moveY = 0;
 				}
 			}
 			else {
-				this._x = 0;
-				this._y = 0;
+				moveX = 0;
+				moveY = 0;
 			}
 
-			this.volume.move(this._x, this._y);
+			this.volume.move(moveX, moveY);
 		}
 		
 		this._chnMove.emit(this, meta.Event.CAMERA_MOVE);
@@ -127,6 +121,8 @@ meta.Camera.prototype =
 		{
 			this.zoomRatio = 1.0 / this._zoom;		
 			this.volume.scale(this.zoomRatio, this.zoomRatio);
+
+			//meta.world.onResize(this, 0);
 			this._chnResize.emit(this, meta.Event.CAMERA_RESIZE);
 		}	
 	},
@@ -166,7 +162,7 @@ meta.Camera.prototype =
 
 	bounds: function(width, height)
 	{
-		this._isAutoZoom = true;
+		this._autoZoom = true;
 		this.zoomBounds.width = width;
 		this.zoomBounds.height = height;
 		
@@ -177,7 +173,7 @@ meta.Camera.prototype =
 
 	minBounds: function(width, height)
 	{
-		this._isAutoZoom = true;
+		this._autoZoom = true;
 		this.zoomBounds.minWidth = width;
 		this.zoomBounds.minHeight = height;
 		this.updateView();
@@ -185,12 +181,11 @@ meta.Camera.prototype =
 
 	maxBounds: function(width, height)
 	{
-		this._isAutoZoom = true;
+		this._autoZoom = true;
 		this.zoomBounds.maxWidth = width;
 		this.zoomBounds.maxHeight = height;
 		this.updateView();
 	},
-
 
 	_onInput: function(data, event)
 	{
@@ -215,45 +210,59 @@ meta.Camera.prototype =
 	{
 		this.volume.resize(data.width, data.height);
 		this.updateView();
+
+		//meta.world.onResize(this, 0);
 		this._chnResize.emit(this, meta.Event.CAMERA_RESIZE);
 	},
 
 	_onWorldResize: function(data, event) {
-		
+		this.updateView();
 	},
-
 
 	_startDrag: function(data)
 	{
 		if(!this._draggable) { return; }
-		this._isDraggable = true;
+		this._dragging = true;
 	},
 
 	_endDrag: function(data) {
-		this._isDraggable = false;
+		this._dragging = false;
 	},
 
 	_drag: function(data)
 	{
-		if(!this._isDraggable) { return; }
+		if(!this._dragging) { return; }
 
 		var scope = meta;
 		var diffX = (data.screenX - data.prevScreenX) * this.zoomRatio;
 		var diffY = (data.screenY - data.prevScreenY) * this.zoomRatio;
-		this._x -= diffX;
-		this._y -= diffY;
-		this.volume.move(-diffX, -diffY);
 		this._wasMoved = true;
 
-		if(!this.enableBorderIgnore)
+		if(this._useWorldBounds) 
 		{
-			if(-this._x < 0) {
-				this._x = 0;
+			var world = meta.world;
+			var volume = world.volume;
+			var newX = this.volume.minX - diffX; 
+			var newY = this.volume.minY - diffY;
+
+			if(newX < volume.minX) {
+				diffX -= volume.minX - newX;
 			}
-			if(-this._y < 0) {
-				this._y = 0;
+			else if(newX + this.volume.width > volume.maxX) {
+				diffX = this.volume.maxX - volume.maxX;
+			}
+
+			if(newY < volume.minY) {
+				diffY -= volume.minY - newY;
+			}
+			else if(newY + this.volume.height > volume.maxY) {
+				diffY = this.volume.maxY - volume.maxY;
 			}
 		}
+
+		this.volume.move(-diffX, -diffY);
+		this._x = this.volume.minX;
+		this._y = this.volume.minY;
 
 		this._chnMove.emit(this, scope.Event.CAMERA_MOVE);
 		meta.renderer.needRender = true;
@@ -278,12 +287,11 @@ meta.Camera.prototype =
 		this.updateView();
 	},
 
-	get x() { return this._x; },
-	get y() { return this._y; },
+	get x() { return this.volume.x; },
+	get y() { return this.volume.y; },
 
 	get width() { return this.volume.width; },
 	get height() { return this.volume.height; },
-
 
 	set zoom(value)
 	{
@@ -317,39 +325,49 @@ meta.Camera.prototype =
 		}
 		else {
 			meta.unsubscribe(this, events);
-			this._isDraggable = false;
+			this._dragging = false;
 		}
 	},
 
 	get draggable() { return this._draggable; },
 
-
-	set isAutoZoom(value) 
+	set autoZoom(value) 
 	{
-		if(this._isAutoZoom === value) { return; }
-		this._isAutoZoom = value;
+		if(this._autoZoom === value) { return; }
+		this._autoZoom = value;
+
 		this.updateView();
 	},
 
-	get isAutoZoom() { return this._isAutoZoom; },
+	get autoZoom() { return this._autoZoom; },
+
+	set useWorldBounds(value) 
+	{
+		if(this._useWorldBounds === value) { return; }
+		this._useWorldBounds = value;
+
+		this.updateView();
+	},
+
+	get useWorldBounds() { return this._useWorldBounds; },
 
 	/* Enable centering */
-	set enableCentering(value) {
-		this._enableCentering = value;
+	set center(value) {
+		this._center = value;
 		this.updateView();
 	},
 
-	set enableCenteringX(value) {
-		this._enableCenteringX = value;
+	set centerX(value) {
+		this._centerX = value;
 		this.updateView();
 	},
 
-	set enableCenteringY(value) {
-		this._enableCenteringY = value;
+	set centerY(value) {
+		this._centerY = value;
 		this.updateView();
 	},
 
-	get enableCentering() { return this._enableCentering; },
-	get enableCenteringX() { return this._enableCenteringX; },
-	get enableCenteringY() { return this._enableCenteringY; }
+	get center() { return this._center; },
+	get centerX() { return this._centerX; },
+	get centerY() { return this._centerY; }
 };

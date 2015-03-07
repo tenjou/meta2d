@@ -1,7 +1,7 @@
 "use strict";
 
-meta.Anim = function() {
-	this.texture = null;
+meta.Anim = function(owner) {
+	this.owner = owner;
 };
 
 meta.Anim.prototype =
@@ -18,10 +18,13 @@ meta.Anim.prototype =
 			return;
 		}
 
+		this.texture = texture;
+
 		if(texture.frames > 1)
 		{
 			this.texture = texture;
 			this.fps = texture.fps;	
+			this.__tAnim = 0;
 
 			if(this.reverse) {
 				this._frame = texture.frames - 1;
@@ -69,7 +72,7 @@ meta.Anim.prototype =
 
 	onEnd: null,
 
-	anim: function(tDelta)
+	update: function(tDelta)
 	{
 		this.__tAnim += tDelta;
 		if(this.__tAnim < this.__delay) { return; }
@@ -77,17 +80,19 @@ meta.Anim.prototype =
 		var frames = this.__tAnim / this.__delay | 0;
 		this.__tAnim -= (frames * this.__delay);
 
-		meta.renderer.needRender = true;
-
 		if(!this.reverse)
 		{
 			this._frame += frames;
-
+			
 			if(this._frame >= this.texture.frames)
 			{
+				if(this.onEnd) {
+					this.onEnd.call(this.owner);
+				}	
+
 				if(this.pauseLastFrame) {
 					meta.renderer.removeAnim(this);
-					this._frame = this.textures.frames - 1;					
+					this._frame = this.texture.frames - 1;					
 				}				
 				else if(!this.loop) {
 					meta.renderer.removeAnim(this);
@@ -95,12 +100,9 @@ meta.Anim.prototype =
 				}
 				else {
 					this._frame = this._frame % this.texture.frames;
-				}
-
-				if(this.onEnd) {
-					this.onEnd();
-				}
+				}			
 			}
+
 		}
 		else
 		{
@@ -108,6 +110,10 @@ meta.Anim.prototype =
 
 			if(this._frame < 0)
 			{
+				if(this.onEnd) {
+					this.onEnd.call(this.owner);
+				}	
+
 				if(this.pauseLastFrame) {
 					meta.renderer.removeAnim(this);
 					this._frame = 0;
@@ -118,13 +124,11 @@ meta.Anim.prototype =
 				}
 				else {
 					this._frame = (this.texture.frames + this._frame) % this.texture.frames;
-				}				
-
-				if(this.onEnd) {
-					this.onEnd();
 				}
 			}
 		}
+
+		meta.renderer.needRender = true;
 	},	
 
 	set frame(frame) {

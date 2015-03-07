@@ -76,11 +76,6 @@ Resource.SVG = Resource.Texture.extend
 	 */
 	tile: function(params, height, texture)
 	{
-		if(typeof(params) === "number") {
-			this.tile({ width: params, height: height, texture: texture });
-			return;
-		}
-
 		if(!params) {
 			console.warn("[Resource.Texture.tile]:", "No parameters specified.");
 			return;
@@ -97,33 +92,15 @@ Resource.SVG = Resource.Texture.extend
 
 		var texture = params.texture;
 
-		if(texture.textureType === Resource.TextureType.WEBGL) 
-		{
-			if(texture._canvasCache) {
-				texture = texture._canvasCache;
-			}
-			else
-			{
-				texture._canvasCache = new Resource.Texture(Resource.TextureType.CANVAS, texture.path);
-				texture._canvasCache.load();
-				texture = texture._canvasCache;
-
-				this._loadCache = { name: "tile", data: params };
-				this.isLoaded = false;
-				texture.subscribe(this, this.onTextureCacheEvent);
-				return;	
-			}		
-		}
-
 		// If source texture is not yet loaded. Create chace and wait for it.
-		if(!texture._isLoaded) 
+		if(!texture._loaded) 
 		{
 			if(!texture._isLoading) {
 				texture.load();
 			}
 
 			this._loadCache = { name: "tile", data: params };
-			this.isLoaded = false;
+			this.loaded = false;
 			texture.subscribe(this, this.onTextureCacheEvent);
 			return;
 		}
@@ -139,29 +116,24 @@ Resource.SVG = Resource.Texture.extend
 		this.resize(params.width, params.height);
 
 		if(params.center) {
-			params.x += (this.trueFullWidth & (texture.trueFullWidth - 1)) / 2;
-			params.y += (this.trueFullHeight & (texture.trueFullHeight - 1)) / 2;		
+			params.x += (this.fullWidth & (texture.fullWidth - 1)) / 2;
+			params.y += (this.fullHeight & (texture.fullHeight - 1)) / 2;		
 		}
 
 		var ctx = this.ctx;
-		if(this.textureType) {
-			this._createCachedImg();
-			ctx = this._cachedCtx;
-		}
-
 		var posX = params.x;
 		var posY = params.y;
-		var numX = Math.ceil(this.trueFullWidth / texture.trueFullWidth) || 1;
-		var numY = Math.ceil(this.trueFullHeight/ texture.trueFullHeight) || 1;
+		var numX = Math.ceil(this.fullWidth / texture.fullWidth) || 1;
+		var numY = Math.ceil(this.fullHeight/ texture.fullHeight) || 1;
 
 
 		if(posX > 0) {
-			numX += Math.ceil(posX / texture.trueFullWidth);
-			posX -= texture.trueFullWidth;
+			numX += Math.ceil(posX / texture.fullWidth);
+			posX -= texture.fullWidth;
 		}
 		if(posY > 0) {
-			numY += Math.ceil(posY / texture.trueFullHeight);
-			posY -= texture.trueFullHeight;
+			numY += Math.ceil(posY / texture.fullHeight);
+			posY -= texture.fullHeight;
 		}
 
 		var origY = posY;
@@ -177,13 +149,7 @@ Resource.SVG = Resource.Texture.extend
 			posY = origY;
 		}
 
-		if(this.textureType) {
-			var gl = scope.ctx;
-			gl.bindTexture(gl.TEXTURE_2D, this.image);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
-		}
-
-		this.isLoaded = true;
+		this.loaded = true;
 	},
 
 	/**

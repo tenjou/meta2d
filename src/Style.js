@@ -130,8 +130,7 @@ meta.Style.prototype =
 				if(this.defaultState) 
 				{
 					stateParams = this.defaultState.params;
-					for(key in stateParams) 
-					{
+					for(key in stateParams) {
 						if(params[key]) { continue; }
 						params[key] = stateParams[key];
 					}	
@@ -161,7 +160,7 @@ meta.Style.prototype =
 				stateParams = state.params;
 				for(key in stateParams) 
 				{
-					if(stateParams[key]) { continue; }
+					if(stateParams[key]) { continue; }				
 					stateParams[key] = params[key];
 				}
 				state._updateTexture();
@@ -176,22 +175,6 @@ meta.Style.prototype =
 		for(var key in params) {
 			this.setState(key, params[key]);
 		}
-	},
-
-	/**
-	 * Set or rewrite to hidden state.
-	 * @param name {String} Name of the state.
-	 * @param texture {String|Resource.Texture} Name of the texture or texture object.
-	 * @param params {Object=} Parameters to set to entity while having state.
-	 */
-	setHiddenState: function(name, texture, params)
-	{
-		var state = this.setState(name, texture, params);
-		if(state) {
-			state.hidden = true;
-		}
-
-		return state;
 	},
 
 	/**
@@ -231,24 +214,69 @@ meta.Style.prototype =
 			return;
 		}	
 
+		var key, item, itemKey;
 		var params = styleState.params;
-
-		// Revert changes of previous state.
-		var key;
 		var entityParams = entity._styleParams;
-		for(key in entityParams) 
+
+		if(params)
 		{
-			if(!params[key]) {
-				entity[key] = entityParams[key];
+			// Revert changes of previous state:
+			for(key in entityParams) 
+			{
+				if(!params[key]) 
+				{
+					item = entityParams[key];
+					if(item instanceof meta.StylePaste) 
+					{
+						var entityItem = entity[key];
+						
+						for(itemKey in item) {
+							entity[itemKey] = item[itemKey];
+						}
+					}
+					else {
+						entity[key] = entityParams[key];
+					}
+				}
+			}
+			entityParams = {};
+			entity._styleParams = entityParams;	
+
+			// Apply new params:
+			for(key in params) 
+			{
+				item = params[key];
+				if(item instanceof meta.StyleCopy) 
+				{
+					item = item.param;
+
+					var entityItem = entity[key];
+					var entityParam = new meta.StylePaste();
+					entityParams[key] = entityParam;
+
+					for(itemKey in item) {
+						entityParam[itemKey] = entity[key];
+						entityItem[itemKey] = item[key];
+					}
+				}
+				else {
+					entityParams[key] = entity[key];
+					entity[key] = params[key];
+				}
 			}
 		}
-		entityParams = {};
-		entity._styleParams = entityParams;	
-
-		// Apply new params.
-		for(key in params) {
-			entityParams[key] = entity[key];
-			entity[key] = params[key];
+		else 
+		{
+			// Revert changes of previous state:
+			for(key in entityParams) 
+			{
+				if(entity[key].constructor === Object) {
+					this._applyParam(key, entity, entityParams[key]);
+				}
+				else {
+					entity[key] = entityParams[key];
+				}
+			}
 		}
 		
 		entity._styleState = styleState;
@@ -256,6 +284,19 @@ meta.Style.prototype =
 		// if(entity._inputFlags) {
 		// 	this.updateAction(entity);
 		// }
+	},
+
+	_applyParam: function(key, entity, item)
+	{
+		if(item.constructor === Object) {
+			var obj = entity[key];
+			for(var itemKey in obj) {
+				this._applyParam(itemKey, obj, item[itemKey]);
+			}
+		}
+		else {
+			entity[key] = item;
+		}
 	},
 
 	updateAction: function(entity)
@@ -306,11 +347,8 @@ meta.Style.prototype =
 
 		for(var key in this.states)
 		{
-			if(!this.states[key].hidden)
-			{
-				if(Math.random() < 1/++count) {
-					result = key;
-				}
+			if(Math.random() < 1/++count) {
+				result = key;
 			}
 		}
 
@@ -337,15 +375,15 @@ meta.StyleState = function(name, params)
 {
 	this.name = name;
 	this.params = params;
-	this.hidden = false;
-
-	this._updateTexture();
+	
+	this._update();
 };
 
 meta.StyleState.prototype =
 {
-	_updateTexture: function()
+	_update: function()
 	{
+		// Update texture:
 		if(this.params && this.params.texture !== void(0)) 
 		{
 			var texture = this.params.texture;
@@ -359,8 +397,22 @@ meta.StyleState.prototype =
 
 			this.params.texture = newTexture;
 		}
+
+		// Search for copy parameters:
+		for(var key in this.params) {
+			if(key.charAt(0) === "@") {
+				this.params[key.substr(1)] = new meta.StyleCopy(this.params[key]);
+				delete this.params[key];
+			}
+		}
 	}
 };
+
+meta.StyleCopy = function(param) {
+	this.param = param;
+};
+
+meta.StylePaste = function() {};
 
 meta.createStyle = function(obj, extend)
 {

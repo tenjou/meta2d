@@ -15,6 +15,7 @@ meta.Device = function()
 	this.versionBuffer = null;
 
 	this.vendors = [ "", "webkit", "moz", "ms", "o" ];
+	this.vendor = "";
 	this.support = {};
 
 	this.audioFormats = [];
@@ -99,7 +100,18 @@ meta.Device.prototype =
 		}
 
 		if(this.versionBuffer === null || this.name === "unknown") {
-			console.warn("[meta.Device.checkBrowser]:", "Could not detect browser.");
+			console.warn("(meta.Device.checkBrowser) Could not detect browser.");
+		}
+		else {
+			if(this.name === "Chrome" || this.name === "Safari" || this.name === "Opera") {
+				this.vendor = "webkit";
+			}
+			else if(this.name === "Firefox") {
+				this.vendor = "moz";
+			}
+			else if(this.name === "MSIE") {
+				this.vendor = "ms";
+			}
 		}				
 	},
 

@@ -2,7 +2,8 @@
 
 /**
  * Tweening library. Have dependency on Entity.Controller.
- * @class meta.Tween.Link
+ *
+ * @class
  * @property tween {Object} Tween who owns this link.
  * @property startValues {Object} Starting values of owner before tween.
  * @property endValues {Object} End values of owner after tween.
@@ -10,15 +11,14 @@
  * @property tDelay {Number} Wait time in milliseconds before next link is chosen.
  * @property tFrameDelay {Number} Wait time in milliseconds between frame update.
  * @property isRounding {Boolean} Flag if after tween frame value is rounded.
- * @memberof! <global>
  */
-meta.Tween.Link = function(tween, endValues, duration, onDone)
+meta.Tween.Link = function Link(tween, endValues, duration, onDone)
 {
 	this.tween = tween;
 	this.startValues = {};
 	this.endValues = endValues;
 	this.duration = duration;
-	this._onDone = onDone;
+	this._onDone = onDone || null;
 };
 
 meta.Tween.Link.prototype =
@@ -157,7 +157,8 @@ meta.Tween.Link.prototype =
 	 * @param numRepeat {Number} Repeat times.
 	 * @returns {meta.Tween.Link}
 	 */
-	repeat: function(numRepeat) {
+	repeat: function(numRepeat) 
+	{
 		this.tween.repeat(numRepeat);
 		return this;
 	},
@@ -208,8 +209,9 @@ meta.Tween.Link.prototype =
 	 * @param func {Function} Callback function.
 	 * @returns {meta.Tween.Link}
 	 */
-	onDone: function(func) {
-		this._onDone = func;
+	onDone: function(func) 
+	{
+		this.tween.onDone = func;
 		return this;
 	},
 

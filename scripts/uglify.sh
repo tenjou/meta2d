@@ -19,6 +19,7 @@ cat meta.js \
 	math/Math.js \
 	math/Vector2.js \
 	math/AABB.js \
+	math/AABBext.js \
 	math/Circle.js \
 	math/Matrix4.js \
 	math/Random.js \
@@ -28,7 +29,6 @@ cat meta.js \
 	renderer/Renderer.js \
 	renderer/CanvasRenderer.js \
 	renderer/utils/Anim.js \
-	renderer/utils/Volume.js \
 	plugins/Component/Component.js \
 	plugins/Resource/Resource.Controller.js \
 	plugins/Resource/Enum.js \
@@ -41,6 +41,7 @@ cat meta.js \
 	plugins/Entity/Enum.js \
 	plugins/Entity/Entity.Geometry.js \
 	plugins/Entity/Entity.Text.js \
+	plugins/Entity/Entity.Tiling.js \
 	plugins/Entity/svg/Entity.SVG.js \
 	plugins/Entity/svg/Entity.Line.js \
 	plugins/Input/Input.Controller.js \
@@ -54,5 +55,5 @@ cat meta.js \
 	plugins/UI/UI.Group.js \
 	Loader.js \
 	Debugger.js \
-	| uglifyjs --output ../versions/meta.nightly.latest.js --mangle -c dead_code=false,unused=false,side_effects=false --screw-ie8
+	| uglifyjs --output ../versions/meta.js --mangle -c dead_code=false,unused=false,side_effects=false --screw-ie8
 

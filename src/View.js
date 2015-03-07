@@ -28,6 +28,7 @@ meta.View = function(name)
 	this._tween = null;
 
 	this._active = false;
+	this._static = false;
 };
 
 meta.View.prototype =
@@ -98,6 +99,9 @@ meta.View.prototype =
 		entity._viewNodeID = this.entities.length;
 		if(this._z) {
 			entity.z = entity._z;
+		}
+		if(this._static) {
+			entity.static = true;
 		}
 
 		this._attachChildren(entity.children);
@@ -402,6 +406,19 @@ meta.View.prototype =
 		return this._tween;
 	},
 
+
+	set static(value) 
+	{
+		if(this._static === value) { return; }
+		this._static = value;
+
+		var numEntities = this.entities.length;
+		for(var i = 0; i < numEntities; i++) {
+			this.entities[i].static = true;
+		}
+	},
+
+	get static() { return this._static; },
 
 	//
 	entitiesUI: null

@@ -35,8 +35,8 @@ meta.Renderer = meta.class.extend
 		meta.subscribe(this, Input.Event.MOVE, this.onInputMove, meta.Priority.HIGH);
 		meta.subscribe(this, Input.Event.DBCLICK, this.onInputDbClick, meta.Priority.HIGH);
 
-		meta.subscribe(this, meta.Event.RESIZE, this.onResize);
 		meta.subscribe(this, meta.Event.ADAPT, this.onAdapt);	
+		meta.subscribe(this, meta.Event.RESIZE, this.onResize);
 		meta.subscribe(this, meta.Event.CAMERA_MOVE, this.onCameraMove);
 
 		this.holder.resize(this.camera.volume.width, this.camera.volume.height);
@@ -46,16 +46,10 @@ meta.Renderer = meta.class.extend
 	{
 		this.__updating = true;
 
-		var entity;
-		for(var i = 0; i < this.entitiesStateNum; i++) {
-			entity = this.entitiesState[i];
-			entity.__stateIndex = -1;
-			entity.updateState();
-		}
-		this.entitiesStateNum = 0;
+		var entity = null, index = 0;
 
 		var numEntities = this.entitiesToUpdate.length;
-		for(i = 0; i < numEntities; i++) {
+		for(var i = 0; i < numEntities; i++) {
 			this.entitiesToUpdate[i].update(tDelta);
 		}
 
@@ -66,8 +60,18 @@ meta.Renderer = meta.class.extend
 
 			if(numTweensRemove > 0) 
 			{
-				for(i = 0; i < numTweensRemove; i++) {
-					this.tweens[this.tweensRemove[i]] = this.tweens[--numTweens];
+				var tween;
+				for(i = 0; i < numTweensRemove; i++) 
+				{
+					index = this.tweensRemove[i];
+					tween = this.tweens[index];
+
+					if(!tween || !tween.__removed) { continue; }
+
+					numTweens--;
+					tween.__index = -1;
+					tween.__removed = 0;
+					this.tweens[index] = this.tweens[numTweens];
 				}
 
 				this.tweens.length = numTweens;
@@ -86,26 +90,26 @@ meta.Renderer = meta.class.extend
 			this.entitiesRemove.length = 0;
 		}	
 
-		if(this.removeUpdating.length > 0)
+		if(this._removeUpdating.length > 0)
 		{
 			var updateIndex, lastEntity;
-			numEntities = this.removeUpdating.length;
+			numEntities = this._removeUpdating.length;
 			for(i = 0; i < numEntities; i++) 
 			{
-				updateIndex = this.removeUpdating[i]; 
+				updateIndex = this._removeUpdating[i]; 
 				lastEntity = this.entitiesToUpdate[this.entitiesToUpdate.length - 1];
 				lastEntity.__updateIndex = updateIndex;
 				this.entitiesToUpdate[updateIndex] = lastEntity;
 				this.entitiesToUpdate.pop();
 			}
 
-			this.removeUpdating.length = 0;
+			this._removeUpdating.length = 0;
 		}		
 
 		// Remove animations:
 		if(this.entitiesAnimRemove.length > 0)
 		{
-			var index = 0, anim = null;
+			var anim = null;
 			var numAnim = this.entitiesAnim.length;
 			numEntities = this.entitiesAnimRemove.length;
 
@@ -117,10 +121,11 @@ meta.Renderer = meta.class.extend
 
 				numAnim--;
 				anim.__index = -1;
+				anim.__removed = 0;
 				this.entitiesAnim[index] = this.entitiesAnim[numAnim];
-				this.entitiesAnim.pop();
 			}	
 
+			this.entitiesAnim.length = numAnim;
 			this.entitiesAnimRemove.length = 0;
 		}
 
@@ -175,7 +180,7 @@ meta.Renderer = meta.class.extend
 		entity.__added = true;
 
 		if(entity.update) {
-			this.addEntityToUpdate(entity);
+			this.addUpdating(entity);
 		}
 		if(entity._z !== 0) {
 			this.needSortDepth = true;
@@ -185,6 +190,10 @@ meta.Renderer = meta.class.extend
 		}
 		if(entity.__debug) {
 			this.numDebug++;
+		}
+
+		if(!entity._debugger) {
+			this.numEntities++;
 		}
 	},
 
@@ -277,7 +286,7 @@ meta.Renderer = meta.class.extend
 		}
 	},
 
-	addEntityToUpdate: function(entity) 
+	addUpdating: function(entity) 
 	{
 		if(entity.__updateIndex !== -1) { return; }
 
@@ -285,12 +294,12 @@ meta.Renderer = meta.class.extend
 		this.entitiesToUpdate.push(entity);
 	},
 
-	removeEntityFromUpdate: function(entity) 
+	removeUpdating: function(entity) 
 	{
 		if(entity.__updateIndex === -1) { return; }
 
 		if(this.__updating) {
-			this.removeUpdating.push(entity.__updateIndex);
+			this._removeUpdating.push(entity.__updateIndex);
 		}
 		else {
 			var lastEntity = this.entitiesToUpdate[this.entitiesToUpdate.length - 1];
@@ -302,10 +311,27 @@ meta.Renderer = meta.class.extend
 		entity.__updateIndex = -1;
 	},
 
+	addPicking: function(entity) 
+	{
+		if(!entity.__added) { return; }
+		if(entity.__picking) { return; }
+
+		entity.__picking = true;
+		this.entitiesPicking.push(entity);
+	},
+
+	removePicking: function(entity) 
+	{
+		if(!entity.__picking) { return; }
+
+		entity.__picking = false;
+		//this.entities
+	},	
+
 	addAnim: function(anim)
 	{
 		if(anim.__removed) {
-			anim.__removed = false;
+			anim.__removed = 0;
 		}
 		else
 		{
@@ -318,60 +344,37 @@ meta.Renderer = meta.class.extend
 
 	removeAnim: function(anim)
 	{
-		if(anim.__removed) { return; }
+		if(anim.__removed || anim.__index === -1) { return; }
 
 		this.entitiesAnimRemove.push(anim.__index);
 		anim.__removed = 1;
 	},
 
-	addPicking: function(entity) 
-	{
-		if(!entity.__added) { return; }
-		if(entity._pickable) { return; }
-
-		this.entitiesPicking.push(entity);
-	},
-
-	removePicking: function(entity) 
-	{
-		if(!entity.__added) { return; }
-		if(!entity._pickable) { return; }
-
-		//this.entities
-	},
-
 	addTween: function(tween) 
 	{
-		if(tween.__index > -1) { return false; }
+		if(tween.__removed) {
+			tween.__removed = 0;
+		}
+		else
+		{
+			if(tween.__index !== -1) { return false; }
 
-		tween.__index = this.tweens.length;
-		this.tweens.push(tween);
+			tween.__index = this.tweens.length;
+			this.tweens.push(tween);
+		}
 
 		return true;
 	},
 
 	removeTween: function(tween) 
 	{
-		if(tween.__index === -1) { return false; }
+		if(tween.__removed || tween.__index === -1) { return false; }
 
 		this.tweensRemove.push(tween.__index);
-		tween.__index = -1;
+		tween.__removed = 1;
 
 		return true;
 	},	
-
-	updateState: function(entity) 
-	{
-		if(entity.__stateIndex !== -1) { return; }
-
-		if(this.entitiesStateSize === this.entitiesStateNum) {
-			this.entitiesState.length += 4;
-		}
-
-		entity.__stateIndex = this.entitiesStateNum;
-		this.entitiesState[this.entitiesStateNum] = entity;
-		this.entitiesStateNum++;
-	},
 
 	/** 
 	 * Callback on input event.
@@ -632,7 +635,7 @@ meta.Renderer = meta.class.extend
 			entity = this.entities[i];
 			if(entity.parent !== this.holder) { continue; }
 
-			entity.updateAnchor();
+			entity._updateResize();
 		}
 
 		numEntities = this.entitiesUI.length;
@@ -641,7 +644,7 @@ meta.Renderer = meta.class.extend
 			entity = this.entitiesUI[i];
 			if(entity.parent !== this.holder) { continue; }
 
-			entity.updateAnchor();
+			entity._updateResize();
 		}		
 	},
 
@@ -711,16 +714,13 @@ meta.Renderer = meta.class.extend
 	entities: [],
 	entitiesRemove: [],
 	entitiesToUpdate: [],
-	removeUpdating: [],
+	_removeUpdating: [],
+	numEntities: 0,
 
 	entitiesUI: [],
 
 	entitiesAnim: [],
 	entitiesAnimRemove: [],	
-
-	entitiesState: new Array(4),
-	entitiesStateSize: 4,
-	entitiesStateNum: 0,
 
 	entitiesPicking: [],
 	entitiesPickingRemove: [],
