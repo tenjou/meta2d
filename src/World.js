@@ -4,7 +4,7 @@ meta.World = meta.class.extend
 ({
 	init: function(width, height) 
 	{
-		this.volume = new meta.math.AABB(0, 0, 0, 0);
+		this.volume = new meta.math.AABB(0, 0, 800, 600);
 
 		this._chn = meta.createChannel(meta.Event.WORLD_RESIZE);
 	},

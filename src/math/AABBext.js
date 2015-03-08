@@ -27,8 +27,8 @@ meta.math.AABBext.prototype =
 		this.x = x;
 		this.y = y;
 
-		this.minX = this.absX - this.pivotPosX;
-		this.minY = this.absY - this.pivotPosY;
+		this.minX = this.x - this.pivotPosX;
+		this.minY = this.y - this.pivotPosY;
 		this.maxX = this.minX + this.width;
 		this.maxY = this.minY + this.height;
 	},

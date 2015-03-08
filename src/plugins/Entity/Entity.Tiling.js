@@ -7,9 +7,35 @@ Entity.Tiling = Entity.Geometry.extend
 		var volume = meta.camera.volume;
 		var newTexture = new Resource.Texture();
 		newTexture.resizeSilently(volume.width, volume.height);
+		newTexture.ctx.globalCompositeOperator = "copy";
 		this.texture = newTexture;
 
 		this.tile(texture);
+	},
+
+	draw: function(ctx)
+	{
+
+		var zoom = meta.camera._zoom;
+
+		ctx.setTransform(zoom * this.volume.scaleX, 0, 0, zoom * this.volume.scaleY, 0, 0);		
+
+		var image = this.tileTexture.canvas;		
+		var width = this.tileTexture.fullWidth;
+		var height = this.tileTexture.fullHeight;
+
+		var posX = this._tileOffsetX;
+		var posY = this._tileOffsetY;
+		for(var y = 0; y < this._drawTilesY; y++) 
+		{
+			for(var x = 0; x < this._drawTilesX; x++) {
+				ctx.drawImage(image, posX, posY);
+				posX += width;
+			}
+
+			posX = this._tileOffsetX;
+			posY += height;
+		}
 	},
 
 	tile: function(texture)
@@ -58,58 +84,32 @@ Entity.Tiling = Entity.Geometry.extend
 	{
 		if(!this.tileTexture._loaded) { return; }
 
-		this._texture.clear();
+		var width = this.tileTexture.fullWidth;
+		var height = this.tileTexture.fullHeight;
 
-		var numX = this.tileX;
-		var numY = this.tileY;
-
-		var cameraVolume = meta.camera.volume;		
-		var posX = Math.abs(cameraVolume.x % this.tileTexture.fullWidth - this.tileTexture.fullWidth);
-		var posY = Math.abs(cameraVolume.y % this.tileTexture.fullHeight - this.tileTexture.fullHeight);
-		posX = 0;
-		posY = 0;
-
-		var maxTilesX = Math.ceil((this._texture.fullWidth + posX) / this.tileTexture.fullWidth);
-		var maxTilesY = Math.ceil((this._texture.fullHeight + posY) / this.tileTexture.fullHeight);
-
-		//console.log(cameraVolume.x, cameraVolume.y);
-		//console.log(maxTilesX, maxTilesY);
-
-		numX = maxTilesX;
-		numY = maxTilesY;
-
-		var offsetX = posX;
-		var offsetY = posY;
-
-		// if(this.follow) {
-		// 	var cameraVolume = meta.camera.volume;
-		// 	offsetX = -(cameraVolume.x % this.tileTexture.fullWidth) - this.tileTexture.fullWidth;
-		// 	offsetY = -(cameraVolume.y % this.tileTexture.fullHeight) - this.tileTexture.fullHeight;
-		// }
-
-		var ctx = this._texture.ctx;
-		var image = this.tileTexture.canvas;
-		var posX = offsetX, 
-			posY = offsetY;
-
-		for(var y = 0; y < numY; y++) 
-		{
-			for(var x = 0; x < numX; x++) {
-				ctx.drawImage(image, posX, posY);
-				posX += this.tileTexture.width;
-			}
-
-			posX = offsetX;
-			posY += this.tileTexture.height;
+		var offsetX, offsetY;
+		if(this.follow) {
+			var cameraVolume = meta.camera.volume;		
+			this._tileOffsetX = (-cameraVolume.x * this._tileScaleX + this._scrollX) % width - width;
+			this._tileOffsetY = (-cameraVolume.y * this._tileScaleY + this._scrollY) % height - height;
+		}
+		else {
+			this._tileOffsetX = this._scrollX;
+			this._tileOffsetY = this._scrollY;
 		}
 
-		this._texture.loaded = true;	
+		this._drawTilesX = Math.ceil((this._texture.fullWidth - this._tileOffsetX) / width);
+		this._drawTilesY = Math.ceil((this._texture.fullHeight - this._tileOffsetY) / height);
+
+		this.renderer.needRender = true;	
 	},
 
 	updateScale: function() 
 	{
 		this._super();
 
+		this._tileScaleX = (1.0 / this.volume.scaleX);
+		this._tileScaleY = (1.0 / this.volume.scaleY);
 		this.updateResolution();
 		this.updateTiling();
 	},
@@ -134,7 +134,13 @@ Entity.Tiling = Entity.Geometry.extend
 	},
 
 	onResize: function(data, event) {
-		this.updateResolution();
+		//this.updateResolution();
+		this.updateTiling();
+	},
+
+	scroll: function(x, y) {
+		this._scrollX = x;
+		this._scrollY = y;
 		this.updateTiling();
 	},
 
@@ -143,5 +149,9 @@ Entity.Tiling = Entity.Geometry.extend
 
 	follow: false,
 	tileX: 0,
-	tileY: 0
+	tileY: 0,
+	_scrollX: 0, _scrollY: 0,
+	_tileScaleX: 1, _tileScaleY: 1,
+	_drawTilesX: 0, _drawTilesY: 0,
+	_tileOffsetX: 0, _tileOffsetY: 0
 });

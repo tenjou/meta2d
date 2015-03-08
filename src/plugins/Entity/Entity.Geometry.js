@@ -409,7 +409,9 @@ Entity.Geometry = meta.class.extend
 				child._parentScaleY = this.volume.scaleY;
 				child.updateScale();
 			}
-		}		
+		}
+
+		this.renderer.needRender = true;		
 	},
 
 	/** 
@@ -486,8 +488,6 @@ Entity.Geometry = meta.class.extend
 			}	
 		}
 	
-		this.__clip = true;
-		this.volume.__transformed = true;
 		this.renderer.needRender = true;
 	},
 
@@ -711,40 +711,12 @@ Entity.Geometry = meta.class.extend
 
 		this._state = name;
 
-		if(this._style) {
-			this.updateState();
-		}
-
 		if(this.onStateEnter) {
 			this.onStateEnter();
 		}
 	},
 
 	get state() { return this._state; },
-
-	set style(style)
-	{
-		if(style)
-		{
-			if(style instanceof meta.Style) {
-				this._style = style;
-			}
-			else {
-				this._style = new meta.Style(style);
-			}
-
-			this.updateState();
-		}
-		else {
-			this._style = null;
-		}
-	},
-
-	get style() { return this._style; },
-
-	updateState: function() {
-		this._style.update(this);
-	},
 
 	onStateChange: null,
 
@@ -1107,11 +1079,7 @@ Entity.Geometry = meta.class.extend
 	children: null,
 	anim: null,
 
-	_style: null, 
-	_styleState: null, _styleAction: null, 
-	_styleParams: null, _styleActionParams: null,
-	_state: "*", _action: "",
-	__stateIndex: -1,
+	_state: "",
 
 	timers: null,
 	_tweenCache: null,

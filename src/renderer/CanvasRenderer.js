@@ -164,16 +164,8 @@ meta.CanvasRenderer = meta.Renderer.extend
 			if(texture.frames > 1) {
 				texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, anim._frame);
 			}
-			else 
-			{
-				if(entity.__clip) 
-				{
-					this.ctx.drawImage(texture.canvas, -volume.initPivotPosX, -volume.initPivotPosY, 
-						volume.width, volume.height, 0, 0, volume.width, volume.height);
-				}
-				else {
-					this.ctx.drawImage(texture.canvas, -volume.initPivotPosX, -volume.initPivotPosY);
-				}
+			else {
+				this.ctx.drawImage(texture.canvas, -volume.initPivotPosX, -volume.initPivotPosY);
 			}			
 
 			this.ctx.globalAlpha = 1.0;
