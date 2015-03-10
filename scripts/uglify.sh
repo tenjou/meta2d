@@ -12,7 +12,6 @@ cat meta.js \
 	World.js \
 	Controller.js \
 	Timer.js \
-	Style.js \
 	Enum.js \
 	Macros.js \
 	utils/Ajax.js \

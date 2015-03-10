@@ -3,8 +3,7 @@
 var Physics = {};
 
 Physics.Manifold = function() {
-	this.a = null;
-	this.b = null;
+	this.entity = null;
 	this.normal = new meta.math.Vector2(0, 0);
 	this.penetration = 0;
 };
@@ -31,20 +30,16 @@ Physics.Controller = meta.Controller.extend
 				item2 = this.items[n];
 				if(!item2.owner.visible) { continue; }
 
-				if(item.flag === item2.flag) { continue; }
-
 				result = this.overlapAABB(item.volume, item2.volume);
 				if(result) 
 				{
 					if(item.onCollision) { 
-						this.manifold.a = item.owner;
-						this.manifold.b = item2.owner;
-						item.onCollision(this.manifold); 
+						this.manifold.entity = item2.owner;
+						item.onCollision.call(item.owner, this.manifold); 
 					}
 					if(item2.onCollision) { 
-						this.manifold.a = item2.owner;
-						this.manifold.b = item.owner;				
-						item2.onCollision(this.manifold); 
+						this.manifold.entity = item.owner;				
+						item2.onCollision.call(item2.owner, this.manifold); 
 					}
 					//console.log("collision");
 					//this.resolveCollision(item, item2);

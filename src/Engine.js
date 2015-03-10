@@ -446,6 +446,8 @@ meta.engine =
 		this.canvas.style.width = (width * this.scaleX) + "px";
 		this.canvas.style.height = (height * this.scaleY) + "px";
 
+		meta.world.bounds(0, 0, width, height);
+
 		if(this.ctx.imageSmoothingEnabled) {
 			this.ctx.imageSmoothingEnabled = meta.cache.imageSmoothing;
 		}

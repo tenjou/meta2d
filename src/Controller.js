@@ -2,33 +2,57 @@
 
 /**
  * Class used as base for extending when a new controller is created.
- * @class meta.Controller
- * @memberof! <global>
+ *
+ * @class
  * @property view {meta.View} Default view controller is attached to.
  * @property name {string} Name of the controller.
  * @property isLoaded {Boolean} Flag if controller is loaded.
  */
 meta.Controller = meta.class.extend
 ({
-	/**
-	 * Constructor.
-	 * @function
-	 */
-	_init: function(view) {
-		this.view = view;
+	_init: function() {
+		this.view = meta.view;
+		this.views = [];
 	},
 
 	/**
 	 * Destructor.
-	 * @function
 	 */
 	release: null,
 
+	firstLoad: null,
+
+	_load: function() 
+	{
+		if(this._alreadyLoaded) {
+			if(this.firstLoad) {
+				this.firstLoad();
+				this._alreadyLoaded = true;
+			}
+		}
+
+		var master = meta.view;
+		var numViews = this.views.length;
+		for(var i = 0; i < numViews; i++) {
+			master.attachView(this.views[i]);
+		}
+	},
+
+	_unload: function()
+	{
+		var master = meta.view;
+		var numViews = this.views.length;
+		for(var i = 0; i < numViews; i++) {
+			master.detachView(this.views[i]);
+		}	
+	},
+
 	/**
 	 * Load view.
-	 * @function
 	 */
 	load: null,
+
+	unload: null,
 
 	/**
 	 * Called after all controllers are loaded.
@@ -45,11 +69,20 @@ meta.Controller = meta.class.extend
 
 	render: null,
 
+	createView: function(name)
+	{
+		var view = meta.createView(name);
+		this.view.push(view);
+		return view;
+	},
+
 	//
 	view: null,
 	name: "unknown",
+	views: null,
 
-	loaded: false
+	loaded: false,
+	_alreadyLoaded: false
 });
 
 /**

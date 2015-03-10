@@ -420,6 +420,24 @@ meta.View.prototype =
 
 	get static() { return this._static; },
 
+	create: function(obj, params) {
+		var entity = new obj(params);
+		this.view.attach(entity);
+		return entity;
+	},
+
+	geometry: function(params) {
+		var entity = new Entity.Geometry(params);
+		this.view.attach(entity);
+		return entity;
+	},
+
+	text: function(params) {
+		var text = new Entity.Text(params);
+		this.view.attach(text);
+		return text;
+	},
+
 	//
 	entitiesUI: null
 };

@@ -18,6 +18,7 @@ meta.Anim.prototype =
 			return;
 		}
 
+
 		this.texture = texture;
 
 		if(texture.frames > 1)
@@ -65,12 +66,14 @@ meta.Anim.prototype =
 		}
 		else {
 			this._frame = 0;
-		}
+		}	
 
-		meta.renderer.removeAnim(this);
+		this.owner.renderer.removeAnim(this);
 	},
 
 	onEnd: null,
+
+	onCancel: null,
 
 	update: function(tDelta)
 	{
@@ -86,10 +89,6 @@ meta.Anim.prototype =
 			
 			if(this._frame >= this.texture.frames)
 			{
-				if(this.onEnd) {
-					this.onEnd.call(this.owner);
-				}	
-
 				if(this.pauseLastFrame) {
 					meta.renderer.removeAnim(this);
 					this._frame = this.texture.frames - 1;					
@@ -100,9 +99,12 @@ meta.Anim.prototype =
 				}
 				else {
 					this._frame = this._frame % this.texture.frames;
+				}
+
+				if(this.onEnd) {
+					this.onEnd.call(this.owner);
 				}			
 			}
-
 		}
 		else
 		{
@@ -110,10 +112,6 @@ meta.Anim.prototype =
 
 			if(this._frame < 0)
 			{
-				if(this.onEnd) {
-					this.onEnd.call(this.owner);
-				}	
-
 				if(this.pauseLastFrame) {
 					meta.renderer.removeAnim(this);
 					this._frame = 0;
@@ -125,15 +123,19 @@ meta.Anim.prototype =
 				else {
 					this._frame = (this.texture.frames + this._frame) % this.texture.frames;
 				}
+
+				if(this.onEnd) {
+					this.onEnd.call(this.owner);
+				}			
 			}
 		}
 
-		meta.renderer.needRender = true;
+		this.owner.renderer.needRender = true;
 	},	
 
 	set frame(frame) {
 		this._frame = frame;
-		meta.renderer.needRender = true;
+		this.owner.renderer.needRender = true;
 	},
 
 	get frame() { return this._frame; },

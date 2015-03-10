@@ -108,26 +108,34 @@ meta.CanvasRenderer = meta.Renderer.extend
 	{
 		if(!entity._visible) { return; }
 
-		if(entity.draw) {
-			this.ctx.save();
-			entity.draw(this.ctx);
-			this.ctx.restore();
+		if(entity._static) 
+		{
+			var zoom = this.camera._zoom;
+
+			if(entity._debugger) {
+				this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+			}
+			else {
+				this.ctx.setTransform(zoom, 0, 0, zoom, 0, 0);
+			}
+			
+			if(entity.draw) {
+				this.ctx.save();
+				entity.draw(this.ctx);
+				this.ctx.restore();
+			}
+			else {
+				this._drawEntity(entity);
+			}			
+			
+			this.ctx.setTransform(zoom, 0, 0, zoom, -this.camera._x * zoom | 0, -this.camera._y * zoom | 0);
 		}
 		else 
 		{
-			if(entity._static) 
-			{
-				var zoom = this.camera._zoom;
-
-				if(entity._debugger) {
-					this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-				}
-				else {
-					this.ctx.setTransform(zoom, 0, 0, zoom, 0, 0);
-				}
-				
-				this._drawEntity(entity);
-				this.ctx.setTransform(zoom, 0, 0, zoom, -this.camera._x * zoom | 0, -this.camera._y * zoom | 0);
+			if(entity.draw) {
+				this.ctx.save();
+				entity.draw(this.ctx);
+				this.ctx.restore();
 			}
 			else {
 				this._drawEntity(entity);
