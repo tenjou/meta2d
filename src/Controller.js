@@ -12,7 +12,7 @@ meta.Controller = meta.class.extend
 ({
 	_init: function() {
 		this.view = meta.view;
-		this.views = [];
+		this.views = {};
 	},
 
 	/**
@@ -24,27 +24,38 @@ meta.Controller = meta.class.extend
 
 	_load: function() 
 	{
-		if(this._alreadyLoaded) {
+		if(this._firstLoad) 
+		{
+			this._firstLoad = true;
 			if(this.firstLoad) {
 				this.firstLoad();
-				this._alreadyLoaded = true;
 			}
 		}
 
-		var master = meta.view;
-		var numViews = this.views.length;
-		for(var i = 0; i < numViews; i++) {
-			master.attachView(this.views[i]);
+		if(this.load) {
+			this.load();
 		}
+
+		var masterView = meta.view;
+		for(var key in this.views) {
+			masterView.attachView(this.views[key]);
+		}
+
+		this.loaded = true;
 	},
 
 	_unload: function()
 	{
-		var master = meta.view;
-		var numViews = this.views.length;
-		for(var i = 0; i < numViews; i++) {
-			master.detachView(this.views[i]);
-		}	
+		if(this.unload) {
+			this.unload();
+		}
+
+		var masterView = meta.view;
+		for(var key in this.views) {
+			masterView.detachView(this.views[key]);
+		}
+
+		this.loaded = false;	
 	},
 
 	/**
@@ -71,73 +82,310 @@ meta.Controller = meta.class.extend
 
 	createView: function(name)
 	{
+		if(this.views[name]) {
+			console.warn("(meta.Controller.createView) Already added views with a name: " + name);
+			return;
+		}
+
 		var view = meta.createView(name);
-		this.view.push(view);
+		this.views[name] = view;
+
+		if(this.loaded) {
+			meta.view.attachView(view);
+		}
+
 		return view;
 	},
 
+	removeView: function(name)
+	{
+		if(this.views[name]) {
+			meta.view.detachView(name);
+			this.views[name] = null;
+		}
+		else {
+			console.warn("(meta.Controller.removeView) Could not find view with a name: " + name);
+		}
+	},
+
 	//
+	name: "",
 	view: null,
-	name: "unknown",
 	views: null,
 
 	loaded: false,
-	_alreadyLoaded: false
+	_firstLoad: true
 });
 
-/**
- * Register controller to the engine.
- * @param ctrlName {String} Name of the controller.
- */
-meta.register = function(ctrlName)
+meta.ctrl = 
 {
-	var scope = window[ctrlName];
-	if(!scope || !scope.Controller) {
-		console.error("(meta.register) No such controllers found - " + ctrlName);
-		return null;
-	}	
+	/**
+	 * Register controller. Will be available through <scope.ctrl> but won't be loaded.
+	 * @param name {string|Array} Name or buffer with names of the controller.
+	 */	
+	register: function(names)
+	{
+		if(names instanceof Array) {
+			var numItems = names.length;
+			for(var i = 0; i < numItems; i++) {
+				this._register(names[i]);
+			}
+		}
+		else {
+			this._register(names)
+		}
 
-	if(scope.ctrl) {
-		console.error("(meta.register) Controller (" + ctrlName + ") is already added in scope.");
-		return null;
-	}
+		return this;
+	},
 
-	var ctrl = new scope.Controller(meta.view);
-	ctrl.name = ctrlName;
+	_register: function(name)
+	{
+		var scope = window[name];
+		if(!scope || !scope.Controller) {
+			console.warn("(meta.ctrl.register) No such controllers found: " + name);
+			return null;
+		}	
 
-	scope.ctrl = ctrl;
-	meta.engine.ctrls.push(ctrl);
+		if(scope.ctrl) {
+			console.warn("(meta.ctrl.register) Controller is already added in scope: " + name);
+			return null;
+		}
 
-	if(ctrl.load && meta.engine.loadedCtrls) {
-		ctrl.load();
-	} 
-	if(ctrl.ready && meta.engine.ready) {
-		ctrl.ready();
-	}
-	if(ctrl.update) {
-		meta.engine.ctrlsUpdateFuncs.push(ctrl);
-	}
+		var ctrl = new scope.Controller(meta.view);
+		ctrl.name = name;
 
-	return ctrl;
+		scope.ctrl = ctrl;
+		this._ctrls.push(ctrl);		
+	},
+
+	/**
+	 * Unregister controller and remove from the <scope.ctrl>.
+	 * @param name {string|Array} Name or buffer with names of the controller.
+	 */	
+	unregister: function(names)
+	{
+		if(names instanceof Array) {
+			var numItems = names.length;
+			for(var i = 0; i < numItems; i++) {
+				this._unregister(names[i]);
+			}
+		}
+		else {
+			this._unregister(names)
+		}
+
+		return this;
+	},
+
+	_unregister: function(name)
+	{
+		var scope = window[name];
+		if(!scope || !scope.Controller) {
+			console.warn("(meta.ctrl.unregister) No such controllers found: " + name);
+			return null;
+		}	
+
+		if(!scope.ctrl) {
+			console.warn("(meta.ctrl.unregister) No such controllers initialized: " + name);
+			return null;
+		}
+
+		if(scope.ctrl.loaded) {
+			meta.ctrl.unload(name);
+		}
+
+		this._ctrlsRemove.push(scope);
+	},
+
+	/**
+	 * Load controller.
+	 * @param names {string|Array} Name or buffer with names of the controller.
+	 */
+	load: function(names)
+	{
+		if(names instanceof Array) {
+			var numItems = names.length;
+			for(var i = 0; i < numItems; i++) {
+				this._load(names[i]);
+			}
+		}
+		else {
+			this._load(names);
+		}
+
+		return this;
+	},
+
+	_load: function(name)
+	{
+		var scope = window[name];
+		if(!scope || !scope.Controller || !scope.ctrl) {
+			console.warn("(meta.ctrl.load) No such controllers found: " + name);
+			return null;
+		}
+
+		if(scope.ctrl.loaded) {
+			console.warn("(meta.ctrl.unload) Controller is already loaded: " + name);
+			return;
+		}		
+
+		if(!meta.engine.loadingCtrls) {
+			this._ctrlsLoad.push(scope.ctrl);
+		}
+	},
+
+	/**
+	 * Unload controller.
+	 * @param names {string|Array} Name or buffer with names of the controller.
+	 */
+	unload: function(names)
+	{
+		if(names instanceof Array) {
+			var numItems = names.length;
+			for(var i = 0; i < numItems; i++) {
+				this._unload(names[i]);
+			}
+		}
+		else {
+			this._unload(names);
+		}
+
+		return this;
+	},
+
+	_unload: function(name)
+	{
+		var scope = window[name];
+		if(!scope || !scope.Controller || !scope.ctrl) {
+			console.warn("(meta.ctrl.unload) No such controllers found: " + name);
+			return;
+		}
+
+		if(!scope.ctrl.loaded) {
+			console.warn("(meta.ctrl.unload) Controller is not loaded: " + name);
+			return;
+		}
+
+		scope.ctrl._unload();
+	},
+
+	/**
+	 * Create controller that automatically loads (model).
+	 * @param names {string|Array} Name or buffer with names of the controller.
+	 */
+	create: function(names)
+	{
+		if(names instanceof Array) {
+			var numItems = names.length;
+			for(var i = 0; i < numItems; i++) {
+				this._create(names[i]);
+			}
+		}
+		else {
+			this._create(names)
+		}
+
+		return this;
+	},
+
+	_create: function(name)
+	{
+		if(this.register(name)) {
+			this.load(name);
+		}		
+	},
+
+	loadCtrls: function()
+	{
+		this._loadingCtrls = true;
+
+		var ctrl;
+		var numCtrl = this._ctrlsLoad.length;
+		for(var i = 0; i < numCtrl; i++) {
+			this._ctrlsLoad[i]._load();	
+		}
+
+		this._loadingCtrls = false;
+	},
+
+	readyCtrls: function() 
+	{
+		var ctrl;
+		var numCtrl = this._ctrlsLoad.length;
+		for(var i = 0; i < numCtrl; i++) 
+		{
+			ctrl = this._ctrlsLoad[i];
+			
+			if(ctrl.ready) {
+				ctrl.ready();
+			}
+			if(ctrl.update) {
+				this._ctrlsUpdate.push(ctrl);
+			}
+
+			this._ctrls.push(ctrl);
+		}	
+
+		this._ctrlsLoad.length = 0;	
+	},
+
+	removeCtrls: function()
+	{
+		var numCtrls = this._ctrlsRemove.length;
+		if(numCtrls) 
+		{
+			for(var i = 0; i < numCtrls; i++) {
+				this._removeCtrl(this._ctrlsRemove[i]);
+			}
+
+			this._ctrlsRemove.length = 0;
+		}
+	},
+
+	_removeCtrl: function(ctrl)
+	{
+		var scope = window[name];
+		if(!scope || !scope.Controller) {
+			console.warn("(meta.ctrl.removeCtrl) No such controllers found: " + name);
+			return;
+		}	
+
+		var numCtrl = this._ctrl.length;
+			
+		for(var i = 0; i < numCtrl; i++) 
+		{
+			if(this._ctrlsUpdate[i] === ctrl) {
+				this._ctrlsUpdate[i] = this._ctrlsUpdate[numCtrl - 1];
+				this._ctrlsUpdate.pop();
+				break;
+			}
+		}
+
+		for(i = 0; i < numCtrl; i++) 
+		{
+			if(this._ctrls[i] === ctrl) {
+				this._ctrls[i] = this._ctrls[numCtrl - 1];
+				this._ctrls.pop();
+				break;
+			}
+		}
+
+		scope.ctrl = null;
+	},
+
+	update: function(tDelta) 
+	{
+		var numCtrl = this._ctrlsUpdate.length;
+		for(var i = 0; i < numCtrl; i++) {
+			this._ctrlsUpdate[i].update(tDelta);
+		}
+	},
+
+	//
+	_ctrls: [],
+	_ctrlsLoad: [],
+	_ctrlsRemove: [],
+	_ctrlsUpdate: [],
+
+	_loadingCtrls: false
 };
-
-/**
- * Urnegister controller from the engine.
- * @param ctrlName {String} Name of the controller.
- */
-meta.unregister = function(ctrlName)
-{
-	var scope = window[ctrlName];
-	if(!scope || !scope.Controller) {
-		console.error("(meta.unregister) No such controllers found - " + ctrlName);
-		return null;
-	}	
-
-	if(!scope.ctrl) {
-		console.error("(meta.unregister) No such controllers initialized - " + ctrlName);
-		return null;
-	}
-
-	meta.engine.ctrlsRemove.push(scope);
-};
-

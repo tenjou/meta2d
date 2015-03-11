@@ -24,7 +24,8 @@ Resource.Controller = meta.Controller.extend
 		this.resourcesInUse = {};
 
 		this._chn_added = meta.createChannel(Resource.Event.ADDED);
-		this._chn_allLoaded = meta.createChannel(Resource.Event.ALL_LOADED);
+		this._chn_loadingStart = meta.createChannel(Resource.Event.LOADING_START)
+		this._chn_loadingEnd = meta.createChannel(Resource.Event.LOADING_END);
 
 		// Bind temp canvas to Resource.Texture
 		var canvas = document.createElement("canvas");
@@ -87,8 +88,8 @@ Resource.Controller = meta.Controller.extend
 
 		if(subBuffer[resource.name])
 		{
-			console.warn("[Resource.Manager.add]:",
-				"There is already a resource(" + meta.enumToString(Resource.Type, resource.type) + ") added with a name: " + resource.name);
+			console.warn("(Resource.Manager.add) There is already a resource(" + 
+				meta.enumToString(Resource.Type, resource.type) + ") added with a name: " + resource.name);
 			return null;
 		}
 
@@ -108,15 +109,15 @@ Resource.Controller = meta.Controller.extend
 		var subBuffer = this.resources[resource.type];
 		if(!subBuffer)
 		{
-			console.warn("[Resource.Manager.remove]:",
-				"Resource(" + meta.enumToString(Resource.Type, resource.type) + ")(" + resource.name + ") is not added to the manager.");
+			console.warn("(Resource.Manager.remove) Resource(" + 
+				meta.enumToString(Resource.Type, resource.type) + ")(" + resource.name + ") is not added to the manager.");
 			return;
 		}
 
 		if(!subBuffer[resource.name])
 		{
-			console.warn("[Resource.Manager.remove]:",
-				"Resource(" + meta.enumToString(Resource.Type, resource.type) + ")(" + resource.name + ") is not added to the manager.");
+			console.warn("(Resource.Manager.remove) Resource(" + 
+				meta.enumToString(Resource.Type, resource.type) + ")(" + resource.name + ") is not added to the manager.");
 			return;
 		}
 
@@ -130,12 +131,14 @@ Resource.Controller = meta.Controller.extend
 	 */
 	addToLoad: function(resource)
 	{
-		this.loading = true;
+		if(!this.loading) {
+			this.loading = true;
+			this._chn_loadingStart.emit(this, Resource.Event.LOADING_START);
+		}
+
 		resource.loading = true;
 
-		if(!meta.engine.ready) {
-			this.numToLoad++;
-		}
+		this.numToLoad++;
 	},
 
 	/**
@@ -159,9 +162,8 @@ Resource.Controller = meta.Controller.extend
 			this.numToLoad--;
 			this.numLoaded++;
 
-			if(this.numToLoad === 0 && !meta.engine.loading) {
-				meta.engine.onReady();
-				this._chn_allLoaded.emit(this, Resource.Event.ALL_LOADED);
+			if(this.numToLoad === 0) {
+				this._chn_loadingEnd.emit(this, Resource.Event.LOADING_END);
 			}
 		}
 	},
@@ -178,9 +180,8 @@ Resource.Controller = meta.Controller.extend
 		{
 			this.numToLoad--;
 
-			if(this.numToLoad === 0 && !meta.engine.loading) {
-				meta.engine.onReady();
-				this._chn_allLoaded.emit(this, Resource.Event.ALL_LOADED);
+			if(this.numToLoad === 0) {
+				this._chn_loadingEnd.emit(this, Resource.Event.LOADING_END);
 			}
 		}
 	},
@@ -305,7 +306,8 @@ Resource.Controller = meta.Controller.extend
 	isSyncLoading: false,
 
 	_chn_added: null,
-	_chn_allLoaded: null,
+	_chn_loadingStart: null,
+	_chn_loadingEnd: null,
 	_uniqueID: 0,
 
 	loading: false

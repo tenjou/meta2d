@@ -27,10 +27,12 @@ Resource.Event = {
 	 * Resource added.
 	 */	
 	ADDED: "res-added",
-	/**
-	 * All resources are loaded.
-	 */	
-	ALL_LOADED: "res-all-loaded",	
+
+	/** */
+	LOADING_START: "res-loading-started",
+
+	/** All resources are loaded. */	
+	LOADING_END: "res-loading-ended"
 };
 
 /**

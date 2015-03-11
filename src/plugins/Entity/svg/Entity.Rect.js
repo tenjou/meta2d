@@ -7,8 +7,7 @@ Entity.Rect = Entity.SVG.extend
 		ctx.beginPath();
 		ctx.rect(this.volume.minX, this.volume.minY, 
 			this.volume.maxX, this.volume.maxY);
-
-		console.log(this._fillStyle)
+		
 		if(this._fillStyle) {
 			ctx.fillStyle = this._fillStyle;
 			ctx.fill();

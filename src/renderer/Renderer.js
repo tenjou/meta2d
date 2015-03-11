@@ -133,7 +133,6 @@ meta.Renderer = meta.class.extend
 		if(this.needSortDepth) {
 			this.entities.sort(this._sortEntities);
 			this.entitiesPicking.sort(this._sortEntities);
-			this.entitiesUI.sort(this._sortEntities);
 			this.needSortDepth = false;
 			this.needRender = true;
 		}		
@@ -145,35 +144,13 @@ meta.Renderer = meta.class.extend
 
 	addEntity: function(entity) 
 	{
-		if(entity.__ui)
-		{
-			this.entitiesUI.push(entity);
-			this._addEntity(entity);
-
-			if(entity.children) {
-				this.addEntitiesUI(entity.children);
-			}
-		}
-		else
-		{
-			this.entities.push(entity);
-			this._addEntity(entity);
-
-			if(entity.children) {
-				this.addEntities(entity.children);
-			}			
-		}		
-	},
-
-	addEntityUI: function(entity) 
-	{
-		this.entitiesUI.push(entity);
+		this.entities.push(entity);
 		this._addEntity(entity);
 
 		if(entity.children) {
-			this.addEntitiesUI(entity.children);
-		}		
-	},	
+			this.addEntities(entity.children);
+		}					
+	},
 
 	_addEntity: function(entity) 
 	{
@@ -195,6 +172,8 @@ meta.Renderer = meta.class.extend
 		if(!entity._debugger) {
 			this.numEntities++;
 		}
+
+		entity._updateResize();
 	},
 
 	addEntities: function(entities)
@@ -202,14 +181,6 @@ meta.Renderer = meta.class.extend
 		var numEntities = entities.length;
 		for(var i = 0; i < numEntities; i++) {
 			this.addEntity(entities[i]);
-		}
-	},
-
-	addEntitiesUI: function(entities)
-	{
-		var numEntities = entities.length;
-		for(var i = 0; i < numEntities; i++) {
-			this.addEntityUI(entities[i]);
 		}
 	},
 
@@ -250,35 +221,20 @@ meta.Renderer = meta.class.extend
 		var entity, n;
 		var numRemove = entities.length;
 		var numEntities = this.entities.length;
-		var numEntitiesUI = this.entitiesUI.length;
 		for(var i = 0; i < numRemove; i++) 
 		{
 			entity = entities[i];
 			entity.__added = false;
-			if(entity.__ui) 
+			
+			for(n = 0; n < numEntities; n++) 
 			{
-				for(n = 0; n < numEntitiesUI; n++) 
-				{
-					if(this.entitiesUI[n] === entity) {
-						numEntitiesUI--;
-						this.entitiesUI[n] = this.entitiesUI[numEntitiesUI];
-						this.entitiesUI.pop();
-						break;
-					}
+				if(this.entities[n] === entity) {
+					numEntities--;
+					this.entities[n] = this.entities[numEntities];
+					this.entities.pop();
+					break;
 				}
-			}
-			else
-			{
-				for(n = 0; n < numEntities; n++) 
-				{
-					if(this.entities[n] === entity) {
-						numEntities--;
-						this.entities[n] = this.entities[numEntities];
-						this.entities.pop();
-						break;
-					}
-				}				
-			}
+			}				
 
 			if(entity.children) {
 				this._removeEntities(entity.children);
@@ -654,16 +610,7 @@ meta.Renderer = meta.class.extend
 			if(entity.parent !== this.holder) { continue; }
 
 			entity._updateResize();
-		}
-
-		numEntities = this.entitiesUI.length;
-		for(i = 0; i < numEntities; i++) 
-		{
-			entity = this.entitiesUI[i];
-			if(entity.parent !== this.holder) { continue; }
-
-			entity._updateResize();
-		}		
+		}	
 	},
 
 	onAdapt: function(data, event) {
@@ -734,8 +681,6 @@ meta.Renderer = meta.class.extend
 	entitiesToUpdate: [],
 	_removeUpdating: [],
 	numEntities: 0,
-
-	entitiesUI: [],
 
 	entitiesAnim: [],
 	entitiesAnimRemove: [],	

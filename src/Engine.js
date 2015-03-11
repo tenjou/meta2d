@@ -55,6 +55,8 @@ meta.engine =
 		}
 
 		meta.subscribe(this, Input.Event.KEY_DOWN, this.onKeyDown);
+		meta.subscribe(this, Resource.Event.LOADING_START, this.onLoadingStart);
+		meta.subscribe(this, Resource.Event.LOADING_END, this.onLoadingEnd);
 
 		meta.world = new meta.World(0, 0);
 		meta.camera = new meta.Camera();
@@ -86,8 +88,8 @@ meta.engine =
 			cache.initFuncs[i]();
 		}
 
-		this._addCorePlugins();
 		this.inited = true;
+		this._addCorePlugins();
 
 		console.log(" ");
 
@@ -103,8 +105,6 @@ meta.engine =
 			console.log("(Loading started)");
 		}
 
-		this.loading = true;
-
 		if(!meta._loadAllScripts()) {
 			this._continueLoad();
 		}
@@ -112,6 +112,8 @@ meta.engine =
 
 	_continueLoad: function()
 	{
+		this.loading = true;
+
 		meta.renderer.load();
 
 		var cache = meta.cache;
@@ -121,48 +123,22 @@ meta.engine =
 			cache.loadFuncs[i]();
 		}
 
-		var ctrl;
-		var numCtrl = this.ctrls.length;
-		for(i = 0; i < numCtrl; i++) 
-		{
-			ctrl = this.ctrls[i];
+		meta.ctrl.loadCtrls();
 
-			if(ctrl.load) {
-				ctrl.load();	
-			}
-			
-			ctrl.loaded = true;
-		}
+		this.loaded = true;
 
-		this.loadedCtrls = true;
-		this.loading = false;
-
-		if(Resource.ctrl.numToLoad === 0) {
+		if(!this.loadingResources) {
 			this.onReady();
 		}
 	},
 
 	onReady: function()
 	{
-		this.loaded = true;
+		if(this.ready) { return; }
 
-		if(meta.device.support.consoleCSS) {
-			console.log("%c(Loading ended)", "background: #eee; font-weight: bold;");
-		}
-		else {
-			console.log("(Loading ended)");
-		}
+		console.log("ready");
 
-		//
-		var ctrl;
-		var numCtrl = this.ctrls.length;
-		for(var i = 0; i < numCtrl; i++) 
-		{
-			ctrl = this.ctrls[i];
-			if(ctrl.ready) {
-				ctrl.ready();
-			}
-		}
+		meta.ctrl.readyCtrls();		
 
 		this.ready = true;
 
@@ -172,6 +148,13 @@ meta.engine =
 		}
 
 		meta.cache.view.active = true;
+
+		if(meta.device.support.consoleCSS) {
+			console.log("%c(Loading ended)", "background: #eee; font-weight: bold;");
+		}
+		else {
+			console.log("(Loading ended)");
+		}		
 
 		this._startMainLoop();
 	},
@@ -211,29 +194,8 @@ meta.engine =
 
 		var tDelta = this.time.deltaF;
 
-		// Controllers to remove:
-		var numCtrls = this.ctrlsRemove.length;
-		if(numCtrls) 
-		{
-			for(var i = 0; i < numCtrls; i++) {
-				this._removeCtrl(this.ctrlsRemove[i]);
-			}
-
-			this.ctrlsRemove.length = 0;
-		}
-		
-		// Process all update functions:
-		var funcs = this.meta.cache.updateFuncs;
-		var numFuncs = funcs.length;
-		for(i = 0; i < numFuncs; i++) {
-			funcs[i](tDelta);
-		}
-
-		// Process all controller update functions:
-		numCtrls = this.ctrlsUpdateFuncs.length;
-		for(i = 0; i < numCtrls; i++) {
-			this.ctrlsUpdateFuncs[i].update(tDelta);
-		}	
+		meta.ctrl.removeCtrls();
+		meta.ctrl.update(tDelta);
 
 		this.meta.renderer.update(tDelta);
 
@@ -387,6 +349,29 @@ meta.engine =
 		if(data.keyCode === Input.Key.TILDE) {
 			meta.debug = !meta.cache.debug;
 			meta.renderer.needRender = true;
+		}
+	},
+
+	onLoadingStart: function(data, event) {
+		console.log("here");
+		this.loadingResources = true;
+	},
+
+	onLoadingEnd: function(data, event) {
+		this.loadingResources = false;
+		if(this.loaded) {
+			this.onReady();
+		}
+	},
+
+	onScriptLoadingEnd: function() {
+		this._continueLoad();
+	},
+
+	updateLoading: function() 
+	{
+		if(!this.loading && !this.scriptLoading) {
+			this._ready();
 		}
 	},
 
@@ -573,46 +558,10 @@ meta.engine =
 		this.offsetTop += rect.top;
 	},
 
-	_addCorePlugins: function()
-	{
-		meta.register("Resource");
-		//meta.register("UI");
-		meta.register("Input");
-		meta.register("Physics");
-	},
-
-	_removeCtrl: function(scope)
-	{
-		var ctrl = scope.ctrl;
-		if(!ctrl) { return; }
-
-		var numCtrl, i;
-
-		if(ctrl.release) {
-			ctrl.release();
-		}
-		if(ctrl.update) 
-		{
-			numCtrl = this.ctrlsUpdateFuncs.length;
-			for(i = 0; i < numCtrl; i++) {
-				if(this.ctrlsUpdateFuncs[i] === ctrl) {
-					this.ctrlsUpdateFuncs[i] = this.ctrlsUpdateFuncs[numCtrl - 1];
-					this.ctrlsUpdateFuncs.pop();
-					break;
-				}
-			}
-		}
-
-		numCtrl = this.ctrls.length;
-		for(i = 0; i < numCtrl; i++) {
-			if(this.ctrls[i] === ctrl) {
-				this.ctrls[i] = this.ctrls[numCtrl - 1];
-				this.ctrls.pop();
-				break;
-			}
-		}
-
-		scope.ctrl = null;
+	_addCorePlugins: function() {
+		meta.ctrl.create("Resource");
+		meta.ctrl.create("Input");
+		meta.ctrl.create("Physics");
 	},
 
 	_printInfo: function()
@@ -732,8 +681,9 @@ meta.engine =
 
 	inited: false,
 	loading: false,
+	loadingCtrls: false,
+	loadingResources: false,
 	loaded: false,
-	loadedCtrls: false,
 	ready: false,
 	focus: false,
 	pause: false,
@@ -741,10 +691,6 @@ meta.engine =
 
 	_updateLoop: null,
 	_renderLoop: null,
-
-	ctrls: [],
-	ctrlsUpdateFuncs: [],
-	ctrlsRemove: [],
 
 	timers: [],
 

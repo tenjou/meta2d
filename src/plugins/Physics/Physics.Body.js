@@ -51,26 +51,43 @@ Physics.Body = meta.class.extend
 			var newX = this.volume.x;
 			var newY = this.volume.y;
 			var world = meta.world;
+			var collision = false;
 
+			// X
 			if(this.volume.minX < 0) {
 				newX = this.volume.x - this.volume.minX;
-				manifold.normal.set(1, 0);
+				manifold.normal.x = 1;
+				collision = true;
 			}
 			else if(this.volume.maxX > world.width) {
 				newX += world.width - this.volume.maxX;
-				manifold.normal.set(-1, 0);
+				manifold.normal.x = 0;
+				collision = true;
+			}
+			else {
+				manifold.normal.x = 0;
 			}
 
+			// Y
 			if(this.volume.minY < 0) {
 				newY = this.volume.y - this.volume.minY;
-				manifold.normal.set(0, 1);
+				manifold.normal.y = 1;
+				collision = true;
 			}
 			else if(this.volume.maxY > world.height) {
 				newY += world.height - this.volume.maxY;
-				manifold.normal.set(0, -1);
+				manifold.normal.y = -1;
+				collision = true;
+			}
+			else {
+				manifold.normal.y = 0;
 			}
 
 		 	this.volume.position(newX, newY);
+
+		 	if(collision && this.onCollision) {
+		 		this.onCollision.call(this.owner, manifold);
+		 	}
 		}
 
 		this.owner.position(this.volume.x, this.volume.y);

@@ -6,14 +6,12 @@
  * @property name {String} Name of the view.
  * @property entities {Array} Entities that has been added to the view.
  * @property views {Array} Views attached.
- * @property controllers {Array} Array with a controllers names that is added to the view.
  * @property parentView {meta.View} Pointer to parent view. Null if it not have parents.
  * @property x {Number} <b>Setter/Getter.</b> World position on x axis.
  * @property y {Number} <b>Setter/Getter.</b> World position on y axis.
  * @property z {Number} <b>Setter/Getter.</b> Depth index.
  * @property tween {meta.Tween} View tween.
  * @property numEntities {Number} Number of entities added to the view.
- * @memberof! <global>
  */
 meta.View = function(name)
 {
@@ -34,7 +32,7 @@ meta.View = function(name)
 meta.View.prototype =
 {
 	/**
-	 * Destroy view and all entities added, textures created (and is not added to resource controller).
+	 * Destroy view and all entities added.
 	 */
 	remove: function()
 	{
@@ -291,23 +289,12 @@ meta.View.prototype =
 
 	_makeActive: function()
 	{
-		var n;
-
-		// Add controllers to the engine:
-		if(this.controllers) 
-		{
-			var numControllers = this.controllers.length;
-			for(n = 0; n < numControllers; n++) {
-				meta.addCtrl(this.controllers[n]);
-			}			
-		}
-
 		meta.renderer.addEntities(this.entities);
 
 		if(this.views)
 		{
 			var numViews = this.views.length;
-			for(n = 0; n < numViews; n++) {
+			for(var n = 0; n < numViews; n++) {
 				this.views[n].active = true;
 			}
 		}		
@@ -315,23 +302,12 @@ meta.View.prototype =
 
 	_makeInactive: function()
 	{
-		var n;
-
-		// Remove controllers from the engine:
-		if(this.controllers)
-		{
-			var numControllers = this.controllers.length;
-			for(n = 0; n < numControllers; n++) {
-				meta.removeCtrl(this.controllers[n]);
-			}
-		}
-
 		meta.renderer.removeEntities(this.entities);
 
 		if(this.views)
 		{
 			var numViews = this.views.length;
-			for(n = 0; n < numViews; n++) {
+			for(var n = 0; n < numViews; n++) {
 				this.views[n].active = false;
 			}
 		}
@@ -420,30 +396,12 @@ meta.View.prototype =
 
 	get static() { return this._static; },
 
-	create: function(obj, params) {
-		var entity = new obj(params);
-		this.view.attach(entity);
-		return entity;
-	},
-
-	geometry: function(params) {
-		var entity = new Entity.Geometry(params);
-		this.view.attach(entity);
-		return entity;
-	},
-
-	text: function(params) {
-		var text = new Entity.Text(params);
-		this.view.attach(text);
-		return text;
-	},
-
 	//
 	entitiesUI: null
 };
 
 /**
- * Create a new view. Additionally controllers can be passed for registration.
+ * Create a new view.
  * @param name {String} Name of the view.
  */
 meta.createView = function(name)
@@ -483,7 +441,7 @@ meta.setView = function(view)
 		var name = view;
 		view = cache.views[name];
 		if(!view) {
-			console.warn("(meta.setView) Creating empty view, could be unintended - " + name);
+			console.warn("(meta.setView) Creating an empty view, could be unintended - " + name);
 			view = new meta.View(name);
 			cache.views[name] = view;
 		}

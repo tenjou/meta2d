@@ -25,5 +25,6 @@ Entity.SVG = Entity.Geometry.extend
 
 	//
 	_lineWidth: 2,
-	_strokeStyle: ""
+	_strokeStyle: "",
+	_fillStyle: ""
 });

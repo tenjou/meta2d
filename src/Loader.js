@@ -107,7 +107,7 @@ meta._loadAllScripts = function()
 
 		if(cache.numScriptsToLoad === 0) {
 			cache.scripts = null;
-			meta.engine._continueLoad();
+			meta.engine.onScriptLoadingEnd();
 		}
 	}
 
@@ -153,8 +153,8 @@ meta.import = function(path)
 	{
 		if(module.version !== version) 
 		{
-			console.error("[meta.loadPackage]:", 
-				"There is already added module [" + module.name + "] but with different version: " + module.version);
+			console.error("(meta.loadPackage) There is already added module [" + 
+				module.name + "] but with different version: " + module.version);
 		}
 
 		return;
