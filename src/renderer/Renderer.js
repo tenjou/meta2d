@@ -189,13 +189,14 @@ meta.Renderer = meta.class.extend
 		if(!entity.__added) { return; }
 
 		if(this.__updating) {
+			entity.__added = false;
 			this.entitiesRemove.push(entity);
 		}
 		else {
 			this._removeEntity(entity);
 		}
 
-		entity.__added = false;
+		this.needSortDepth = true;
 	},
 
 	removeEntities: function(entities)
@@ -214,6 +215,8 @@ meta.Renderer = meta.class.extend
 		else {
 			this._removeEntities(entities);
 		}
+
+		this.needSortDepth = true;
 	},
 
 	_removeEntities: function(entities)
@@ -238,15 +241,36 @@ meta.Renderer = meta.class.extend
 
 			if(entity.children) {
 				this._removeEntities(entity.children);
+			}
+
+			if(entity.removed) {
+				entity._remove();
 			}			
 		}
-
-		this.needSortDepth = true;
 	},
 
 	_removeEntity: function(entity)
 	{
-		console.log("remove");
+		entity.__added = false;
+		
+		var numEntities = this.entities.length;
+		for(var n = 0; n < numEntities; n++) 
+		{
+			if(this.entities[n] === entity) {
+				numEntities--;
+				this.entities[n] = this.entities[numEntities];
+				this.entities.pop();
+				break;
+			}
+		}				
+
+		if(entity.children) {
+			this._removeEntities(entity.children);
+		}
+
+		if(entity.removed) {
+			entity._remove();
+		}		
 	},
 
 	addUpdating: function(entity) 

@@ -30,32 +30,37 @@ Entity.Geometry = meta.class.extend
 
 	remove: function()
 	{
-		if(!this.removed) { return; }
+		if(this.removed) { return; }
 		this.removed = true;
-		this.renderer.removeUpdating(this);
 
-		if(this.tween) {
-			this.tween.clear();
+		if(this.__added) {
+			this.renderer.removeEntity(this);
 		}
-
-		if(this.onRemove) {
-			this.onRemove();
-		}
-
-		if(this.children) {
-			var numChildren = this.children.length;
-			for(var i = 0; i < numChildren; i++) {
-				this.children[i].remove();
-			}
+		else {
+			this._remove();
 		}
 	},
 
 	_remove: function()
 	{
+		this.renderer.removeUpdating(this);
+
 		if(this._texture) {
 			this._texture.unsubscribe(this);
 			this._texture = null;
 		}
+
+		if(this.tween) {
+			this.tween.clear();
+		}
+
+		if(this.view) {
+			this.view.detach(this);
+		}
+
+		if(this.onRemove) {
+			this.onRemove();
+		}		
 	},
 
 	onRemove: null,
