@@ -28,6 +28,38 @@ Entity.Geometry = meta.class.extend
 		}
 	},
 
+	remove: function()
+	{
+		if(!this.removed) { return; }
+		this.removed = true;
+		this.renderer.removeUpdating(this);
+
+		if(this.tween) {
+			this.tween.clear();
+		}
+
+		if(this.onRemove) {
+			this.onRemove();
+		}
+
+		if(this.children) {
+			var numChildren = this.children.length;
+			for(var i = 0; i < numChildren; i++) {
+				this.children[i].remove();
+			}
+		}
+	},
+
+	_remove: function()
+	{
+		if(this._texture) {
+			this._texture.unsubscribe(this);
+			this._texture = null;
+		}
+	},
+
+	onRemove: null,
+
 	/** 
 	 * update
 	 * @type {function}
@@ -1070,7 +1102,7 @@ Entity.Geometry = meta.class.extend
 	anchorPosX: 0, anchorPosY: 0,
 
 	loaded: true,
-	_removed: false,
+	removed: false,
 	_visible: true,
 	_static: false,
 	_debugger: false,

@@ -134,11 +134,11 @@ meta.engine =
 
 	onReady: function()
 	{
-		if(this.ready) { return; }
-
 		console.log("ready");
 
-		meta.ctrl.readyCtrls();		
+		meta.ctrl.readyCtrls();	
+		
+		if(this.ready) { return; }	
 
 		this.ready = true;
 

@@ -24,6 +24,7 @@ meta.Controller = meta.class.extend
 
 	_load: function() 
 	{
+		console.log("load", this.name);
 		if(this._firstLoad) 
 		{
 			this._firstLoad = true;
@@ -229,9 +230,8 @@ meta.ctrl =
 			return;
 		}		
 
-		if(!meta.engine.loadingCtrls) {
-			this._ctrlsLoad.push(scope.ctrl);
-		}
+		this._ctrlsLoad.push(scope.ctrl);
+		this._loading = true;
 	},
 
 	/**
@@ -297,15 +297,11 @@ meta.ctrl =
 
 	loadCtrls: function()
 	{
-		this._loadingCtrls = true;
-
 		var ctrl;
 		var numCtrl = this._ctrlsLoad.length;
 		for(var i = 0; i < numCtrl; i++) {
 			this._ctrlsLoad[i]._load();	
 		}
-
-		this._loadingCtrls = false;
 	},
 
 	readyCtrls: function() 
@@ -327,6 +323,7 @@ meta.ctrl =
 		}	
 
 		this._ctrlsLoad.length = 0;	
+		this._loading = false;
 	},
 
 	removeCtrls: function()
@@ -379,6 +376,14 @@ meta.ctrl =
 		for(var i = 0; i < numCtrl; i++) {
 			this._ctrlsUpdate[i].update(tDelta);
 		}
+
+		if(this._loading)
+		{
+			this.loadCtrls();
+			if(!meta.engine.loadingResources) {
+				this.readyCtrls();
+			}
+		}
 	},
 
 	//
@@ -387,5 +392,5 @@ meta.ctrl =
 	_ctrlsRemove: [],
 	_ctrlsUpdate: [],
 
-	_loadingCtrls: false
+	_loading: false
 };

@@ -189,10 +189,10 @@ meta.Renderer = meta.class.extend
 		if(!entity.__added) { return; }
 
 		if(this.__updating) {
-			
+			this.entitiesRemove.push(entity);
 		}
 		else {
-			var numEntities = this.entities
+			this._removeEntity(entity);
 		}
 
 		entity.__added = false;
@@ -240,6 +240,13 @@ meta.Renderer = meta.class.extend
 				this._removeEntities(entity.children);
 			}			
 		}
+
+		this.needSortDepth = true;
+	},
+
+	_removeEntity: function(entity)
+	{
+		console.log("remove");
 	},
 
 	addUpdating: function(entity) 
