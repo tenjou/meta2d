@@ -134,10 +134,8 @@ meta.engine =
 
 	onReady: function()
 	{
-		console.log("ready");
-
 		meta.ctrl.readyCtrls();	
-		
+
 		if(this.ready) { return; }	
 
 		this.ready = true;
@@ -353,7 +351,6 @@ meta.engine =
 	},
 
 	onLoadingStart: function(data, event) {
-		console.log("here");
 		this.loadingResources = true;
 	},
 
@@ -422,7 +419,7 @@ meta.engine =
 		width = width | 0;
 		height = height | 0;		
 
-		if(this.width === width && this.height === height) { return; }
+		if(this.width === width && this.height === height && !this._center) { return; }
 
 		this.width = width;
 		this.height = height | 0;
@@ -431,7 +428,16 @@ meta.engine =
 		this.canvas.style.width = (width * this.scaleX) + "px";
 		this.canvas.style.height = (height * this.scaleY) + "px";
 
-		meta.world.bounds(0, 0, width, height);
+		if(this._center) {
+			var centerX = (window.innerWidth - width) * 0.5 + "px";
+			var centerY = (window.innerHeight - height) * 0.5 + "px";
+			this.canvas.style.left = centerX;
+			this.canvas.style.top = centerY;	
+			meta.world.bounds(centerX, centerY, width, height);
+		}
+		else {
+			meta.world.bounds(0, 0, width, height);
+		}
 
 		if(this.ctx.imageSmoothingEnabled) {
 			this.ctx.imageSmoothingEnabled = meta.cache.imageSmoothing;
@@ -656,6 +662,13 @@ meta.engine =
 		return this._container.style.cursor;
 	},
 
+	set center(value) {
+		this._center = value;
+		this.onResize();
+	},
+
+	get center() { return this._center; },
+
 	//
 	elementStyle: "padding:0; margin:0;",
 	canvasStyle: "position:absolute; overflow:hidden; translateZ(0); " +
@@ -688,6 +701,8 @@ meta.engine =
 	focus: false,
 	pause: false,
 	webgl: false,
+
+	_center: false,
 
 	_updateLoop: null,
 	_renderLoop: null,

@@ -24,7 +24,6 @@ meta.Controller = meta.class.extend
 
 	_load: function() 
 	{
-		console.log("load", this.name);
 		if(this._firstLoad) 
 		{
 			this._firstLoad = true;
