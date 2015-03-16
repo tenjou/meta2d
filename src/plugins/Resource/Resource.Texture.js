@@ -396,24 +396,13 @@ Resource.Texture = Resource.Basic.extend
 		}
 	},
 
-	set offsetX(x)
-	{
-		this._offsetX = x;
+	offset: function(x, y) {
+		this.offsetX = x;
+		this.offsetY = y;
 		if(this._loaded) {
 			this.emit(this, Resource.Event.CHANGED);
-		}
+		}		
 	},
-
-	set offsetY(y)
-	{
-		this._offsetY = y;
-		if(this._loaded) {
-			this.emit(this, Resource.Event.CHANGED);
-		}
-	},
-
-	get offsetX() { return this._offsetX; },
-	get offsetY() { return this._offsetY; },
 
 	getData: function() {
 		return this.ctx.getImageData(0, 0, this.trueWidth, this.trueHeight).data;
@@ -441,7 +430,7 @@ Resource.Texture = Resource.Basic.extend
 	_width: 0, _height: 0,
 	fullWidth: 0, fullHeight: 0,
 	_widthRatio: 0, _heightRatio: 0,
-	_offsetX: 0, _offsetY: 0,
+	offsetX: 0, offsetY: 0,
 	unitRatio: 1,
 
 	fps: 9,

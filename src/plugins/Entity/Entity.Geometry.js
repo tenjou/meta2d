@@ -80,8 +80,8 @@ Entity.Geometry = meta.class.extend
 	/** updatePos */
 	updatePos: function()
 	{
-		this.volume.x = this._x + this._offsetX + this._parentX + this.anchorPosX;
-		this.volume.y = this._y + this._offsetY + this._parentY + this.anchorPosY;
+		this.volume.x = this._x + this.totalOffsetX + this._parentX + this.anchorPosX;
+		this.volume.y = this._y + this.totalOffsetY + this._parentY + this.anchorPosY;
 		this.volume.updatePos();
 
 		if(this.children) 
@@ -230,6 +230,9 @@ Entity.Geometry = meta.class.extend
 	updateZ: function() 
 	{
 		this.totalZ = this._z + this._parentZ;
+		if(this._view) {
+			this.totalZ += this._view._z;
+		}
 
 		if(this.children) 
 		{
@@ -245,23 +248,51 @@ Entity.Geometry = meta.class.extend
 		this.renderer.needSortDepth = true;	
 	},
 
-	set offset(x, y) 
+	offset: function(x, y) 
 	{
 		if(this._offsetX === x && this._offsetY === y) { return; }
+
 		this._offsetX = x;
 		this._offsetY = y;
+		if(this._texture) {
+			this.totalOffsetX = this._offsetX + this._texture.offsetX;
+			this.totalOffsetY = this._offsetY + this._texture.offsetY;	
+		}
+		else {
+			this.totalOffsetX = this._offsetX;
+			this.totalOffsetY = this._offsetY;
+		}
+
 		this.updatePos();
 	},
 
-	set offsetX(x) { 
+	set offsetX(x) 
+	{ 
 		if(this._offsetX === x) { return; }
+
 		this._offsetX = x;
+		if(this._texture) {
+			this.totalOffsetX = this._offsetX + this._texture.offsetX;	
+		}
+		else {
+			this.totalOffsetX = this._offsetX;
+		}
+
 		this.updatePos();
 	},
 
-	set offsetY(y) {
+	set offsetY(y) 
+	{
 		if(this._offsetY === y) { return; }
+
 		this._offsetY = y;
+		if(this._texture) {
+			this.totalOffsetY = this._offsetY + this._texture.offsetY;	
+		}
+		else {
+			this.totalOffsetY = this._offsetY;
+		}
+
 		this.updatePos();
 	},
 
@@ -327,8 +358,8 @@ Entity.Geometry = meta.class.extend
 	{
 		this.anchorPosX = (this.parent.volume.width) * this._anchorX;
 		this.anchorPosY = (this.parent.volume.height) * this._anchorY;
-		this.volume.x = this._x + this._parentX + this.anchorPosX;
-		this.volume.y = this._y + this._parentY + this.anchorPosY;
+		this.volume.x = this._x + this.totalOffsetX + this._parentX + this.anchorPosX;
+		this.volume.y = this._y + this.totalOffsetY + this._parentY + this.anchorPosY;
 		this.volume.updatePos();
 
 		if(this.children) 
@@ -600,6 +631,9 @@ Entity.Geometry = meta.class.extend
 		else {
 			this.volume.resize(0, 0);
 		}
+
+		this.totalOffsetX = this._offsetX + this._texture.offsetX;
+		this.totalOffsetY = this._offsetY + this._texture.offsetY;
 
 		this.updateAnchor();
 	},	
@@ -1126,7 +1160,9 @@ Entity.Geometry = meta.class.extend
 	_angle: 0, _parentAngle: 0,
 	_alpha: 1, totalAlpha: 0, _parentAlpha: 0,
 	_scaleX: 1, _scaleY: 1, _parentScaleX: 1, _parentScaleY: 1,
+	
 	_offsetX: 0, _offsetY: 0,
+	totalOffsetX: 0, totalOffsetY: 0,
 
 	_anchorX: 0, _anchorY: 0,
 	anchorPosX: 0, anchorPosY: 0,
