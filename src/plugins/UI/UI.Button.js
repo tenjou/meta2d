@@ -2,14 +2,24 @@
 
 UI.Button = Entity.Geometry.extend
 ({
-	_initParams: function(params) 
-	{		
-		if(params) {
-			this.style = meta.createStyle(params, UI.ctrl.coreStyle.button);
-		}
-		else {
-			this.style = UI.ctrl.style.button;
-		}
+	init: function() {
+		this.pickable = true;
+	},
+
+	onHoverEnter: function(data) {
+		meta.engine.cursor = "pointer";
+	},
+
+	onHoverExit: function(data) {
+		meta.engine.cursor = "auto";
+	},
+
+	onDown: function() {
+		this.offset(2, 2);
+	},
+
+	onUp: function() {
+		this.offset(0, 0);
 	},
 
 	set text(str)
