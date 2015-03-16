@@ -131,16 +131,40 @@ meta.Renderer = meta.class.extend
 
 		// Depth sorting:
 		if(this.needSortDepth) {
-			this.entities.sort(this._sortEntities);
-			this.entitiesPicking.sort(this._sortEntities);
-			this.needSortDepth = false;
-			this.needRender = true;
+			this.sort();
 		}		
 	},
 
-	_sortEntities: function(a, b) {
-		return a.totalZ - b.totalZ;
-	},	
+	sort: function()
+	{
+		var i, j, tmp1, tmp2;
+		var num = this.entities.length;
+		for(i = 0; i < num; i++) {
+			for(j = i; j > 0; j--) {
+				tmp1 = this.entities[j];
+				tmp2 = this.entities[j - 1];
+				if(tmp1.totalZ - tmp2.totalZ < 0) {
+					this.entities[j] = tmp2;
+					this.entities[j - 1] = tmp1;
+				}
+			}
+		}
+
+		num = this.entitiesPicking.length;
+		for(i = 0; i < num; i++) {
+			for(j = i; j > 0; j--) {
+				tmp1 = this.entitiesPicking[j];
+				tmp2 = this.entitiesPicking[j - 1];
+				if(tmp1.totalZ - tmp2.totalZ < 0) {
+					this.entitiesPicking[j] = tmp2;
+					this.entitiesPicking[j - 1] = tmp1;
+				}
+			}
+		}	
+
+		this.needSortDepth = false;
+		this.needRender = true;			
+	},
 
 	addEntity: function(entity) 
 	{
@@ -173,7 +197,7 @@ meta.Renderer = meta.class.extend
 			this.numEntities++;
 		}
 
-		entity._updateResize();
+		entity.updateAnchor();
 	},
 
 	addEntities: function(entities)

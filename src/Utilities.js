@@ -17,12 +17,11 @@ meta.emptyFuncParam = function(param) {};
  * Load textures. Textures added will load only after requesting them first.
  * @param buffer {Array|String} Buffer with texture sources.
  * @param folderPath {String=} Path applied to texture sources.
- * @param hd_folderPath {String=} An alternate path for HD version.
  */
-meta.loadTexture = function(buffer, folderPath, hd_folderPath)
+meta.loadTexture = function(buffer, folderPath, tag)
 {
-	if(!meta._loadResource("Texture", buffer, folderPath, hd_folderPath)) {
-		console.warn("[meta.loadTexture]:", "Unsupported parameter was passed.");
+	if(!meta._loadResource("Texture", buffer, folderPath, tag)) {
+		console.warn("(meta.loadTexture) Unsupported parameter was passed.");
 	}
 };
 
@@ -30,12 +29,11 @@ meta.loadTexture = function(buffer, folderPath, hd_folderPath)
  * Preload textures. When texture is added it will be auto loaded without anyone requesting it first.
  * @param buffer {Array|String} Buffer with texture sources.
  * @param folderPath {String=} Path applied to texture sources.
- * @param hd_folderPath {String=} An alternate path for HD version.
  */
-meta.preloadTexture = function(buffer, folderPath, hd_folderPath)
+meta.preloadTexture = function(buffer, folderPath, tag)
 {
-	if(!meta._preloadResource("Texture", buffer, folderPath, hd_folderPath)) {
-		console.warn("[meta.preloadTexture]:", "Unsupported parameter was passed.");
+	if(!meta._preloadResource("Texture", buffer, folderPath, tag)) {
+		console.warn("(meta.preloadTexture) Unsupported parameter was passed.");
 	}
 };
 
@@ -44,10 +42,10 @@ meta.preloadTexture = function(buffer, folderPath, hd_folderPath)
  * @param buffer {Array|String} Buffer with sound sources.
  * @param folderPath {String=} Path applied to sound sources.
  */
-meta.loadSound = function(buffer, folderPath)
+meta.loadSound = function(buffer, folderPath, tag)
 {
-	if(!meta._loadResource("Sound", buffer, folderPath)) {
-		console.warn("[meta.loadSound]:", "Unsupported parameter was passed.");
+	if(!meta._loadResource("Sound", buffer, folderPath, tag)) {
+		console.warn("(meta.loadSound) Unsupported parameter was passed.");
 	}
 };
 
@@ -56,10 +54,10 @@ meta.loadSound = function(buffer, folderPath)
  * @param buffer {Array|String} Buffer with sound sources.
  * @param folderPath {String=} Path applied to sound sources.
  */
-meta.preloadSound = function(buffer, folderPath)
+meta.preloadSound = function(buffer, folderPath, tag)
 {
-	if(!meta._preloadResource("Sound", buffer, folderPath)) {
-		console.warn("[meta.preloadSound]:", "Unsupported parameter was passed.");
+	if(!meta._preloadResource("Sound", buffer, folderPath, tag)) {
+		console.warn("(meta.preloadSound) Unsupported parameter was passed.");
 	}
 };
 
@@ -68,10 +66,10 @@ meta.preloadSound = function(buffer, folderPath)
  * @param buffer {Array|String} Buffer with sound sources.
  * @param folderPath {String=} Path applied to sound sources.
  */
-meta.loadSpriteSheet = function(buffer, folderPath)
+meta.loadSpriteSheet = function(buffer, folderPath, tag)
 {
-	if(!meta._preloadResource("SpriteSheet", buffer, folderPath)) {
-		console.warn("[meta.loadSpriteSheet]:", "Unsupported parameter was passed.");
+	if(!meta._preloadResource("SpriteSheet", buffer, folderPath, tag)) {
+		console.warn("(meta.loadSpriteSheet) Unsupported parameter was passed.");
 	}
 };
 
@@ -80,14 +78,14 @@ meta.loadSpriteSheet = function(buffer, folderPath)
  * @param buffer {Array|String} Buffer with sound sources.
  * @param folderPath {String=} Path applied to sound sources.
  */
-meta.loadFont = function(buffer, folderPath)
+meta.loadFont = function(buffer, folderPath, tag)
 {
-	if(!meta._preloadResource("Font", buffer, folderPath)) {
-		console.warn("[meta.loadFont]:", "Unsupported parameter was passed.");
+	if(!meta._preloadResource("Font", buffer, folderPath, tag)) {
+		console.warn("(meta.loadFont) Unsupported parameter was passed.");
 	}
 };
 
-meta._loadResource = function(strType, buffer, folderPath)
+meta._loadResource = function(strType, buffer, folderPath, tag)
 {
 	if(folderPath)
 	{
@@ -104,11 +102,11 @@ meta._loadResource = function(strType, buffer, folderPath)
 	{
 		var numResources = buffer.length;
 		for(var i = 0; i < numResources; i++) {
-			meta._addResource(strType, buffer[i], folderPath);
+			meta._addResource(strType, buffer[i], folderPath, tag);
 		}
 	}
 	else if(typeof(buffer) === "object" || typeof(buffer) === "string") {
-		meta._addResource(strType, buffer, folderPath);
+		meta._addResource(strType, buffer, folderPath, tag);
 	}
 	else {
 		return false;
@@ -117,7 +115,7 @@ meta._loadResource = function(strType, buffer, folderPath)
 	return true;
 };
 
-meta._preloadResource = function(strType, buffer, folderPath)
+meta._preloadResource = function(strType, buffer, folderPath, tag)
 {
 	if(folderPath)
 	{
@@ -134,11 +132,11 @@ meta._preloadResource = function(strType, buffer, folderPath)
 	{
 		var numResources = buffer.length;
 		for(var i = 0; i < numResources; i++) {
-			meta._addResource(strType, buffer[i], folderPath);
+			meta._addResource(strType, buffer[i], folderPath, tag);
 		}
 	}
 	else if(typeof(buffer) === "object" || typeof(buffer) === "string") {
-		meta._addResource(strType, buffer, folderPath);
+		meta._addResource(strType, buffer, folderPath, tag);
 	}
 	else {
 		return false;
@@ -147,7 +145,7 @@ meta._preloadResource = function(strType, buffer, folderPath)
 	return true;
 };
 
-meta._addResource = function(strType, data, folderPath)
+meta._addResource = function(strType, data, folderPath, tag)
 {
 	var resource;
 
@@ -156,10 +154,10 @@ meta._addResource = function(strType, data, folderPath)
 		if(data.path) {
 			data.path = folderPath + data.path;
 		}
-		resource = new Resource[strType](data);
+		resource = new Resource[strType](data, tag);
 	}
 	else {
-		resource = new Resource[strType](folderPath + data);
+		resource = new Resource[strType](folderPath + data, tag);
 	};
 
 	Resource.ctrl.add(resource);
@@ -284,26 +282,24 @@ meta.serialize = function(obj)
  * Add descriptive widget to the view for demo purposes.
  * @param text {String} Description text.
  */
-meta.addDescription = function(text)
+meta.info = function(text)
 {
 	// Text.
 	var msg = new Entity.Text(text);
 	msg.color = "#ffffff";
-	msg.anchor(0.5);
+	msg.pivot(0.5);
 
 	// Background.
-	var texture = new Resource.Texture();
-	texture.fillRect({
-		width: msg.width + 10, height: msg.height + 10,
-		color: "#000000"
-	});
+	var texture = new Resource.SVG();
+	texture.fillRect(0, 0, msg.width + 10, msg.height + 10);
+
 	var bg = new Entity.Geometry(texture);
 	bg.z = 9999;
+	bg.position(0, 20);
 	bg.anchor(0.5, 0);
-	bg.positionTop(0, 10);
-	bg.isPickable = false;
-	bg.ignoreZoom = true;
-	bg.disableDebug = true;
+	bg.pivot(0.5);
+	
+	bg.static = true;
 	meta.view.attach(bg);
 
 	bg.attach(msg);
@@ -389,3 +385,12 @@ meta.nextPowerOfTwo = function(value)
 
     return value;	
 };
+
+meta.toHex = function(c) {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+};
+
+meta.rgbToHex = function(r, g, b) {
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}

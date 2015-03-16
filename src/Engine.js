@@ -429,14 +429,8 @@ meta.engine =
 		this.canvas.style.height = (height * this.scaleY) + "px";
 
 		if(this._center) {
-			var centerX = Math.floor((window.innerWidth - width) * 0.5) + "px";
-			var centerY = Math.floor((window.innerHeight - height) * 0.5) + "px";
-			this.canvas.style.left = centerX;
-			this.canvas.style.top = centerY;	
-			meta.world.bounds(centerX, centerY, width, height);
-		}
-		else {
-			meta.world.bounds(0, 0, width, height);
+			this.canvas.style.left = Math.floor((window.innerWidth - width) * 0.5) + "px";
+			this.canvas.style.top = Math.floor((window.innerHeight - height) * 0.5) + "px";	
 		}
 
 		if(this.ctx.imageSmoothingEnabled) {

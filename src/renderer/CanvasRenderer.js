@@ -197,8 +197,8 @@ meta.CanvasRenderer = meta.Renderer.extend
 	{
 		var minX = Math.floor(volume.minX);
 		var minY = Math.floor(volume.minY);
-		var maxX = Math.floor(volume.maxX);
-		var maxY = Math.floor(volume.maxY - 1);		
+		var maxX = Math.ceil(volume.maxX);
+		var maxY = Math.ceil(volume.maxY - 1);		
 
 		this.ctx.beginPath();
 		this.ctx.moveTo(minX, minY);

@@ -2,12 +2,8 @@
 
 UI.ProgressBar = Entity.Geometry.extend
 ({
-	init: function() 
-	{
-		this.texture = new Resource.Texture();
-		this.volume.resize(300, 30);
-
-		this.buildElement();
+	init: function(texture, fillTexture) {
+		this.fillTexture = fillTexture;
 	},
 
 
@@ -24,6 +20,13 @@ UI.ProgressBar = Entity.Geometry.extend
 	{
 
 	},
+
+
+	set fillTexture(fillTexture) {
+		this._fillTexture = fillTexture;
+	},
+
+	get fillTexture() { return this._fillTexture; },
 
 
 	set min(value) 
@@ -57,6 +60,8 @@ UI.ProgressBar = Entity.Geometry.extend
 
 
 	//
+	_fillTexture: null,
+
 	_min: 0,
 	_max: 100,
 	_value: 0

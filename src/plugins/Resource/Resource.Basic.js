@@ -14,8 +14,12 @@
  */
 Resource.Basic = meta.class.extend
 ({
-	_init: function() {
+	_init: function(data, tag) 
+	{
 		this.id = Resource.ctrl.getUniqueID();
+		if(tag) {
+			this.tag = tag;
+		}		
 	},
 
 
@@ -92,6 +96,7 @@ Resource.Basic = meta.class.extend
 	name: "unknown",
 	path: "",
 	fullPath: "",
+	tag: "",
 
 	chn: null,
 

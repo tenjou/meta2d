@@ -7,6 +7,7 @@ meta.World = meta.class.extend
 		this.volume = new meta.math.AABB(0, 0, 0, 0);
 
 		this._chn = meta.createChannel(meta.Event.WORLD_RESIZE);
+		meta.subscribe(this, meta.Event.RESIZE, this._updateBoundsFromEngine);
 	},
 
 	bounds: function(minX, minY, maxX, maxY) {
@@ -17,20 +18,14 @@ meta.World = meta.class.extend
 		this._chn.emit(this, meta.Event.WORLD_RESIZE);
 	},
 
-	updateAdapt: function() 
+	_updateBoundsFromEngine: function(engine, event) 
 	{
 		if(!this._adapt) { return; }
-
-		var volume = meta.camera.volume;
-
-		this.volume.set(0, 0, volume.width, volume.height);
-		this.centerX = volume.width / 2;
-		this.centerY = volume.height / 2;
+		
+		this.volume.set(0, 0, engine.width, engine.height);
+		this.centerX = engine.width / 2;
+		this.centerY = engine.height / 2;
 		this._chn.emit(this, meta.Event.WORLD_RESIZE);
-	},
-
-	onResize: function(data, event) {
-		this.updateAdapt();
 	},
 
 	get randX() {
@@ -45,7 +40,7 @@ meta.World = meta.class.extend
 	{
 		this._adapt = value;
 		if(value) {
-			this.updateAdapt();
+			this._updateBoundsFromEngine(meta.engine, 0);
 		}
 	},
 
@@ -61,5 +56,5 @@ meta.World = meta.class.extend
 
 	_chn: null,
 
-	_adapt: true
+	_screenBounds: true
 });

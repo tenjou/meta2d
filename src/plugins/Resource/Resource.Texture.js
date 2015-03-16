@@ -29,7 +29,7 @@ Resource.Texture = Resource.Basic.extend
 	 * @param path {String=} Texture path.
 	 * @function
 	 */
-	init: function(data)
+	init: function(data, tag)
 	{
 		this.generate();
 
@@ -50,7 +50,7 @@ Resource.Texture = Resource.Basic.extend
 			}
 
 			if(this.path) {
-				this.load(this.path);
+				this.load(this.path, tag);
 			}
 		}
 	},
@@ -437,6 +437,7 @@ Resource.Texture = Resource.Basic.extend
 	ctx: null,
 
 	_x: 0, _y: 0,
+	width: 0, height: 0,
 	_width: 0, _height: 0,
 	fullWidth: 0, fullHeight: 0,
 	_widthRatio: 0, _heightRatio: 0,

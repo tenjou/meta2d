@@ -269,7 +269,7 @@ meta.ctrl =
 	},
 
 	/**
-	 * Create controller that automatically loads (model).
+	 * Create model controller (automatically loads).
 	 * @param names {string|Array} Name or buffer with names of the controller.
 	 */
 	create: function(names)
@@ -393,3 +393,7 @@ meta.ctrl =
 
 	_loading: false
 };
+
+var Ctrl = {};
+var Model = {};
+

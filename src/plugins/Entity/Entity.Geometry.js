@@ -80,8 +80,8 @@ Entity.Geometry = meta.class.extend
 	/** updatePos */
 	updatePos: function()
 	{
-		this.volume.x = this._x + this._parentX + this.anchorPosX;
-		this.volume.y = this._y + this._parentY + this.anchorPosY;
+		this.volume.x = this._x + this._offsetX + this._parentX + this.anchorPosX;
+		this.volume.y = this._y + this._offsetY + this._parentY + this.anchorPosY;
 		this.volume.updatePos();
 
 		if(this.children) 
@@ -244,6 +244,29 @@ Entity.Geometry = meta.class.extend
 
 		this.renderer.needSortDepth = true;	
 	},
+
+	set offset(x, y) 
+	{
+		if(this._offsetX === x && this._offsetY === y) { return; }
+		this._offsetX = x;
+		this._offsetY = y;
+		this.updatePos();
+	},
+
+	set offsetX(x) { 
+		if(this._offsetX === x) { return; }
+		this._offsetX = x;
+		this.updatePos();
+	},
+
+	set offsetY(y) {
+		if(this._offsetY === y) { return; }
+		this._offsetY = y;
+		this.updatePos();
+	},
+
+	get offsetX() { return this._offsetX; },
+	get offsetY() { return this._offsetY; },
 
 	/** 
 	 * pivot
@@ -516,6 +539,7 @@ Entity.Geometry = meta.class.extend
 
 		this.volume.resize(width, height);
 		this.updatePos();
+		this._updateResize();
 
 		if(this.children) 
 		{
@@ -1102,6 +1126,7 @@ Entity.Geometry = meta.class.extend
 	_angle: 0, _parentAngle: 0,
 	_alpha: 1, totalAlpha: 0, _parentAlpha: 0,
 	_scaleX: 1, _scaleY: 1, _parentScaleX: 1, _parentScaleY: 1,
+	_offsetX: 0, _offsetY: 0,
 
 	_anchorX: 0, _anchorY: 0,
 	anchorPosX: 0, anchorPosY: 0,

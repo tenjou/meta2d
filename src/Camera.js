@@ -29,15 +29,15 @@ meta.Camera = function()
 	
 	this._draggable = false;
 	this._dragging = false;
+	this._moved = false;
 
 	this._center = false;
 	this._centerX = true;
 	this._centerY = true;
-	this._useWorldBounds = false;
+	this._worldBounds = false;
 
 	this._chnMove = null;
 	this._chnResize = null;
-	this._wasMoved = false;
 
 	//
 	this.init();
@@ -83,7 +83,7 @@ meta.Camera.prototype =
 		var world = meta.world;
 
 		/* Initial position */
-		if(!this._wasMoved)
+		if(!this._moved)
 		{
 			var moveX = 0;
 			var moveY = 0;
@@ -129,11 +129,11 @@ meta.Camera.prototype =
 
 	updateAutoZoom: function() 
 	{
-		var scope = meta;
+		var engine = meta.engine;
 		var width = this.zoomBounds.width;
 		var height = this.zoomBounds.height;
-		var diffX = scope.width / width;
-		var diffY = scope.height / height;
+		var diffX = engine.width / width;
+		var diffY = engine.height / height;
 
 		this.prevZoom = this._zoom;
 		this._zoom = diffX;
@@ -141,19 +141,19 @@ meta.Camera.prototype =
 			this._zoom = diffY;
 		}	
 		
-		if(scope.engine.adapt()) 
+		if(engine.adapt()) 
 		{
 			width = this.zoomBounds.width;
 			height = this.zoomBounds.height;
-			diffX = (scope.width / width);
-			diffY = (scope.height / height);
+			diffX = (engine.width / width);
+			diffY = (engine.height / height);
 
 			this._zoom = diffX;
 			if(diffY < diffX) { 
 				this._zoom = diffY;
 			}
 
-			this.volume.resize(scope.width, scope.height);		
+			this.volume.resize(engine.width, engine.height);		
 		}
 
 		this.updateZoom();
@@ -166,7 +166,7 @@ meta.Camera.prototype =
 		this.zoomBounds.width = width;
 		this.zoomBounds.height = height;
 		
-		if(this.width !== 0 || this.height !== 0) {
+		if(this.volume.width !== 0 || this.volume.height !== 0) {
 			this.updateView();		
 		}
 	},
@@ -236,27 +236,26 @@ meta.Camera.prototype =
 		var scope = meta;
 		var diffX = (data.screenX - data.prevScreenX) * this.zoomRatio;
 		var diffY = (data.screenY - data.prevScreenY) * this.zoomRatio;
-		this._wasMoved = true;
+		this._moved = true;
 
-		if(this._useWorldBounds) 
+		if(this._worldBounds) 
 		{
-			var world = meta.world;
-			var volume = world.volume;
+			var worldVolume = scope.world.volume;
 			var newX = this.volume.minX - diffX; 
 			var newY = this.volume.minY - diffY;
 
-			if(newX < volume.minX) {
-				diffX -= volume.minX - newX;
+			if(newX < worldVolume.minX) {
+				diffX -= worldVolume.minX - newX;
 			}
-			else if(newX + this.volume.width > volume.maxX) {
-				diffX = this.volume.maxX - volume.maxX;
+			else if(newX + this.volume.width > worldVolume.maxX) {
+				diffX = this.volume.maxX - worldVolume.maxX;
 			}
 
-			if(newY < volume.minY) {
-				diffY -= volume.minY - newY;
+			if(newY < worldVolume.minY) {
+				diffY -= worldVolume.minY - newY;
 			}
-			else if(newY + this.volume.height > volume.maxY) {
-				diffY = this.volume.maxY - volume.maxY;
+			else if(newY + this.volume.height > worldVolume.maxY) {
+				diffY = this.volume.maxY - worldVolume.maxY;
 			}
 		}
 
@@ -265,7 +264,7 @@ meta.Camera.prototype =
 		this._y = this.volume.minY;
 
 		this._chnMove.emit(this, scope.Event.CAMERA_MOVE);
-		meta.renderer.needRender = true;
+		scope.renderer.needRender = true;
 	},
 
 
@@ -274,7 +273,7 @@ meta.Camera.prototype =
 		if(this._x === value) { return; }
 
 		this._x = value;
-		this._wasMoved = true;
+		this._moved = true;
 		this.updateView();
 	},
 
@@ -283,7 +282,7 @@ meta.Camera.prototype =
 		if(this._y === value) { return; }
 
 		this._y = value;
-		this._wasMoved = true;
+		this._moved = true;
 		this.updateView();
 	},
 
@@ -341,15 +340,15 @@ meta.Camera.prototype =
 
 	get autoZoom() { return this._autoZoom; },
 
-	set useWorldBounds(value) 
+	set worldBounds(value) 
 	{
-		if(this._useWorldBounds === value) { return; }
-		this._useWorldBounds = value;
+		if(this._worldBounds === value) { return; }
+		this._worldBounds = value;
 
 		this.updateView();
 	},
 
-	get useWorldBounds() { return this._useWorldBounds; },
+	get worldBounds() { return this._worldBounds; },
 
 	/* Enable centering */
 	set center(value) {

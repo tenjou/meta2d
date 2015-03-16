@@ -33,6 +33,7 @@ meta.Debugger.prototype =
 		this.holder.anchor(0, 1);
 		this.holder.position(0, -290);
 		this.holder.alpha = 0.8;
+		this.holder.z = 10000;
 		this.holder.debugger = true;
 		this.view.attach(this.holder);
 

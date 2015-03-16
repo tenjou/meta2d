@@ -79,10 +79,10 @@ Resource.Controller = meta.Controller.extend
 
 			// If resource does not have a wildcard.
 			if(wildcardIndex < 0 || (path.length - wildcardIndex) > 5) { 
-				resource.name = path.slice(slashIndex + 1);
+				resource.name = resource.tag + path.slice(slashIndex + 1);
 			}
 			else {
-				resource.name = path.slice(slashIndex + 1, wildcardIndex);
+				resource.name = resource.tag + path.slice(slashIndex + 1, wildcardIndex);
 			}
 		}
 
