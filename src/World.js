@@ -56,5 +56,6 @@ meta.World = meta.class.extend
 
 	_chn: null,
 
+	_adapt: true,
 	_screenBounds: true
 });

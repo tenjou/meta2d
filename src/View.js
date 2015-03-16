@@ -95,8 +95,8 @@ meta.View.prototype =
 
 		entity._view = this;
 		entity._viewNodeID = this.entities.length;
-		if(this._z) {
-			entity.z = entity._z;
+		if(this._z !== 0) {
+			entity.updateZ();
 		}
 		if(this._static) {
 			entity.static = true;
