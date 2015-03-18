@@ -255,12 +255,12 @@ Entity.Geometry = meta.class.extend
 		this._offsetX = x;
 		this._offsetY = y;
 		if(this._texture) {
-			this.totalOffsetX = this._offsetX + this._texture.offsetX;
-			this.totalOffsetY = this._offsetY + this._texture.offsetY;	
+			this.totalOffsetX = Math.round((this._offsetX + this._texture.offsetX) * this.volume.scaleX);
+			this.totalOffsetY = Math.round((this._offsetY + this._texture.offsetY) * this.volume.scaleY);	
 		}
 		else {
-			this.totalOffsetX = this._offsetX;
-			this.totalOffsetY = this._offsetY;
+			this.totalOffsetX = Math.round(this._offsetX * this.volume.scaleX);
+			this.totalOffsetY = Math.round(this._offsetY * this.volume.scaleY);
 		}
 
 		this.updatePos();
@@ -272,10 +272,10 @@ Entity.Geometry = meta.class.extend
 
 		this._offsetX = x;
 		if(this._texture) {
-			this.totalOffsetX = this._offsetX + this._texture.offsetX;	
+			this.totalOffsetX = Math.round((this._offsetX + this._texture.offsetX) * this.volume.scaleX);	
 		}
 		else {
-			this.totalOffsetX = this._offsetX;
+			this.totalOffsetX = Math.round(this._offsetX * this.volume.scaleX);
 		}
 
 		this.updatePos();
@@ -287,10 +287,10 @@ Entity.Geometry = meta.class.extend
 
 		this._offsetY = y;
 		if(this._texture) {
-			this.totalOffsetY = this._offsetY + this._texture.offsetY;	
+			this.totalOffsetY = Math.round((this._offsetY + this._texture.offsetY) * this.volume.scaleY);	
 		}
 		else {
-			this.totalOffsetY = this._offsetY;
+			this.totalOffsetY = Math.round(this._offsetY * this.volume.scaleX);
 		}
 
 		this.updatePos();
@@ -485,6 +485,16 @@ Entity.Geometry = meta.class.extend
 	updateScale: function()
 	{
 		this.volume.scale(this._scaleX * this._parentScaleX, this._scaleY * this._parentScaleY);
+
+		if(this._texture) {
+			this.totalOffsetX = Math.round((this._offsetX + this._texture.offsetX) * this.volume.scaleX);
+			this.totalOffsetY = Math.round((this._offsetY + this._texture.offsetY) * this.volume.scaleY);	
+		}
+		else {
+			this.totalOffsetX = Math.round(this._offsetX * this.volume.scaleX);
+			this.totalOffsetY = Math.round(this._offsetY * this.volume.scaleY);
+		}
+
 		this.updateAnchor();
 	
 		if(this.children) 
@@ -580,6 +590,7 @@ Entity.Geometry = meta.class.extend
 			}	
 		}
 	
+		this.__clip = true;
 		this.renderer.needRender = true;
 	},
 
@@ -627,13 +638,14 @@ Entity.Geometry = meta.class.extend
 	{
 		if(this._texture) {
 			this.volume.resize(this._texture.width, this._texture.height);
+			this.totalOffsetX = Math.round((this._offsetX + this._texture.offsetX) * this.volume.scaleX);
+			this.totalOffsetY = Math.round((this._offsetY + this._texture.offsetY) * this.volume.scaleY);				
 		}
 		else {
 			this.volume.resize(0, 0);
+			this.totalOffsetX = Math.round(this._offsetX * this.volume.scaleX);
+			this.totalOffsetY = Math.round(this._offsetY * this.volume.scaleY);				
 		}
-
-		this.totalOffsetX = this._offsetX + this._texture.offsetX;
-		this.totalOffsetY = this._offsetY + this._texture.offsetY;
 
 		this.updateAnchor();
 	},	
