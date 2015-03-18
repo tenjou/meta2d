@@ -3,10 +3,10 @@
 /**
  * Resource event.
  * @enum {String}
- * @memberof! <global>
  * @readonly
  */
 Resource.Event = {
+	FAILED: "res-failed",
 	/**
 	 * Resource unloaded.
 	 */	
@@ -38,7 +38,6 @@ Resource.Event = {
 /**
  * Resource type.
  * @enum {Number}
- * @memberof! <global>
  * @readonly
  */
 Resource.Type = {

@@ -187,6 +187,22 @@ Resource.Controller = meta.Controller.extend
 	},
 
 
+	getResource: function(name, type)
+	{
+		var subBuffer = this.resources[type];
+		if(!subBuffer) {
+			return null;
+		}
+
+		var texture = subBuffer[name];
+		if(!texture) {
+			return null;
+		}
+
+		return texture;
+	},
+
+
 	/**
 	 * Get texture by name.
 	 * @param name {String} Name of the texture resource.
@@ -194,11 +210,6 @@ Resource.Controller = meta.Controller.extend
 	 */
 	getTexture: function(name)
 	{
-		if(!name) {
-			console.warn("[Resource.Manager.getTexture]:", "No name specified.");
-			return null;
-		}
-
 		var subBuffer = this.resources[Resource.Type.TEXTURE];
 		if(!subBuffer) {
 			return null;

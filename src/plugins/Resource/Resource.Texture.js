@@ -19,7 +19,6 @@
  * @property numFrames {Number} Total number of frames.
  * @property numFramesY {Number} Total number of frames on Y axis.
  * @property numFramesX {Number} Total number of frames on X axis.
- * @memberof! <global>
  */
 Resource.Texture = Resource.Basic.extend
 ({
@@ -50,7 +49,7 @@ Resource.Texture = Resource.Basic.extend
 			}
 
 			if(this.path) {
-				this.load(this.path, tag);
+				this.load(this.path);
 			}
 		}
 	},
@@ -121,6 +120,7 @@ Resource.Texture = Resource.Basic.extend
 
 		img.onerror = function(event) {
 			Resource.ctrl.loadFailed(self);
+			this.emit(this, Resource.Event.FAILED);
 		};		
 
 		img.src = this.fullPath;
@@ -186,7 +186,9 @@ Resource.Texture = Resource.Basic.extend
 
 	resizeSilently: function(width, height) 
 	{
-		if(this.trueFullWidth === width && this.trueFullHeight === height) { return; }
+		if(this.trueFullWidth === width && this.trueFullHeight === height) { 
+			return; 
+		}
 
 		this.trueFullWidth = width;
 		this.trueFullHeight = height;
