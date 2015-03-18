@@ -19,36 +19,70 @@ Entity.Text = Entity.Geometry.extend
 	updateTxt: function()
 	{
 		var ctx = this._texture.ctx;
-		ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
 
-		var metrics = ctx.measureText(this._text);
-		var width = metrics.width;
-		var offsetX = 0;
+		if(this._bitmapFont) 
+		{
+			var canvas = this._bitmapFont.texture.canvas;
+			var chars = this._bitmapFont.chars;
 
-		if(this._shadow) {
-			width += this._shadowBlur * 2;
-			offsetX += this._shadowBlur;
+			var width = 0;
+			var charRect = null;
+			var numChars = this._text.length;
+			for(var n = 0; n < numChars; n++) 
+			{
+				charRect = chars[this._text.charCodeAt(n)];
+				if(!charRect) { continue; }
+
+				width += charRect.kerning;
+			}
+
+			this._texture.clear();
+			this._texture.resize(width, this._bitmapFont.height);
+
+			var posX = 0;
+			for(n = 0; n < numChars; n++) 
+			{
+				charRect = chars[this._text.charCodeAt(n)];
+				if(!charRect) { continue; }
+
+				ctx.drawImage(canvas, charRect.x, charRect.y, charRect.width, charRect.height, 
+					posX, 0, charRect.width, charRect.height);
+				posX += charRect.kerning;
+			}
 		}
-		this._texture.resize(width, this._fontSize * 1.3);
+		else
+		{
+			ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
 
-		ctx.clearRect(0, 0, this.volume.width, this.volume.height);
-		ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
-		ctx.fillStyle = this._color;
-		ctx.textBaseline = "top";
+			var metrics = ctx.measureText(this._text);
+			var width = metrics.width;
+			var offsetX = 0;
 
-		if(this._shadow) {
-			ctx.shadowColor = this._shadowColor;
-			ctx.shadowOffsetX = this._shadowOffsetX;
-			ctx.shadowOffsetY = this._shadowOffsetY;
-			ctx.shadowBlur = this._shadowBlur;
-		}
+			if(this._shadow) {
+				width += this._shadowBlur * 2;
+				offsetX += this._shadowBlur;
+			}
+			this._texture.resize(width, this._fontSize * 1.3);
 
-		ctx.fillText(this._text, offsetX, 0);
+			ctx.clearRect(0, 0, this.volume.width, this.volume.height);
+			ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
+			ctx.fillStyle = this._color;
+			ctx.textBaseline = "top";
 
-		if(this._outline) {
-			ctx.lineWidth = this._outlineWidth;
-			ctx.strokeStyle = this._outlineColor;
-			ctx.strokeText(this._text, offsetX, 0);
+			if(this._shadow) {
+				ctx.shadowColor = this._shadowColor;
+				ctx.shadowOffsetX = this._shadowOffsetX;
+				ctx.shadowOffsetY = this._shadowOffsetY;
+				ctx.shadowBlur = this._shadowBlur;
+			}
+
+			ctx.fillText(this._text, offsetX, 0);
+
+			if(this._outline) {
+				ctx.lineWidth = this._outlineWidth;
+				ctx.strokeStyle = this._outlineColor;
+				ctx.strokeText(this._text, offsetX, 0);
+			}
 		}
 
 		this.renderer.needRender = true;
@@ -61,8 +95,24 @@ Entity.Text = Entity.Geometry.extend
 
 	get text() { return this._text; },
 
-	set font(font) {
-		this._font = font;
+	set font(font) 
+	{
+		var fontResource = Resource.ctrl.getResource(font, Resource.Type.FONT);
+		if(!fontResource) {
+			this._font = font;
+			this._bitmapFont = null;
+		}
+		else 
+		{
+			this._bitmapFont = fontResource;
+
+			if(!fontResource._loaded) {
+				this._texture.clear();
+				fontResource.subscribe(this, this._onFontEvent);
+				return;
+			}
+		}
+
 		this.updateTxt();
 	},
 
@@ -178,7 +228,14 @@ Entity.Text = Entity.Geometry.extend
 	get shadowOffsetX() { return this._shadowOffsetY; },
 	get shadowOffsetY() { return this._shadowOffsetY; },
 
+	_onFontEvent: function(data, event)
+	{
+		console.log("font", event);
+	},
+
 	//
+	_bitmapFont: null,
+
 	_text: "",
 	_font: "Tahoma",
 	_fontSize: 12,
