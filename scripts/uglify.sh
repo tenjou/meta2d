@@ -15,6 +15,7 @@ cat meta.js \
 	Enum.js \
 	Macros.js \
 	utils/Ajax.js \
+	utils/Tokenizer.js \
 	math/Math.js \
 	math/Vector2.js \
 	math/AABB.js \
