@@ -10,8 +10,7 @@
 	var fnTest = /\b_super\b/;
 	var holders = {};
 
-	function ExtendHolder(name) {
-		this.name = name;
+	function ExtendHolder() {
 		this.classes = [];
 	};
 
@@ -164,8 +163,8 @@
 			{
 				var holder = holders[name];
 				if(!holder) {
-					holder = new ExtendHolder(extendName);
-					holders[name] = holder;
+					holder = new ExtendHolder();
+					holders[extendName] = holder;
 				}
 
 				holder.classes.push(new ExtendItem(clsName, prop));			
@@ -182,15 +181,17 @@
 		var holder = null;
 		var classes = null;
 		var numClasses = 0;
-		var numHolders = holders.length;
-		for(var n = 0; n < numHolders; n++) {
-			holder = holders[n];
-			console.error("Undefined class: " + holder.name);
+
+		for(var key in holders) {
+			holder = holders[key];
+			console.error("Undefined class: " + key);
 			classes = holder.classes;
 			numClasses = classes.length;
 			for(i = 0; i < numClasses; i++) {
 				console.error("Undefined class: " + classes[i].name);
 			}
 		}
+
+		holder = {};
 	};
 })(typeof window !== void(0) ? window : global);
