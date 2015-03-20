@@ -1,7 +1,7 @@
 "use strict";
 
-Entity.SVG = Entity.Geometry.extend
-({
+meta.class("Entity.SVG", "Entity.Geometry", 
+{
 	set lineWidth(hex) {
 		this._lineWidth = hex;
 		this.renderer.needRender = true;

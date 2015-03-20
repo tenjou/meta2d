@@ -20,8 +20,8 @@
  * @property numFramesY {Number} Total number of frames on Y axis.
  * @property numFramesX {Number} Total number of frames on X axis.
  */
-Resource.Texture = Resource.Basic.extend
-({
+meta.class("Resource.Texture", "Resource.Basic", 
+{
 	/**
 	 * Constructor.
 	 * Will generate by default texture based on what rendering is used.

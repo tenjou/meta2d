@@ -1,7 +1,7 @@
 "use strict";
 
-meta.World = meta.class.extend
-({
+meta.class("meta.World",
+{
 	init: function(width, height) 
 	{
 		this.volume = new meta.math.AABB(0, 0, 0, 0);

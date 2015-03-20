@@ -2,14 +2,13 @@
 
 /**
  * Class used as base for extending when a new controller is created.
- *
  * @class
  * @property view {meta.View} Default view controller is attached to.
  * @property name {string} Name of the controller.
  * @property isLoaded {Boolean} Flag if controller is loaded.
  */
-meta.Controller = meta.class.extend
-({
+meta.class("meta.Controller",
+{
 	_init: function() {
 		this.view = meta.view;
 		this.views = {};

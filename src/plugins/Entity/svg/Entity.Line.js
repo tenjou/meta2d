@@ -1,7 +1,7 @@
 "use strict";
 
-Entity.Line = Entity.SVG.extend
-({
+meta.class("Entity.Line", "Entity.SVG", 
+{
 	draw: function(ctx)
 	{
 		this.globalAlpha = this._alpha;

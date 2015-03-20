@@ -1,11 +1,6 @@
 "use strict";
 
 /**
- * @namespace
- */
-window.Input = {};
-
-/**
  * @description Input handler.
  * @class Input.Controller
  * @extends meta.Plugin
@@ -15,13 +10,10 @@ window.Input = {};
  * @property isStickyKeys {boolean} Flag if keys are sticky. (Input is not repeated if user holds key)
  * @property numKeys {number} Number of keys supported.
  * @property numInputs {number} Number of inputs supported. (Touches or mouse buttons)
- * @memberof! <global>
  */
-Input.Controller = meta.Controller.extend
-({
-	/**
-	 * @description Constructor.
-	 */
+meta.class("Input.Controller", "meta.Controller", 
+{
+	/** Constructor. */
 	init: function()
 	{
 		this.engine = meta.engine;

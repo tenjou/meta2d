@@ -1,7 +1,7 @@
 "use strict";
 
-Resource.Font = Resource.Basic.extend
-({
+meta.class("Resource.Font", "Resource.Basic", 
+{
 	init: function(path, tag)
 	{
 		if(path) {

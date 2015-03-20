@@ -1,7 +1,7 @@
 "use strict";
 
-UI.Group = Entity.Geometry.extend
-({
+meta.class("UI.Group", "Entity.Geometry", 
+{
 	add: function(entity) 
 	{
 		if(entity.group) {

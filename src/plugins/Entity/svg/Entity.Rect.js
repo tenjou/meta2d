@@ -1,7 +1,7 @@
 "use strict";
 
-Entity.Rect = Entity.SVG.extend
-({
+meta.class("Entity.Rect", "Entity.SVG", 
+{
 	draw: function(ctx)
 	{
 		ctx.beginPath();

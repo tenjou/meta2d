@@ -1,7 +1,7 @@
 "use strict";
 
-Resource.SpriteSheet = Resource.Basic.extend
-({
+meta.class("Resource.SpriteSheet", "Resource.Basic", 
+{
 	init: function(param, path)
 	{
 		if(typeof(param) === "string") {

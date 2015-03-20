@@ -1,7 +1,7 @@
 "use strict";
 
-Entity.Text = Entity.Geometry.extend
-({
+meta.class("Entity.Text", "Entity.Geometry", 
+{
 	init: function(params)
 	{
 		this.texture = new Resource.Texture();

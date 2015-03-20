@@ -1,9 +1,7 @@
 "use strict";
 
-var UI = {};
-
-UI.Controller = meta.Controller.extend
-({
+meta.class("UI.Controller", "meta.Controller", 
+{
 	init: function()
 	{
 		var buttonTex = new Resource.Texture();

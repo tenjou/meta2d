@@ -1,7 +1,7 @@
 "use strict";
 
-Entity.Tiling = Entity.Geometry.extend
-({
+meta.class("Entity.Tiling", "Entity.Geometry", 
+{
 	init: function(texture) 
 	{
 		var volume = meta.camera.volume;

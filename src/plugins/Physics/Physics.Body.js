@@ -1,7 +1,7 @@
 "use strict";
 
-Physics.Body = meta.class.extend
-({
+meta.class("Physics.Body",
+{
 	init: function() {
 		this.velocity = new meta.math.Vector2(0, 0);
 	},

@@ -1,7 +1,7 @@
 "use strict";
 
-meta.Renderer = meta.class.extend
-({
+meta.class("meta.Renderer", 
+{
 	init: function() 
 	{
 		this.holder = new Entity.Geometry();

@@ -1,7 +1,7 @@
 "use strict";
 
-Resource.Sound = Resource.Basic.extend
-({
+meta.class("Resource.Sound", "Resource.Basic", 
+{
 	init: function(param, path)
 	{
 		if(typeof(param) === "string") {

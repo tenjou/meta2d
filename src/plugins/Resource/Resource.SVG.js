@@ -1,7 +1,7 @@
 "use strict";
 
-Resource.SVG = Resource.Texture.extend
-({
+meta.class("Resource.SVG", "Resource.Texture", 
+{
 	/**
 	 * Fill texture with color.
 	 * @param x {number}

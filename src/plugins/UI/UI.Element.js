@@ -1,6 +1,3 @@
 "use strict";
 
-UI.Element = Entity.Geometry.extend
-({
-
-});
+meta.class("UI.Element", "Entity.Geometry", {});

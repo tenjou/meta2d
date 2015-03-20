@@ -1,16 +1,9 @@
 "use strict";
 
-var Physics = {};
-
-Physics.Manifold = function() {
-	this.entity = null;
-	this.normal = new meta.math.Vector2(0, 0);
-	this.penetration = 0;
-};
-
-Physics.Controller = meta.Controller.extend
-({
+meta.class("Physics.Controller", "meta.Controller", 
+{
 	init: function() {
+		this.manifold = new this.Manifold();
 		meta.subscribe(this, meta.Event.DEBUG, this.onDebug);
 	},
 
@@ -138,9 +131,15 @@ Physics.Controller = meta.Controller.extend
 		}
 	},
 
+	Manifold: function() {
+		this.entity = null;
+		this.normal = new meta.math.Vector2(0, 0);
+		this.penetration = 0;
+	},	
+
 	//
 	items: [],
-	manifold: new Physics.Manifold(),
+	manifold: null,
 	_relativeVel: new meta.math.Vector2(0, 0),
 	_impulseX: 0, _impulseY: 0,
 	_percent: 0.8, _slop: 0.01

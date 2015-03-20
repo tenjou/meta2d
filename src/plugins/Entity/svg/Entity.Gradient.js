@@ -1,7 +1,7 @@
 "use strict";
 
-Entity.Gradient = Entity.Geometry.extend
-({
+meta.class("Entity.Gradient", "Entity.Geometry", 
+{
 	init: function() {
 		this.clear();
 	},

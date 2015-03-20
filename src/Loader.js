@@ -7,6 +7,7 @@
 meta.createEngine = function()
 {
 	meta.onDomLoad(function() {
+		meta.classLoaded();
 		if(!meta.engine.autoInit) { return; }
 		meta.engine.create();
 	});

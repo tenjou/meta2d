@@ -10,10 +10,9 @@
  * @property isLoaded {boolean} Setter/Getter. Flag if resource is loaded.
  * @property isLoading {boolean} Flag if resource is loading.
  * @property inUse {boolean} Flag if resource is in use.
- * @memberof! <global>
  */
-Resource.Basic = meta.class.extend
-({
+meta.class("Resource.Basic", 
+{
 	_init: function(data, tag) 
 	{
 		this.id = Resource.ctrl.getUniqueID();

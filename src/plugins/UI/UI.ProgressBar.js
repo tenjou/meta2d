@@ -1,7 +1,7 @@
 "use strict";
 
-UI.ProgressBar = Entity.Geometry.extend
-({
+meta.class("UI.ProgressBar", "Entity.Geometry", 
+{
 	init: function(texture, fillTexture) 
 	{
 		var fill = new Entity.Geometry(fillTexture);

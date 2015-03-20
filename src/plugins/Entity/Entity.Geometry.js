@@ -1,7 +1,7 @@
 "use strict";
 
-Entity.Geometry = meta.class.extend
-({
+meta.class("Entity.Geometry",
+{
 	_init: function(texture) {
 		this.volume = new meta.math.AABBext();
 		this.anim = new meta.Anim(this);

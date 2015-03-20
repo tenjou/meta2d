@@ -1,7 +1,7 @@
 "use strict";
 
-UI.Button = Entity.Geometry.extend
-({
+meta.class("UI.Button", "Entity.Geometry", 
+{
 	init: function() {
 		this.pickable = true;
 	},

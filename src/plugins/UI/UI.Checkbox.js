@@ -1,7 +1,7 @@
 "use strict";
 
-UI.Checkbox = Entity.Geometry.extend
-({
+meta.class("UI.Checkbox", "Entity.Geometry", 
+{
 	_initParams: function(params) 
 	{		
 		if(params) {

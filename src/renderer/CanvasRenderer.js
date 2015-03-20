@@ -1,7 +1,7 @@
 "use strict";
 
-meta.CanvasRenderer = meta.Renderer.extend
-({
+meta.class("meta.CanvasRenderer", "meta.Renderer", 
+{
 	init: function() 
 	{
 		this._super();

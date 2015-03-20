@@ -1,23 +1,15 @@
 "use strict";
 
 /**
- * @namespace
- */
-var Resource = {};
-
-/**
  * @class Resource.Controller
  * @extends meta.Controller
  * @property resources {Object} Map for all resources that are currently managed. Uses Resource.Type to access specific type.
  * @property resourceInUse {Object} Map with all resource that are in use.
  * @property rootPath {string} Root path of resources that's added at resource creation time.
- * @memberof! <global>
  */
-Resource.Controller = meta.Controller.extend
-({
-	/**
-	 * Constructor.
-	 */
+meta.class("Resource.Controller", "meta.Controller", 
+{
+	/** Constructor. */
 	init: function()
 	{
 		this.resources = {};
