@@ -336,11 +336,9 @@ meta.View.prototype =
 		if(this._x === value) { return; }
 		this._x = value;
 
-		var entity;
 		var numEntities = this.entities.length;
 		for(var i = 0; i < numEntities; i++) {
-			entity = this.entities[i];
-			entity.forcePosition(entity._x, entity._y);
+			this.entities[i].updatePos();
 		}
 	},
 
@@ -349,11 +347,9 @@ meta.View.prototype =
 		if(this._y === value) { return; }
 		this._y = value;
 
-		var entity;
 		var numEntities = this.entities.length;
 		for(var i = 0; i < numEntities; i++) {
-			entity = this.entities[i];
-			entity.forcePosition(entity._x, entity._y);
+			this.entities[i].updatePos();
 		}
 	},
 
@@ -363,7 +359,7 @@ meta.View.prototype =
 
 		var numEntities = this.entities.length;
 		for(var i = 0; i < numEntities; i++) {
-			this.entities[i].z = this.entities[i]._z;
+			this.entities[i].updateZ();
 		}
 	},
 
