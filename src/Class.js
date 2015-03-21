@@ -25,7 +25,7 @@
 		var scope = window;
 		var scopeBuffer = clsName.split(".");
 		var num = scopeBuffer.length - 1;
-		var fullName = scopeBuffer[num];
+		var name = scopeBuffer[num];
 
 		for(var n = 0; n < num; n++) 
 		{
@@ -37,14 +37,9 @@
 			}
 		}
 
-		var extendHolder = holders[fullName];
-		var cls = scope[fullName];
-		if(cls) {
-			console.error("(meta.class) Trying to redefine existing variable: " + clsName);
-			return;			
-		}	
-
-		cls = function Class(a, b, c, d, e, f) 
+		var extendHolder = holders[clsName];
+		var prevCls = scope[name];
+		var cls = function Class(a, b, c, d, e, f) 
 		{
 			if(!initializing) {
 				if(this._init) { 
@@ -108,7 +103,13 @@
 
 		cls.prototype = proto;
 		cls.prototype.constructor = proto.init || null;
-		scope[fullName] = cls;
+		scope[name] = cls;
+
+		if(prevCls) {
+			for(var key in prevCls) {
+				cls[key] = prevCls[key];
+			}
+		}
 
 		if(extendHolder) {
 			var extendItem = null;
@@ -119,7 +120,7 @@
 				Extend(extendItem.name, cls, extendItem.prop);
 			}	
 
-			delete holders[fullName];		
+			delete holders[clsName];		
 		}
 	};
 
@@ -161,7 +162,7 @@
 			extend = extendScope[name];
 			if(!extend) 
 			{
-				var holder = holders[name];
+				var holder = holders[extendName];
 				if(!holder) {
 					holder = new ExtendHolder();
 					holders[extendName] = holder;
