@@ -295,7 +295,6 @@ meta.ctrl =
 
 	loadCtrls: function()
 	{
-		var ctrl;
 		for(var i = 0; i < this._ctrlsLoad.length; i++) {
 			this._ctrlsLoad[i]._load();	
 		}

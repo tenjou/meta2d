@@ -365,6 +365,11 @@ meta.class("Entity.Geometry",
 		this.anchorPosY = (this.parent.volume.height) * this._anchorY;
 		this.volume.x = this._x + this.totalOffsetX + this._parentX + this.anchorPosX;
 		this.volume.y = this._y + this.totalOffsetY + this._parentY + this.anchorPosY;
+		if(this._view) {
+			this.volume.x += this._view._x;
+			this.volume.y += this._view._y;
+		}
+		
 		this.volume.updatePos();
 
 		if(this.children) 

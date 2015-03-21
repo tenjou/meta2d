@@ -89,12 +89,12 @@ meta.View.prototype =
 			return;
 		}
 
+		entity._view = this;
+		entity._viewNodeID = this.entities.length;
+
 		if(this._x !== 0 || this._y !== 0) {
 			entity.updatePos();
 		}
-
-		entity._view = this;
-		entity._viewNodeID = this.entities.length;
 		if(this._z !== 0) {
 			entity.updateZ();
 		}
