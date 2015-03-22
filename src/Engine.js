@@ -421,10 +421,11 @@ meta.engine =
 
 		if(this.width === width && this.height === height && !this._center) { return; }
 
-		this.width = width;
-		this.height = height | 0;
-		this.canvas.width = width;
-		this.canvas.height = height;
+		var ratio = window.devicePixelRatio;
+		this.width = Math.ceil(width * ratio);
+		this.height = Math.ceil(height * ratio);
+		this.canvas.width = this.width;
+		this.canvas.height = this.height;
 		this.canvas.style.width = (width * this.scaleX) + "px";
 		this.canvas.style.height = (height * this.scaleY) + "px";
 
@@ -556,6 +557,10 @@ meta.engine =
 		var rect = this._container.getBoundingClientRect();
 		this.offsetLeft += rect.left;
 		this.offsetTop += rect.top;
+
+		rect = this.canvas.getBoundingClientRect();
+		this.offsetLeft += rect.left;
+		this.offsetTop += rect.top;		
 	},
 
 	_addCorePlugins: function() {
