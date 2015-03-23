@@ -111,7 +111,6 @@ meta.class("Physics.Body",
 	stop: function() 
 	{
 		this.speed = 0;
-		this.acceleration = 0;
 		this.velocity.x = 0;
 		this.velocity.y = 0;
 
