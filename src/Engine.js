@@ -308,7 +308,7 @@ meta.engine =
 		scope.camera.bounds(lowestResolution.width, lowestResolution.height);		
 	},
 
-	adapt: function()
+	adaptResolution: function()
 	{
 		var scope = meta;
 		var resolutions = scope.cache.resolutions;
@@ -386,38 +386,47 @@ meta.engine =
 		this._resize(cache.width, cache.height);
 	},
 
-	_resize: function(width, height)
+	_resize: function()
 	{
-		var container = this._container;
+		var width = this.meta.cache.width;
+		var height = this.meta.cache.height;
+		var containerWidth = 0;
+		var containerHeight = 0;
 
-		if(container === document.body) 
+		if(this._container === document.body) {
+			containerWidth = window.innerWidth;
+			containerHeight = window.innerHeight;
+		}
+		else {
+			containerWidth = container.clientWidth;
+			containerHeight = container.clientHeight;
+		}
+
+		if(width === 0) {
+			width = containerWidth;
+		} 
+		if(height === 0) {
+			height = containerHeight;
+		}
+
+		if(this._adapt) 
 		{
-			if(width === 0 || width > window.innerWidth) { 
-				width = window.innerWidth; 
+			this.zoom = 1;
+			var diffX = containerWidth - width;
+			var diffY = containerHeight - height;
+			if(diffX < diffY) {
+				this.zoom = containerWidth / width;
 			}
-			if(height === 0 || height > window.innerHeight) { 
-				height = window.innerHeight; 
+			else {
+				this.zoom = containerHeight / height;
 			}
-		}
-		else 
-		{
-			if(width === 0 || width > container.clientWidth) { 
-				width = container.clientWidth; 
-			}
-			if(height === 0 || height > container.clientHeight) { 
-				height = container.clientHeight; 
-			}
+
+			width *= this.zoom;
+			height *= this.zoom;
 		}
 
-		if(width < this.meta.cache.width) {
-			width = this.meta.cache.width;
-		}
-		if(height < this.meta.cache.height) {
-			height = this.meta.cache.height;
-		}
-
-		width = width | 0;
-		height = height | 0;		
+		width = Math.floor(width);
+		height = Math.floor(height);		
 
 		if(this.width === width && this.height === height && !this._center) { return; }
 
@@ -668,6 +677,13 @@ meta.engine =
 
 	get center() { return this._center; },
 
+	set adapt(value) {
+		this._adapt = value;
+		this.onResize();
+	},
+
+	get adapt() { return this._adapt; },
+
 	//
 	elementStyle: "padding:0; margin:0;",
 	canvasStyle: "position:absolute; overflow:hidden; translateZ(0); " +
@@ -681,6 +697,7 @@ meta.engine =
 	width: 0, height: 0,
 	offsetLeft: 0, offsetTop: 0,
 	scaleX: 1.0, scaleY: 1.0,
+	zoom: 1,
 
 	canvas: null,
 	ctx: null,
@@ -702,6 +719,7 @@ meta.engine =
 	webgl: false,
 
 	_center: false,
+	_adapt: false,
 
 	_updateLoop: null,
 	_renderLoop: null,
