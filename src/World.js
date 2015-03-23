@@ -20,7 +20,6 @@ meta.class("meta.World",
 
 	_updateBounds: function(camera, event) 
 	{
-		console.log("update", camera.volume);
 		if(!this._adapt) { return; }
 		
 		this.volume.set(0, 0, camera.width, camera.height);
