@@ -7,7 +7,7 @@ meta.class("meta.World",
 		this.volume = new meta.math.AABB(0, 0, 0, 0);
 
 		this._chn = meta.createChannel(meta.Event.WORLD_RESIZE);
-		meta.subscribe(this, meta.Event.RESIZE, this._updateBoundsFromEngine);
+		meta.subscribe(this, meta.Event.CAMERA_RESIZE, this._updateBounds);
 	},
 
 	bounds: function(minX, minY, maxX, maxY) {
@@ -15,17 +15,18 @@ meta.class("meta.World",
 		this.centerX = minX + (maxX - minX) / 2;
 		this.centerY = minY + (maxY - minY) / 2;
 		this._adapt = false;
-		this._chn.emit(this, meta.Event.WORLD_RESIZE);
+		//this._chn.emit(this, meta.Event.WORLD_RESIZE);
 	},
 
-	_updateBoundsFromEngine: function(engine, event) 
+	_updateBounds: function(camera, event) 
 	{
+		console.log("update", camera.volume);
 		if(!this._adapt) { return; }
 		
-		this.volume.set(0, 0, engine.width, engine.height);
-		this.centerX = engine.width / 2;
-		this.centerY = engine.height / 2;
-		this._chn.emit(this, meta.Event.WORLD_RESIZE);
+		this.volume.set(0, 0, camera.width, camera.height);
+		this.centerX = camera.width / 2;
+		this.centerY = camera.height / 2;
+		//this._chn.emit(this, meta.Event.WORLD_RESIZE);
 	},
 
 	get randX() {
@@ -40,7 +41,7 @@ meta.class("meta.World",
 	{
 		this._adapt = value;
 		if(value) {
-			this._updateBoundsFromEngine(meta.engine, 0);
+			this._updateBounds(meta.camera, 0);
 		}
 	},
 

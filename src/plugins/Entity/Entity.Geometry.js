@@ -361,8 +361,16 @@ meta.class("Entity.Geometry",
 	/** updateAnchor */
 	updateAnchor: function() 
 	{
-		this.anchorPosX = (this.parent.volume.width) * this._anchorX;
-		this.anchorPosY = (this.parent.volume.height) * this._anchorY;
+		if(this._static) {
+			var engine = meta.engine;
+			this.anchorPosX = (this.parent.volume.width * engine.zoom) * this._anchorX;
+			this.anchorPosY = (this.parent.volume.height * engine.zoom) * this._anchorY;
+		}
+		else {
+			this.anchorPosX = (this.parent.volume.width) * this._anchorX;
+			this.anchorPosY = (this.parent.volume.height) * this._anchorY;			
+		}
+
 		this.volume.x = this._x + this.totalOffsetX + this._parentX + this.anchorPosX;
 		this.volume.y = this._y + this.totalOffsetY + this._parentY + this.anchorPosY;
 		if(this._view) {

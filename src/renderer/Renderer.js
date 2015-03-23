@@ -36,7 +36,7 @@ meta.class("meta.Renderer",
 		meta.subscribe(this, Input.Event.DBCLICK, this.onInputDbClick, meta.Priority.HIGH);
 
 		meta.subscribe(this, meta.Event.ADAPT, this.onAdapt);	
-		meta.subscribe(this, meta.Event.RESIZE, this.onResize);
+		meta.subscribe(this, meta.Event.CAMERA_RESIZE, this.onCameraResize);
 		meta.subscribe(this, meta.Event.CAMERA_MOVE, this.onCameraMove);
 
 		this.holder.resize(this.camera.volume.width, this.camera.volume.height);
@@ -653,7 +653,7 @@ meta.class("meta.Renderer",
 		return true;
 	},	
 
-	onResize: function(data, event) 
+	onCameraResize: function(data, event) 
 	{
 		this.holder.resize(data.width, data.height);
 
@@ -668,13 +668,13 @@ meta.class("meta.Renderer",
 		}	
 	},
 
-	onAdapt: function(data, event) {
-
-	},
-
 	onCameraMove: function(data, event) {
 		this.needRender = true;
 	},
+
+	onAdapt: function(data, event) {
+
+	},	
 
 	/**
 	 * Get unique id.
