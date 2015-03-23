@@ -75,16 +75,21 @@ meta.class("Resource.SVG", "Resource.Texture",
 	circle: function(radius)
 	{
 		if(this.fullWidth < 2 && this.fullHeight < 2) {
-			this.resize(radius * 2, radius * 2);
-			this.ctx.lineWidth = this._lineWidth;
+			var size = (radius + this._lineWidth) * 2;
+			this.resize(size, size);
 			this.ctx.fillStyle = this._fillStyle;
-			this.ctx.strokeStyle = this._strokeStyle;
 		}
 
 		this.ctx.beginPath();
-		this.ctx.arc(radius, radius, radius, 0, Math.PI * 2, false);
+		this.ctx.arc(radius + this._lineWidth, radius + this._lineWidth, radius, 0, Math.PI * 2, false);
 		this.ctx.closePath();
 		this.ctx.fill();
+
+		if(this._strokeStyle) {
+			this.ctx.strokeStyle = this._strokeStyle;
+			this.ctx.lineWidth = 2;
+			this.ctx.stroke();
+		}
 
 		this.loaded = true;
 	},
