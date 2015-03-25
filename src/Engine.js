@@ -425,12 +425,12 @@ meta.engine =
 			height *= this.zoom;
 		}
 
-		width = Math.floor(width);
-		height = Math.floor(height);		
+		width = Math.round(width);
+		height = Math.round(height);		
 
 		if(this.width === width && this.height === height && !this._center) { return; }
 
-		var ratio = window.devicePixelRatio;
+		var ratio = 1;
 		this.width = Math.ceil(width * ratio);
 		this.height = Math.ceil(height * ratio);
 		this.canvas.width = this.width;
@@ -698,6 +698,7 @@ meta.engine =
 	offsetLeft: 0, offsetTop: 0,
 	scaleX: 1.0, scaleY: 1.0,
 	zoom: 1,
+	ratio: 1,
 
 	canvas: null,
 	ctx: null,

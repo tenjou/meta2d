@@ -120,7 +120,7 @@ meta.class("Resource.Texture", "Resource.Basic",
 
 		img.onerror = function(event) {
 			Resource.ctrl.loadFailed(self);
-			this.emit(this, Resource.Event.FAILED);
+			self.emit(this, Resource.Event.FAILED);
 		};		
 
 		img.src = this.fullPath;

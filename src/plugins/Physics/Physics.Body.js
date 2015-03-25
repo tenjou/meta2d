@@ -4,100 +4,54 @@ meta.class("Physics.Body",
 {
 	init: function() {
 		this.velocity = new meta.math.Vector2(0, 0);
+		this.acceleration = new meta.math.Vector2(0, 0);
+		this.speed = new meta.math.Vector2(0, 0);
 	},
 
 	load: function() {
 		this._volume = this.owner.volume;
-		Physics.ctrl.items.push(this);		
+		Physics.ctrl.bodies.push(this);		
 	},
 
 	unload: function() {
 
 	},
 
-	updateItem: function(tDelta, manifold)
+	updateItem: function(tDelta)
 	{
-		this.speed += this.acceleration * tDelta;
-		if(this.speed > this.maxSpeed) {
-			this.speed = this.maxSpeed;
-		}
-
-		var volume = this.owner.volume;
-		this.volume.position(volume.x, volume.y);
+		this.colliding = false;
+		this.volume.position(this.owner.volume.x, this.owner.volume.y);
 
 		if(this.haveTarget) 
 		{
-			var distance = meta.math.length(volume.x, volume.y, this.targetX, this.targetY);
+			var distance = meta.math.length(this.volume.x, this.volume.y, this.targetX, this.targetY);
 			if(distance <= (this.speed * tDelta)) {
 				this.volume.position(this.targetX, this.targetY);
-				this.owner.position(this.targetX, this.targetY);
 				this.stop();
 			}
 			else 
 			{
-				this._helperVec.x = this.targetX - volume.x;
-				this._helperVec.y = this.targetY - volume.y;
-				this._helperVec.normalize();
+				this._vec.x = this.targetX - this.volume.x;
+				this._vec.y = this.targetY - this.volume.y;
+				this._vec.normalize();
 
-				this.velocity.x = this._helperVec.x * this.speed;
-				this.velocity.y = this._helperVec.y * this.speed;
+				this.velocity.x = this._vec.x * this.speed;
+				this.velocity.y = this._vec.y * this.speed;
 			}
 		}
 
+		this.velocity.x += this.acceleration.x * tDelta;
+		this.velocity.y += this.acceleration.y * tDelta;
 		this.volume.move(this.velocity.x * tDelta, this.velocity.y * tDelta);
 
-		if(this.worldBounds)
-		{
-			var newX = this.volume.x;
-			var newY = this.volume.y;
-			var world = meta.world;
-			var collision = false;
+		this.acceleration.x = 0;
+		this.acceleration.y = 0;
+	},
 
-			// X
-			if(this.volume.minX < 0) {
-				newX = this.volume.x - this.volume.minX;
-				manifold.normal.x = 1;
-				collision = true;
-			}
-			else if(this.volume.maxX > world.width) {
-				newX += world.width - this.volume.maxX;
-				manifold.normal.x = 0;
-				collision = true;
-			}
-			else {
-				manifold.normal.x = 0;
-			}
-
-			// Y
-			if(this.volume.minY < 0) {
-				newY = this.volume.y - this.volume.minY;
-				manifold.normal.y = 1;
-				collision = true;
-			}
-			else if(this.volume.maxY > world.height) {
-				newY += world.height - this.volume.maxY;
-				manifold.normal.y = -1;
-				collision = true;
-			}
-			else {
-				manifold.normal.y = 0;
-			}
-
-		 	this.volume.position(newX, newY);
-
-		 	if(collision && this.onCollision) {
-		 		this.onCollision.call(this.owner, manifold);
-		 	}
-		}
-
-		this.owner.position(this.volume.x, this.volume.y);
-	},	
-
-	/**
-	 * onCollision
-	 * @type {function}
-	 */	
-	onCollision: null,
+	applyForce: function(vec) {
+		this.acceleration.x += vec.x / this.invMass;
+		this.acceleration.y += vec.y / this.invMass;
+	},
 
 	moveTo: function(x, y, speed, moveToCB) {
 		this.targetX = x;
@@ -135,7 +89,15 @@ meta.class("Physics.Body",
 	 */
 	onStop: null,
 
-	set volume(volume) {
+	set volume(volume) 
+	{
+		if(volume instanceof meta.math.Circle) {
+			this.type = 1;
+		}
+		else {
+			this.type = 0;
+		}
+
 		this._volume = volume;
 		this._volume.position(this.owner.volume.x, this.owner.volume.y);
 	},
@@ -157,21 +119,26 @@ meta.class("Physics.Body",
 	get mass() { return this._mass; },
 
 	//
+	type: 0,
 	_volume: null,
-	_mass: 100,
+	_mass: 10,
 	invMass: 0.01,
 	restitution: 0.6,
 	velocity: null,
+	moveX: 0, moveY: 0,
 
 	worldBounds: false,
 	ghost: false,
+	bouncing: false,
+	colliding: false,
 
 	targetX: 0, targetY: 0,
 	haveTarget: false,
 	moveToCB: null,
 
 	maxSpeed: Number.MAX_VALUE,
-	acceleration: 0,
+	acceleration: null,
+	accelerationMod: 1,
 
-	_helperVec: new meta.math.Vector2(0, 0)
+	_vec: new meta.math.Vector2(0, 0)
 });

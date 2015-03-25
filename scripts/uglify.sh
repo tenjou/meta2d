@@ -45,6 +45,7 @@ cat meta.js \
 	plugins/Entity/svg/Entity.SVG.js \
 	plugins/Entity/svg/Entity.Line.js \
 	plugins/Entity/svg/Entity.Rect.js \
+	plugins/Entity/svg/Entity.Circle.js \
 	plugins/Entity/svg/Entity.Gradient.js \
 	plugins/Input/Input.Controller.js \
 	plugins/Input/Enum.js \

@@ -141,7 +141,7 @@ meta.Camera.prototype =
 			this._zoom = diffY;
 		}	
 		
-		if(engine.adapt()) 
+		if(engine.adaptResolution()) 
 		{
 			width = this.zoomBounds.width;
 			height = this.zoomBounds.height;
@@ -212,9 +212,6 @@ meta.Camera.prototype =
 		this._zoom = meta.engine.zoom;
 		this.volume.resize(data.width, data.height);
 		this.updateView();
-
-		//meta.world.onResize(this, 0);
-		this._chnResize.emit(this, meta.Event.CAMERA_RESIZE);
 	},
 
 	_onWorldResize: function(data, event) {

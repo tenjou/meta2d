@@ -80,13 +80,8 @@ meta.class("Entity.Geometry",
 	/** updatePos */
 	updatePos: function()
 	{
-		this.volume.x = this._x + this.totalOffsetX + this._parentX + this.anchorPosX;
-		this.volume.y = this._y + this.totalOffsetY + this._parentY + this.anchorPosY;
-		if(this._view) {
-			this.volume.x += this._view._x;
-			this.volume.y += this._view._y;
-		}
-
+		this.volume.x = this._x + this.totalOffsetX;
+		this.volume.y = this._y + this.totalOffsetY;
 		this.volume.updatePos();
 
 		if(this.children) 
@@ -100,11 +95,23 @@ meta.class("Entity.Geometry",
 
 				child._parentX = this.volume.x;
 				child._parentY = this.volume.y;
-				child.updatePos();
+				child.updateTotalOffset();
 			}
 		}
 
 		this.renderer.needRender = true;
+	},
+
+	updateTotalOffset: function() 
+	{
+		this.totalOffsetX = this.offsetPosX + this._parentX + this.anchorPosX;
+		this.totalOffsetY = this.offsetPosY + this._parentY + this.anchorPosY;
+		if(this._view) {
+			this.totalOffsetX += this._view._x;
+			this.totalOffsetY += this._view._y;
+		}		
+
+		this.updatePos();
 	},
 
 	/** 
@@ -260,15 +267,15 @@ meta.class("Entity.Geometry",
 		this._offsetX = x;
 		this._offsetY = y;
 		if(this._texture) {
-			this.totalOffsetX = Math.round((this._offsetX + this._texture.offsetX) * this.volume.scaleX);
-			this.totalOffsetY = Math.round((this._offsetY + this._texture.offsetY) * this.volume.scaleY);	
+			this.offsetPosX = Math.round((this._offsetX + this._texture.offsetX) * this.volume.scaleX);
+			this.offsetPosY = Math.round((this._offsetY + this._texture.offsetY) * this.volume.scaleY);	
 		}
 		else {
-			this.totalOffsetX = Math.round(this._offsetX * this.volume.scaleX);
-			this.totalOffsetY = Math.round(this._offsetY * this.volume.scaleY);
+			this.offsetPosX = Math.round(this._offsetX * this.volume.scaleX);
+			this.offsetPosY = Math.round(this._offsetY * this.volume.scaleY);
 		}
 
-		this.updatePos();
+		this.updateTotalOffset();
 	},
 
 	set offsetX(x) 
@@ -277,10 +284,10 @@ meta.class("Entity.Geometry",
 
 		this._offsetX = x;
 		if(this._texture) {
-			this.totalOffsetX = Math.round((this._offsetX + this._texture.offsetX) * this.volume.scaleX);	
+			this.offsetPosX = Math.round((this._offsetX + this._texture.offsetX) * this.volume.scaleX);	
 		}
 		else {
-			this.totalOffsetX = Math.round(this._offsetX * this.volume.scaleX);
+			this.offsetPosX = Math.round(this._offsetX * this.volume.scaleX);
 		}
 
 		this.updatePos();
@@ -292,10 +299,10 @@ meta.class("Entity.Geometry",
 
 		this._offsetY = y;
 		if(this._texture) {
-			this.totalOffsetY = Math.round((this._offsetY + this._texture.offsetY) * this.volume.scaleY);	
+			this.offsetPosY = Math.round((this._offsetY + this._texture.offsetY) * this.volume.scaleY);	
 		}
 		else {
-			this.totalOffsetY = Math.round(this._offsetY * this.volume.scaleX);
+			this.offsetPosY = Math.round(this._offsetY * this.volume.scaleX);
 		}
 
 		this.updatePos();
@@ -371,29 +378,31 @@ meta.class("Entity.Geometry",
 			this.anchorPosY = (this.parent.volume.height) * this._anchorY;			
 		}
 
-		this.volume.x = this._x + this.totalOffsetX + this._parentX + this.anchorPosX;
-		this.volume.y = this._y + this.totalOffsetY + this._parentY + this.anchorPosY;
-		if(this._view) {
-			this.volume.x += this._view._x;
-			this.volume.y += this._view._y;
-		}
+		this.updateTotalOffset();
+
+		// this.volume.x = this._x + this.totalOffsetX + this._parentX + this.anchorPosX;
+		// this.volume.y = this._y + this.totalOffsetY + this._parentY + this.anchorPosY;
+		// if(this._view) {
+		// 	this.volume.x += this._view._x;
+		// 	this.volume.y += this._view._y;
+		// }
 		
-		this.volume.updatePos();
+		// this.volume.updatePos();
 
-		if(this.children) 
-		{
-			var child;
-			var numChildren = this.children.length;
-			for(var i = 0; i < numChildren; i++) 
-			{
-				child = this.children[i];
-				if(child._ignoreParentPos) { continue; }
+		// if(this.children) 
+		// {
+		// 	var child;
+		// 	var numChildren = this.children.length;
+		// 	for(var i = 0; i < numChildren; i++) 
+		// 	{
+		// 		child = this.children[i];
+		// 		if(child._ignoreParentPos) { continue; }
 
-				child._parentX = this.volume.x;
-				child._parentY = this.volume.y;
-				child.updateAnchor();
-			}
-		}		
+		// 		child._parentX = this.volume.x;
+		// 		child._parentY = this.volume.y;
+		// 		child.updateAnchor();
+		// 	}
+		// }		
 	},
 
 	/** 
@@ -735,6 +744,11 @@ meta.class("Entity.Geometry",
 		if(!entity) {
 			console.warn("(Entity.Geometry.attach) Invalid entity passed");
 			return;
+		}
+
+		if(entity === this) {
+			console.warn("(Entity.Geometry.attach) Trying to attach themself");
+			return;			
 		}
 
 		if(!this.children) {
@@ -1192,10 +1206,12 @@ meta.class("Entity.Geometry",
 	_scaleX: 1, _scaleY: 1, _parentScaleX: 1, _parentScaleY: 1,
 	
 	_offsetX: 0, _offsetY: 0,
-	totalOffsetX: 0, totalOffsetY: 0,
+	offsetPosX: 0, offsetPosY: 0,
 
 	_anchorX: 0, _anchorY: 0,
 	anchorPosX: 0, anchorPosY: 0,
+
+	totalOffsetX: 0, totalOffsetY: 0,
 
 	loaded: true,
 	removed: false,

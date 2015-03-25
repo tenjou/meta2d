@@ -21,11 +21,33 @@ meta.class("meta.World",
 	_updateBounds: function(camera, event) 
 	{
 		if(!this._adapt) { return; }
-		
-		this.volume.set(0, 0, camera.width, camera.height);
+
+		this.volume.set(0, 0, Math.ceil(camera.width), Math.ceil(camera.height));
 		this.centerX = camera.width / 2;
 		this.centerY = camera.height / 2;
 		//this._chn.emit(this, meta.Event.WORLD_RESIZE);
+	},
+
+	addWorldShape: function(shape) 
+	{
+		if(!this.shapes) {
+			this.shapes = [ shape ];
+		}
+		else {
+			this.shapes.push(shape);
+		}
+	},
+
+	removeWorldShape: function(shape) 
+	{
+		var num = this.shapes.length;
+		for(var i = 0; i < num; i++) {
+			if(this.shapes[i] === shape) {
+				this.shapes[i] = this.shapes[num - 1];
+				this.shapes.pop();
+				break;
+			}
+		}
 	},
 
 	get randX() {
@@ -55,6 +77,7 @@ meta.class("meta.World",
 	centerY: 0,
 
 	_chn: null,
+	shapes: null,
 
 	_adapt: true,
 	_screenBounds: true

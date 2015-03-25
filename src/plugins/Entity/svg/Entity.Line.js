@@ -10,24 +10,22 @@ meta.class("Entity.Line", "Entity.SVG",
 		ctx.strokeStyle = this._strokeStyle;
 
 		ctx.beginPath();
-		ctx.moveTo(this.volume.x + this.x1, this.volume.y + this.y1);
-		ctx.lineTo(this.volume.x + this.x2, this.volume.y + this.y2);
+		ctx.moveTo(this.volume.x, this.volume.y);
+		ctx.lineTo(this.toX, this.toY);
 		ctx.stroke();	
 
 		this.globalAlpha = 1.0;
 	},
 
-	set: function(x1, y1, x2, y2) 
+	to: function(x, y) 
 	{
-		if(this.x2 === x2  && this.y2 === y2 && this.x1 === x1 && this.y1 === y1) { return; }
-		
-		this.x1 = x1;
-		this.y1 = y1;
-		this.x2 = x2;
-		this.y2 = y2;
+		if(this.toX === x && this.toY === y) { return; }
+
+		this.toX = x;
+		this.toY = y;
 		this.renderer.needRender = true;
 	},
 
 	//
-	x1: 0, y1: 0, x2: 0, y2: 0
+	toX: 0, toY: 0
 });

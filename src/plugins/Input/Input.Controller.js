@@ -145,7 +145,6 @@ meta.class("Input.Controller", "meta.Controller",
 		this._event.x = 0;
 		this._event.y = 0;
 		this._event.keyCode = event.keyCode;
-		this._e
 
 		this.chn.keyUp.emit(this._event, Input.Event.KEY_UP);
 
@@ -167,8 +166,8 @@ meta.class("Input.Controller", "meta.Controller",
 
 		var scope = meta;
 		var camera = scope.camera;
-		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
-		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
+		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * this.engine.ratio;
+		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * this.engine.ratio;
 		this.x = (this.screenX * camera.zoomRatio) + camera.volume.x | 0;
 		this.y = (this.screenY * camera.zoomRatio) + camera.volume.y | 0;
 
@@ -197,8 +196,8 @@ meta.class("Input.Controller", "meta.Controller",
 
 		var scope = meta;
 		var camera = scope.camera;
-		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
-		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
+		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * this.engine.ratio;
+		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * this.engine.ratio;
 		this.x = (this.screenX * camera.zoomRatio) + camera.volume.x | 0;
 		this.y = (this.screenY * camera.zoomRatio) + camera.volume.y | 0;
 
@@ -228,8 +227,8 @@ meta.class("Input.Controller", "meta.Controller",
 
 		var scope = meta;
 		var camera = scope.camera;
-		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
-		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
+		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * this.engine.ratio;
+		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * this.engine.ratio;
 		this.x = (this.screenX * camera.zoomRatio) + camera.volume.x | 0;
 		this.y = (this.screenY * camera.zoomRatio) + camera.volume.y | 0;
 
@@ -258,8 +257,8 @@ meta.class("Input.Controller", "meta.Controller",
 
 		var scope = meta;
 		var camera = scope.camera;
-		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
-		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
+		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * this.engine.ratio;
+		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * this.engine.ratio;
 		this.x = (this.screenX * camera.zoomRatio) + camera.volume.x | 0;
 		this.y = (this.screenY * camera.zoomRatio) + camera.volume.y | 0;
 
@@ -297,8 +296,8 @@ meta.class("Input.Controller", "meta.Controller",
 			this.touches.push(touch.identifier);
 			this.numTouches++;
 
-			screenX = ((touch.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
-			screenY = ((touch.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
+			screenX = ((touch.pageX - this.engine.offsetLeft) * this.engine.scaleX) * this.engine.ratio;
+			screenY = ((touch.pageY - this.engine.offsetTop) * this.engine.scaleY) * this.engine.ratio;
 			x = ((screenX * camera.zoomRatio) + camera.volume.x) | 0;
 			y = ((screenY * camera.zoomRatio) + camera.volume.y) | 0;
 
@@ -346,8 +345,8 @@ meta.class("Input.Controller", "meta.Controller",
 			this.touches.splice(id, 1);
 			this.numTouches--;
 
-			screenX = ((touch.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
-			screenY = ((touch.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
+			screenX = ((touch.pageX - this.engine.offsetLeft) * this.engine.scaleX) * this.engine.ratio;
+			screenY = ((touch.pageY - this.engine.offsetTop) * this.engine.scaleY) * this.engine.ratio;
 			x = ((screenX * camera.zoomRatio) + camera.volume.x) | 0;
 			y = ((screenY * camera.zoomRatio) + camera.volume.y) | 0;
 
@@ -396,8 +395,8 @@ meta.class("Input.Controller", "meta.Controller",
 			id = this._getTouchID(touch.identifier);
 			if(id === -1) { continue; }
 
-			screenX = ((touch.pageX - this.engine.offsetLeft) * this.engine.scaleX) * window.devicePixelRatio;
-			screenY = ((touch.pageY - this.engine.offsetTop) * this.engine.scaleY) * window.devicePixelRatio;
+			screenX = ((touch.pageX - this.engine.offsetLeft) * this.engine.scaleX) * this.engine.ratio;
+			screenY = ((touch.pageY - this.engine.offsetTop) * this.engine.scaleY) * this.engine.ratio;
 			x = ((screenX * camera.zoomRatio) + camera.volume.x) | 0;
 			y = ((screenY * camera.zoomRatio) + camera.volume.y) | 0;
 

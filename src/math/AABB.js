@@ -26,6 +26,9 @@ meta.math.AABB = function(x, y, width, height)
 	 */
 	this.height = height || 0;
 
+	this.halfWidth = this.width / 2;
+	this.halfHeight = this.height / 2;
+
 	/** 
 	 * pivotPosX 
 	 * @type {number}
@@ -78,6 +81,8 @@ meta.math.AABB.prototype =
 		this.y = y || 0;	
 		this.width = width || 0;
 		this.height = height || 0;
+		this.halfWidth = this.width / 2;
+		this.halfHeight = this.height / 2;
 		this.pivotPosX = this.width * this.pivotX;
 		this.pivotPosY = this.height * this.pivotY;	
 
@@ -109,8 +114,10 @@ meta.math.AABB.prototype =
 
 	resize: function(width, height)
 	{
-		this.width = width | 0;
-		this.height = height | 0;	
+		this.width = width;
+		this.height = height;
+		this.halfWidth = width / 2;
+		this.halfHeight = height / 2;	
 		this.pivotPosX = this.width * this.pivotX;
 		this.pivotPosY = this.height * this.pivotY;
 		

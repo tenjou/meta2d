@@ -6,6 +6,8 @@ meta.math.AABBext = function()
 	this.y = 0;
 	this.width = 0;
 	this.height = 0;
+	this.halfWidth = 0;
+	this.halfHeight = 0;
 	this.initWidth = 0;
 	this.initHeight = 0;
 
@@ -111,6 +113,8 @@ meta.math.AABBext.prototype =
 		this.initPivotPosY = height * this.pivotY | 0;
 		this.width = width * Math.abs(this.scaleX) | 0;
 		this.height = height * Math.abs(this.scaleY) | 0;	
+		this.halfWidth = this.width / 2;
+		this.halfHeight = this.height / 2;
 
 		this.updatePivotPos();
 	},	
@@ -123,6 +127,8 @@ meta.math.AABBext.prototype =
 		this.scaleY = y * this.flipY;
 		this.width = Math.floor(this.initWidth * x);
 		this.height = Math.floor(this.initHeight * y);
+		this.halfWidth = this.width / 2;
+		this.halfHeight = this.height / 2;
 		
 		this.updatePosTransform();
 	},

@@ -15,14 +15,14 @@ var meta =
 	time: {
 		delta: 0,
 		deltaF: 0,
-		maxDelta: 250,
+		maxDelta: 100,
 		scale: 1.0,
 		update: 0,
 		render: 0,
 		fps: 0,
 		elapsed: 0,
 		frameIndex: 0,
-		updateFreq: 1000 / 60
+		updateFreq: 1000 / 10
 	},
 
 	cache: 

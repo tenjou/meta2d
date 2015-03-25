@@ -28,29 +28,39 @@ meta.class("UI.ProgressBar", "Entity.Geometry",
 	set min(value) 
 	{
 		if(this._min === value) { return; }
-
 		this._min = value;
+
 		this.updateProgress();
 	},
 
 	set max(value) 
 	{
 		if(this._max === value) { return; }
-
 		this._max = value;
+		
 		this.updateProgress();
 	},
 
 	set value(value) 
 	{
-		if(this._value === value) { return; }
+		if(value < this._value) { 
+			value = this._min; 
+		}
+		else if(value > this._value) { 
+			value = this._max;
+		}
 
+		if(this._value === value) { return; }
 		this._value = value;
+
 		this.updateProgress();
 	},
 
-	set percents(value) {
-		this.children[0].width = this._fillWidth / 100 * value;
+	set percents(percents) {
+		var range = this._max - this._min;
+		var value = range / 100 * percents;
+		//this.value = this._min + value;
+		//this.children[0].width = this._fillWidth / range * value;
 	},
 
 	get min() { return this._min; },

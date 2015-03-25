@@ -447,71 +447,20 @@ meta.class("Resource.SVG", "Resource.Texture",
 	},
 
 
-	gradient: function(data)
+	gradient: function(buffer)
 	{
-		if(!data) {
-			console.warn("[Resource.Texture.gradient]:", "No data specified.");
-			return;
+		var gradient = this.ctx.createLinearGradient(0, 0, 0, this.fullHeight);
+
+		var numStops = buffer.length;
+		for(var n = 0; n < numStops; n += 2) {
+			gradient.addColorStop(buffer[n], buffer[n + 1]);
 		}
 
-		if(!data.colors || !data.colors.length) {
-			console.warn("[Resource.Texture.gradient]:", "No data.colors specified.");
-			return;
-		}
+		this.ctx.clearRect(0, 0, this.fullWidth, this.fullHeight);
+		this.ctx.fillStyle = gradient;
+		this.ctx.fillRect(0, 0, this.fullWidth, this.fullHeight);
 
-		var ctx = this.ctx;
-		data.dirX = data.dirX || 0;
-		data.dirY = data.dirY || 0;
-		data.width = data.width || this.trueFullWidth || 1;
-		data.height = data.height || this.trueFullHeight || 1;
-
-		if(!data.drawOver) {
-			this.resize(data.width, data.height);
-		}
-
-		if(this.textureType) {
-			this._createCachedImg();
-			ctx = this._cachedCtx;
-		}
-
-		var colors = data.colors;
-		var numColors = colors.length;
-
-		var x1, x2, y1, y2;
-		if(data.dirX < 0) {
-			x1 = this.trueFullWidth
-			x2 = 0;
-		}
-		else {
-			x1 = 0;
-			x2 = this.trueFullWidth * data.dirX;
-		}
-		if(data.dirY < 0) {
-			y1 = this.trueFullHeight;
-			y2 = 0;
-		}
-		else {
-			y1 = 0;
-			y2 = this.trueFullHeight * data.dirY;
-		}
-
-		var gradient = ctx.createLinearGradient(x1, y1, x2, y2);
-		for(var i = 0; i < numColors; i++) {
-			gradient.addColorStop(colors[i][0], colors[i][1]);
-		}
-
-		ctx.fillStyle = gradient;
-
-		ctx.clearRect(0, 0, this.trueFullWidth, this.trueFullHeight);
-		ctx.fillRect(0, 0, this.trueFullWidth, this.trueFullHeight);
-
-		if(this.textureType) {
-			var gl = meta.ctx;
-			gl.bindTexture(gl.TEXTURE_2D, this.image);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
-		}
-
-		this.isLoaded = true;
+		this.loaded = true;
 	},
 
 	grid: function(params, cellHeight, numCellsX, numCellsY)
