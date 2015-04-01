@@ -181,6 +181,11 @@ meta.math.Vector2.prototype =
 		else if(this.y < -max) { this.y = -max; }
 	},
 
+	clamp: function(minX, minY, maxX, maxY) {
+		this.x = Math.min(Math.max(this.x, minX), maxX);
+		this.y = Math.min(Math.max(this.y, minY), maxY);
+	},
+
 	/**
 	 * Get square length from the vector.
 	 * @function
@@ -202,6 +207,12 @@ meta.math.Vector2.prototype =
 		var tmpX = this.x;
 		this.x = -this.y;
 		this.y = tmpX;
+	},
+
+	reflect: function(normal) {
+		var value = this.dot(normal);
+		this.x -= 2 * value * normal.x;
+		this.y -= 2 * value * normal.y;
 	},
 
 
