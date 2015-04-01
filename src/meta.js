@@ -15,14 +15,15 @@ var meta =
 	time: {
 		delta: 0,
 		deltaF: 0,
-		maxDelta: 100,
+		maxDelta: 250,
 		scale: 1.0,
-		update: 0,
-		render: 0,
+		curr: 0,
 		fps: 0,
-		elapsed: 0,
+		current: 0,
+		update: 0,
+		accumulator: 0.0,
 		frameIndex: 0,
-		updateFreq: 1000 / 10
+		updateFreq: 1000 / 60
 	},
 
 	cache: 
@@ -99,3 +100,14 @@ var meta =
 
 	get debug() { return this.cache.debug; }
 };
+
+meta.State = function() {
+	this.x = 0;
+	this.y = 0;
+};
+
+meta.State.prototype = {
+	angle: 0,
+	alpha: 0
+};
+

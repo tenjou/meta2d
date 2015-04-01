@@ -163,13 +163,23 @@ meta.engine =
 		this.time.render = this.time.update;
 
 		var self = this;
+		//this._updateLoop = function() { self.update(); };
 		this._renderLoop = function() { self.render(); };
-		this._updateLoop = function() { self.update(); };
-		this.update();
+		//this.update();
 		this.render();
 	},	
 
-	update: function()
+	update: function(tDelta)
+	{
+		meta.ctrl.removeCtrls();
+		meta.ctrl.update(tDelta);
+
+		this._updateTimers(tDelta);
+
+		this.meta.renderer.update(tDelta);
+	},
+
+	render: function()
 	{
 		this.time.frameIndex++;
 		var tNow = Date.now();
@@ -181,28 +191,49 @@ meta.engine =
 		}
 		else 
 		{
-			this.time.delta = tNow - this.time.update;
+			this.time.delta = tNow - this.time.current;
 			if(this.time.delta > this.time.maxDelta) {
 				this.time.delta = this.time.maxDelta;
 			}
 
 			this.time.delta *= this.time.scale;
 			this.time.deltaF = this.time.delta / 1000;
+
+			this.time.accumulator += this.time.delta;			
 		}
 
-		var tDelta = this.time.deltaF;
+		// Update FPS:
+		if(tNow - this.time.fps >= 1000) {
+			this.time.fps = tNow;
+			this.fps = this._fpsCounter;
+			this._fpsCounter = 0;
+		}
 
-		meta.ctrl.removeCtrls();
-		meta.ctrl.update(tDelta);
+		this.update(this.time.deltaF);
 
-		this.meta.renderer.update(tDelta);
+		// var dt = this.time.updateFreq;
+		// var dtf = dt / 1000;
+		// while(this.time.accumulator >= dt) {
+		//	this.update(dtf);
+		// 	this.time.update += dt;
+		// 	this.time.accumulator -= dt;
+		// }		
 
-		this._updateTimers(this.time.delta);
+		//var alpha = meta.time.accumulator / dt;
 
-		this.time.update = tNow;
-		var tElapsed = Date.now();
-		var tSleep = Math.max(0, this.time.updateFreq - (tElapsed - tNow));
-		window.setTimeout(this._updateLoop, tSleep);	
+		// Process all render functions:
+		meta.renderer.render(this.time.deltaF);
+		
+		var funcs = this.meta.cache.renderFuncs;
+		var numFuncs = funcs.length;
+		for(var i = 0; i < numFuncs; i++) {
+			funcs[i](tDeltaF);
+		}	
+
+		this._fpsCounter++;
+		this.time.current = tNow;
+
+		requestAnimationFrame(this._renderLoop);
 	},
 
 	_updateTimers: function(tDelta)
@@ -249,34 +280,7 @@ meta.engine =
 		if(removed) {
 			this.timers.length = numTimers;
 		}
-	},
-
-	render: function()
-	{
-		var tNow = Date.now();
-		var tDelta = tNow - this.time.render;
-		var tDeltaF = tDelta / 1000;
-
-		if(tNow - this.time.fps >= 1000) {
-			this.time.fps = tNow;
-			this.fps = this._fpsCounter;
-			this._fpsCounter = 0;
-		}
-
-		meta.renderer.render(tDeltaF);
-
-		// Process all render functions:
-		var funcs = this.meta.cache.renderFuncs;
-		var numFuncs = funcs.length;
-		for(var i = 0; i < numFuncs; i++) {
-			funcs[i](tDeltaF);
-		}	
-
-		this._fpsCounter++;
-		this.time.render = tNow;
-
-		requestAnimationFrame(this._renderLoop);
-	},
+	},	
 
 	sortAdaptions: function()
 	{
