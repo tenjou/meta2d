@@ -10,13 +10,63 @@
 	var fnTest = /\b_super\b/;
 	var holders = {};
 
-	function ExtendHolder() {
-		this.classes = [];
+	meta.class = function(clsName, extendName, prop) 
+	{
+		if(!initializing) {
+			meta.class._construct(clsName, extendName, prop);
+		}
 	};
 
-	function ExtendItem(name, prop) {
-		this.name = name;
-		this.prop = prop;
+	meta.class._construct = function(clsName, extendName, prop) 
+	{
+		if(!clsName) {
+			console.error("(meta.class) Invalid class name");
+			return;
+		}
+
+		if(!prop) {
+			prop = extendName;
+			extendName = null; 
+		}
+		if(!prop) {
+			prop = {};	
+		}
+
+		var extend = null;
+
+		if(extendName)
+		{
+			var prevScope = null;
+			var extendScope = window;
+			var extendScopeBuffer = extendName.split(".");
+			var num = extendScopeBuffer.length - 1;
+			
+			for(var n = 0; n < num; n++) 
+			{
+				prevScope = extendScope;
+				extendScope = extendScope[extendScopeBuffer[n]];
+				if(!extendScope) {
+					extendScope = {};
+					prevScope[extendScopeBuffer[n]] = extendScope;				
+				}
+			}	
+
+			var name = extendScopeBuffer[num];
+			extend = extendScope[name];
+			if(!extend) 
+			{
+				var holder = holders[extendName];
+				if(!holder) {
+					holder = new ExtendHolder();
+					holders[extendName] = holder;
+				}
+
+				holder.classes.push(new ExtendItem(clsName, prop));			
+				return;
+			}			
+		}		
+
+		Extend(clsName, extend, prop);  	
 	};
 
 	function Extend(clsName, extend, prop) 
@@ -62,7 +112,7 @@
 		}
 		else {
 			initializing = true;
-			proto = new cls();
+			proto = new meta.class();
 			initializing = false;
 		}			
 
@@ -124,56 +174,13 @@
 		}
 	};
 
-	meta.class = function(clsName, extendName, prop) 
-	{
-		if(!clsName) {
-			console.error("(meta.class) Invalid class name");
-			return;
-		}
+	function ExtendHolder() {
+		this.classes = [];
+	};
 
-		if(!prop) {
-			prop = extendName;
-			extendName = null; 
-		}
-		if(!prop) {
-			prop = {};	
-		}
-
-		var extend = null;
-
-		if(extendName)
-		{
-			var prevScope = null;
-			var extendScope = window;
-			var extendScopeBuffer = extendName.split(".");
-			var num = extendScopeBuffer.length - 1;
-			
-			for(var n = 0; n < num; n++) 
-			{
-				prevScope = extendScope;
-				extendScope = extendScope[extendScopeBuffer[n]];
-				if(!extendScope) {
-					extendScope = {};
-					prevScope[extendScopeBuffer[n]] = extendScope;				
-				}
-			}	
-
-			var name = extendScopeBuffer[num];
-			extend = extendScope[name];
-			if(!extend) 
-			{
-				var holder = holders[extendName];
-				if(!holder) {
-					holder = new ExtendHolder();
-					holders[extendName] = holder;
-				}
-
-				holder.classes.push(new ExtendItem(clsName, prop));			
-				return;
-			}			
-		}		
-
-		Extend(clsName, extend, prop);
+	function ExtendItem(name, prop) {
+		this.name = name;
+		this.prop = prop;
 	};
 
 	meta.classLoaded = function()
@@ -194,5 +201,5 @@
 		}
 
 		holder = {};
-	};
+	};			
 })(typeof window !== void(0) ? window : global);
