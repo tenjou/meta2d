@@ -10,13 +10,13 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		meta.engine.ctx = this.ctx;
 	},
 
-	render: function(tDelta)
+	render: function(tDelta, alpha)
 	{
 		var numEntities = this.entitiesAnim.length;
 		for(var i = 0; i < numEntities; i++) {
 			this.entitiesAnim[i].update(tDelta);
 		}
-
+		
 		if(!this.needRender) { return; }
 
 		this.clear();

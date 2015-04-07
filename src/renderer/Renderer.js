@@ -5,6 +5,7 @@ meta.class("meta.Renderer",
 	init: function() 
 	{
 		this.holder = new Entity.Geometry();
+		this.staticHolder = new Entity.Geometry();
 
 		Entity.Geometry.prototype.renderer = this;
 		Entity.Geometry.prototype.parent = this.holder;
@@ -656,6 +657,7 @@ meta.class("meta.Renderer",
 	onCameraResize: function(data, event) 
 	{
 		this.holder.resize(data.width, data.height);
+		this.staticHolder.resize(this.engine.width, this.engine.height);
 
 		var entity;
 		var numEntities = this.entities.length;
@@ -725,7 +727,9 @@ meta.class("meta.Renderer",
 	meta: meta,
 	engine: null,
 	chn: null,
+
 	holder: null,
+	staticHolder: null,
 
 	camera: null,
 	cameraDefault: null,

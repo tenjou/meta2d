@@ -9,18 +9,15 @@ meta.class("Physics.Controller", "meta.Controller",
 
 	update: function(tDelta)
 	{
-		var owner;
 		var body1 = null, body2 = null;
 		var numBodies = this.bodies.length;
 		for(var i = 0; i < numBodies; i++) {
 			body1 = this.bodies[i];
-			body1.updateItem(tDelta);
+			body1.updateBody(tDelta);
 			this.bodyVsWorld(body1);
-
-			owner = body1.owner;
-			owner.position(body1.volume.x - owner.totalOffsetX, body1.volume.y - owner.totalOffsetY);
 		}
 
+		var owner;
 		var n = 0;
 		for(i = 0; i < numBodies; i++) 
 		{
@@ -46,60 +43,13 @@ meta.class("Physics.Controller", "meta.Controller",
 					if(body2.owner.onCollision) {
 						this.manifold.entity = body1.owner;
 						body2.owner.onCollision(this.manifold);
-					}	
-
-					owner = body1.owner;
-					owner.position(body1.volume.x - owner.totalOffsetX, body1.volume.y - owner.totalOffsetY);
-					owner = body2.owner;
-					owner.position(body2.volume.x - owner.totalOffsetX, body2.volume.y - owner.totalOffsetY);			
+					}			
 				}
 			}
+
+			owner = body1.owner;
+			owner.position(body1.volume.x - owner.totalOffsetX, body1.volume.y - owner.totalOffsetY);			
 		}
-	},
-
-	overlapAABB: function(a, b)
-	{
-		// DiffX:
-		var diffX = (b.minX + b.halfWidth) - (a.minX + a.halfWidth);
-
-		var overlapX = a.halfWidth + b.halfWidth - Math.abs(diffX);
-		if(overlapX <= 0) { 
-			return false; 
-		}
-
-		// DiffY:
-		var diffY = (b.minY + b.halfHeight) - (a.minY + a.halfHeight);
-
-		var overlapY = a.halfHeight + b.halfHeight - Math.abs(diffY);
-		if(overlapY <= 0) { 
-			return false; 
-		}
-
-		// Normals:
-		if(overlapX < overlapY)
-		{
-			if(diffX < 0) {
-				this.manifold.normal.set(-1, 0);
-			}
-			else {
-				this.manifold.normal.set(1, 0);
-			}
-
-			this.manifold.penetration = overlapX;
-		}
-		else
-		{
-			if(diffY < 0) {
-				this.manifold.normal.set(0, -1);
-			}
-			else {
-				this.manifold.normal.set(0, 1);
-			}
-
-			this.manifold.penetration = overlapY;
-		}
-
-		return true;
 	},
 
 	bodyVsWorld: function(body)
@@ -107,7 +57,7 @@ meta.class("Physics.Controller", "meta.Controller",
 		if(!body.worldBounds) { return; }
 
 		var world = meta.world;
-		var volume = body._volume;
+		var volume = body.volume;
 		var newX = volume.x;
 		var newY = volume.y;
 		var collision = false;
@@ -255,7 +205,45 @@ meta.class("Physics.Controller", "meta.Controller",
 		var volume1 = body1._volume;
 		var volume2 = body2._volume;
 
-		if(!this.overlapAABB(volume1, volume2)) { return false; }
+		// DiffX:
+		var diffX = (volume2.minX + volume2.halfWidth) - (volume1.minX + volume1.halfWidth);
+
+		var overlapX = a.halfWidth + volume2.halfWidth - Math.abs(diffX);
+		if(overlapX <= 0) { 
+			return false; 
+		}
+
+		// DiffY:
+		var diffY = (volume2.minY + volume2.halfHeight) - (volume1.minY + volume1.halfHeight);
+
+		var overlapY = volume1.halfHeight + volume2.halfHeight - Math.abs(diffY);
+		if(overlapY <= 0) { 
+			return false; 
+		}
+
+		// Normals:
+		if(overlapX < overlapY)
+		{
+			if(diffX < 0) {
+				this.manifold.normal.set(-1, 0);
+			}
+			else {
+				this.manifold.normal.set(1, 0);
+			}
+
+			this.manifold.penetration = overlapX;
+		}
+		else
+		{
+			if(diffY < 0) {
+				this.manifold.normal.set(0, -1);
+			}
+			else {
+				this.manifold.normal.set(0, 1);
+			}
+
+			this.manifold.penetration = overlapY;
+		}
 
 		if(body2._mass === 0) 
 		{
@@ -269,7 +257,7 @@ meta.class("Physics.Controller", "meta.Controller",
 			volume2.move(
 				this.manifold.penetration * this.manifold.normal.x,
 				this.manifold.penetration * this.manifold.normal.y);				
-		}	
+		}
 
 		return true;
 	},
@@ -430,14 +418,36 @@ meta.class("Physics.Controller", "meta.Controller",
 		}
 	},	
 
-	add: function(entity) 
+	add: function(body) 
 	{
-		if(!(entity instanceof Entity.Geometry)) {
-			console.warn("(Physics.Controller.add) Object should be a part of Entity.Geometry:", entity);
+		if(!body) {
+			console.warn("(Physics) Invalid body passed");
+			return;
+		}
+		if(body.__index !== -1) {
+			console.warn("(Physics) Body is already in use");
 			return;
 		}
 
-		entity.addComponent("body", Physics.Body);
+		body.__index = this.bodies.length;
+		this.bodies.push(body);
+	},
+
+	remove: function(body) 
+	{
+		if(!body) {
+			console.warn("(Physics) Invalid body passed");
+			return;
+		}
+		if(body.__index === -1) {
+			console.warn("(Physics) Body is not in use");
+			return;
+		}
+
+		var tmpBody = this.bodies[this.bodies.length - 1];
+		tmpBody.__index = body.__index;
+		this.bodies[body.__index] = tmpBody;
+		this.bodies.pop();
 	},
 
 	onDebug: function(value, event) 

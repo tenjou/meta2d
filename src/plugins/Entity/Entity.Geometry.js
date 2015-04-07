@@ -2,30 +2,48 @@
 
 meta.class("Entity.Geometry",
 {
-	_init: function(texture) {
+	_init: function(arg) 
+	{
 		this.volume = new meta.math.AABBext();
-		this.anim = new meta.Anim(this);
-		this.initFromParam(texture);
+		this.anim = new Component.Anim(this);
+
+		if(arg) {
+			this.initArg(arg);
+		}
 	},
 
-	initFromParam: function(texture)
+	initArg: function(arg)
 	{
-		if(texture)
+		if(typeof arg === "object") 
 		{
-			if(typeof(texture) === "string") 
+			if(arg instanceof Resource.Texture) {
+				this.texture = arg;				
+			}	
+			else 
 			{
-				var newTexture = Resource.ctrl.getTexture(texture);
-				if(!newTexture) {
-					console.warn("(Entity.Geometry) Unavailable texture - " + texture);
+				for(var key in arg) {
+					this[key] = arg[key];
 				}
-				else {
-					this.texture = newTexture;
-				}
+			}
+		}
+		else if(typeof arg === "string") 
+		{
+			var texture = Resource.ctrl.getTexture(arg);
+			if(!texture) {
+				console.warn("(Entity.Geometry) Unavailable texture - " + arg);
 			}
 			else {
 				this.texture = texture;
 			}
 		}
+	},
+
+	createBody: function(comp) 
+	{
+		if(!comp) {
+			comp = Component.Body;
+		}
+		this.addComponent("body", comp);
 	},
 
 	remove: function()
@@ -817,6 +835,19 @@ meta.class("Entity.Geometry",
 		if(this._static === value) { return; }
 		this._static = value;
 
+		if(value) 
+		{
+			if(this.parent === this.renderer.holder) {
+				this.parent = this.renderer.staticHolder;
+			}
+		}
+		else 
+		{
+			if(this.parent === this.renderer.staticHolder) {
+				this.parent = this.renderer.holder;
+			}
+		}
+
 		if(this.children) 
 		{
 			var numChildren = this.children.length;
@@ -1035,8 +1066,7 @@ meta.class("Entity.Geometry",
 			name = null;
 		}
 
-		var comp = new obj();
-		comp.owner = this;
+		var comp = new obj(this);
 
 		if(name) 
 		{
