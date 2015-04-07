@@ -835,19 +835,6 @@ meta.class("Entity.Geometry",
 		if(this._static === value) { return; }
 		this._static = value;
 
-		if(value) 
-		{
-			if(this.parent === this.renderer.holder) {
-				this.parent = this.renderer.staticHolder;
-			}
-		}
-		else 
-		{
-			if(this.parent === this.renderer.staticHolder) {
-				this.parent = this.renderer.holder;
-			}
-		}
-
 		if(this.children) 
 		{
 			var numChildren = this.children.length;

@@ -24,12 +24,14 @@ meta.Debugger.prototype =
 	{
 		this.view = meta.getView("debugger");
 		this.view.static = true;
+		this.view.z = 1000000;
 
 		var texture = new Resource.SVG();
 		texture.fillStyle = "#000";
 		texture.fillRect(0, 0, 200, 290);
 
 		this.holder = new Entity.Geometry(texture);
+		this.holder.parent = meta.renderer.staticHolder;
 		this.holder.anchor(0, 1);
 		this.holder.position(0, -290);
 		this.holder.alpha = 0.8;
