@@ -23,7 +23,7 @@ var meta =
 		update: 0,
 		accumulator: 0.0,
 		frameIndex: 0,
-		updateFreq: 1000 / 60
+		updateFreq: 1000 / 10
 	},
 
 	cache: 
@@ -100,14 +100,3 @@ var meta =
 
 	get debug() { return this.cache.debug; }
 };
-
-meta.State = function() {
-	this.x = 0;
-	this.y = 0;
-};
-
-meta.State.prototype = {
-	angle: 0,
-	alpha: 0
-};
-

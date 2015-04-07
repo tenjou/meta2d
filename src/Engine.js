@@ -69,6 +69,8 @@ meta.engine =
 
 	_initAll: function()
 	{
+		this.time.update = Date.now();
+
 		var cache = meta.cache;
 
 		// Create master view.
@@ -157,11 +159,7 @@ meta.engine =
 		this._startMainLoop();
 	},
 
-	_startMainLoop: function()
-	{
-		this.time.update = Date.now();
-		this.time.render = this.time.update;
-
+	_startMainLoop: function() {
 		var self = this;
 		//this._updateLoop = function() { self.update(); };
 		this._renderLoop = function() { self.render(); };
@@ -177,6 +175,8 @@ meta.engine =
 		this._updateTimers(tDelta);
 
 		this.meta.renderer.update(tDelta);
+
+		//window.setTimeout(this._updateLoop, tSleep);
 	},
 
 	render: function()
@@ -214,12 +214,12 @@ meta.engine =
 		// var dt = this.time.updateFreq;
 		// var dtf = dt / 1000;
 		// while(this.time.accumulator >= dt) {
-		//	this.update(dtf);
+		// 	this.update(dtf);
 		// 	this.time.update += dt;
 		// 	this.time.accumulator -= dt;
 		// }		
 
-		//var alpha = meta.time.accumulator / dt;
+		// var alpha = meta.time.accumulator / dt;
 
 		// Process all render functions:
 		meta.renderer.render(this.time.deltaF);
