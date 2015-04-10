@@ -397,21 +397,19 @@ meta.class("Physics.Controller", "meta.Controller",
 
 		var numBodies = this.bodies.length;
 		for(var i = 0; i < numBodies; i++) {
-			this.drawVolume(ctx, this.bodies[i]);
+			this.drawVolume(ctx, this.bodies[i].volume);
 		}
 
 		ctx.restore();
 	},
 
-	drawVolume: function(ctx, body) 
+	drawVolume: function(ctx, volume) 
 	{
-		var volume = body._volume;
-
 		// AABB
-		if(body.type === 0) {
+		if(volume.type === 0) {
 			ctx.fillRect(Math.floor(volume.minX), Math.floor(volume.minY), volume.width, volume.height);	
 		}
-		else if(body.type === 1) {
+		else if(volume.type === 1) {
 			ctx.beginPath();
 			ctx.arc(Math.floor(volume.x), Math.floor(volume.y), volume.radius, 0, 2 * Math.PI, false);
 			ctx.fill();
