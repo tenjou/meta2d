@@ -69,7 +69,7 @@ meta.engine =
 
 	_initAll: function()
 	{
-		this.time.update = Date.now();
+		this.time.current = Date.now();
 
 		var cache = meta.cache;
 
@@ -159,7 +159,8 @@ meta.engine =
 		this._startMainLoop();
 	},
 
-	_startMainLoop: function() {
+	_startMainLoop: function() 
+	{
 		var self = this;
 		//this._updateLoop = function() { self.update(); };
 		this._renderLoop = function() { self.render(); };
