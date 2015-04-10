@@ -271,5 +271,7 @@ meta.math.AABB.prototype =
 	 * pivotY 
 	 * @type {number=0}
 	 */
-	pivotY: 0
+	pivotY: 0,
+
+	type: meta.math.VolumeType.AABB
 };

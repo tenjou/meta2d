@@ -310,5 +310,7 @@ meta.math.AABBext.prototype =
 
 	sin: 0, cos: 1,
 	m11: 1, m12: 0, m21: 0, m22: 1,
-	__transformed: 0
+	__transformed: 0,
+
+	type: meta.math.VolumeType.AABB
 };

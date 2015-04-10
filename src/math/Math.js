@@ -73,5 +73,11 @@ meta.math =
 
 	lookAtEntity: function(src, target) {
 		return meta.math.lookAt(src.x, src.y, target.x, target.y);
+	},
+
+	VolumeType: {
+		AABB: 0,
+		SPHERE: 1,
+		SEGMENT: 2
 	}
 };

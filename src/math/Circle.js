@@ -82,5 +82,8 @@ meta.math.Circle.prototype =
 		else {
 			console.log("x:", this.x, "y:", this.y, "raidus:", this.radius);
 		}
-	}
+	},
+
+	//
+	type: meta.math.VolumeType.CIRCLE
 };
