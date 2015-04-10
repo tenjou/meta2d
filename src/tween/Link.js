@@ -98,7 +98,7 @@ meta.Tween.Link.prototype =
 			}
 
 			result = startValue + (endValue - startValue) * value;
-			if(this.isRounding) {
+			if(this.rounding) {
 				result = Math.round(result);
 			}
 
@@ -121,9 +121,8 @@ meta.Tween.Link.prototype =
 	 * @param tDelay {Number} Time to wait in milliseconds.
 	 * @returns {meta.Tween.Link}
 	 */
-	wait: function(tDelay) {
-		this.tDelay = tDelay;
-		return this;
+	wait: function(duration, onDone) {
+		return this.tween.wait(duration, onDone);
 	},
 
 	/**
@@ -254,7 +253,6 @@ meta.Tween.Link.prototype =
 	_onDone: null,
 	_onTick: null,
 
-	tDelay: 0,
 	tFrameDelay: 0,
-	isRounding: false
+	rounding: false
 };

@@ -2,7 +2,6 @@
 
 /**
  * Tweening library. Have dependency on Entity.Controller.
- *
  * @class
  * @param owner {Object} Object to tween.
  * @param chain {Array} Buffer with meta.Tween.Link.
@@ -28,13 +27,12 @@ meta.Tween.prototype =
 		{
 			var cache = this.cache;
 
-			// If owner is removed or simply not set.
+			// If owner is removed or simply not set:
 			if(!cache.owner) { return this; }
 			if(cache.owner.removed) { return this; }
 
 			cache.paused = false;
 			cache.numRepeat = this.numRepeat;
-			cache._tFrame = meta.time.update;
 			this.next();
 			this._play();
 			this.cache = null;
@@ -56,8 +54,8 @@ meta.Tween.prototype =
 	 */
 	stop: function(callCB)
 	{
-		this.cache.currLink = null;
-		this.cache.linkIndex = 0;
+		this.cache.link = null;
+		this.cache.index = 0;
 
 		if(meta.renderer.removeTween(this.cache)) 
 		{
@@ -127,13 +125,13 @@ meta.Tween.prototype =
 	reset: function()
 	{
 		var cache = this.cache;
-		cache.linkIndex = 0;
-		cache.currLink = this.chain[0];
+		cache.index = 0;
+		cache.link = this.chain[0];
 
-		if(!cache.currLink) { return this; }
+		if(!cache.link) { return this; }
 
-		for(var key in cache.currLink.startValues) {
-			cache.owner[key] = cache.currLink.startValues[key];
+		for(var key in cache.link.startValues) {
+			cache.owner[key] = cache.link.startValues[key];
 		}
 
 		this.stop(false);
@@ -147,10 +145,10 @@ meta.Tween.prototype =
 	 */
 	next: function()
 	{
-		var isRepeating = false;
+		var repeating = false;
 		var cache = this.cache;
 
-		if(cache.linkIndex === this.chain.length)
+		if(cache.index === this.chain.length)
 		{
 			if(cache.numRepeat === 0) {
 				this.stop();
@@ -158,7 +156,7 @@ meta.Tween.prototype =
 			}
 			else
 			{
-				cache.linkIndex = 0;
+				cache.index = 0;
 				if(cache.numRepeat !== -1) 
 				{
 					cache.numRepeat--;
@@ -173,17 +171,17 @@ meta.Tween.prototype =
 					}
 				}
 				
-				isRepeating = true;
+				repeating = true;
 			}
 		}
 
-		cache._isLinkDone = false;
+		cache._done = false;
 
 		var key;
-		var link = this.chain[cache.linkIndex++];
+		var link = this.chain[cache.index++];
 		var owner = cache.owner;
 
-		if(!isRepeating)
+		if(!repeating)
 		{
 			for(key in link.endValues) {
 				link.startValues[key] = owner[key];
@@ -200,8 +198,9 @@ meta.Tween.prototype =
 			link._onStart.call(this);
 		}
 
-		cache._tStart = meta.time.update;
-		cache.currLink = link;
+		cache._tStart = meta.time.current;
+		cache._tFrame = 0;
+		cache.link = link;
 
 		return this;
 	},
@@ -233,13 +232,11 @@ meta.Tween.prototype =
 			value = true;
 		}
 
-		this.cache.isReverse = value;
+		this.cache.reverse = value;
 		return this;
 	},
 
-	get reverse() {
-		return this.cache.isReverse;
-	},
+	get reverse() { return this.cache.reverse; },
 
 
 	/**
@@ -249,47 +246,47 @@ meta.Tween.prototype =
 	update: function(tDelta)
 	{
 		var cache = this.cache;
-		if(!cache.currLink) {
+		if(!cache.link) {
 			this.stop(false);
 			return;
 		}
 
-		var tCurr = meta.time.update;
-		var tFrameDelta = tCurr - cache._tFrame;
+		cache._tFrame += meta.time.delta;
 
-		if(tFrameDelta < cache.currLink.tFrameDelay) {
-			return;
-		}
-
-		//console.log(tFrameDelta);
-
-		var tElapsed = (tCurr - cache._tStart) / cache.currLink.duration;
+		var link = cache.link;
+		var tElapsed = (meta.time.current - cache._tStart) / link.duration;
 		if(tElapsed > 1.0) {
 			tElapsed = 1.0;
 		}
 
-		if(cache._isLinkDone)
+		if(cache._done)
 		{
-			if(tFrameDelta < cache.currLink.tDelay) {
+			if(cache.tFrameDelay < link.tDelay) {
 				return;
 			}
 		}
 		else
 		{
-			cache._tFrame = tCurr;
-			cache.currLink.update(tElapsed);
+			if(link.endValues) 
+			{
+				link.update(tElapsed);
 
-			if(cache.currLink._onTick) {
-				cache.currLink._onTick.call(this);
+				if(link._onTick) {
+					link._onTick.call(this);
+				}
 			}
 		}
 
 		if(tElapsed === 1.0)
 		{
-			if(!cache._isLinkDone && cache.currLink.tDelay > 0) {
-				cache._isLinkDone = true;
+			if(!cache._done) {
+				cache._done = true;
 				return;
 			}
+
+			if(link._onDone) {
+				link._onDone.call(this);
+			}			
 
 			this.next();
 		}
@@ -315,10 +312,10 @@ meta.Tween.prototype =
 	 * @param tDelay {Number} Time to wait in milliseconds.
 	 * @returns {meta.Tween.Link}
 	 */
-	wait: function(tDelay)
+	wait: function(duration, onDone)
 	{
-		var link = this.to(null, 0, null);
-		link.wait(tDelay);
+		var link = new meta.Tween.Link(this, null, duration, onDone);
+		this.chain.push(link);
 		return link;
 	},
 
@@ -340,7 +337,7 @@ meta.Tween.prototype =
 			return this;			
 		}
 
-		if(typeof(group) === "object") {
+		if(typeof group === "object") {
 			this._group = group;
 		}
 
@@ -363,16 +360,18 @@ meta.Tween.Cache = function(owner)
 	this.owner = owner;
 	this.tween = null;
 
-	this.linkIndex = 0;
-	this.currLink = null;
+	this.link = null;
+	this.index = 0;
 	this.numRepeat = 0;
+
+	this._tStart = 0;
+	this._tFrame = 0;	
+
 	this.onDone = null;
+	this._done = false;
 
 	this.__index = -1;
 	this.__removed = 0;
-	this._isLinkDone = false;
-	this._tStart = 0;
-	this._tFrame = 0;	
 };
 
 meta.Tween.Cache.prototype = 
