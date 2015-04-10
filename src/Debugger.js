@@ -215,7 +215,7 @@ meta.Debugger.prototype =
 	},
 
 	onCameraResize: function(data, event) {
-		this.txt.cameraZoom.text = "zoom: " + data.zoom;
+		this.txt.cameraZoom.text = "zoom: " + data.zoom.toFixed(3);
 	},
 
 	onResize: function(data, event) {
