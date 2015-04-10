@@ -3,9 +3,9 @@
 Component.Body = function(owner) 
 {
 	this.owner = owner;
+	this.volume = null;
 	this.velocity = new meta.math.Vector2(0, 0);
-	this.acceleration = new meta.math.Vector2(0, 0);	
-	this.worldBounds = true;
+	this.acceleration = new meta.math.Vector2(0, 0);
 	this.__index = -1;
 };
 
@@ -13,7 +13,6 @@ Component.Body.prototype =
 {
 	load: function() {
 		this.volume = this.owner.volume;
-		this.owner.prev
 		Physics.ctrl.add(this);
 	},
 
@@ -31,5 +30,24 @@ Component.Body.prototype =
 
 		this.acceleration.x = 0;
 		this.acceleration.y = 0;
-	}
+	},
+
+	set mass(value) 
+	{
+		this._mass = value;
+
+		if(value === 0) {
+			this.invMass = 0;
+		}
+		else {
+			this.invMass = 1.0 / value;
+		}
+	},
+
+	get mass() { return this._mass; },	
+
+	//
+	_mass: 1,
+	invMass: 1,
+	worldBounds: true
 };

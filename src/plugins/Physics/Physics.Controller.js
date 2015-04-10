@@ -178,21 +178,24 @@ meta.class("Physics.Controller", "meta.Controller",
 
 	bodyVsBody: function(body1, body2)
 	{
-		if(body1.type === 0)
+		var type1 = body1.volume.type;
+		var type2 = body2.volume.type;
+
+		if(type1 === 0)
 		{
-			if(body2.type === 0) {
+			if(type2 === 0) {
 				return this.boxVsBox(body1, body2);
 			}
-			else if(body2.type === 1) {
+			else if(type2 === 1) {
 				return this.boxVsCircle(body1, body2);
 			}
 		}
-		else if(body1.type === 1)
+		else if(type1 === 1)
 		{
-			if(body2.type === 0) {
+			if(type2 === 0) {
 				return this.boxVsCircle(body2, body1);
 			}
-			else if(body2.type === 1) {
+			else if(type2 === 1) {
 				return this.circleVsCircle(body1, body2);
 			}
 		}
@@ -202,8 +205,8 @@ meta.class("Physics.Controller", "meta.Controller",
 
 	boxVsBox: function(body1, body2)
 	{
-		var volume1 = body1._volume;
-		var volume2 = body2._volume;
+		var volume1 = body1.volume;
+		var volume2 = body2.volume;
 
 		// DiffX:
 		var diffX = (volume2.minX + volume2.halfWidth) - (volume1.minX + volume1.halfWidth);
@@ -264,8 +267,8 @@ meta.class("Physics.Controller", "meta.Controller",
 
 	circleVsCircle: function(body1, body2)
 	{
-		var volume1 = body1._volume;
-		var volume2 = body2._volume;
+		var volume1 = body1.volume;
+		var volume2 = body2.volume;
 
 		var dx = volume2.x - volume1.x;
 		var dy = volume2.y - volume1.y;
@@ -308,8 +311,8 @@ meta.class("Physics.Controller", "meta.Controller",
 
 	boxVsCircle: function(body1, body2)
 	{
-		var volume1 = body1._volume;
-		var volume2 = body2._volume;
+		var volume1 = body1.volume;
+		var volume2 = body2.volume;
 
 		var diffX = volume2.x - (volume1.minX + volume1.halfWidth);
 		var diffY = volume2.y - (volume1.minY + volume1.halfHeight);
