@@ -77,7 +77,7 @@ meta.math =
 
 	VolumeType: {
 		AABB: 0,
-		SPHERE: 1,
+		CIRCLE: 1,
 		SEGMENT: 2
 	}
 };
