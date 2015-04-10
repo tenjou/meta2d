@@ -1038,11 +1038,12 @@ meta.class("Entity.Geometry",
 
 	get tween()
 	{
-		if(this._tweenCache) {
-			return this._tweenCache.tween;
+		if(!this._tweenCache) {
+			this.tween = new meta.Tween();
 		}
 
-		return null;
+		this._tweenCache.tween.cache = this._tweenCache;
+		return this._tweenCache.tween;
 	},	
 
 	addComponent: function(name, obj, params) 
