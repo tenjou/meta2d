@@ -173,7 +173,7 @@ meta.engine =
 		meta.ctrl.removeCtrls();
 		meta.ctrl.update(tDelta);
 
-		this._updateTimers(tDelta);
+		this._updateTimers(meta.time.delta);
 
 		this.meta.renderer.update(tDelta);
 

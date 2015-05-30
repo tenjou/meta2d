@@ -211,7 +211,7 @@ meta.class("Physics.Controller", "meta.Controller",
 		// DiffX:
 		var diffX = (volume2.minX + volume2.halfWidth) - (volume1.minX + volume1.halfWidth);
 
-		var overlapX = a.halfWidth + volume2.halfWidth - Math.abs(diffX);
+		var overlapX = volume1.halfWidth + volume2.halfWidth - Math.abs(diffX);
 		if(overlapX <= 0) { 
 			return false; 
 		}

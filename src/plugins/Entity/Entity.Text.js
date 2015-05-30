@@ -14,7 +14,7 @@ meta.class("Entity.Text", "Entity.Geometry",
 		}	
 	},
 
-	initFromParam: function() {},
+	initArg: function() {},
 
 	updateTxt: function()
 	{

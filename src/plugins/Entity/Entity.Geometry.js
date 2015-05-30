@@ -68,6 +68,9 @@ meta.class("Entity.Geometry",
 			this._texture = null;
 		}
 
+		if(this.body) {
+			Physics.ctrl.remove(this.body);
+		}
 		if(this.tween) {
 			this.tween.clear();
 		}
@@ -111,8 +114,8 @@ meta.class("Entity.Geometry",
 				child = this.children[i];
 				if(child.ignoreParentPos) { continue; }
 
-				child._parentX = this.volume.x;
-				child._parentY = this.volume.y;
+				child._parentX = this.volume.x - this.volume.pivotPosX;
+				child._parentY = this.volume.y - this.volume.pivotPosY;
 				child.updateTotalOffset();
 			}
 		}
@@ -1210,6 +1213,10 @@ meta.class("Entity.Geometry",
 
 	get debug() { return this.__debug; },
 
+	Flag: {
+		PICKING: 1
+	},
+
 	//
 	renderer: null,
 	parent: null,
@@ -1248,7 +1255,6 @@ meta.class("Entity.Geometry",
 	components: null,
 
 	_pickable: false,
-	__picking: false,
 	hover: false,
 	pressed: false,
 	dragged: false,
@@ -1262,5 +1268,7 @@ meta.class("Entity.Geometry",
 	__added: false,
 	__debug: false,
 	__updateIndex: -1,
-	__clip: false
+	__clip: false,
+
+	flags: 0
 });

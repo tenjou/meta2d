@@ -31,6 +31,7 @@ meta.class("UI.Button", "Entity.Geometry",
 			this._text.color = "#ffffff";
 			this.attach(this._text);
 
+			this._text.pivot(0.5);
 			this._text.anchor(0.5);
 			this._text.pickable = false;		
 		}

@@ -41,6 +41,7 @@ meta.class("meta.Renderer",
 		meta.subscribe(this, meta.Event.CAMERA_MOVE, this.onCameraMove);
 
 		this.holder.resize(this.camera.volume.width, this.camera.volume.height);
+		this.holder.resize(640, 480);
 	},
 
 	update: function(tDelta)
@@ -90,6 +91,27 @@ meta.class("meta.Renderer",
 			this._removeEntities(this.entitiesRemove);
 			this.entitiesRemove.length = 0;
 		}	
+
+		// Remove entities picking:
+		var num = this.entitiesPickingRemove.length;
+		if(num > 0) 
+		{
+			var n;
+			var numPicking = this.entitiesPicking.length;
+			for(i = 0; i < num; i++) {
+				entity = this.entitiesPickingRemove[i];
+				for(n = 0; n < numPicking; n++) {
+					if(entity === this.entitiesPicking[n]) {
+						numPicking--;
+						this.entitiesPicking[n] = this.entitiesPicking[n - 1];
+						break;
+					}
+				}
+			}
+
+			this.entitiesPicking.length = numPicking;
+			this.entitiesPickingRemove.length = 0;
+		}
 
 		if(this._removeUpdating.length > 0)
 		{
@@ -213,56 +235,63 @@ meta.class("meta.Renderer",
 	{
 		if(!entity.__added) { return; }
 
-		if(this.__updating) {
-			entity.__added = false;
-			this.entitiesRemove.push(entity);
-		}
-		else {
-			this._removeEntity(entity);
-		}
+		entity.__added = false;
+		this.entitiesRemove.push(entity);
 
 		this.needSortDepth = true;
 	},
 
 	removeEntities: function(entities)
 	{
-		if(this.__updating)
+		var entity;
+		var numRemove = entities.length;
+
+		for(var i = 0; i < numRemove; i++) 
 		{
-			var entity;
-			var numRemove = entities.length;
+			entity = entities[i];
+			if(!entity.__added) { return; }
 
-			for(var i = 0; i < numRemove; i++) {
-				entity = entities[i];
-				entity.__added = false;
-				this.entitiesRemove.push(entity);
-			}
-		}
-		else {
-			this._removeEntities(entities);
-		}
+			entity.__added = false;
 
-		this.needSortDepth = true;
+			this.entitiesRemove.push(entity);
+		}
 	},
 
 	_removeEntities: function(entities)
 	{
 		var entity, n;
 		var numRemove = entities.length;
-		var numEntities = this.entities.length;
 		for(var i = 0; i < numRemove; i++) 
 		{
 			entity = entities[i];
 			entity.__added = false;
 			
-			for(n = 0; n < numEntities; n++) 
+			for(n = 0; n < this.numEntities; n++) 
 			{
 				if(this.entities[n] === entity) {
-					numEntities--;
-					this.entities[n] = this.entities[numEntities];
+					this.numEntities--;
+					this.entities[n] = this.entities[this.numEntities];
 					this.entities.pop();
 					break;
 				}
-			}				
+			}	
+
+			if(entity._pickable) 
+			{
+				entity._pickable = false;
+				entity.flags &= ~entity.Flag.PICKING;
+
+				var numPicking = this.entitiesPicking.length;
+				for(var i = 0; i < numPicking; i++) {
+					if(this.entitiesPicking[i] === entity) {
+						this.entitiesPicking[i] = this.entitiesPicking[numPicking - 1];
+						this.entitiesPicking.pop();	
+						break;					
+					}
+				}
+
+				this.needSortDepth = true;
+			}			
 
 			if(entity.children) {
 				this._removeEntities(entity.children);
@@ -272,30 +301,6 @@ meta.class("meta.Renderer",
 				entity._remove();
 			}			
 		}
-	},
-
-	_removeEntity: function(entity)
-	{
-		entity.__added = false;
-		
-		var numEntities = this.entities.length;
-		for(var n = 0; n < numEntities; n++) 
-		{
-			if(this.entities[n] === entity) {
-				numEntities--;
-				this.entities[n] = this.entities[numEntities];
-				this.entities.pop();
-				break;
-			}
-		}				
-
-		if(entity.children) {
-			this._removeEntities(entity.children);
-		}
-
-		if(entity.removed) {
-			entity._remove();
-		}		
 	},
 
 	addUpdating: function(entity) 
@@ -326,18 +331,19 @@ meta.class("meta.Renderer",
 	addPicking: function(entity) 
 	{
 		if(!entity.__added) { return; }
-		if(entity.__picking) { return; }
+		if(entity.flags & entity.Flag.PICKING) { return; }
 
-		entity.__picking = true;
 		this.entitiesPicking.push(entity);
+		entity.flags |= entity.Flag.PICKING;
 	},
 
 	removePicking: function(entity) 
 	{
-		if(!entity.__picking) { return; }
+		if(!entity.__added) { return; }
+		if((entity.flags & entity.Flag.PICKING) === 0) { return; }
 
-		entity.__picking = false;
-		//this.entities
+		this.entitiesPickingRemove.push(entity);
+		entity.flags &= ~entity.Flag.PICKING;
 	},	
 
 	addAnim: function(anim)

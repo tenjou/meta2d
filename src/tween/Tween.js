@@ -163,7 +163,7 @@ meta.Tween.prototype =
 					if(cache.numRepeat === 0) 
 					{
 						if(this.onDone) {
-							this.onDone.call(this.cache.owner);
+							this.onDone.call(this.cache);
 						}	
 
 						this.stop();
@@ -197,7 +197,7 @@ meta.Tween.prototype =
 		if(link._onStart) {
 			link._onStart.call(this);
 		}
-
+		
 		cache._tStart = meta.time.current;
 		cache._tFrame = 0;
 		cache.link = link;
@@ -254,7 +254,9 @@ meta.Tween.prototype =
 		cache._tFrame += meta.time.delta;
 
 		var link = cache.link;
+
 		var tElapsed = (meta.time.current - cache._tStart) / link.duration;
+
 		if(tElapsed > 1.0) {
 			tElapsed = 1.0;
 		}
@@ -272,7 +274,7 @@ meta.Tween.prototype =
 				link.update(tElapsed);
 
 				if(link._onTick) {
-					link._onTick.call(this);
+					link._onTick.call(this.cache);
 				}
 			}
 		}
@@ -285,7 +287,7 @@ meta.Tween.prototype =
 			}
 
 			if(link._onDone) {
-				link._onDone.call(this);
+				link._onDone.call(this.cache);
 			}			
 
 			this.next();

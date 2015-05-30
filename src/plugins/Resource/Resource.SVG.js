@@ -463,73 +463,103 @@ meta.class("Resource.SVG", "Resource.Texture",
 		this.loaded = true;
 	},
 
-	grid: function(params, cellHeight, numCellsX, numCellsY)
+	grid: function(numX, numY, sizeX, sizeY)
 	{
-		// Init.
-		if(typeof(params) === "number") 
-		{
-			this.grid({ cellWidth: params, cellHeight: cellHeight, 
-				numCellsX: numCellsX, numCellsY: numCellsY
-			});
-			return;
+		var width = numX * sizeX;
+		var height = numY * sizeY;
+
+		this.resize(width + this.lineWidth, height + this.lineWidth);
+
+		this.ctx.strokeStyle = this.strokeStyle;
+		this.ctx.lineWidth = this.lineWidth;
+
+		var lineOffset = this.lineWidth * 0.5;
+		this.ctx.save();
+		this.ctx.translate(lineOffset, lineOffset);
+		
+		var offset = 0;
+		for(var x = 0; x <= numX; x++) {
+			this.ctx.moveTo(offset, 0);
+			this.ctx.lineTo(offset, height);
+			offset += sizeX;
 		}
-
-		if(!params) {
-			console.warn("[Resource.Texture.grid]:", "No params specified.");
-			return;
-		}
-
-		var cellWidth = params.cellWidth || 1;
-		var cellHeight = params.cellHeight || 1;
-		var numCellsX = params.numCellsX || 1;
-		var numCellsY = params.numCellsY || 1;
-		params.x = params.x || 0;
-		params.y = params.y || 0;
-		params.color = params.color || "#000000";
-		params.borderWidth = params.borderWidth || 1;
-		params.drawOver = params.drawOver || false;
-
-		var width = params.x + (params.cellWidth * params.numCellsX) + 1;
-		var height = params.y + (params.cellHeight * params.numCellsY) + 1;	
-
-		if(!params.drawOver) {
-			this.resize(width, height);
+		offset = 0;
+		for(var y = 0; y <= numY; y++) {
+			this.ctx.moveTo(-lineOffset, offset);
+			this.ctx.lineTo(width + lineOffset, offset);
+			offset += sizeY;
 		}		
 
-		var ctx = this.ctx;	
-		if(this.textureType) {
-			this._createCachedImg();
-			ctx = this._cachedCtx;
-		}
+		this.ctx.stroke();
+		this.ctx.restore();
 
-		// Rendering.
-		ctx.strokeStyle = params.color;
-		ctx.lineWidth = params.borderWidth;
+		this.loaded = true;
 
-		ctx.save();
-		ctx.translate(0.5, 0.5);
+		// // Init.
+		// if(typeof(params) === "number") 
+		// {
+		// 	this.grid({ cellWidth: params, cellHeight: cellHeight, 
+		// 		numCellsX: numCellsX, numCellsY: numCellsY
+		// 	});
+		// 	return;
+		// }
 
-		for(var x = 0; x < (numCellsX + 1); x++) {
-			ctx.moveTo((x * cellHeight), 0);
-			ctx.lineTo((x * cellHeight), height);
-		}
+		// if(!params) {
+		// 	console.warn("[Resource.Texture.grid]:", "No params specified.");
+		// 	return;
+		// }
 
-		for(var y = 0; y < (numCellsY + 1); y++) {
-			ctx.moveTo(0, (y * cellHeight));
-			ctx.lineTo(width, (y * cellHeight));
-		}
+		// var cellWidth = params.cellWidth || 1;
+		// var cellHeight = params.cellHeight || 1;
+		// var numCellsX = params.numCellsX || 1;
+		// var numCellsY = params.numCellsY || 1;
+		// params.x = params.x || 0;
+		// params.y = params.y || 0;
+		// params.color = params.color || "#000000";
+		// params.borderWidth = params.borderWidth || 1;
+		// params.drawOver = params.drawOver || false;
 
-		ctx.stroke();
-		ctx.restore();
+		// var width = params.x + (params.cellWidth * params.numCellsX) + 1;
+		// var height = params.y + (params.cellHeight * params.numCellsY) + 1;	
 
-		// Update.
-		if(this.textureType) {
-			var gl = meta.ctx;
-			gl.bindTexture(gl.TEXTURE_2D, this.image);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
-		}
+		// if(!params.drawOver) {
+		// 	this.resize(width, height);
+		// }		
 
-		this.isLoaded = true;					
+		// var ctx = this.ctx;	
+		// if(this.textureType) {
+		// 	this._createCachedImg();
+		// 	ctx = this._cachedCtx;
+		// }
+
+		// // Rendering.
+		// ctx.strokeStyle = params.color;
+		// ctx.lineWidth = params.borderWidth;
+
+		// ctx.save();
+		// ctx.translate(0.5, 0.5);
+
+		// for(var x = 0; x < (numCellsX + 1); x++) {
+		// 	ctx.moveTo((x * cellHeight), 0);
+		// 	ctx.lineTo((x * cellHeight), height);
+		// }
+
+		// for(var y = 0; y < (numCellsY + 1); y++) {
+		// 	ctx.moveTo(0, (y * cellHeight));
+		// 	ctx.lineTo(width, (y * cellHeight));
+		// }
+
+		// ctx.stroke();
+		// ctx.restore();
+
+		// // Update.
+		// if(this.textureType) {
+		// 	var gl = meta.ctx;
+		// 	gl.bindTexture(gl.TEXTURE_2D, this.image);
+		// 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
+		// }
+
+		// this.isLoaded = true;					
 	},
 
 

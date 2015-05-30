@@ -28,8 +28,6 @@ cat meta.js \
 	tween/Link.js \
 	renderer/Renderer.js \
 	renderer/CanvasRenderer.js \
-	renderer/utils/Anim.js \
-	plugins/Component/Component.js \
 	plugins/Resource/Resource.Controller.js \
 	plugins/Resource/Enum.js \
 	plugins/Resource/Resource.Basic.js \
@@ -56,6 +54,9 @@ cat meta.js \
 	plugins/UI/UI.Checkbox.js \
 	plugins/UI/UI.ProgressBar.js \
 	plugins/UI/UI.Group.js \
+	components/Component.js \
+	components/Component.Anim.js \
+	components/Component.Body.js \
 	Loader.js \
 	Debugger.js \
 	| uglifyjs --output ../versions/meta.js --mangle -c dead_code=false,unused=false,side_effects=false --screw-ie8
