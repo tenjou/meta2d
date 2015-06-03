@@ -339,7 +339,7 @@ meta.class("Entity.Geometry",
 	 */
 	pivot: function(x, y) {
 		this.volume.pivot(x, y); 
-		meta.renderer.needRender = true;
+		this.renderer.needRender = true;
 	},
 
 	/** 
@@ -348,7 +348,7 @@ meta.class("Entity.Geometry",
 	 */
 	set pivotX(x) { 
 		this.volume.pivot(x, this.volume.pivotY); 
-		meta.renderer.needRender = true;
+		this.renderer.needRender = true;
 	},
 
 	/** 
@@ -357,7 +357,7 @@ meta.class("Entity.Geometry",
 	 */	
 	set pivotY(y) { 
 		this.volume.pivot(this.volume.pivotX, y); 
-		meta.renderer.needRender = true;
+		this.renderer.needRender = true;
 	},
 
 	/** 
@@ -399,31 +399,7 @@ meta.class("Entity.Geometry",
 			this.anchorPosY = (this.parent.volume.height) * this._anchorY;			
 		}
 
-		this.updateTotalOffset();
-
-		// this.volume.x = this._x + this.totalOffsetX + this._parentX + this.anchorPosX;
-		// this.volume.y = this._y + this.totalOffsetY + this._parentY + this.anchorPosY;
-		// if(this._view) {
-		// 	this.volume.x += this._view._x;
-		// 	this.volume.y += this._view._y;
-		// }
-		
-		// this.volume.updatePos();
-
-		// if(this.children) 
-		// {
-		// 	var child;
-		// 	var numChildren = this.children.length;
-		// 	for(var i = 0; i < numChildren; i++) 
-		// 	{
-		// 		child = this.children[i];
-		// 		if(child._ignoreParentPos) { continue; }
-
-		// 		child._parentX = this.volume.x;
-		// 		child._parentY = this.volume.y;
-		// 		child.updateAnchor();
-		// 	}
-		// }		
+		this.updateTotalOffset();		
 	},
 
 	/** 
@@ -505,7 +481,7 @@ meta.class("Entity.Geometry",
 			for(var i = 0; i < numChildren; i++) 
 			{
 				child = this.children[i];
-				if(child._ignoreParentAngle) { continue; }
+				if(child.flags & this.Flag.IGNORE_PARENT_ANGLE) { continue; }
 
 				child._parentAngle = this.volume.angle;
 				child.updateAngle();
@@ -552,7 +528,7 @@ meta.class("Entity.Geometry",
 			for(var i = 0; i < numChildren; i++) 
 			{
 				child = this.children[i];
-				if(child._ignoreParentScale) { continue; }
+				if(child.flags & this.Flag.IGNORE_PARENT_SCALE) { continue; }
 
 				child._parentScaleX = this.volume.scaleX;
 				child._parentScaleY = this.volume.scaleY;
@@ -606,7 +582,7 @@ meta.class("Entity.Geometry",
 	 */
 	flip: function(x, y) {
 		this.volume.flip(x, y);
-		meta.renderer.needRender = true;		
+		this.renderer.needRender = true;		
  	},
 
 	set flipX(x) { this.flip(x, this.volume.flipY); },
@@ -737,17 +713,6 @@ meta.class("Entity.Geometry",
 
 	get texture() { return this._texture; },
 
-	set needRender(value) 
-	{
-		this._needRender = value;
-
-		if(value) {
-			meta.renderer.needRender = true;
-		}	
-	},	
-
-	get needRender() { return this._needRender; },
-
 	set updating(value) 
 	{
 		if(value) {
@@ -758,7 +723,7 @@ meta.class("Entity.Geometry",
 		}
 	},
 
-	get updating() { return (this.__updateIndex > -1) ? true : false; },
+	get updating() { return (this.__updateIndex > -1); },
 
 	attach: function(entity)
 	{
@@ -796,9 +761,7 @@ meta.class("Entity.Geometry",
 		}		
 	},
 
-	detach: function(entity)
-	{
-
+	detach: function(entity) {
 		this.renderer.needRender = true;
 	},
 
@@ -1143,7 +1106,7 @@ meta.class("Entity.Geometry",
 	 */
 	lookAt: function(x, y) 
 	{
-		if(this._ignoreParentAngle) {
+		if(this.flags & this.Flag.IGNORE_PARENT_ANGLE) {
 			this.angleRad = -Math.atan2(x - this.volume.x, y - this.volume.y) + Math.PI;
 		}
 		else {
@@ -1153,47 +1116,56 @@ meta.class("Entity.Geometry",
 
 	set ignoreParentPos(value) 
 	{
-		this._ignoreParentPos = value;
 		if(value) {
+			this.flags |= this.Flag.IGNORE_PARENT_POS;
 			this._parentX = 0;
 			this._parentY = 0;
 			this.updatePos();
 		}
 		else {
+			this.flags &= ~this.Flag.IGNORE_PARENT_POS;
 			this.parent.updatePos();
 		}
 	},
 
-	get ignoreParentPos() { return this._ignoreParentPos; },
+	get ignoreParentPos() { 
+		return ((this.flags & this.Flag.IGNORE_PARENT_POS) === this.Flag.IGNORE_PARENT_POS); 
+	},
 
 	set ignoreParentAngle(value) 
 	{
-		this._ignoreParentAngle = value;
 		if(value) {
+			this.flags |= this.Flag.IGNORE_PARENT_ANGLE;
 			this._parentAngle = 0;
 			this.updateAngle();
 		}
 		else {
+			this.flags &= ~this.Flag.IGNORE_PARENT_ANGLE;
 			this.parent.updateAngle();
 		}
 	},
 
-	get ignoreParentAngle() { return this._ignoreParentAngle; },
+	get ignoreParentAngle() { 
+		return ((this.flags & this.Flag.IGNORE_PARENT_ANGLE) === this.Flag.IGNORE_PARENT_ANGLE); 
+	},
 
 	set ignoreParentScale(value) 
 	{
-		this._ignoreParentScale = value;
 		if(value) {
+			this.flags |= this.Flag.IGNORE_PARENT_SCALE;
 			this._parentScaleX = 1;
 			this._parentScaleY = 1;
 			this.updateScale();
 		}
 		else {
+			this.flags &= ~this.Flag.IGNORE_PARENT_SCALE;
 			this.parent.updateScale();
 		}
 	},
 
-	get ignoreParentScale() { return this._ignoreParentScale; },
+	get ignoreParentScale() { 
+		return ((this.flags & this.Flag.IGNORE_PARENT_SCALE) === this.Flag.IGNORE_PARENT_SCALE); 
+	},
 
 	/* Debug */
 	set debug(value) 
@@ -1208,13 +1180,19 @@ meta.class("Entity.Geometry",
 			meta.renderer.numDebug--;
 		}
 		
-		meta.renderer.needRender = true;
+		this.renderer.needRender = true;
 	},
 
 	get debug() { return this.__debug; },
 
 	Flag: {
-		PICKING: 1
+		READY: 1,
+		PICKING: 2,
+		IGNORE_PARENT_POS: 4,
+		IGNORE_PARENT_Z: 8,
+		IGNORE_PARENT_ANGLE: 16,
+		IGNORE_PARENT_ALPHA: 32,
+		IGNORE_PARENT_SCALE: 64
 	},
 
 	//
@@ -1258,12 +1236,6 @@ meta.class("Entity.Geometry",
 	hover: false,
 	pressed: false,
 	dragged: false,
-
-	_ignoreParentPos: false,
-	_ignoreParentZ: false,
-	_ignoreParentAngle: false,
-	_ignoreParentAlpha: false,
-	_ignoreParentScale: false,
 
 	__added: false,
 	__debug: false,
