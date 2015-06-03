@@ -723,7 +723,7 @@ meta.class("Entity.Geometry",
 		}
 	},
 
-	get updating() { return (this.__updateIndex > -1); },
+	get updating() { return (this.__updateIndex !== -1); },
 
 	attach: function(entity)
 	{

@@ -113,19 +113,24 @@ meta.class("meta.Renderer",
 			this.entitiesPickingRemove.length = 0;
 		}
 
+		// Remove from updating:
 		if(this._removeUpdating.length > 0)
 		{
-			var updateIndex, lastEntity;
 			numEntities = this._removeUpdating.length;
-			for(i = 0; i < numEntities; i++) 
+			var removeCursor = this.entitiesToUpdate.length - numEntities;
+			if(removeCursor > 0)
 			{
-				updateIndex = this._removeUpdating[i]; 
-				lastEntity = this.entitiesToUpdate[this.entitiesToUpdate.length - 1];
-				lastEntity.__updateIndex = updateIndex;
-				this.entitiesToUpdate[updateIndex] = lastEntity;
-				this.entitiesToUpdate.pop();
+				var updateIndex;
+				for(i = 0; i < numEntities; i++) 
+				{
+					updateIndex = this._removeUpdating[i]; 
+					entity = this.entitiesToUpdate[removeCursor + i];
+					entity.__updateIndex = updateIndex;
+					this.entitiesToUpdate[updateIndex] = entity;
+				}
 			}
 
+			this.entitiesToUpdate.length = removeCursor;
 			this._removeUpdating.length = 0;
 		}		
 
@@ -203,9 +208,6 @@ meta.class("meta.Renderer",
 	{
 		entity.__added = true;
 
-		if(entity.update) {
-			this.addUpdating(entity);
-		}
 		if(entity._z !== 0) {
 			this.needSortDepth = true;
 		}
@@ -307,24 +309,14 @@ meta.class("meta.Renderer",
 	{
 		if(entity.__updateIndex !== -1) { return; }
 
-		entity.__updateIndex = this.entitiesToUpdate.length;
-		this.entitiesToUpdate.push(entity);
+		entity.__updateIndex = this.entitiesToUpdate.push(entity) - 1;
 	},
 
 	removeUpdating: function(entity) 
 	{
 		if(entity.__updateIndex === -1) { return; }
 
-		if(this.__updating) {
-			this._removeUpdating.push(entity.__updateIndex);
-		}
-		else {
-			var lastEntity = this.entitiesToUpdate[this.entitiesToUpdate.length - 1];
-			lastEntity.__updateIndex = entity.__updateIndex;
-			this.entitiesToUpdate[entity.__updateIndex] = lastEntity;
-			this.entitiesToUpdate.pop();
-		}
-
+		this._removeUpdating.push(entity.__updateIndex);
 		entity.__updateIndex = -1;
 	},
 
@@ -525,6 +517,7 @@ meta.class("meta.Renderer",
 		for(var i = numEntities - 1; i >= 0; i--)
 		{
 			entity = this.entitiesPicking[i];
+			if(!entity.visible) { continue; }
 
 			if(this.enablePixelPicking) 
 			{
