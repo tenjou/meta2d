@@ -239,14 +239,31 @@ meta.engine =
 
 	_updateTimers: function(tDelta)
 	{
-		var timer;
-		var removed = false;
+		var timer, index, n;
 		var numTimers = this.timers.length;
-		for(var i = numTimers - 1; i > -1; i--)
-		{
-			timer = this.timers[i];
-			if(timer.paused) { continue; }
+		var numTimersRemove = this.timersRemoved.length;
 
+		if(numTimersRemove > 0)
+		{
+			var numTimersLeft = numTimers - numTimersRemove;
+			if(numTimersLeft > 0)
+			{
+				for(n = 0; n < numTimersRemove; n++)
+				{
+					index = this.timersRemove[n];
+					timer = this.timers[numTimersLeft + n];
+					timer.__index = index;
+					this.timers[index] = timer;
+				}
+			}
+
+			this.timers.length = numTimersLeft;
+			numTimers = numTimersLeft;
+		}
+
+		for(n = 0; n < numTimers; n++)
+		{
+			timer = this.timers[n];
 			timer.tAccumulator += tDelta;
 
 			while(timer.tAccumulator >= timer.tDelta)
@@ -265,21 +282,15 @@ meta.engine =
 
 					if(timer.numTimes <= 0) 
 					{
-						removed = true;
 						numTimers--;
 						if(numTimers > 0) {
-							this.timers[timer.__index] = this.timers[numTimers];
-							this.timers[timer.__index].__index = timer.__index;
-							i--;
+							this.timersRemove.push(timer.__index);
+							timer.__index = -1;
 						}
 						break;
 					}
 				}
 			}
-		}
-
-		if(removed) {
-			this.timers.length = numTimers;
 		}
 	},	
 
@@ -731,6 +742,7 @@ meta.engine =
 	_renderLoop: null,
 
 	timers: [],
+	timersRemove: [],
 
 	fps: 0,
 	_fpsCounter: 0,
