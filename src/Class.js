@@ -151,7 +151,8 @@
 			proto[key] = prop[key];
 		}
 
-		cls.prototype = proto;
+		cls.prototype = proto;		
+		cls.prototype.__name__ = clsName;
 		cls.prototype.constructor = proto.init || null;
 		scope[name] = cls;
 
