@@ -23,7 +23,7 @@ meta.class("meta.Controller",
 
 	_load: function() 
 	{
-		if(this._firstLoad) 
+		if(!this._firstLoad) 
 		{
 			this._firstLoad = true;
 			if(this.firstLoad) {
@@ -113,7 +113,7 @@ meta.class("meta.Controller",
 	views: null,
 
 	loaded: false,
-	_firstLoad: true
+	_firstLoad: false
 });
 
 meta.ctrl = 
