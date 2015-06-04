@@ -241,7 +241,7 @@ meta.engine =
 	{
 		var timer, index, n;
 		var numTimers = this.timers.length;
-		var numTimersRemove = this.timersRemoved.length;
+		var numTimersRemove = this.timersRemove.length;
 
 		if(numTimersRemove > 0)
 		{

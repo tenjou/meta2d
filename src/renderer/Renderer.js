@@ -46,13 +46,72 @@ meta.class("meta.Renderer",
 
 	update: function(tDelta)
 	{
-		this.__updating = true;
+		this.__updating = true;	
 
-		var entity = null, index = 0;
+		// Remove entities:
+		if(this.entitiesRemove.length > 0) {
+			this._removeEntities(this.entitiesRemove);
+			this.entitiesRemove.length = 0;
+		}
 
-		var numEntities = this.entitiesToUpdate.length;
-		for(var i = 0; i < numEntities; i++) {
-			this.entitiesToUpdate[i].update(tDelta);
+		var entity, entityTmp, index, i, itemsLeft, numEntities;
+		var numEntitiesRemove = this.entitiesUpdateRemove.length;		
+
+		// Remove from updating:
+		if(numEntitiesRemove > 0)
+		{
+			numEntities = this.entitiesUpdate.length;
+			itemsLeft = numEntities - numEntitiesRemove;
+			if(itemsLeft > 0)
+			{
+				for(i = 0; i < numEntitiesRemove; i++) 
+				{
+					entity = this.entitiesUpdateRemove[i];
+					index = ~entity.__updateIndex - 1;
+
+					numEntities--;
+					entityTmp = this.entitiesUpdate[numEntities];
+					entityTmp.__updateIndex = index;
+					this.entitiesUpdate[index] = entityTmp;
+					entity.__updateIndex = -1;
+				}
+			}
+
+			this.entitiesUpdateRemove.length = 0;
+			this.entitiesUpdate.length = itemsLeft;
+			this.needSortDepth = true;
+		}	
+
+		// Remove from picking:
+		numEntitiesRemove = this.entitiesPickingRemove.length;
+		if(numEntitiesRemove > 0) 
+		{
+			numEntities = this.entitiesPicking.length;
+			itemsLeft = numEntities - numEntitiesRemove;
+			if(itemsLeft > 0)
+			{
+				for(i = 0; i < numEntitiesRemove; i++) 
+				{
+					entity = this.entitiesPickingRemove[i];
+					index = ~entity.__pickIndex - 1;
+
+					numEntities--;
+					entityTmp = this.entitiesPicking[numEntities];
+					entityTmp.__pickIndex = index;
+					this.entitiesPicking[index] = entityTmp;
+					entity.__pickIndex = -1;
+				}
+			}
+
+			this.entitiesPickingRemove.length = 0;
+			this.entitiesPicking.length = itemsLeft;
+			this.needSortDepth = true;
+		}					
+
+		// Update all entities:
+		numEntities = this.entitiesUpdate.length;
+		for(i = 0; i < numEntities; i++) {
+			this.entitiesUpdate[i].update(tDelta);
 		}
 
 		if(this.tweens.length > 0) 
@@ -87,53 +146,6 @@ meta.class("meta.Renderer",
 
 		this.__updating = false;
 
-		if(this.entitiesRemove.length > 0) {
-			this._removeEntities(this.entitiesRemove);
-			this.entitiesRemove.length = 0;
-		}	
-
-		// Remove entities picking:
-		var num = this.entitiesPickingRemove.length;
-		if(num > 0) 
-		{
-			var n;
-			var numPicking = this.entitiesPicking.length;
-			for(i = 0; i < num; i++) {
-				entity = this.entitiesPickingRemove[i];
-				for(n = 0; n < numPicking; n++) {
-					if(entity === this.entitiesPicking[n]) {
-						numPicking--;
-						this.entitiesPicking[n] = this.entitiesPicking[n - 1];
-						break;
-					}
-				}
-			}
-
-			this.entitiesPicking.length = numPicking;
-			this.entitiesPickingRemove.length = 0;
-		}
-
-		// Remove from updating:
-		if(this._removeUpdating.length > 0)
-		{
-			numEntities = this._removeUpdating.length;
-			var removeCursor = this.entitiesToUpdate.length - numEntities;
-			if(removeCursor > 0)
-			{
-				var updateIndex;
-				for(i = 0; i < numEntities; i++) 
-				{
-					updateIndex = this._removeUpdating[i]; 
-					entity = this.entitiesToUpdate[removeCursor + i];
-					entity.__updateIndex = updateIndex;
-					this.entitiesToUpdate[updateIndex] = entity;
-				}
-			}
-
-			this.entitiesToUpdate.length = removeCursor;
-			this._removeUpdating.length = 0;
-		}		
-
 		// Remove animations:
 		if(this.entitiesAnimRemove.length > 0)
 		{
@@ -157,7 +169,6 @@ meta.class("meta.Renderer",
 			this.entitiesAnimRemove.length = 0;
 		}
 
-		// Depth sorting:
 		if(this.needSortDepth) {
 			this.sort();
 		}		
@@ -208,11 +219,23 @@ meta.class("meta.Renderer",
 	{
 		entity.__added = true;
 
-		if(entity._z !== 0) {
+		if(entity._z === 0)
+		{
+			if(this.preserveOrder) {
+				entity.z = this.currZ;
+				this.currZ += 0.0000001;
+				this.needSortDepth = true;
+			}
+		}
+		else {
 			this.needSortDepth = true;
 		}
-		if(entity._pickable) {
-			this.addPicking(entity);
+
+		if(entity.flags & entity.Flag.UPDATING) {
+			entity.updating = true;
+		}
+		if(entity.flags & entity.Flag.PICKING) {
+			entity.picking = true;
 		}
 		if(entity.__debug) {
 			this.numDebug++;
@@ -239,8 +262,6 @@ meta.class("meta.Renderer",
 
 		entity.__added = false;
 		this.entitiesRemove.push(entity);
-
-		this.needSortDepth = true;
 	},
 
 	removeEntities: function(entities)
@@ -266,7 +287,6 @@ meta.class("meta.Renderer",
 		for(var i = 0; i < numRemove; i++) 
 		{
 			entity = entities[i];
-			entity.__added = false;
 			
 			for(n = 0; n < this.numEntities; n++) 
 			{
@@ -276,24 +296,12 @@ meta.class("meta.Renderer",
 					this.entities.pop();
 					break;
 				}
-			}	
+			}
 
-			if(entity._pickable) 
-			{
-				entity._pickable = false;
-				entity.flags &= ~entity.Flag.PICKING;
-
-				var numPicking = this.entitiesPicking.length;
-				for(var i = 0; i < numPicking; i++) {
-					if(this.entitiesPicking[i] === entity) {
-						this.entitiesPicking[i] = this.entitiesPicking[numPicking - 1];
-						this.entitiesPicking.pop();	
-						break;					
-					}
-				}
-
-				this.needSortDepth = true;
-			}			
+			if(entity.__pickIndex > -1) {
+				this.entitiesPickingRemove.push(entity);
+				entity.__pickIndex = ~entity.__pickIndex - 1;
+			}
 
 			if(entity.children) {
 				this._removeEntities(entity.children);
@@ -301,42 +309,11 @@ meta.class("meta.Renderer",
 
 			if(entity.removed) {
 				entity._remove();
-			}			
+			}	
+
+			entity.__added = false;		
 		}
 	},
-
-	addUpdating: function(entity) 
-	{
-		if(entity.__updateIndex !== -1) { return; }
-
-		entity.__updateIndex = this.entitiesToUpdate.push(entity) - 1;
-	},
-
-	removeUpdating: function(entity) 
-	{
-		if(entity.__updateIndex === -1) { return; }
-
-		this._removeUpdating.push(entity.__updateIndex);
-		entity.__updateIndex = -1;
-	},
-
-	addPicking: function(entity) 
-	{
-		if(!entity.__added) { return; }
-		if(entity.flags & entity.Flag.PICKING) { return; }
-
-		this.entitiesPicking.push(entity);
-		entity.flags |= entity.Flag.PICKING;
-	},
-
-	removePicking: function(entity) 
-	{
-		if(!entity.__added) { return; }
-		if((entity.flags & entity.Flag.PICKING) === 0) { return; }
-
-		this.entitiesPickingRemove.push(entity);
-		entity.flags &= ~entity.Flag.PICKING;
-	},	
 
 	addAnim: function(anim)
 	{
@@ -736,9 +713,10 @@ meta.class("meta.Renderer",
 
 	entities: [],
 	entitiesRemove: [],
-	entitiesToUpdate: [],
-	_removeUpdating: [],
 	numEntities: 0,
+
+	entitiesUpdate: [],
+	entitiesUpdateRemove: [],
 
 	entitiesAnim: [],
 	entitiesAnimRemove: [],	
@@ -754,10 +732,12 @@ meta.class("meta.Renderer",
 	tweensRemove: [],
 
 	_needRender: true,
+	preserveOrder: false,
 	needSortDepth: false,
 
 	_renderFuncs: [],
 
+	currZ: 0,
 	numDebug: 0,
 
 	_bgColor: "#ddd",

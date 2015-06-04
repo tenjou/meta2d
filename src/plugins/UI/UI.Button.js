@@ -3,7 +3,7 @@
 meta.class("UI.Button", "Entity.Geometry", 
 {
 	init: function() {
-		this.pickable = true;
+		this.picking = true;
 	},
 
 	onHoverEnter: function(data) {

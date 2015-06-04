@@ -61,8 +61,6 @@ meta.class("Entity.Geometry",
 
 	_remove: function()
 	{
-		this.renderer.removeUpdating(this);
-
 		if(this._texture) {
 			this._texture.unsubscribe(this);
 			this._texture = null;
@@ -715,15 +713,38 @@ meta.class("Entity.Geometry",
 
 	set updating(value) 
 	{
-		if(value) {
-			this.renderer.addUpdating(this);
+		if(this.__added) 
+		{
+			if(value)
+			{
+				if(this.__updateIndex > -1) { return; }
+
+				this.__updateIndex = this.renderer.entitiesUpdate.push(this) - 1;
+
+				this.flags |= this.Flag.UPDATING;
+			}	
+			else
+			{
+				if(this.__updateIndex < 0) { return; }
+
+				this.renderer.entitiesUpdateRemove.push(this);
+				this.__updateIndex = ~this.__updateIndex - 1;
+
+				this.flags &= ~this.Flag.UPDATING;
+			}	
 		}
-		else {
-			this.renderer.removeUpdating(this);
-		}
+		else
+		{
+			if(value) {
+				this.flags |= this.Flag.UPDATING;
+			}
+			else {
+				this.flags &= ~this.Flag.UPDATING;
+			}
+		}		
 	},
 
-	get updating() { return (this.__updateIndex !== -1); },
+	get updating() { return ((this.flags & this.Flag.UPDATING) === this.Flag.UPDATING); },
 
 	attach: function(entity)
 	{
@@ -844,20 +865,40 @@ meta.class("Entity.Geometry",
 	onStateChange: null,
 
 	/* Input */
-	set pickable(value)
+	set picking(value)
 	{
-		if(this._pickable === value) { return; }
-		this._pickable = value;
+		if(this.__added) 
+		{
+			if(value)
+			{
+				if(this.__updateIndex > -1) { return; }
 
-		if(value) {
-			meta.renderer.addPicking(this);
+				this.__pickIndex = this.renderer.entitiesPicking.push(this) - 1;
+			
+				this.flags |= this.Flag.PICKING;
+			}	
+			else
+			{
+				if(this.__pickIndex < 0) { return; }
+
+				this.renderer.entitiesPickingRemove.push(this);
+				this.flags &= ~this.Flag.PICKING;
+
+				this.__pickIndex = ~this.__pickIndex - 1;
+			}	
 		}
-		else {
-			meta.renderer.removePicking(this);
+		else
+		{
+			if(value) {
+				this.flags |= this.Flag.PICKING;
+			}
+			else {
+				this.flags &= ~this.Flag.PICKING;
+			}
 		}
 	},
 
-	get pickable() { return this._pickable; },
+	get picking() { return ((this.flags & this.Flag.PICKING) === this.Flag.PICKING); },
 
 	isPointInside: function(x, y) 
 	{
@@ -1192,7 +1233,8 @@ meta.class("Entity.Geometry",
 		IGNORE_PARENT_Z: 8,
 		IGNORE_PARENT_ANGLE: 16,
 		IGNORE_PARENT_ALPHA: 32,
-		IGNORE_PARENT_SCALE: 64
+		IGNORE_PARENT_SCALE: 64,
+		UPDATING: 128
 	},
 
 	//
@@ -1232,7 +1274,6 @@ meta.class("Entity.Geometry",
 	_tweenCache: null,
 	components: null,
 
-	_pickable: false,
 	hover: false,
 	pressed: false,
 	dragged: false,
@@ -1240,6 +1281,7 @@ meta.class("Entity.Geometry",
 	__added: false,
 	__debug: false,
 	__updateIndex: -1,
+	__pickIndex: -1,
 	__clip: false,
 
 	flags: 0
