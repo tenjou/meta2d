@@ -51,7 +51,7 @@ meta.class("Entity.Geometry",
 		if(this.removed) { return; }
 		this.removed = true;
 
-		if(this.__added) {
+		if(this.flags & this.Flag.ADDED) {
 			this.renderer.removeEntity(this);
 		}
 		else {
@@ -719,9 +719,9 @@ meta.class("Entity.Geometry",
 
 			this.flags |= this.Flag.UPDATING;
 
-			if(!this.__added) { return; }
-				
-			this.__updateIndex = this.renderer.entitiesUpdate.push(this) - 1;
+			if(this.flags & this.Flag.ADDED) {
+				this.__updateIndex = this.renderer.entitiesUpdate.push(this) - 1;
+			}
 		}
 		else 
 		{
@@ -729,14 +729,16 @@ meta.class("Entity.Geometry",
 
 			this.flags &= ~this.Flag.UPDATING;
 
-			if(!this.__added) { return; }	
-
-			this.renderer.entitiesUpdateRemove.push(this.__updateIndex);
-			this.__updateIndex = -1;			
+			if(this.flags & this.Flag.ADDED) {
+				this.renderer.entitiesUpdateRemove.push(this.__updateIndex);
+				this.__updateIndex = -1;
+			}			
 		}		
 	},
 
-	get updating() { return ((this.flags & this.Flag.UPDATING) === this.Flag.UPDATING); },
+	get updating() { 
+		return ((this.flags & this.Flag.UPDATING) === this.Flag.UPDATING); 
+	},
 
 	attach: function(entity)
 	{
@@ -865,9 +867,9 @@ meta.class("Entity.Geometry",
 
 			this.flags |= this.Flag.PICKING;
 
-			if(!this.__added) { return; }
-				
-			this.__pickIndex = this.renderer.entitiesPicking.push(this) - 1;
+			if(this.flags & this.Flag.ADDED) {
+				this.__pickIndex = this.renderer.entitiesPicking.push(this) - 1;
+			}
 		}
 		else 
 		{
@@ -875,14 +877,16 @@ meta.class("Entity.Geometry",
 
 			this.flags &= ~this.Flag.PICKING;
 
-			if(!this.__added) { return; }	
-
-			this.renderer.entitiesPickingRemove.push(this.__pickIndex);
-			this.__pickIndex = -1;		
+			if(this.flags & this.Flag.ADDED) {
+				this.renderer.entitiesPickingRemove.push(this.__pickIndex);
+				this.__pickIndex = -1;
+			}		
 		}
 	},
 
-	get picking() { return ((this.flags & this.Flag.PICKING) === this.Flag.PICKING); },
+	get picking() { 
+		return ((this.flags & this.Flag.PICKING) === this.Flag.PICKING); 
+	},
 
 	isPointInside: function(x, y) 
 	{
@@ -1218,7 +1222,8 @@ meta.class("Entity.Geometry",
 		IGNORE_PARENT_ANGLE: 16,
 		IGNORE_PARENT_ALPHA: 32,
 		IGNORE_PARENT_SCALE: 64,
-		UPDATING: 128
+		UPDATING: 128,
+		ADDED: 256
 	},
 
 	//
@@ -1262,7 +1267,6 @@ meta.class("Entity.Geometry",
 	pressed: false,
 	dragged: false,
 
-	__added: false,
 	__debug: false,
 	__updateIndex: -1,
 	__pickIndex: -1,

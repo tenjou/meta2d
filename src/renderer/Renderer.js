@@ -223,12 +223,12 @@ meta.class("meta.Renderer",
 
 		if(entity.children) {
 			this.addEntities(entity.children);
-		}					
+		}
 	},
 
 	_addEntity: function(entity) 
 	{
-		entity.__added = true;
+		entity.flags |= entity.Flag.ADDED;
 
 		if(entity._z === 0)
 		{
@@ -269,9 +269,10 @@ meta.class("meta.Renderer",
 
 	removeEntity: function(entity)
 	{
-		if(!entity.__added) { return; }
+		if((entity.flags & entity.Flag.ADDED) === 0) { return; }
 
-		entity.__added = false;
+		entity.flags &= ~entity.Flag.ADDED;
+
 		this.entitiesRemove.push(entity);
 	},
 
@@ -283,9 +284,10 @@ meta.class("meta.Renderer",
 		for(var i = 0; i < numRemove; i++) 
 		{
 			entity = entities[i];
-			if(!entity.__added) { return; }
 
-			entity.__added = false;
+			if((entity.flags & entity.Flag.ADDED) === 0) { return; }
+
+			entity.flags &= ~entity.Flag.ADDED;
 
 			this.entitiesRemove.push(entity);
 		}
