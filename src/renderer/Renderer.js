@@ -134,17 +134,16 @@ meta.class("meta.Renderer",
 			var itemsLeft = numEntities - numEntitiesRemove;
 			if(itemsLeft > 0)
 			{
-				var entity, entityTmp, index;
+				var entityTmp, index;
 				for(var i = 0; i < numEntitiesRemove; i++) 
 				{
-					index = this.entitiesUpdateRemove[i];
-
 					numEntities--;
 					entityTmp = this.entitiesUpdate[numEntities];
 					if(entityTmp.__updateIndex === -1) { 
 						continue;
 					}
 
+					index = this.entitiesUpdateRemove[i];
 					entityTmp.__updateIndex = index;
 					this.entitiesUpdate[index] = entityTmp;
 				}
@@ -165,17 +164,16 @@ meta.class("meta.Renderer",
 			var itemsLeft = numEntities - numEntitiesRemove;
 			if(itemsLeft > 0)
 			{
-				var entity, entityTmp, index;
+				var entityTmp, index;
 				for(var i = 0; i < numEntitiesRemove; i++) 
 				{
-					index = this.entitiesPickingRemove[i];
-
 					numEntities--;
 					entityTmp = this.entitiesPicking[numEntities];
 					if(entityTmp.__pickIndex === -1) { 
 						continue;
 					}
 
+					index = this.entitiesPickingRemove[i];
 					entityTmp.__pickIndex = index;
 					this.entitiesPicking[index] = entityTmp;
 				}
