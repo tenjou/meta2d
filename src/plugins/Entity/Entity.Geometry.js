@@ -271,7 +271,7 @@ meta.class("Entity.Geometry",
 			var numChildren = this.children.length;
 			for(var i = 0; i < numChildren; i++) {
 				child = this.children[i];
-				child._parentZ = this.totalZ + 1;
+				child._parentZ = this.totalZ + 0.00001;
 				child.updateZ();
 			}
 		}
@@ -713,34 +713,26 @@ meta.class("Entity.Geometry",
 
 	set updating(value) 
 	{
-		if(this.__added) 
+		if(value) 
 		{
-			if(value)
-			{
-				if(this.__updateIndex > -1) { return; }
+			if(this.__updateIndex !== -1) { return; }
 
-				this.__updateIndex = this.renderer.entitiesUpdate.push(this) - 1;
+			this.flags |= this.Flag.UPDATING;
 
-				this.flags |= this.Flag.UPDATING;
-			}	
-			else
-			{
-				if(this.__updateIndex < 0) { return; }
-
-				this.renderer.entitiesUpdateRemove.push(this);
-				this.__updateIndex = ~this.__updateIndex - 1;
-
-				this.flags &= ~this.Flag.UPDATING;
-			}	
+			if(!this.__added) { return; }
+				
+			this.__updateIndex = this.renderer.entitiesUpdate.push(this) - 1;
 		}
-		else
+		else 
 		{
-			if(value) {
-				this.flags |= this.Flag.UPDATING;
-			}
-			else {
-				this.flags &= ~this.Flag.UPDATING;
-			}
+			if(this.__updateIndex === -1) { return; }
+
+			this.flags &= ~this.Flag.UPDATING;
+
+			if(!this.__added) { return; }	
+
+			this.renderer.entitiesUpdateRemove.push(this.__updateIndex);
+			this.__updateIndex = -1;			
 		}		
 	},
 
@@ -867,34 +859,26 @@ meta.class("Entity.Geometry",
 	/* Input */
 	set picking(value)
 	{
-		if(this.__added) 
+		if(value) 
 		{
-			if(value)
-			{
-				if(this.__updateIndex > -1) { return; }
+			if(this.__pickIndex !== -1) { return; }
 
-				this.__pickIndex = this.renderer.entitiesPicking.push(this) - 1;
-			
-				this.flags |= this.Flag.PICKING;
-			}	
-			else
-			{
-				if(this.__pickIndex < 0) { return; }
+			this.flags |= this.Flag.PICKING;
 
-				this.renderer.entitiesPickingRemove.push(this);
-				this.flags &= ~this.Flag.PICKING;
-
-				this.__pickIndex = ~this.__pickIndex - 1;
-			}	
+			if(!this.__added) { return; }
+				
+			this.__pickIndex = this.renderer.entitiesPicking.push(this) - 1;
 		}
-		else
+		else 
 		{
-			if(value) {
-				this.flags |= this.Flag.PICKING;
-			}
-			else {
-				this.flags &= ~this.Flag.PICKING;
-			}
+			if(this.__pickIndex === -1) { return; }
+
+			this.flags &= ~this.Flag.PICKING;
+
+			if(!this.__added) { return; }	
+
+			this.renderer.entitiesPickingRemove.push(this.__pickIndex);
+			this.__pickIndex = -1;		
 		}
 	},
 

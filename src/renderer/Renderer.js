@@ -54,59 +54,10 @@ meta.class("meta.Renderer",
 			this.entitiesRemove.length = 0;
 		}
 
-		var entity, entityTmp, index, i, itemsLeft, numEntities;
-		var numEntitiesRemove = this.entitiesUpdateRemove.length;		
+		var i, numEntities, index;
 
-		// Remove from updating:
-		if(numEntitiesRemove > 0)
-		{
-			numEntities = this.entitiesUpdate.length;
-			itemsLeft = numEntities - numEntitiesRemove;
-			if(itemsLeft > 0)
-			{
-				for(i = 0; i < numEntitiesRemove; i++) 
-				{
-					entity = this.entitiesUpdateRemove[i];
-					index = ~entity.__updateIndex - 1;
-
-					numEntities--;
-					entityTmp = this.entitiesUpdate[numEntities];
-					entityTmp.__updateIndex = index;
-					this.entitiesUpdate[index] = entityTmp;
-					entity.__updateIndex = -1;
-				}
-			}
-
-			this.entitiesUpdateRemove.length = 0;
-			this.entitiesUpdate.length = itemsLeft;
-			this.needSortDepth = true;
-		}	
-
-		// Remove from picking:
-		numEntitiesRemove = this.entitiesPickingRemove.length;
-		if(numEntitiesRemove > 0) 
-		{
-			numEntities = this.entitiesPicking.length;
-			itemsLeft = numEntities - numEntitiesRemove;
-			if(itemsLeft > 0)
-			{
-				for(i = 0; i < numEntitiesRemove; i++) 
-				{
-					entity = this.entitiesPickingRemove[i];
-					index = ~entity.__pickIndex - 1;
-
-					numEntities--;
-					entityTmp = this.entitiesPicking[numEntities];
-					entityTmp.__pickIndex = index;
-					this.entitiesPicking[index] = entityTmp;
-					entity.__pickIndex = -1;
-				}
-			}
-
-			this.entitiesPickingRemove.length = 0;
-			this.entitiesPicking.length = itemsLeft;
-			this.needSortDepth = true;
-		}					
+		this._removeUpdateEntities();
+		this._removePickingEntities();				
 
 		// Update all entities:
 		numEntities = this.entitiesUpdate.length;
@@ -172,6 +123,68 @@ meta.class("meta.Renderer",
 		if(this.needSortDepth) {
 			this.sort();
 		}		
+	},
+
+	_removeUpdateEntities: function()
+	{
+		var numEntitiesRemove = this.entitiesUpdateRemove.length;		
+		if(numEntitiesRemove > 0)
+		{
+			var numEntities = this.entitiesUpdate.length;
+			var itemsLeft = numEntities - numEntitiesRemove;
+			if(itemsLeft > 0)
+			{
+				var entity, entityTmp, index;
+				for(var i = 0; i < numEntitiesRemove; i++) 
+				{
+					index = this.entitiesUpdateRemove[i];
+
+					numEntities--;
+					entityTmp = this.entitiesUpdate[numEntities];
+					if(entityTmp.__updateIndex === -1) { 
+						continue;
+					}
+
+					entityTmp.__updateIndex = index;
+					this.entitiesUpdate[index] = entityTmp;
+				}
+			}
+
+			this.entitiesUpdateRemove.length = 0;
+			this.entitiesUpdate.length = itemsLeft;
+			this.needSortDepth = true;
+		}
+	},
+
+	_removePickingEntities: function()
+	{
+		var numEntitiesRemove = this.entitiesPickingRemove.length;
+		if(numEntitiesRemove > 0) 
+		{
+			var numEntities = this.entitiesPicking.length;
+			var itemsLeft = numEntities - numEntitiesRemove;
+			if(itemsLeft > 0)
+			{
+				var entity, entityTmp, index;
+				for(var i = 0; i < numEntitiesRemove; i++) 
+				{
+					index = this.entitiesPickingRemove[i];
+
+					numEntities--;
+					entityTmp = this.entitiesPicking[numEntities];
+					if(entityTmp.__pickIndex === -1) { 
+						continue;
+					}
+
+					entityTmp.__pickIndex = index;
+					this.entitiesPicking[index] = entityTmp;
+				}
+			}
+
+			this.entitiesPickingRemove.length = 0;
+			this.entitiesPicking.length = itemsLeft;
+			this.needSortDepth = true;
+		}	
 	},
 
 	sort: function()
@@ -298,9 +311,13 @@ meta.class("meta.Renderer",
 				}
 			}
 
-			if(entity.__pickIndex > -1) {
-				this.entitiesPickingRemove.push(entity);
-				entity.__pickIndex = ~entity.__pickIndex - 1;
+			if(entity.__updateIndex !== -1) {
+				this.entitiesUpdateRemove.push(entity.__updateIndex);
+				entity.__updateIndex = -1;
+			}
+			if(entity.__pickIndex !== -1) {
+				this.entitiesPickingRemove.push(entity.__pickIndex);
+				entity.__pickIndex = -1;
 			}
 
 			if(entity.children) {
@@ -313,6 +330,8 @@ meta.class("meta.Renderer",
 
 			entity.__added = false;		
 		}
+
+		this.needSortDepth = true;
 	},
 
 	addAnim: function(anim)
