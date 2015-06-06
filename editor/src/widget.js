@@ -8,11 +8,28 @@ meta.class("Widget",
 			this.params = params;
 		}
 		
+		this.parentElement = document.createElement("div");
+		this.parentElement.setAttribute("id", name);
+
+		this.headerElement = document.createElement("div");
+		this.headerElement.setAttribute("class", "header");
+		this.parentElement.appendChild(this.headerElement);
+
+		var headerIcon = document.createElement("i");
+		headerIcon.setAttribute("class", "fa fa-chevron-right");
+		this.headerElement.appendChild(headerIcon);
+
+		var headerName = document.createElement("span");
+		headerName.setAttribute("class", "name");
+		headerName.innerHTML = name;
+		this.headerElement.appendChild(headerName);
+
 		this.element = document.createElement("div");
-		this.element.setAttribute("id", name);	
+		this.element.setAttribute("class", "content");
+		this.parentElement.appendChild(this.element);
 
 		var toolbar = document.querySelector(".toolbar");
-		toolbar.appendChild(this.element);
+		toolbar.appendChild(this.parentElement);
 
 		this.onCreate();
 	},
@@ -86,7 +103,10 @@ meta.class("Widget",
 	},
 
 	//
+	parentElement: null,
+	headerElement: null,
 	element: null,
+
 	params: null,
 	flags: 0
 });

@@ -21,6 +21,10 @@ meta.class("Editor",
 		var palette = new PaletteWidget("palette");
 		palette.loadAtlas("assets/tilemap.png", 32, 32);
 		this.widgets.push(palette);
+
+		var palette = new PaletteWidget("palette 2");
+		palette.loadAtlas("assets/tilemap.png", 32, 32);
+		this.widgets.push(palette);		
 	},
 
 	addRender: function(widget) 

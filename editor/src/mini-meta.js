@@ -13,6 +13,15 @@ var ready = false;
 var cubeVerticesBuffer = null;
 var cubeVerticesTextureCoordBuffer = null;
 
+function Shader() {
+
+}
+
+function createShader(ctx, vertexShaderSrc, fragmentShaderSrc)
+{
+	
+}
+
 function loadImg()
 {
 	texture = gl.createTexture();
@@ -46,11 +55,10 @@ function init()
 		return false;
 	}
 
-	onResize();
-
 	var vertexShaderSrc = 
 		"attribute vec2 position; \
 		attribute vec2 texCoord; \
+		uniform vec2 viewportSize; \
 		varying highp vec2 var_texCoord; \
 		void main() { \
 			gl_Position = vec4(position, 0, 1); \
@@ -127,6 +135,16 @@ function init()
 	attribTexCoord = gl.getAttribLocation(program, "texCoord");
 	gl.enableVertexAttribArray(attribTexCoord);	
 
+	gl.clearColor(0.9, 0.9, 0.9, 1);
+	gl.clearDepth(1.0);
+	gl.enable(gl.DEPTH_TEST);
+	gl.depthFunc(gl.LEQUAL);
+	gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+	gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);	
+	gl.enable(gl.BLEND);
+
+	onResize();
+
 	return true;
 }
 
@@ -154,7 +172,6 @@ function onResize()
 	canvas.width = canvas.parentElement.clientWidth;
 	canvas.height = canvas.parentElement.clientHeight;
 
-	aspect = canvas.width / canvas.height;
-
 	gl.viewport(0, 0, canvas.width, canvas.height);
+
 }
