@@ -16,10 +16,7 @@
 
 .toolbar {
 	float: right;
-	width: 240px;
-}
-
-.toolbar img {
-	width: 100%;
-	image-rendering: pixelated;
+	width: 200px;
+	height: 100%;
+	background-color: #24292F;
 }

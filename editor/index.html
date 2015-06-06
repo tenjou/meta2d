@@ -8,19 +8,23 @@
 		<title>META Editor</title>
 
 		<link rel="stylesheet" type="text/css" href="css/style.css">
+
+		<script src="lib/class.js"></script>
+		<script src="src/main.js"></script>
+		<script src="src/widget.js"></script>
+		<script src="src/mini-meta.js"></script>
+		<script src="src/loader.js"></script>		
 	</head>
 
-	<body>
+	<body onload="editor.start();">
 		<div class="wrapper">
 			<div class="toolbar">
-				<img />
+
 			</div>
 
 			<div class="screen">
 				<canvas id="canvas"></canvas>
 			</div>
 		</div>
-
-		<script src="src/main.js"></script>
 	</body>
 </html>
