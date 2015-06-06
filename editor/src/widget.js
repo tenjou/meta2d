@@ -117,7 +117,7 @@ meta.class("PaletteWidget", "Widget",
 		this.scale = this.element.clientWidth / this.atlas.width;
 		this.numGridX = Math.floor(this.atlas.width / this.cellWidth);
 		this.numGridY = Math.floor(this.atlas.height / this.cellHeight);
-		this.canvas.height = this.atlas.height;
+		this.canvas.height = Math.ceil(this.atlas.height * this.scale);
 
 		this.ctx.restore();
 		this.ctx.save();
@@ -128,7 +128,6 @@ meta.class("PaletteWidget", "Widget",
 		this._resizeCheckers();
 
 		this.flags |= this.Flag.NEED_RENDER;
-		console.log(this.flags);
 	},
 
 	loadAtlas: function(path, cellWidth, cellHeight) 

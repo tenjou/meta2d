@@ -7,14 +7,32 @@ var aspect;
 var program;
 var itemSize = 2;
 var adding = true;
+var texture = null;
+var attribPos = null, attribTexCoord = null;
+var ready = false;
+var cubeVerticesBuffer = null;
+var cubeVerticesTextureCoordBuffer = null;
 
 function loadImg()
 {
-	var image = new Image();
-	image.onload = function() {
-		console.log("loaded");
-	};
-	image.src = "assets/tilemap.png";
+	texture = gl.createTexture();
+
+	var img = new Image();
+	img.onload = function() { prepareTexture(img); }
+	img.src = "assets/tilemap.png";
+}
+
+function prepareTexture(img)
+{
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+	gl.bindTexture(gl.TEXTURE_2D, null);
+
+	ready = true;
 }
 
 function init()
@@ -32,14 +50,18 @@ function init()
 
 	var vertexShaderSrc = 
 		"attribute vec2 position; \
+		attribute vec2 texCoord; \
+		varying highp vec2 var_texCoord; \
 		void main() { \
 			gl_Position = vec4(position, 0, 1); \
+			var_texCoord = texCoord; \
 		}";
 
 	var fragmentShaderSrc = 
-		"precision mediump float; uniform vec4 color; \
+		"varying highp vec2 var_texCoord; \
+		uniform sampler2D sampler; \
 		void main() { \
-		  gl_FragColor = color; \
+		  gl_FragColor = texture2D(sampler, var_texCoord); \
 		}";
 
 	var vertexShader = gl.createShader(gl.VERTEX_SHADER);
@@ -73,40 +95,58 @@ function init()
 
 	loadImg();
 
+	var vertices = [
+		-1.0, -1.0,
+		1.0, -1.0,
+		-1.0, 1.0,
+		-1.0, 1.0,
+		1.0, -1.0,
+		1.0, 1.0
+	];
+
+	var textureCoordinates = [
+		0, 1,
+		1, 1,
+		0, 0,
+		0, 0,
+		1, 1,
+		1, 0
+	];	
+
+	cubeVerticesBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, cubeVerticesBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+	cubeVerticesTextureCoordBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, cubeVerticesTextureCoordBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);	
+
+	attribPos = gl.getAttribLocation(program, "position");
+	gl.enableVertexAttribArray(attribPos);
+
+	attribTexCoord = gl.getAttribLocation(program, "texCoord");
+	gl.enableVertexAttribArray(attribTexCoord);	
+
 	return true;
 }
 
 function update() 
 {
-	var vertices = new Float32Array([
-			-foobar, foobar * aspect,
-			foobar, foobar * aspect,
-			foobar, -foobar * aspect
-		]);
+	if(!ready) { return; }
 
-	gl.clearColor(0.9, 0.9, 0.9, 1);
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-	gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+	gl.bindBuffer(gl.ARRAY_BUFFER, cubeVerticesBuffer);
+	gl.vertexAttribPointer(attribPos, 2, gl.FLOAT, false, 0, 0);
 
-	var uniformColor = gl.getUniformLocation(program, "color");
-	gl.uniform4fv(uniformColor, new Float32Array([ foobar, 0, 0, 1 ]))
+	gl.bindBuffer(gl.ARRAY_BUFFER, cubeVerticesTextureCoordBuffer);
+	gl.vertexAttribPointer(attribTexCoord, 2, gl.FLOAT, false, 0, 0);
 
-	var attribPos = gl.getAttribLocation(program, "position");
-	gl.enableVertexAttribArray(attribPos);
-	gl.vertexAttribPointer(attribPos, itemSize, gl.FLOAT, false, 0, 0);
+	gl.activeTexture(gl.TEXTURE0);
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+	gl.uniform1i(gl.getUniformLocation(program, "sampler"), 0);
 
-	gl.drawArrays(gl.TRIANGLES, 0, 3);
-
-	foobar += (adding ? 1 : -1) * foobar / 100;
-
-	if(foobar > 0.5) {
-		adding = false;
-	}
-	else if(foobar < 0.2) {
-		adding = true;
-	}
+	gl.drawArrays(gl.TRIANGLES, 0, 6);	
 }
 
 function onResize()
