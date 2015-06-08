@@ -64,7 +64,7 @@ meta.class("Entity.Text", "Entity.Geometry",
 			}
 			this._texture.resize(width, this._fontSize * 1.3);
 
-			ctx.clearRect(0, 0, this.volume.width, this.volume.height);
+			ctx.clearRect(0, 0, this.volume.initWidth, this.volume.initHeight);
 			ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
 			ctx.fillStyle = this._color;
 			ctx.textBaseline = "top";
@@ -78,11 +78,11 @@ meta.class("Entity.Text", "Entity.Geometry",
 
 			ctx.fillText(this._text, offsetX, 0);
 
-			if(this._outline) {
-				ctx.lineWidth = this._outlineWidth;
-				ctx.strokeStyle = this._outlineColor;
-				ctx.strokeText(this._text, offsetX, 0);
-			}
+			// if(this._outline) {
+			// 	ctx.lineWidth = this._outlineWidth;
+			// 	ctx.strokeStyle = this._outlineColor;
+			// 	ctx.strokeText(this._text, offsetX, 0);
+			// }
 		}
 
 		this.renderer.needRender = true;
