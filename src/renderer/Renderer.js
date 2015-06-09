@@ -54,52 +54,22 @@ meta.class("meta.Renderer",
 			this.entitiesRemove.length = 0;
 		}
 
-		var i, numEntities, index;
-
 		this._removeUpdateEntities();
-		this._removePickingEntities();				
+		this._removePickingEntities();
+		this._removeTweens();		
 
 		// Update all entities:
-		numEntities = this.entitiesUpdate.length;
-		for(i = 0; i < numEntities; i++) {
+		var numEntities = this.entitiesUpdate.length;
+		for(var i = 0; i < numEntities; i++) {
 			this.entitiesUpdate[i].update(tDelta);
-		}
-
-		if(this.tweens.length > 0) 
-		{
-			var numTweens = this.tweens.length;
-			var numTweensRemove = this.tweensRemove.length;
-
-			if(numTweensRemove > 0) 
-			{
-				var tween;
-				for(i = 0; i < numTweensRemove; i++) 
-				{
-					index = this.tweensRemove[i];
-					tween = this.tweens[index];
-
-					if(!tween || !tween.__removed) { continue; }
-
-					numTweens--;
-					tween.__index = -1;
-					tween.__removed = 0;
-					this.tweens[index] = this.tweens[numTweens];
-				}
-
-				this.tweens.length = numTweens;
-				this.tweensRemove.length = 0;
-			}
-
-			for(i = 0; i < numTweens; i++) {
-				this.tweens[i].update(tDelta);
-			}
-		}		
+		}	
 
 		this.__updating = false;
 
 		// Remove animations:
 		if(this.entitiesAnimRemove.length > 0)
 		{
+			var index;
 			var anim = null;
 			var numAnim = this.entitiesAnim.length;
 			numEntities = this.entitiesAnimRemove.length;
@@ -127,25 +97,25 @@ meta.class("meta.Renderer",
 
 	_removeUpdateEntities: function()
 	{
-		var numEntitiesRemove = this.entitiesUpdateRemove.length;		
-		if(numEntitiesRemove > 0)
+		var numRemove = this.entitiesUpdateRemove.length;		
+		if(numRemove > 0)
 		{
 			var numEntities = this.entitiesUpdate.length;
-			var itemsLeft = numEntities - numEntitiesRemove;
+			var itemsLeft = numEntities - numRemove;
 			if(itemsLeft > 0)
 			{
-				var entityTmp, index;
-				for(var i = 0; i < numEntitiesRemove; i++) 
+				var tmp, index;
+				for(var i = 0; i < numRemove; i++) 
 				{
 					numEntities--;
-					entityTmp = this.entitiesUpdate[numEntities];
-					if(entityTmp.__updateIndex === -1) { 
+					tmp = this.entitiesUpdate[numEntities];
+					if(tmp.__updateIndex === -1) { 
 						continue;
 					}
 
 					index = this.entitiesUpdateRemove[i];
-					entityTmp.__updateIndex = index;
-					this.entitiesUpdate[index] = entityTmp;
+					tmp.__updateIndex = index;
+					this.entitiesUpdate[index] = tmp;
 				}
 			}
 
@@ -157,25 +127,25 @@ meta.class("meta.Renderer",
 
 	_removePickingEntities: function()
 	{
-		var numEntitiesRemove = this.entitiesPickingRemove.length;
-		if(numEntitiesRemove > 0) 
+		var numRemove = this.entitiesPickingRemove.length;
+		if(numRemove > 0) 
 		{
 			var numEntities = this.entitiesPicking.length;
-			var itemsLeft = numEntities - numEntitiesRemove;
+			var itemsLeft = numEntities - numRemove;
 			if(itemsLeft > 0)
 			{
-				var entityTmp, index;
-				for(var i = 0; i < numEntitiesRemove; i++) 
+				var tmp, index;
+				for(var i = 0; i < numRemove; i++) 
 				{
 					numEntities--;
-					entityTmp = this.entitiesPicking[numEntities];
-					if(entityTmp.__pickIndex === -1) { 
+					tmp = this.entitiesPicking[numEntities];
+					if(tmp.__pickIndex === -1) { 
 						continue;
 					}
 
 					index = this.entitiesPickingRemove[i];
-					entityTmp.__pickIndex = index;
-					this.entitiesPicking[index] = entityTmp;
+					tmp.__pickIndex = index;
+					this.entitiesPicking[index] = tmp;
 				}
 			}
 
@@ -183,6 +153,35 @@ meta.class("meta.Renderer",
 			this.entitiesPicking.length = itemsLeft;
 			this.needSortDepth = true;
 		}	
+	},
+
+	_removeTweens: function()
+	{
+		var numRemove = this.tweensRemove.length;
+		if(numRemove > 0) 
+		{
+			var numTweens = this.tweens.length;
+			var itemsLeft = numTweens - numRemove;
+			if(itemsLeft > 0)
+			{
+				var tmp, index;
+				for(var i = 0; i < numRemove; i++) 
+				{
+					numTweens--;
+					tmp = this.tweens[numTweens];
+					if(tmp.__index === -1) { 
+						continue;
+					}
+
+					index = this.tweensRemove[i];
+					tmp.__index = index;
+					this.tweens[index] = tmp;
+				}
+			}
+
+			this.tweensRemove.length = 0;
+			this.tweens.length = itemsLeft;
+		}		
 	},
 
 	sort: function()
@@ -355,32 +354,6 @@ meta.class("meta.Renderer",
 		this.entitiesAnimRemove.push(anim.__index);
 		anim.__removed = 1;
 	},
-
-	addTween: function(tween) 
-	{
-		if(tween.__removed) {
-			tween.__removed = 0;
-		}
-		else
-		{
-			if(tween.__index !== -1) { return false; }
-
-			tween.__index = this.tweens.length;
-			this.tweens.push(tween);
-		}
-
-		return true;
-	},
-
-	removeTween: function(tween) 
-	{
-		if(tween.__removed || tween.__index === -1) { return false; }
-
-		this.tweensRemove.push(tween.__index);
-		tween.__removed = 1;
-
-		return true;
-	},	
 
 	/** 
 	 * Callback on input event.

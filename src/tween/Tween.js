@@ -43,7 +43,11 @@ meta.Tween.prototype =
 
 	_play: function() 
 	{	
-		if(meta.renderer.addTween(this.cache) && this._group) {
+		if(this.cache.__index !== -1) { return; }
+
+		this.cache.__index = meta.renderer.tweens.push(this.cache) - 1;
+
+		if(this._group) {
 			this._group.activeUsers++;
 		}
 	},
@@ -54,23 +58,25 @@ meta.Tween.prototype =
 	 */
 	stop: function(callCB)
 	{
+		if(this.cache.__index === -1) { return; }
+
 		this.cache.link = null;
 		this.cache.index = 0;
 
-		if(meta.renderer.removeTween(this.cache)) 
-		{
-			if(callCB) {
-				callCB(this.cache.owner);
-			}
+		meta.renderer.tweensRemove.push(this.cache.__index);
+		this.cache.__index = -1;
 
-			if(this._group)
-			{
-				this._group.activeUsers--;
-				if(this._group.activeUsers === 0 && this._group.callback) {
-					this._group.callback();
-				}
+		if(callCB) {
+			callCB(this.cache.owner);
+		}
+
+		if(this._group)
+		{
+			this._group.activeUsers--;
+			if(this._group.activeUsers === 0 && this._group.callback) {
+				this._group.callback();
 			}
-		}		
+		}			
 	
 		return this;
 	},
@@ -373,7 +379,6 @@ meta.Tween.Cache = function(owner)
 	this._done = false;
 
 	this.__index = -1;
-	this.__removed = 0;
 };
 
 meta.Tween.Cache.prototype = 
@@ -392,7 +397,6 @@ meta.Tween.Cache.prototype =
 
 	//
 	paused: false,
-	removed: false,
 	reverse: false,
 	_flags: 0
 };
