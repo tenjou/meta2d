@@ -78,11 +78,11 @@ meta.class("Entity.Text", "Entity.Geometry",
 
 			ctx.fillText(this._text, offsetX, 0);
 
-			// if(this._outline) {
-			// 	ctx.lineWidth = this._outlineWidth;
-			// 	ctx.strokeStyle = this._outlineColor;
-			// 	ctx.strokeText(this._text, offsetX, 0);
-			// }
+			if(this._outline) {
+				ctx.lineWidth = this._outlineWidth;
+				ctx.strokeStyle = this._outlineColor;
+				ctx.strokeText(this._text, offsetX, 0);
+			}
 		}
 
 		this.renderer.needRender = true;

@@ -179,6 +179,9 @@ meta.class("Resource.Texture", "Resource.Basic",
 	 */
 	resize: function(width, height)
 	{
+		if(this.trueFullWidth === width && 
+			this.trueFullHeight === height) { return; }
+
 		this.resizeSilently(width, height);
 
 		this.loaded = true;
