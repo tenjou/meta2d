@@ -20,16 +20,16 @@ meta.class("meta.Renderer",
 		this.cameraUI = new meta.Camera();
 
 		this.chn = {
-			onDown: meta.createChannel(Entity.Event.INPUT_DOWN),
-			onUp: meta.createChannel(Entity.Event.INPUT_UP),
-			onClick: meta.createChannel(Entity.Event.CLICK),
-			onDbClick: meta.createChannel(Entity.Event.DBCLICK),
-			onDrag: meta.createChannel(Entity.Event.DRAG),
-			onDragStart: meta.createChannel(Entity.Event.DRAG_START),
-			onDragEnd: meta.createChannel(Entity.Event.DRAG_END),
-			onHover: meta.createChannel(Entity.Event.HOVER),
-			onHoverEnter: meta.createChannel(Entity.Event.HOVER_ENTER),
-			onHoverExit: meta.createChannel(Entity.Event.HOVER_EXIT)
+			onDown: 		meta.createChannel(Entity.Event.INPUT_DOWN),
+			onUp: 			meta.createChannel(Entity.Event.INPUT_UP),
+			onClick: 		meta.createChannel(Entity.Event.CLICK),
+			onDbClick: 		meta.createChannel(Entity.Event.DBCLICK),
+			onDrag: 		meta.createChannel(Entity.Event.DRAG),
+			onDragStart: 	meta.createChannel(Entity.Event.DRAG_START),
+			onDragEnd: 		meta.createChannel(Entity.Event.DRAG_END),
+			onHover: 		meta.createChannel(Entity.Event.HOVER),
+			onHoverEnter: 	meta.createChannel(Entity.Event.HOVER_ENTER),
+			onHoverExit: 	meta.createChannel(Entity.Event.HOVER_EXIT)
 		};
 
 		meta.subscribe(this, [ Input.Event.DOWN, Input.Event.UP ], this.onInput, meta.Priority.HIGH);
@@ -260,7 +260,7 @@ meta.class("meta.Renderer",
 			this.numEntities++;
 		}
 
-		entity.updateAnchor();
+		entity._updateAnchor();
 
 		this.entities.push(entity);
 

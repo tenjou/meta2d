@@ -2,14 +2,9 @@
 
 meta.class("Entity.Geometry",
 {
-	_init: function(arg) 
-	{
+	_init: function(arg) {
 		this.volume = new meta.math.AABBext();
-		this.anim = new Component.Anim(this);
-
-		if(arg) {
-			this.initArg(arg);
-		}
+		this.initArg(arg);
 	},
 
 	initArg: function(arg)
@@ -381,11 +376,11 @@ meta.class("Entity.Geometry",
 
 		this._anchorX = x;
 		this._anchorY = y;
-		this.updateAnchor();
+		this._updateAnchor();
 	},
 
 	/** updateAnchor */
-	updateAnchor: function() 
+	_updateAnchor: function() 
 	{
 		if(this._static) {
 			var engine = meta.engine;
@@ -395,9 +390,9 @@ meta.class("Entity.Geometry",
 		else {
 			this.anchorPosX = (this.parent.volume.width) * this._anchorX;
 			this.anchorPosY = (this.parent.volume.height) * this._anchorY;			
-		}
+		}	
 
-		this.updateTotalOffset();		
+		this.updateTotalOffset();	
 	},
 
 	/** 
@@ -406,7 +401,7 @@ meta.class("Entity.Geometry",
 	 */	
 	set anchorX(x) {
 		this._anchorX = x;
-		this.updateAnchor();
+		this._updateAnchor();
 	},
 
 	/** 
@@ -415,7 +410,7 @@ meta.class("Entity.Geometry",
 	 */		
 	set anchorY(y) {
 		this._anchorY = y;
-		this.updateAnchor();
+		this._updateAnchor();
 	},
 
 	/** 
@@ -500,11 +495,11 @@ meta.class("Entity.Geometry",
 
 		this._scaleX = x;
 		this._scaleY = y;
-		this.updateScale();
+		this._updateScale();
 	},
 
 	/** updateScale */
-	updateScale: function()
+	_updateScale: function()
 	{
 		this.volume.scale(this._scaleX * this._parentScaleX, this._scaleY * this._parentScaleY);
 
@@ -517,7 +512,7 @@ meta.class("Entity.Geometry",
 			this.totalOffsetY = Math.round(this._offsetY * this.volume.scaleY);
 		}
 
-		this.updateAnchor();
+		this._updateAnchor();
 	
 		if(this.children) 
 		{
@@ -530,7 +525,8 @@ meta.class("Entity.Geometry",
 
 				child._parentScaleX = this.volume.scaleX;
 				child._parentScaleY = this.volume.scaleY;
-				child.updateScale();
+				child._updateScale();
+				child._updateAnchor();
 			}
 		}
 
@@ -544,9 +540,9 @@ meta.class("Entity.Geometry",
 	set scaleX(x) 
 	{
 		if(this._scaleX === x) { return; }
-		this._scaleX = x;
 
-		this.updateScale();
+		this._scaleX = x;
+		this._updateScale();
 	},
 
 	/** 
@@ -556,9 +552,9 @@ meta.class("Entity.Geometry",
 	set scaleY(y) 
 	{
 		if(this._scaleY === y) { return; }
-		this._scaleY = y;
 
-		this.updateScale();
+		this._scaleY = y;
+		this._updateScale();
 	},
 
 	/** 
@@ -629,7 +625,7 @@ meta.class("Entity.Geometry",
 
 	_updateResize: function() 
 	{
-		this.updateAnchor();
+		this._updateAnchor();
 
 		if(this.onResize) {
 			this.onResize();
@@ -669,7 +665,15 @@ meta.class("Entity.Geometry",
 			this.totalOffsetY = Math.round(this._offsetY * this.volume.scaleY);				
 		}
 
-		this.updateAnchor();
+		this._updateAnchor();
+
+		if(this.children) 
+		{
+			var numChildren = this.children.length;
+			for(var n = 0; n < numChildren; n++) {
+				this.children[n]._updateAnchor();
+			}
+		}
 	},	
 
 	set texture(texture)
@@ -706,7 +710,13 @@ meta.class("Entity.Geometry",
 			this.loaded = false;
 		}
 
-		this.anim.set(this._texture);
+		if(this._texture.frames > 0) 
+		{
+			if(!this.anim) {
+				this.anim = new Component.Anim(this);
+			}
+			this.anim.set(this._texture);
+		}
 	},
 
 	get texture() { return this._texture; },
@@ -764,7 +774,7 @@ meta.class("Entity.Geometry",
 
 		entity.parent = this;
 		this.updatePos();
-		entity.updateAnchor();
+		entity._updateAnchor();
 		this.updateZ();
 
 		if(this.totalAngle !== 0) {
@@ -1188,11 +1198,11 @@ meta.class("Entity.Geometry",
 			this.flags |= this.Flag.IGNORE_PARENT_SCALE;
 			this._parentScaleX = 1;
 			this._parentScaleY = 1;
-			this.updateScale();
+			this._updateScale();
 		}
 		else {
 			this.flags &= ~this.Flag.IGNORE_PARENT_SCALE;
-			this.parent.updateScale();
+			this.parent._updateScale();
 		}
 	},
 
@@ -1257,7 +1267,6 @@ meta.class("Entity.Geometry",
 	_static: false,
 	_debugger: false,
 
-	body: null,
 	children: null,
 	anim: null,
 
@@ -1278,3 +1287,17 @@ meta.class("Entity.Geometry",
 
 	flags: 0
 });
+
+Entity.Event = {
+	INPUT_UP: "entityUp",
+	INPUT_DOWN: "entityDown",
+	CLICK: "entityClick",
+	DBCLICK: "entityDbClick",
+	DRAG: "drag",
+	DRAG_START: "dragStart",
+	DRAG_END: "dragEnd",
+	HOVER: "hover",
+	HOVER_ENTER: "hoverEnter",
+	HOVER_EXIT: "hoverExit",
+	STATE_CHANGE: "stateChange"	
+};
