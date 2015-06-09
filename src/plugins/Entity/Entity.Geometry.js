@@ -771,7 +771,9 @@ meta.class("Entity.Geometry",
 			this.updateAngle();
 		}
 
-		entity.visible = this._visible;
+		if(!this._visible) {
+			entity.visible = false;
+		}
 
 		if(this._view && this._view._active) {
 			this.renderer.addEntity(entity);
