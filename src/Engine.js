@@ -245,7 +245,7 @@ meta.engine =
 
 		if(numRemove > 0) 
 		{
-			var itemsLeft = numTimes - numRemove;
+			var itemsLeft = numTimers - numRemove;
 			if(itemsLeft > 0)
 			{
 				var index;
@@ -264,6 +264,7 @@ meta.engine =
 				this.timers.length = 0;
 			}
 
+			numTimers = itemsLeft;
 			this.timersRemove.length = 0;
 		}		
 

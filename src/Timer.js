@@ -31,10 +31,12 @@ meta.Timer.prototype =
 	},
 
 	/** Remove timer. */
-	stop: function() {
-		this.owner = null;
-		this.func = null;
-		this.numTimes = 0;
+	stop: function() 
+	{
+		if(this.__index === -1) { return; }
+
+		meta.engine.timersRemove.push(this);
+		this.__index = -1;
 	},
 
 	/** Pause timer. */
