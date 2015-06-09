@@ -46,9 +46,7 @@ meta.class("meta.Renderer",
 
 	update: function(tDelta)
 	{
-		this.__updating = true;	
-
-		// Remove entities:
+		// Removal:		
 		if(this.entitiesRemove.length > 0) {
 			this._removeEntities(this.entitiesRemove);
 			this.entitiesRemove.length = 0;
@@ -58,11 +56,18 @@ meta.class("meta.Renderer",
 		this._removePickingEntities();
 		this._removeTweens();		
 
-		// Update all entities:
-		var numEntities = this.entitiesUpdate.length;
-		for(var i = 0; i < numEntities; i++) {
+		// Updating:
+		this.__updating = true;	
+
+		var num = this.entitiesUpdate.length;
+		for(var i = 0; i < num; i++) {
 			this.entitiesUpdate[i].update(tDelta);
 		}	
+
+		num = this.tweens.length;
+		for(i = 0; i < num; i++) {
+			this.tweens[i].update(tDelta);
+		}
 
 		this.__updating = false;
 
@@ -72,9 +77,9 @@ meta.class("meta.Renderer",
 			var index;
 			var anim = null;
 			var numAnim = this.entitiesAnim.length;
-			numEntities = this.entitiesAnimRemove.length;
+			num = this.entitiesAnimRemove.length;
 
-			for(i = 0; i < numEntities; i++) 
+			for(i = 0; i < num; i++) 
 			{
 				index = this.entitiesAnimRemove[i];
 				anim = this.entitiesAnim[index];
@@ -104,24 +109,23 @@ meta.class("meta.Renderer",
 			var itemsLeft = numEntities - numRemove;
 			if(itemsLeft > 0)
 			{
-				var tmp, index;
+				var index;
 				for(var i = 0; i < numRemove; i++) 
 				{
-					numEntities--;
-					tmp = this.entitiesUpdate[numEntities];
-					if(tmp.__updateIndex === -1) { 
-						continue;
+					index = this.entitiesUpdate.indexOf(this.entitiesUpdateRemove[i]);
+					if(index < itemsLeft) {
+						this.entitiesUpdate.splice(index, 1);
 					}
-
-					index = this.entitiesUpdateRemove[i];
-					tmp.__updateIndex = index;
-					this.entitiesUpdate[index] = tmp;
+					else {
+						this.entitiesUpdate.pop();
+					}
 				}
+			}
+			else {
+				this.entitiesUpdate.length = 0;
 			}
 
 			this.entitiesUpdateRemove.length = 0;
-			this.entitiesUpdate.length = itemsLeft;
-			this.needSortDepth = true;
 		}
 	},
 
@@ -134,24 +138,23 @@ meta.class("meta.Renderer",
 			var itemsLeft = numEntities - numRemove;
 			if(itemsLeft > 0)
 			{
-				var tmp, index;
+				var index;
 				for(var i = 0; i < numRemove; i++) 
 				{
-					numEntities--;
-					tmp = this.entitiesPicking[numEntities];
-					if(tmp.__pickIndex === -1) { 
-						continue;
+					index = this.entitiesPicking.indexOf(this.entitiesPickingRemove[i]);
+					if(index < itemsLeft) {
+						this.entitiesPicking.splice(index, 1);
 					}
-
-					index = this.entitiesPickingRemove[i];
-					tmp.__pickIndex = index;
-					this.entitiesPicking[index] = tmp;
+					else {
+						this.entitiesPicking.pop();
+					}
 				}
+			}
+			else {
+				this.entitiesPicking.length = 0;
 			}
 
 			this.entitiesPickingRemove.length = 0;
-			this.entitiesPicking.length = itemsLeft;
-			this.needSortDepth = true;
 		}	
 	},
 
@@ -164,23 +167,23 @@ meta.class("meta.Renderer",
 			var itemsLeft = numTweens - numRemove;
 			if(itemsLeft > 0)
 			{
-				var tmp, index;
+				var index;
 				for(var i = 0; i < numRemove; i++) 
 				{
-					numTweens--;
-					tmp = this.tweens[numTweens];
-					if(tmp.__index === -1) { 
-						continue;
+					index = this.tweens.indexOf(this.tweensRemove[i]);
+					if(index < itemsLeft) {
+						this.tweens.splice(index, 1);
 					}
-
-					index = this.tweensRemove[i];
-					tmp.__index = index;
-					this.tweens[index] = tmp;
+					else {
+						this.tweens.pop();
+					}
 				}
+			}
+			else {
+				this.tweens.length = 0;
 			}
 
 			this.tweensRemove.length = 0;
-			this.tweens.length = itemsLeft;
 		}		
 	},
 
@@ -215,15 +218,17 @@ meta.class("meta.Renderer",
 		this.needRender = true;			
 	},
 
-	addEntity: function(entity) 
-	{
-		this.entities.push(entity);
+	addEntity: function(entity) {
 		this._addEntity(entity);
-
-		if(entity.children) {
-			this.addEntities(entity.children);
-		}
 	},
+
+	addEntities: function(entities)
+	{
+		var numEntities = entities.length;
+		for(var i = 0; i < numEntities; i++) {
+			this._addEntity(entities[i]);
+		}
+	},	
 
 	_addEntity: function(entity) 
 	{
@@ -256,13 +261,11 @@ meta.class("meta.Renderer",
 		}
 
 		entity.updateAnchor();
-	},
 
-	addEntities: function(entities)
-	{
-		var numEntities = entities.length;
-		for(var i = 0; i < numEntities; i++) {
-			this.addEntity(entities[i]);
+		this.entities.push(entity);
+
+		if(entity.children) {
+			this.addEntities(entity.children);
 		}
 	},
 
@@ -311,11 +314,11 @@ meta.class("meta.Renderer",
 			}
 
 			if(entity.__updateIndex !== -1) {
-				this.entitiesUpdateRemove.push(entity.__updateIndex);
+				this.entitiesUpdateRemove.push(entity);
 				entity.__updateIndex = -1;
 			}
 			if(entity.__pickIndex !== -1) {
-				this.entitiesPickingRemove.push(entity.__pickIndex);
+				this.entitiesPickingRemove.push(entity);
 				entity.__pickIndex = -1;
 			}
 

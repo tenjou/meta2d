@@ -730,7 +730,7 @@ meta.class("Entity.Geometry",
 			this.flags &= ~this.Flag.UPDATING;
 
 			if(this.flags & this.Flag.ADDED) {
-				this.renderer.entitiesUpdateRemove.push(this.__updateIndex);
+				this.renderer.entitiesUpdateRemove.push(this);
 				this.__updateIndex = -1;
 			}			
 		}		
@@ -770,6 +770,8 @@ meta.class("Entity.Geometry",
 		if(this.totalAngle !== 0) {
 			this.updateAngle();
 		}
+
+		entity.visible = this._visible;
 
 		if(this._view && this._view._active) {
 			this.renderer.addEntity(entity);
@@ -878,7 +880,7 @@ meta.class("Entity.Geometry",
 			this.flags &= ~this.Flag.PICKING;
 
 			if(this.flags & this.Flag.ADDED) {
-				this.renderer.entitiesPickingRemove.push(this.__pickIndex);
+				this.renderer.entitiesPickingRemove.push(this);
 				this.__pickIndex = -1;
 			}		
 		}

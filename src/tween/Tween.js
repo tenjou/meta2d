@@ -63,7 +63,7 @@ meta.Tween.prototype =
 		this.cache.link = null;
 		this.cache.index = 0;
 
-		meta.renderer.tweensRemove.push(this.cache.__index);
+		meta.renderer.tweensRemove.push(this.cache);
 		this.cache.__index = -1;
 
 		if(callCB) {
