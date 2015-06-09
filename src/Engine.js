@@ -241,25 +241,31 @@ meta.engine =
 	{
 		var timer, index, n;
 		var numTimers = this.timers.length;
-		var numTimersRemove = this.timersRemove.length;
+		var numRemove = this.timersRemove.length;
 
-		if(numTimersRemove > 0)
+		if(numRemove > 0) 
 		{
-			var numTimersLeft = numTimers - numTimersRemove;
-			if(numTimersLeft > 0)
+			var itemsLeft = numTimes - numRemove;
+			if(itemsLeft > 0)
 			{
-				for(n = 0; n < numTimersRemove; n++)
+				var index;
+				for(var n = 0; n < numRemove; n++) 
 				{
-					index = this.timersRemove[n];
-					timer = this.timers[numTimersLeft + n];
-					timer.__index = index;
-					this.timers[index] = timer;
+					index = this.timers.indexOf(this.timersRemove[i]);
+					if(index < itemsLeft) {
+						this.timers.splice(index, 1);
+					}
+					else {
+						this.timers.pop();
+					}
 				}
 			}
+			else {
+				this.timers.length = 0;
+			}
 
-			this.timers.length = numTimersLeft;
-			numTimers = numTimersLeft;
-		}
+			this.timersRemove.length = 0;
+		}		
 
 		for(n = 0; n < numTimers; n++)
 		{
@@ -284,7 +290,7 @@ meta.engine =
 					{
 						numTimers--;
 						if(numTimers > 0) {
-							this.timersRemove.push(timer.__index);
+							this.timersRemove.push(timer);
 							timer.__index = -1;
 						}
 						break;
