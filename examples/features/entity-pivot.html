@@ -2,13 +2,13 @@
 
 <html>
     <head>
-        <title>Entity Pivot :: META</title>
+        <title>Entity Pivot // META</title>
 
-        <script src="http://infinite-games.com/meta.latest.js"></script>
+        <script src="http://meta2d.com/meta.js"></script>
     </head>
 
     <body>
-        <!-- Example on how to set entity pivot. -->
+        <!-- This example shows how to change pivot (point of origin) for entities. -->
 
         <script>
             var entity;
@@ -19,18 +19,16 @@
 
                 entity = new Entity.Geometry("jabba");
                 entity.anchor(0.5);
-                // Set pivot at left side of the entity.
-                entity.pivot(-1.0, 0.0);
-                entity.showBounds = true;
-                meta.view.add(entity);       
+                // Set pivot to left side of the entity:
+                entity.pivot(1, 0.5);
+                meta.view.attach(entity);       
 
-                meta.addDescription("Entity pivot example");                     
+                meta.info("Entity pivot example");                     
             };
 
-            // Every update frame we rotate entity in clockwise.
+            // Rotate the entity after each update call:
             meta.update = function(tDelta) {
-                // Note that changing pivot will change rotation origin too!
-                entity.angle += tDelta * 10;
+                entity.angle += tDelta * 20;
             };
         </script>
     </body>

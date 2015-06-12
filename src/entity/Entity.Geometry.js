@@ -993,6 +993,30 @@ meta.class("Entity.Geometry",
 	 */
 	onHoverExit: null,
 
+	/**
+	 * Set position from where entity will be dragged from.
+	 * @param x {Number} Drag position on X axis.
+	 * @param y {Number} Drag position on Y axis.
+	 */
+	dragStart: function(x, y) {
+		this._dragOffsetX = x - this.volume.x;
+		this._dragOffsetY = y - this.volume.y;
+	},
+
+	/**
+	 * Drag entity to position. If entity is anchored then anchorPos will be discarded from x, y.
+	 * @param x {Number} World position on X axis.
+	 * @param y {Number} World position on Y axis.
+	 */
+	dragTo: function(x, y)
+	{
+		x -= this.totalOffsetX + this._dragOffsetX;
+		y -= this.totalOffsetY + this._dragOffsetY;
+
+		if(this.volume.x === x && this.volume.y === y) { return; }
+		this.position(x, y)	
+	},	
+
 	addTimer: function(func, tDelta, numTimes) 
 	{
 		var timer = meta.addTimer(this, func, tDelta, numTimes);
@@ -1253,6 +1277,8 @@ meta.class("Entity.Geometry",
 	anchorPosX: 0, anchorPosY: 0,
 
 	totalOffsetX: 0, totalOffsetY: 0,
+
+	_dragOffsetX: 0, _dragOffsetY: 0,
 
 	loaded: true,
 	removed: false,

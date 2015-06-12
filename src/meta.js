@@ -37,8 +37,6 @@ var meta =
 		initFuncs: [], 
 		loadFuncs: [], 
 		readyFuncs: [],
-		updateFuncs: [],
-		renderFuncs: [],
 
 		view: null,
 		views: {},
@@ -77,11 +75,11 @@ var meta =
 	},
 
 	set update(func) {
-		this.cache.updateFuncs.push(func);
+		this.engine.updateFuncs.push(func);
 	},
 
 	set render(func) {
-		this.cache.renderFuncs.push(func);
+		this.engine.renderFuncs.push(func);
 	},	
 
 	set debug(value) 

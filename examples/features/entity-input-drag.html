@@ -2,13 +2,13 @@
 
 <html>
     <head>
-        <title>Entity Drag & Drop :: META</title>
+        <title>Entity Drag & Drop // META</title>
 
-        <script src="http://infinite-games.com/meta.latest.js"></script>
+        <script src="http://meta2d.com/meta.js"></script>
     </head>
 
     <body>
-        <!-- Example on how to interact with entity input drag events. -->
+        <!-- Example on how to interact with entity by using their drag events. -->
 
         <script>
             meta.load = function()
@@ -17,23 +17,30 @@
 
                 var entity = new Entity.Geometry("shrine");
                 entity.anchor(0.5);
-                meta.view.add(entity);
+                entity.pivot(0.5);
+                // Enable input picking for this entity:
+                entity.picking = true;
+                meta.view.attach(entity);
    
-                // Called when input tries to move entity for the first time.
+                // This function is called when input tries to move 
+                //  the entity for the first time:
                 entity.onDragStart = function(event) {
-                    // Optional: Only when need fixate relation between input and entity.
+                    // Optional: This function will register where to offset 
+                    //  entity while dragging:
                     this.dragStart(event.x, event.y);
                 };
-                // Called when pressed input was released.
+
+                // This function is called when pressed input was released.
                 entity.onDragEnd = function(event) {
                     console.log("DragEnd");
-                };      
-                // Called when input moves entity.
+                };
+
+                // This function is called when input moves the entity:
                 entity.onDrag = function(event) {
                     this.dragTo(event.x, event.y);
                 }; 
 
-                meta.addDescription("Entity drag & drop example");                
+                meta.info("Entity drag & drop example");                
             };
         </script>
     </body>

@@ -2,9 +2,9 @@
 
 <html>
     <head>
-        <title>Entity Scale :: META</title>
+        <title>Entity Scaling // META</title>
 
-        <script src="http://infinite-games.com/meta.latest.js"></script>
+        <script src="http://meta2d.com/meta.js"></script>
     </head>
 
     <body>
@@ -17,14 +17,12 @@
 
                 var entity = new Entity.Geometry("shrine");
                 entity.anchor(0.5);
-                // Scale entity 2x wider and 2x smaller.
-                entity.scaleX = 2;
-                entity.scaleY = 0.5;
-                // Alternative way:
-                // entity.scale(2, 0.5);
-                meta.view.add(entity);
+                entity.pivot(0.5)
+                // Make entity 2x wider and 2x smaller:
+                entity.scale(2, 0.5);
+                meta.view.attach(entity);
 
-                meta.addDescription("Entity scaling example");
+                meta.info("Entity scaling example");
             }; 
         </script>
     </body>

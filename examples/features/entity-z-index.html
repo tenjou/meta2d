@@ -2,36 +2,36 @@
 
 <html>
     <head>
-        <title>Entity Z-Index :: META</title>
+        <title>Entity Z-Index // META</title>
 
-        <script src="http://infinite-games.com/meta.latest.js"></script>
+        <script src="http://meta2d.com/meta.js"></script>
     </head>
 
     <body>
-        <!-- Example on how to change entity Z index (depth). -->
+        <!-- Example on how to change entity Z index (depth). Entities with higher Z index will be shown on top of other entities. -->
 
         <script>
             meta.load = function()
             {
                 meta.preloadTexture([ "jabba.png", "shrine.png" ], 
-                    // Set default path for both images.
+                    // Set this as the default path for both images:
                     "https://dl.dropboxusercontent.com/u/145051233/meta/");
 
                 var entity1 = new Entity.Geometry("shrine");
                 entity1.anchor(0.5);
-                // Offset the first entity from anchor point by -50px.
-                entity1.position(-50, 0);
-                // Set this entity to be in front of others (who has less z index).
+                entity1.pivot(0.5);
+                entity1.position(20, 0);
+                // This will setup entity so it's in front of other who has lower z index:
                 entity1.z = 100;
-                meta.view.add(entity1); 
+                meta.view.attach(entity1); 
 
                 var entity2 = new Entity.Geometry("jabba");
                 entity2.anchor(0.5);
-                // Offset the second entity from anchor point by 50px.
-                entity2.position(50, 0);
-                meta.view.add(entity2);  
+                entity2.pivot(0.5);
+                entity2.position(-100, 0);
+                meta.view.attach(entity2);  
 
-                meta.addDescription("Entity z-index example");
+                meta.info("Entity z-index example");
             }; 
         </script>
     </body>

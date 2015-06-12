@@ -2,9 +2,9 @@
 
 <html>
     <head>
-        <title>Entity Rotate :: META</title>
+        <title>Entity Rotation // META</title>
 
-        <script src="http://infinite-games.com/meta.latest.js"></script>
+        <script src="http://meta2d.com/meta.js"></script>
     </head>
 
     <body>
@@ -17,13 +17,14 @@
 
                 var entity = new Entity.Geometry("shrine");
                 entity.anchor(0.5); 
-                // Rotate entity clockwise by 180 degrees.
+                entity.pivot(0.5);
+                // Rotate entity clockwise by 180 degrees:
                 entity.angle = 180;
-                // An alternatively entity can be rotate by using radians:
+                // An alternatively method for rotating entities are by using radians:
                 // entity.angleRad = Math.PI;
-                meta.view.add(entity);
+                meta.view.attach(entity);
 
-                meta.addDescription("Entity rotation example");
+                meta.info("Entity rotation example");
             };
         </script>
     </body>

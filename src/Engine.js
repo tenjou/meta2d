@@ -202,6 +202,11 @@ meta.engine =
 			this.controllersReady.length = 0;
 		} 
 
+		num = this.updateFuncs.length;
+		for(n = 0; n < num; n++) {
+			this.updateFuncs[n](tDelta);
+		}
+
 		num = this.controllersUpdate.length;
 		if(num > 0) {
 			for(n = 0; n < num; n++) {
@@ -244,23 +249,12 @@ meta.engine =
 
 		this.update(this.time.deltaF);
 
-		// var dt = this.time.updateFreq;
-		// var dtf = dt / 1000;
-		// while(this.time.accumulator >= dt) {
-		// 	this.update(dtf);
-		// 	this.time.update += dt;
-		// 	this.time.accumulator -= dt;
-		// }		
-
-		// var alpha = meta.time.accumulator / dt;
-
 		// Process all render functions:
 		meta.renderer.render(this.time.deltaF);
 		
-		var funcs = this.meta.cache.renderFuncs;
-		var numFuncs = funcs.length;
-		for(var i = 0; i < numFuncs; i++) {
-			funcs[i](tDeltaF);
+		var num = this.renderFuncs.length;
+		for(var n = 0; n < num; n++) {
+			this.renderFuncs[n](tDeltaF);
 		}	
 
 		this._fpsCounter++;
@@ -768,6 +762,8 @@ meta.engine =
 	_updateLoop: null,
 	_renderLoop: null,
 
+	updateFuncs: [],
+	renderFuncs: [],
 	plugins: [],
 	controllersReady: [],
 	controllersUpdate: [],
