@@ -2,13 +2,13 @@
 
 <html>
     <head>
-        <title>Entity Anchor :: META</title>
+        <title>Entity Anchoring // META</title>
 
-        <script src="http://infinite-games.com/meta.latest.js"></script>
+        <script src="http://meta2d.com/meta.js"></script>
     </head>
 
     <body>
-        <!-- Example on how to anchor entities to the view. -->
+        <!-- Example on how to anchor entities inside it's parent. Anchored entities will automatically update it's position if parents dimensions change. This approach can be used both for parent and children entities. -->
 
         <script>
             meta.load = function()
@@ -16,14 +16,14 @@
                 meta.preloadTexture("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
 
                 var entity = new Entity.Geometry("jabba");
-                // Anchor entity in middle of the screen (0.5).
-                // Also second parameter can be specified if different anchors for X and Y axis is needed.
-                // Note: Position will update with screen resolution changes.
+                // Anchor entity in the middle of the screen (0.5) or (0.5, 0.5) 
+                //  to specify anchor on x/y axis.
                 entity.anchor(0.5);
-                meta.view.add(entity); 
+                entity.pivot(0.5);
+                meta.view.attach(entity); 
 
-                meta.addDescription("Entity anchoring example");
-            }; 
+                meta.info("Entity anchoring example");
+            };
         </script>
     </body>
 </html>

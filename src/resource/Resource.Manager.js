@@ -1,28 +1,17 @@
 "use strict";
 
 /**
- * @class Resource.Controller
- * @extends meta.Controller
  * @property resources {Object} Map for all resources that are currently managed. Uses Resource.Type to access specific type.
  * @property resourceInUse {Object} Map with all resource that are in use.
  * @property rootPath {string} Root path of resources that's added at resource creation time.
  */
-meta.class("Resource.Controller", "meta.Controller", 
+meta.class("Resource.Manager",
 {
-	/** Constructor. */
 	init: function()
 	{
-		this.resources = {};
-		this.resourcesInUse = {};
-
 		this._chn_added = meta.createChannel(Resource.Event.ADDED);
 		this._chn_loadingStart = meta.createChannel(Resource.Event.LOADING_START)
 		this._chn_loadingEnd = meta.createChannel(Resource.Event.LOADING_END);
-
-		// Bind temp canvas to Resource.Texture
-		var canvas = document.createElement("canvas");
-		Resource.Texture.prototype._tmpImg = canvas;
-		Resource.Texture.prototype._tmpCtx = canvas.getContext("2d");
 
 		meta.subscribe(this, meta.Event.ADAPT, this.onAdapt);
 
@@ -146,11 +135,12 @@ meta.class("Resource.Controller", "meta.Controller",
 		}
 
 		subBuffer.push(resource);
-		resource.isLoading = false;
+		resource.loading = false;
 		resource.inUse = true;
 
 		if(!meta.engine.ready)
 		{
+			this.loading = false;
 			this.numToLoad--;
 			this.numLoaded++;
 
@@ -296,10 +286,9 @@ meta.class("Resource.Controller", "meta.Controller",
 		return ++this._uniqueID;
 	},
 
-
 	//
-	resources: null,
-	resourcesInUse: null,
+	resources: {},
+	resourcesInUse: {},
 	rootPath: "",
 
 	numLoaded: 0,

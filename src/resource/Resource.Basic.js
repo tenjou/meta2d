@@ -1,7 +1,6 @@
 "use strict";
 
 /**
- * @class Resource.Basic
  * @property id {number} Unique id.
  * @property type {Resource.Type} Resource type.
  * @property name {string} Name of resource.
@@ -15,7 +14,7 @@ meta.class("Resource.Basic",
 {
 	_init: function(data, tag) 
 	{
-		this.id = Resource.ctrl.getUniqueID();
+		this.id = meta.resources.getUniqueID();
 		if(tag) {
 			this.tag = tag;
 		}		

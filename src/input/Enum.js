@@ -1,6 +1,9 @@
 "use strict";
 
-Input.Event = {
+var Input = {};
+
+Input.Event =
+{
 	KEY_DOWN: "keydown",
 	KEY_UP: "keyup",
 	DOWN: "down",
@@ -10,7 +13,31 @@ Input.Event = {
 	DBCLICK: "dbclick"
 };
 
-Input.Key = {
+Input.Key =
+{
+	BACKSPACE: 8,
+	TAB: 9,
+	ENTER: 13,
+	SHIFT: 16,
+	ESC: 27,
+	SPACE: 32,
+
+	LEFT: 37,
+	UP: 38,
+	RIGHT: 39,
+	DOWN: 40,	
+
+	NUM_0: 48,
+	NUM_1: 49,
+	NUM_2: 50,
+	NUM_3: 51,
+	NUM_4: 52,
+	NUM_5: 53,
+	NUM_6: 54,
+	NUM_7: 55,
+	NUM_8: 56,
+	NUM_9: 57,
+
 	A: 65,
 	B: 66,
 	C: 67,
@@ -37,25 +64,12 @@ Input.Key = {
 	X: 88,
 	Y: 89,
 	Z: 90,
-	"[": 91,
-
-	BACKSPACE: 8,
-	TAB: 9,
-	ENTER: 13,
-	SHIFT: 16,
-	ESC: 27,
-	SPACE: 32,
-
-	NUM_0: 48,
-	NUM_1: 49,
-	NUM_2: 50,
-	NUM_3: 51,
-	NUM_4: 52,
-	NUM_5: 53,
-	NUM_6: 54,
-	NUM_7: 55,
-	NUM_8: 56,
-	NUM_9: 57,
+	SQUARE_BRACKET_LEFT: 91,
+	SQUARE_BRACKET_RIGHT: 91,
+	PARENTHESES_LEFT: 91,
+	PARENTHESES_RIGHT: 91,
+	BRACES_LEFT: 91,
+	BRACES_RIGHT: 92,
 
 	F1: 112,
 	F2: 113,
@@ -76,11 +90,6 @@ Input.Key = {
 
 	TILDE: 192,
 	APOSTROPHE: 222,
-
-	LEFT: 37,
-	UP: 38,
-	RIGHT: 39,
-	DOWN: 40,
 
 	BUTTON_LEFT: 0,
 	BUTTON_MIDDLE: 1,

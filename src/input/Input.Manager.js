@@ -1,23 +1,17 @@
 "use strict";
 
 /**
- * @description Input handler.
- * @class Input.Controller
- * @extends meta.Plugin
  * @property keys {Array} Buffer with flags if key is pressed.
  * @property inputs {Array} Buffer with flags if input is pressed.
  * @property blockInput {boolean} Flag if input should be blocked.
- * @property isStickyKeys {boolean} Flag if keys are sticky. (Input is not repeated if user holds key)
+ * @property stickyKeys {boolean} Flag if keys are sticky. (Input is not repeated if user holds key)
  * @property numKeys {number} Number of keys supported.
  * @property numInputs {number} Number of inputs supported. (Touches or mouse buttons)
  */
-meta.class("Input.Controller", "meta.Controller", 
+meta.class("Input.Manager",
 {
-	/** Constructor. */
 	init: function()
 	{
-		this.engine = meta.engine;
-
 		this.keys = new Array(this.numKeys);
 		this.inputs = new Array(this.numInputs);
 		this.touches = [];
@@ -35,27 +29,52 @@ meta.class("Input.Controller", "meta.Controller",
 			entity: null
 		};
 
-		this.addEventListeners();
+		this._addEventListeners();
 		this._loadIgnoreKeys();
 		meta.subscribe(this, meta.Event.FOCUS, this.onFocus);
 	},
 
-	/**
-	 * @description Destructor.
-	 */
-	release: function()	{
-		this.removeEventListeners();
-		meta.unsubscribe(this, meta.Event.FOCUS, this.onFocus);
+	/** Add all DOM input event listeners. */
+	_addEventListeners: function()
+	{
+		this.chn = {
+			keyDown: meta.createChannel(Input.Event.KEY_DOWN),
+			keyUp: meta.createChannel(Input.Event.KEY_UP),
+			inputDown: meta.createChannel(Input.Event.DOWN),
+			inputUp: meta.createChannel(Input.Event.UP),
+			inputMove: meta.createChannel(Input.Event.MOVE),
+			inputClick: meta.createChannel(Input.Event.CLICK),
+			inputDbClick: meta.createChannel(Input.Event.DBCLICK)
+		};
+
+		var self = this;
+		window.addEventListener("mousedown", function(event) { self.handleMouseDown(event); });
+		window.addEventListener("mouseup", function(event) { self.handleMouseUp(event); });
+		window.addEventListener("mousemove", function(event) { self.handleMouseMove(event); });
+		window.addEventListener("dblclick", function(event) { self.handleMouseDbClick(event); });
+		window.addEventListener("touchstart", function(event) { self.handleTouchDown(event); });
+		window.addEventListener("touchend", function(event) { self.handleTouchUp(event); });
+		window.addEventListener("touchmove", function(event) { self.handleTouchMove(event); });
+		window.addEventListener("touchcancel", function(event) { self.handleTouchUp(event); });
+		window.addEventListener("touchleave", function(event) { self.handleTouchUp(event); });
+
+		if(meta.device.support.onkeydown)	{
+			window.addEventListener("keydown", function(event) { self.handleKeyDown(event); });
+		}
+
+		if(meta.device.support.onkeyup)	{
+			window.addEventListener("keyup", function(event) { self.handleKeyUp(event); });
+		}
 	},
 
 	/**
-	 * @description Callback onKeyDown.
+	 * Callback onKeyDown.
 	 * @param event {Event} DOM event object.
 	 */
-	onKeyDown: function(event)
+	handleKeyDown: function(event)
 	{
 		// Skip default behaviour for some keys.
-		if(window.top && this._iFrameKeys[event.keyCode]) {
+		if(window.top && this._iframeKeys[event.keyCode]) {
 			event.preventDefault();
 		}
 
@@ -70,7 +89,7 @@ meta.class("Input.Controller", "meta.Controller",
 		//
 		if(this.blockInput) { return; }
 
-		if(this.isStickyKeys && this.keys[event.keyCode]) {
+		if(this.stickyKeys && this.keys[event.keyCode]) {
 			return;
 		}
 
@@ -114,13 +133,13 @@ meta.class("Input.Controller", "meta.Controller",
 	},
 
 	/**
-	 * @description Callback onKeyUp.
+	 * Callback onKeyUp.
 	 * @param event {Event} DOM event object.
 	 */
-	onKeyUp: function(event)
+	handleKeyUp: function(event)
 	{
 		// Skip default behaviour for some keys.
-		if(window.top && this._iFrameKeys[event.keyCode]) {
+		if(window.top && this._iframeKeys[event.keyCode]) {
 			event.preventDefault();
 		}
 
@@ -153,12 +172,11 @@ meta.class("Input.Controller", "meta.Controller",
 		}
 	},
 
-
 	/**
-	 * @description Callback onMouseDown.
+	 * Callback onMouseDown.
 	 * @param event {Event} DOM event object.
 	 */
-	onMouseDown: function(event)
+	handleMouseDown: function(event)
 	{
 		if(this.blockInput) { return; }
 
@@ -185,10 +203,10 @@ meta.class("Input.Controller", "meta.Controller",
 	},
 
 	/**
-	 * @description Callback onMouseUp.
+	 * Callback onMouseUp.
 	 * @param event {Event} DOM event object.
 	 */
-	onMouseUp: function(event)
+	handleMouseUp: function(event)
 	{
 		if(this.blockInput) { return; }
 
@@ -216,10 +234,10 @@ meta.class("Input.Controller", "meta.Controller",
 	},
 
 	/**
-	 * @description Callback onMouseMove.
+	 * Callback onMouseMove.
 	 * @param event {Event} DOM event object.
 	 */
-	onMouseMove: function(event)
+	handleMouseMove: function(event)
 	{
 		event.preventDefault();
 
@@ -246,10 +264,10 @@ meta.class("Input.Controller", "meta.Controller",
 	},
 
 	/**
-	 * @description Callback onMouseDbClick.
+	 * Callback onMouseDbClick.
 	 * @param event {Event} DOM event object.
 	 */
-	onMouseDbClick: function(event)
+	handleMouseDbClick: function(event)
 	{
 		if(this.blockInput) { return; }
 
@@ -276,10 +294,10 @@ meta.class("Input.Controller", "meta.Controller",
 	},
 
 	/**
-	 * @description Callback onTouchDown.
+	 * Callback onTouchDown.
 	 * @param event {Event} DOM event object.
 	 */
-	onTouchDown: function(event)
+	handleTouchDown: function(event)
 	{
 		event.preventDefault();
 
@@ -323,10 +341,10 @@ meta.class("Input.Controller", "meta.Controller",
 	},
 
 	/**
-	 * @description Callback onTouchUp.
+	 * Callback onTouchUp.
 	 * @param event {Event} DOM event object.
 	 */
-	onTouchUp: function(event)
+	handleTouchUp: function(event)
 	{
 		event.preventDefault();
 
@@ -376,10 +394,10 @@ meta.class("Input.Controller", "meta.Controller",
 	},
 
 	/**
-	 * @description Callback onTouchMove.
+	 * Callback onTouchMove.
 	 * @param event {Event} DOM event object.
 	 */
-	onTouchMove: function(event)
+	handleTouchMove: function(event)
 	{
 		event.preventDefault();
 
@@ -426,7 +444,6 @@ meta.class("Input.Controller", "meta.Controller",
 		}
 	},
 
-
 	/**
 	 * @description Callback onFocus.
 	 * @param event {meta.Event.FOCUS} Type of event.
@@ -455,80 +472,6 @@ meta.class("Input.Controller", "meta.Controller",
 	 */
 	isInputDown: function(keyCode) {
 		return this.inputs[keyCode] || (this.numTouches - 1) === keyCode;
-	},
-
-	/**
-	 * Add all DOM input event listeners.
-	 */
-	addEventListeners: function()
-	{
-		var self = this;
-
-		this.chn = {
-			keyDown: meta.createChannel(Input.Event.KEY_DOWN),
-			keyUp: meta.createChannel(Input.Event.KEY_UP),
-			inputDown: meta.createChannel(Input.Event.DOWN),
-			inputUp: meta.createChannel(Input.Event.UP),
-			inputMove: meta.createChannel(Input.Event.MOVE),
-			inputClick: meta.createChannel(Input.Event.CLICK),
-			inputDbClick: meta.createChannel(Input.Event.DBCLICK)
-		};
-
-		this.func = 
-		{
-			keyDown: function(event) { self.onKeyDown(event); },
-			keyUp: function(event) { self.onKeyUp(event); },
-			mouseDown: function(event) { self.onMouseDown(event); },
-			mouseUp: function(event) { self.onMouseUp(event); },
-			mouseDbClick: function(event) { self.onMouseDbClick(event); },
-			mouseMove: function(event) { self.onMouseMove(event); },
-			touchDown: function(event) { self.onTouchDown(event); },
-			touchUp: function(event) { self.onTouchUp(event); },
-			touchMove: function(event) { self.onTouchMove(event); },
-			touchCancel: function(event) { self.onTouchCancel(event); }
-		};
-
-		window.addEventListener("mousedown", this.func.mouseDown);
-		window.addEventListener("mouseup", this.func.mouseUp);
-		window.addEventListener("mousemove", this.func.mouseMove);
-		window.addEventListener("dblclick", this.func.mouseDbClick);
-		window.addEventListener("touchstart", this.func.touchDown);
-		window.addEventListener("touchend", this.func.touchUp);
-		window.addEventListener("touchmove", this.func.touchMove);
-		window.addEventListener("touchcancel", this.func.touchUp);
-		window.addEventListener("touchleave", this.func.touchUp);
-
-		if(meta.device.support.onkeydown)	{
-			window.addEventListener("keydown", this.func.keyDown);
-		}
-
-		if(meta.device.support.onkeyup)	{
-			window.addEventListener("keyup", this.func.keyUp);
-		}
-	},
-
-	/**
-	 * Remove all DOM input event listeners.
-	 */
-	removeEventListeners: function()
-	{
-		window.removeEventListener("mousedown", this.func.mouseDown);
-		window.removeEventListener("mouseup", this.func.mouseUp);
-		window.removeEventListener("mousemove", this.on.mouseMove);
-		window.removeEventListener("dblclick", this.on.mouseDbClick);
-		window.removeEventListener("touchstart", this.on.touchDown);
-		window.removeEventListener("touchend", this.on.touchUp);
-		window.removeEventListener("touchmove", this.on.touchMove);
-		window.removeEventListener("touchcancel", this.on.touchUp);
-		window.removeEventListener("touchleave", this.on.touchUp);
-
-		if(meta.device.support.onkeydown)	{
-			window.removeEventListener("keydown", this.on.keyDown);
-		}
-
-		if(meta.device.support.onkeyup)	{
-			window.removeEventListener("keyup", this.on.keyUp);
-		}
 	},
 
 
@@ -633,11 +576,11 @@ meta.class("Input.Controller", "meta.Controller",
 		this._cmdKeys[91] = 1;
 		this._cmdKeys[17] = 1;
 
-		this._iFrameKeys = [];
-		this._iFrameKeys[37] = 1;
-		this._iFrameKeys[38] = 1;
-		this._iFrameKeys[39] = 1;
-		this._iFrameKeys[40] = 1;
+		this._iframeKeys = [];
+		this._iframeKeys[37] = 1;
+		this._iframeKeys[38] = 1;
+		this._iframeKeys[39] = 1;
+		this._iframeKeys[40] = 1;
 	},
 
 	_ignoreFKeys: function(value) 
@@ -683,14 +626,13 @@ meta.class("Input.Controller", "meta.Controller",
 	//
 	engine: meta.engine,
 	chn: null,
-	func: null,
 
 	keys: null,
 	inputs: null,
 	touches: null,
 
 	blockInput: false,
-	isStickyKeys: true,
+	stickyKeys: true,
 
 	keyRepeat: 0,
 	_inputTimer: null,
@@ -707,7 +649,7 @@ meta.class("Input.Controller", "meta.Controller",
 
 	_ignoreKeys: null,
 	_cmdKeys: null,
-	_iFrameKeys: null,
+	_iframeKeys: null,
 	_numCmdKeys: 0,
 
 	_callbacks: null

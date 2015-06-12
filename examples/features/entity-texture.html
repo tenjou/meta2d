@@ -2,30 +2,28 @@
 
 <html>
     <head>
-        <title>Entity Texture :: META</title>
+        <title>Entity Texturing // META</title>
 
-        <script src="http://infinite-games.com/meta.latest.js"></script>
+        <script src="http://meta2d.com/meta.js"></script>
     </head>
 
     <body>
-        <!-- Example on how to set entity texture. -->
+        <!-- Example shows how to setup an entity with texture. -->
 
         <script>
-            // Called on the first game load.
             meta.load = function()
             {
-                // Loading will continue until all resources are preloaded.
+                // By default when loading textures the name will be taken from the file name.
                 meta.preloadTexture(
                     "https://dl.dropboxusercontent.com/u/145051233/meta/character.png");
 
-                // Create an entity with "character" texture.
+                // Create an entity with texture that is called "character".
                 var entity = new Entity.Geometry("character");
-                // This will make entity to stick in the center even if screen resolution changes.
                 entity.anchor(0.5);
-                // Add created entity to the current view so it becomes visible.
-                meta.view.add(entity);
+                entity.pivot(0.5);
+                meta.view.attach(entity);
 
-                meta.addDescription("Entity texture example");
+                meta.info("Example of textured entity");
             }; 
         </script>
     </body>

@@ -21,15 +21,8 @@ meta.class("Entity.Geometry",
 				}
 			}
 		}
-		else if(typeof arg === "string") 
-		{
-			var texture = Resource.ctrl.getTexture(arg);
-			if(!texture) {
-				console.warn("(Entity.Geometry) Unavailable texture - " + arg);
-			}
-			else {
-				this.texture = texture;
-			}
+		else if(typeof arg === "string") {
+			this.texture = arg;
 		}
 	},
 
@@ -688,7 +681,7 @@ meta.class("Entity.Geometry",
 		{
 			if(typeof(texture) === "string") 
 			{
-				this._texture = Resource.ctrl.getTexture(texture);
+				this._texture = meta.resources.getTexture(texture);
 				if(!this._texture) {
 					console.warn("(Entity.Geometry) Unavailable texture - " + texture);
 					return;
@@ -1287,17 +1280,3 @@ meta.class("Entity.Geometry",
 
 	flags: 0
 });
-
-Entity.Event = {
-	INPUT_UP: "entityUp",
-	INPUT_DOWN: "entityDown",
-	CLICK: "entityClick",
-	DBCLICK: "entityDbClick",
-	DRAG: "drag",
-	DRAG_START: "dragStart",
-	DRAG_END: "dragEnd",
-	HOVER: "hover",
-	HOVER_ENTER: "hoverEnter",
-	HOVER_EXIT: "hoverExit",
-	STATE_CHANGE: "stateChange"	
-};

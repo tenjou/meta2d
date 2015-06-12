@@ -1,14 +1,15 @@
 "use strict";
 
-/** @namespace */
 var meta = 
 {
 	version: "0.8.0",
-	importUrl: "http://meta.infinite-games.com/store/",
+	importUrl: "http://meta2d.com/store/",
 
 	device: null,
+	resources: null,
 	renderer: null,
 	camera: null,
+	input: null,
 	channels: [],
 	modules: {},
 
@@ -48,9 +49,7 @@ var meta =
 		
 		resolutions: null,
 		currResolution: null,
-		imageSmoothing: true,
-
-		debug: false
+		imageSmoothing: true
 	},
 
 	set init(func) 

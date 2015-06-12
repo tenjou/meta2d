@@ -5,12 +5,15 @@ var gl = null;
 var shader = null;
 var adding = true;
 var texture = null;
+var texture2 = null;
 var ready = false;
 var verticeBuffer = null;
 
 var camera = new Float32Array(2);
 var viewportSize = new Float32Array(2);
 var inverseTextureSize = new Float32Array(2);
+var tileSize = 32;
+var inverseTileSize = 1 / tileSize;
 
 function Shader(gl, program) 
 {
@@ -28,7 +31,7 @@ function Shader(gl, program)
 		this.attrib[attrib.name] = gl.getAttribLocation(program, attrib.name);
 	}
 
-	count = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+	count = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
 	for(i = 0; i < count; i++) {
 		uniform = gl.getActiveUniform(program, i);
 		name = uniform.name.replace("[0]", "");
@@ -84,21 +87,27 @@ function loadImg()
 
 	var img = new Image();
 	img.onload = function() { prepareTexture(img); }
-	img.src = "assets/tilemap2.png";
+	img.src = "assets/tilemap.png";
 }
 
-function prepareTexture(img)
+function prepareTexture(img, repeat)
 {
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-	gl.bindTexture(gl.TEXTURE_2D, null);
 
-	inverseTextureSize[0] = img.width * 0.5;
-	inverseTextureSize[1] = img.height * 0.5;
+	if(repeat) {
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);		
+	}
+	else {
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);		
+	}
+
+	inverseTextureSize[0] = 1 / img.width;
+	inverseTextureSize[1] = 1 / img.height;
 
 	ready = true;
 }
@@ -121,23 +130,23 @@ function init()
 	var vertexShaderSrc = 
 		"precision mediump float; \
 		attribute vec2 position; \
-		attribute vec2 texCoord; \
+		attribute vec2 uv; \
 		uniform vec2 viewportSize; \
 		uniform vec2 camera; \
 		uniform vec2 inverseTextureSize; \
-		varying highp vec2 var_texCoord; \
+		varying highp vec2 texCoord; \
 		void main() { \
 			gl_Position = vec4(position, 0, 1); \
-			var_texCoord = vec2(texCoord.x * 0.5 + camera.x, texCoord.y * 0.5 + camera.y); \
+			texCoord = vec2(uv.x, uv.y); \
 		}";
 
 	var fragmentShaderSrc = 
 		"precision mediump float; \
-		varying vec2 var_texCoord; \
+		varying vec2 texCoord; \
 		uniform sampler2D sampler; \
 		uniform vec2 inverseTextureSize; \
 		void main() { \
-		  gl_FragColor = texture2D(sampler, var_texCoord * 0.5); \
+		  gl_FragColor = texture2D(sampler, texCoord); \
 		}";
 
 	shader = createShader(gl, vertexShaderSrc, fragmentShaderSrc);
@@ -179,9 +188,9 @@ function update()
 	gl.useProgram(shader.program);
 	gl.bindBuffer(gl.ARRAY_BUFFER, verticeBuffer);
 	gl.enableVertexAttribArray(shader.attrib.position);
-	gl.enableVertexAttribArray(shader.attrib.texCoord);	
+	gl.enableVertexAttribArray(shader.attrib.uv);	
 	gl.vertexAttribPointer(shader.attrib.position, 2, gl.FLOAT, false, 16, 0);
-	gl.vertexAttribPointer(shader.attrib.texCoord, 2, gl.FLOAT, false, 16, 8);
+	gl.vertexAttribPointer(shader.attrib.uv, 2, gl.FLOAT, false, 16, 8);
 
 	gl.uniform2fv(shader.uniform.viewportSize, viewportSize);
 	

@@ -144,8 +144,8 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 		texture.x = node.getAttribute("x");
 		texture.y = node.getAttribute("y");
 		texture.resize(node.getAttribute("width"), node.getAttribute("height"));
-		texture.isLoaded = true;
-		Resource.ctrl.add(texture);	
+		texture.loaded = true;
+		meta.resources.add(texture);	
 	},
 
 	_loadXML_genericXML: function(node)
@@ -157,8 +157,8 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 		texture.x = node.getAttribute("x");
 		texture.y = node.getAttribute("y");
 		texture.resize(node.getAttribute("w"), node.getAttribute("h"));
-		texture.isLoaded = true;
-		Resource.ctrl.add(texture);	
+		texture.loaded = true;
+		meta.resources.add(texture);	
 	},
 
 	loadPlist: function(plist)
@@ -244,8 +244,8 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 					texture.x = parseInt(data[0]);
 					texture.y = parseInt(data[1]);
 					texture.resize(parseInt(data[2]), parseInt(data[3]))
-					texture.isLoaded = true;
-					Resource.ctrl.add(texture);						
+					texture.loaded = true;
+					meta.resources.add(texture);						
 					return;
 				}
 			}
@@ -286,8 +286,8 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 			texture.x = frame.x;
 			texture.y = frame.y
 			texture.resize(frame.w, frame.h);
-			texture.isLoaded = true;
-			Resource.ctrl.add(texture);	
+			texture.loaded = true;
+			meta.resources.add(texture);	
 		}		
 	},
 
@@ -306,8 +306,8 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 			texture.x = frame.x;
 			texture.y = frame.y
 			texture.resize(frame.w, frame.h);
-			texture.isLoaded = true;
-			Resource.ctrl.add(texture);	
+			texture.loaded = true;
+			meta.resources.add(texture);	
 		}		
 	},
 
@@ -346,13 +346,13 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 			texture.y = item.y;
 			texture.resize(item.width, item.height);
 			texture.numFrames = item.numFrames || this.params.numFrames || 1;
-			texture.isLoaded = true;
-			Resource.ctrl.add(texture);
+			texture.loaded = true;
+			meta.resources.add(texture);
 		}
 
 		this.texture._frames = frames;
 		this.atlas = null;
-		this.isLoaded = true;
+		this.loaded = true;
 
 		return true;
 	},
@@ -365,7 +365,7 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 			this.texture.unsubscribe(this);
 			if(this._isAtlasLoaded) {
 				this.loadData(this._response, this.format);
-				Resource.ctrl.loadSuccess(this);
+				meta.resources.loadSuccess(this);
 				this._response = null;	
 			}
 		}
@@ -382,7 +382,7 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 				this._request = null;
 				if(this.texture._isLoaded) {
 					this.loadData(this._response, this.format);
-					Resource.ctrl.loadSuccess(this);
+					meta.resources.loadSuccess(this);
 					this._response = null;
 				}
 			}
@@ -390,7 +390,7 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 				this._isLoading = false;
 				this._request.onreadystatechange = null;
 				this._request = null;
-				Resource.ctrl.loadFailed(this);
+				meta.resources.loadFailed(this);
 			}
 		}		
 	},

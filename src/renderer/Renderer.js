@@ -41,7 +41,6 @@ meta.class("meta.Renderer",
 		meta.subscribe(this, meta.Event.CAMERA_MOVE, this.onCameraMove);
 
 		this.holder.resize(this.camera.volume.width, this.camera.volume.height);
-		this.holder.resize(640, 480);
 	},
 
 	update: function(tDelta)
@@ -627,6 +626,7 @@ meta.class("meta.Renderer",
 
 	onCameraResize: function(data, event) 
 	{
+		console.log("here");
 		this.holder.resize(data.width, data.height);
 		this.staticHolder.resize(this.engine.width, this.engine.height);
 

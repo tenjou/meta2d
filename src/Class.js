@@ -10,14 +10,14 @@
 	var fnTest = /\b_super\b/;
 	var holders = {};
 
-	meta.class = function(clsName, extendName, prop) 
+	meta.class = function(clsName, extendName, prop, cb) 
 	{
 		if(!initializing) {
-			meta.class._construct(clsName, extendName, prop);
+			meta.class._construct(clsName, extendName, prop, cb);
 		}
 	};
 
-	meta.class._construct = function(clsName, extendName, prop) 
+	meta.class._construct = function(clsName, extendName, prop, cb) 
 	{
 		if(!clsName) {
 			console.error("(meta.class) Invalid class name");
@@ -61,15 +61,15 @@
 					holders[extendName] = holder;
 				}
 
-				holder.classes.push(new ExtendItem(clsName, prop));			
+				holder.classes.push(new ExtendItem(clsName, prop, cb));			
 				return;
 			}			
 		}		
 
-		Extend(clsName, extend, prop);  	
+		Extend(clsName, extend, prop, cb);  	
 	};
 
-	function Extend(clsName, extend, prop) 
+	function Extend(clsName, extend, prop, cb) 
 	{
 		var prevScope = null;
 		var scope = window;
@@ -153,6 +153,7 @@
 
 		cls.prototype = proto;		
 		cls.prototype.__name__ = clsName;
+		cls.prototype.__lastName__ = name;
 		cls.prototype.constructor = proto.init || null;
 		scope[name] = cls;
 
@@ -168,10 +169,14 @@
 			num = classes.length;
 			for(n = 0; n < num; n++) {
 				extendItem = classes[n];
-				Extend(extendItem.name, cls, extendItem.prop);
-			}	
+				Extend(extendItem.name, cls, extendItem.prop, extendItem.cb);
+			}
 
 			delete holders[clsName];		
+		}
+
+		if(cb) {
+			cb(cls, clsName);
 		}
 	};
 
@@ -179,9 +184,10 @@
 		this.classes = [];
 	};
 
-	function ExtendItem(name, prop) {
+	function ExtendItem(name, prop, cb) {
 		this.name = name;
 		this.prop = prop;
+		this.cb = cb;
 	};
 
 	meta.classLoaded = function()
@@ -202,5 +208,6 @@
 		}
 
 		holder = {};
-	};			
-})(typeof window !== void(0) ? window : global);
+	};	
+})(typeof(window) !== void(0) ? window : global);
+

@@ -2,58 +2,43 @@
 
 <html>
     <head>
-        <title>Entity Position :: META</title>
+        <title>Entity Positioning // META</title>
 
-        <script src="http://infinite-games.com/meta.latest.js"></script>
+        <script src="http://meta2d.com/meta.js"></script>
     </head>
 
     <body>
-        <!-- Example on how to position entity with different approaches. -->
+        <!-- Example on how to position entity to different positions. -->
 
         <script>
             meta.load = function()
             {
                 meta.preloadTexture("https://dl.dropboxusercontent.com/u/145051233/meta/shrine.png");
 
-                // Center the entity.
                 var center = new Entity.Geometry("shrine");
                 center.anchor(0.5);
-                // Show debug bounds of the entity.
-                center.showBounds = true;
-                meta.view.add(center); 
+                center.pivot(0.5);
+                meta.view.attach(center); 
 
-                // Position entity at top left corner.
                 var topLeft = new Entity.Geometry("shrine");
-                // Entities by default are anchored at top left corner.
-                topLeft.positionTopLeft(0, 0);
-                topLeft.showBounds = true;
-                meta.view.add(topLeft);
+                meta.view.attach(topLeft);
 
-                // Position entity at top right corner.
                 var topRight = new Entity.Geometry("shrine");
-                // Anchor entity at top right corner.
-                topRight.anchor(1.0, 0.0);
-                topRight.positionTopRight(0, 0);
-                topRight.showBounds = true;
-                meta.view.add(topRight);
+                topRight.anchor(1, 0);
+                topRight.pivot(1, 0);
+                meta.view.attach(topRight);
 
-                // Position entity at bottom left corner.
                 var bottomLeft = new Entity.Geometry("shrine");
-                // Anchor entity at bottom left corner.
-                bottomLeft.anchor(0.0, 1.0);
-                bottomLeft.positionBottomLeft(0, 0);
-                bottomLeft.showBounds = true;
-                meta.view.add(bottomLeft);
+                bottomLeft.anchor(0, 1);
+                bottomLeft.pivot(0, 1);
+                meta.view.attach(bottomLeft);
 
-                // Position entity at bottom right corner.
                 var bottomRight = new Entity.Geometry("shrine");
-                // Anchor entity at bottom right corner.
-                bottomRight.anchor(1.0, 1.0);
-                bottomRight.positionBottomRight(0, 0);
-                bottomRight.showBounds = true;
-                meta.view.add(bottomRight); 
+                bottomRight.anchor(1, 1);
+                bottomRight.pivot(1, 1);
+                meta.view.attach(bottomRight); 
 
-                meta.addDescription("Entity positioning example");
+                meta.info("Entity positioning example");
             }; 
         </script>
     </body>

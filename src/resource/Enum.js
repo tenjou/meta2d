@@ -1,11 +1,14 @@
 "use strict";
 
+var Resource = {};
+
 /**
  * Resource event.
  * @enum {String}
  * @readonly
  */
-Resource.Event = {
+Resource.Event = 
+{
 	FAILED: "res-failed",
 	/**
 	 * Resource unloaded.
@@ -40,7 +43,8 @@ Resource.Event = {
  * @enum {Number}
  * @readonly
  */
-Resource.Type = {
+Resource.Type =
+{
 	/**
 	 * Basic resource: JSON and undefined resources loaded through Ajax.
 	 */
@@ -69,7 +73,8 @@ Resource.Type = {
  * @memberof! <global>
  * @readonly
  */
-Resource.TextureType = {
+Resource.TextureType =
+{
 	/**
 	 * Unknown type.
 	 */	
@@ -83,52 +88,3 @@ Resource.TextureType = {
 	 */
 	WEBGL: 1
 };
-
-/**
- * Enum for Resource.Texture mask type
- * @enum {Number}
- * @memberof! <global>
- * @readonly
- */
-Resource.AnimType = {
-	/**
-	 * None.
-	 */
-	NONE: 0,
-
-	/**
-	 * Linear horizontally. Default value.
-	 */
-	LINEAR_H: 1,
-
-	/**
-	 * Linear vertically. Default value.
-	 */
-	LINEAR_V: 2,
-
-	/**
-	 * Radial.
-	 */
-	RADIAL: 3,
-
-	/**
-	 * Radial top left.
-	 */
-	RADIAL_TOP_LEFT: 4,
-
-	/**
-	 * Radial top right.
-	 */
-	RADIAL_TOP_RIGHT: 5,
-
-	/**
-	 * Radial bottom left.
-	 */
-	RADIAL_BOTTOM_LEFT: 6,
-
-	/**
-	 * Radial bottom right.
-	 */
-	RADIAL_BOTTOM_RIGHT: 7
-};
-

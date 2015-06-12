@@ -22,6 +22,7 @@ meta.Camera = function()
 	this.volume = new meta.math.AABBext(0, 0, 0, 0);
 	this.zoomBounds = null;
 
+	this._wasResized = false;
 	this._autoZoom = false;
 	this._zoom = 1.0;
 	this.prevZoom = 1.0;
@@ -112,6 +113,10 @@ meta.Camera.prototype =
 			this.volume.move(moveX, moveY);
 		}
 		
+		if(this._wasResized) {
+			this._chnResize.emit(this, meta.Event.CAMERA_RESIZE);
+			this._wasResized = false;
+		}
 		this._chnMove.emit(this, meta.Event.CAMERA_MOVE);
 	},
 
@@ -122,8 +127,7 @@ meta.Camera.prototype =
 			this.zoomRatio = 1.0 / this._zoom;		
 			this.volume.scale(this.zoomRatio, this.zoomRatio);
 
-			//meta.world.onResize(this, 0);
-			this._chnResize.emit(this, meta.Event.CAMERA_RESIZE);
+			this._wasResized = true;
 		}	
 	},
 
@@ -163,6 +167,7 @@ meta.Camera.prototype =
 	bounds: function(width, height)
 	{
 		this._autoZoom = true;
+		this._wasResized = true;
 		this.zoomBounds.width = width;
 		this.zoomBounds.height = height;
 		
@@ -174,6 +179,7 @@ meta.Camera.prototype =
 	minBounds: function(width, height)
 	{
 		this._autoZoom = true;
+		this._wasResized = true;
 		this.zoomBounds.minWidth = width;
 		this.zoomBounds.minHeight = height;
 		this.updateView();
@@ -182,6 +188,7 @@ meta.Camera.prototype =
 	maxBounds: function(width, height)
 	{
 		this._autoZoom = true;
+		this._wasResized = true;
 		this.zoomBounds.maxWidth = width;
 		this.zoomBounds.maxHeight = height;
 		this.updateView();
@@ -208,9 +215,12 @@ meta.Camera.prototype =
 
 	_onResize: function(data, event)
 	{
+		this.volume.resize(data.width, data.height);
+
 		this._prevZoom = this._zoom;
 		this._zoom = meta.engine.zoom;
-		this.volume.resize(data.width, data.height);
+		this._wasResized = true;
+		
 		this.updateView();
 	},
 
@@ -333,6 +343,7 @@ meta.Camera.prototype =
 	{
 		if(this._autoZoom === value) { return; }
 		this._autoZoom = value;
+		this._wasResized = true;
 
 		this.updateView();
 	},
@@ -343,6 +354,7 @@ meta.Camera.prototype =
 	{
 		if(this._worldBounds === value) { return; }
 		this._worldBounds = value;
+		this._wasResized = true;
 
 		this.updateView();
 	},

@@ -160,27 +160,9 @@ meta._addResource = function(strType, data, folderPath, tag)
 		resource = new Resource[strType](folderPath + data, tag);
 	};
 
-	Resource.ctrl.add(resource);
+	meta.resources.add(resource);
 
 	return resource;
-};
-
-/**
- * Get texture by name.
- * @param name {String} Name of the texture resource.
- * @returns {Resource.Texture|null} Texture from the manager.
- */
-meta.getTexture = function(name) {
-	return Resource.ctrl.getTexture(name);
-};
-
-/**
- * Get sound by name.
- * @param name {String} Name of the sound resource.
- * @returns {Resource.Sound|null} Sound from the manager.
- */
-meta.getSound = function(name) {
-	return Resource.ctrl.getSound(name);
 };
 
 /**
@@ -284,25 +266,21 @@ meta.serialize = function(obj)
  */
 meta.info = function(text)
 {
-	// Text.
 	var msg = new Entity.Text(text);
-	msg.color = "#ffffff";
-	msg.pivot(0.5);
+	msg.anchor(0.5);
+	msg.pivot(0.5);	
 
-	// Background.
 	var texture = new Resource.SVG();
+	texture.fillStyle = "black";
 	texture.fillRect(0, 0, msg.width + 10, msg.height + 10);
-
-	var bg = new Entity.Geometry(texture);
-	bg.z = 9999;
-	bg.position(0, 20);
-	bg.anchor(0.5, 0);
-	bg.pivot(0.5);
-	
-	bg.static = true;
-	meta.view.attach(bg);
-
-	bg.attach(msg);
+	var holder = new Entity.Geometry(texture);
+	holder.z = 999999;
+	holder.pivot(0.5);
+	holder.anchor(0.5, 0);
+	holder.position(0, 20);
+	holder.attach(msg);
+	holder.static = true;
+	meta.view.attach(holder);
 };
 
 meta.adaptTo = function(width, height, path)
@@ -428,4 +406,20 @@ function isBinOp(c)
 			c === "+" || c === "-" || c === "*" || c === "/" ||
 			c === "&" || c === "~" || c === "|" || c === "%");
 };
+
+function getClsFromPath(path)
+{
+	var cls = null;
+	var scope = window;
+	var num = path.length;
+	for(var i = 0; i < num; i++) {
+		scope = scope[path[i]];
+		if(!scope) {
+			return null;
+		}
+	}
+
+	return cls;
+};
+
 

@@ -2,7 +2,6 @@
 
 /**
  * Object that holds information about channel.
- * @constructor
  * @property name {String} Name of the channel.
  * @property subs {Array} Array with subsribers.
  * @property numSubs {Number} Total count of subscribers.

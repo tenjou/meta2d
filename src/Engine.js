@@ -54,12 +54,14 @@ meta.engine =
 			document.addEventListener(meta.device.fullScreenOnChange, this.cb.fullscreen);
 		}
 
-		meta.subscribe(this, Input.Event.KEY_DOWN, this.onKeyDown);
 		meta.subscribe(this, Resource.Event.LOADING_START, this.onLoadingStart);
 		meta.subscribe(this, Resource.Event.LOADING_END, this.onLoadingEnd);
 
 		meta.world = new meta.World(0, 0);
 		meta.camera = new meta.Camera();
+		meta.resources = new Resource.Manager();
+		meta.input = new Input.Manager();
+		meta.debugger = new meta.Debugger();
 
 		this.sortAdaptions();
 		this.onResize();	
@@ -91,7 +93,6 @@ meta.engine =
 		}
 
 		this.inited = true;
-		this._addCorePlugins();
 
 		console.log(" ");
 
@@ -116,27 +117,25 @@ meta.engine =
 	{
 		this.loading = true;
 
-		meta.renderer.load();
+		this.meta.renderer.load();
 
 		var cache = meta.cache;
-
 		var numFuncs = cache.loadFuncs.length;
 		for(var i = 0; i < numFuncs; i++) {
 			cache.loadFuncs[i]();
 		}
 
-		meta.ctrl.loadCtrls();
-
+		this.loadPlugins();
 		this.loaded = true;
 
-		if(!this.loadingResources) {
+		if(!this.meta.resources.loading) {
 			this.onReady();
 		}
 	},
 
 	onReady: function()
 	{
-		meta.ctrl.readyCtrls();	
+		this.readyPlugins();
 
 		if(this.ready) { return; }	
 
@@ -159,6 +158,22 @@ meta.engine =
 		this._startMainLoop();
 	},
 
+	loadPlugins: function() 
+	{
+		var num = this.plugins.length;
+		for(var n = 0; n < num; n++) {
+			this.plugins[n].load();
+		}
+	},
+
+	readyPlugins: function() 
+	{
+		var num = this.plugins.length;
+		for(var n = 0; n < num; n++) {
+			this.plugins[n].ready();
+		}
+	},
+
 	_startMainLoop: function() 
 	{
 		var self = this;
@@ -170,14 +185,31 @@ meta.engine =
 
 	update: function(tDelta)
 	{
-		meta.ctrl.removeCtrls();
-		meta.ctrl.update(tDelta);
-
 		this._updateTimers(meta.time.delta);
 
-		this.meta.renderer.update(tDelta);
+		var n;
+		var num = this.controllersReady.length;
+		if(num > 0 && !this.meta.resources.loading) 
+		{
+			var controller;
+			for(n = 0; n < num; n++) {
+				controller = this.controllersReady[n];
+				if(controller.flags & controller.Flag.LOADED) {
+					controller.ready();
+				}
+			}
 
-		//window.setTimeout(this._updateLoop, tSleep);
+			this.controllersReady.length = 0;
+		} 
+
+		num = this.controllersUpdate.length;
+		if(num > 0) {
+			for(n = 0; n < num; n++) {
+				this.controllersUpdate[n].update(tDelta);
+			}
+		}
+
+		this.meta.renderer.update(tDelta);
 	},
 
 	render: function()
@@ -365,19 +397,15 @@ meta.engine =
 		return true;
 	},	
 
-	onKeyDown: function(data, event) 
+	onKeyTilde: function(data, event) {
+		meta.debug = !meta.cache.debug;
+		meta.renderer.needRender = true;
+	},
+
+	onLoadingStart: function(data, event) {},
+
+	onLoadingEnd: function(data, event) 
 	{
-		if(data.keyCode === Input.Key.TILDE) {
-			meta.debug = !meta.cache.debug;
-			meta.renderer.needRender = true;
-		}
-	},
-
-	onLoadingStart: function(data, event) {
-		this.loadingResources = true;
-	},
-
-	onLoadingEnd: function(data, event) {
 		this.loadingResources = false;
 		if(this.loaded) {
 			this.onReady();
@@ -475,7 +503,7 @@ meta.engine =
 		
 		this._updateOffset();
 		this.chn.resize.emit(this, meta.Event.RESIZE);
-		
+
 		meta.renderer.needRender = true;
 	},
 
@@ -593,12 +621,6 @@ meta.engine =
 		rect = this.canvas.getBoundingClientRect();
 		this.offsetLeft += rect.left;
 		this.offsetTop += rect.top;		
-	},
-
-	_addCorePlugins: function() {
-		meta.ctrl.create("Resource");
-		meta.ctrl.create("Input");
-		meta.ctrl.create("Physics");
 	},
 
 	_printInfo: function()
@@ -734,8 +756,6 @@ meta.engine =
 
 	inited: false,
 	loading: false,
-	loadingCtrls: false,
-	loadingResources: false,
 	loaded: false,
 	ready: false,
 	focus: false,
@@ -747,6 +767,10 @@ meta.engine =
 
 	_updateLoop: null,
 	_renderLoop: null,
+
+	plugins: [],
+	controllersReady: [],
+	controllersUpdate: [],
 
 	timers: [],
 	timersRemove: [],

@@ -23,41 +23,40 @@ cat meta.js \
 	math/Circle.js \
 	math/Matrix4.js \
 	math/Random.js \
-	tween/Tween.js \
-	tween/Easing.js \
-	tween/Link.js \
+	resource/Enum.js \
+	resource/Resource.Manager.js \
+	resource/Resource.Basic.js \
+	resource/Resource.Texture.js \
+	resource/Resource.Sound.js \
+	resource/Resource.SpriteSheet.js \
+	resource/Resource.Font.js \
+	resource/Resource.SVG.js \
+	input/Enum.js \
+	input/Input.Manager.js \
+	entity/Enum.js \
+	entity/Entity.Geometry.js \
+	entity/Entity.Text.js \
+	entity/Entity.Tiling.js \
+	components/Component.js \
+	components/Component.Anim.js \
 	renderer/Renderer.js \
 	renderer/CanvasRenderer.js \
-	plugins/Resource/Resource.Controller.js \
-	plugins/Resource/Enum.js \
-	plugins/Resource/Resource.Basic.js \
-	plugins/Resource/Resource.Texture.js \
-	plugins/Resource/Resource.Sound.js \
-	plugins/Resource/Resource.SpriteSheet.js \
-	plugins/Resource/Resource.Font.js \
-	plugins/Resource/Resource.SVG.js \
-	plugins/Entity/Enum.js \
-	plugins/Entity/Entity.Geometry.js \
-	plugins/Entity/Entity.Text.js \
-	plugins/Entity/Entity.Tiling.js \
-	plugins/Entity/svg/Entity.SVG.js \
-	plugins/Entity/svg/Entity.Line.js \
-	plugins/Entity/svg/Entity.Rect.js \
-	plugins/Entity/svg/Entity.Circle.js \
-	plugins/Entity/svg/Entity.Gradient.js \
-	plugins/Input/Input.Controller.js \
-	plugins/Input/Enum.js \
-	plugins/Physics/Physics.Controller.js \
+	debugger/Debugger.js \
+	plugins/svg/Entity.SVG.js \
+	plugins/svg/Entity.Line.js \
+	plugins/svg/Entity.Rect.js \
+	plugins/svg/Entity.Circle.js \
+	plugins/svg/Entity.Gradient.js \
+	plugins/Physics/Physics.js \
 	plugins/Physics/Physics.Body.js \
 	plugins/UI/UI.Controller.js \
 	plugins/UI/UI.Button.js \
 	plugins/UI/UI.Checkbox.js \
 	plugins/UI/UI.ProgressBar.js \
 	plugins/UI/UI.Group.js \
-	components/Component.js \
-	components/Component.Anim.js \
-	components/Component.Body.js \
+	plugins/tween/Tween.js \
+	plugins/tween/Easing.js \
+	plugins/tween/Link.js \
 	Loader.js \
-	Debugger.js \
 	| uglifyjs --output ../versions/meta.js --mangle -c dead_code=false,unused=false,side_effects=false --screw-ie8
 

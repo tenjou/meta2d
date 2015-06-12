@@ -229,5 +229,3 @@ meta.Debugger.prototype =
 		this.txt.worldResolution.text = "width: " + volume.width + ", height: " + volume.height;
 	}
 };
-
-meta.debugger = new meta.Debugger();

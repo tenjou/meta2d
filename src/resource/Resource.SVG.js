@@ -111,7 +111,7 @@ meta.class("Resource.SVG", "Resource.Texture",
 		}
 
 		if(typeof(params.texture) === "string") {
-			params.texture = Resource.ctrl.getTexture(params.texture);
+			params.texture = meta.resources.getTexture(params.texture);
 		}
 
 		if(!params.texture) {

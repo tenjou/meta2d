@@ -1,6 +1,6 @@
 "use strict";
 
-meta.class("Physics.Controller", "meta.Controller", 
+meta.plugin("Physics",
 {
 	init: function() {
 		this.manifold = new this.Manifold();

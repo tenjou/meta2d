@@ -94,10 +94,10 @@ meta.class("Resource.Texture", "Resource.Basic",
 		}
 
 		if(meta.cache.currResolution) {
-			this.fullPath = Resource.ctrl.rootPath + meta.cache.currResolution.path + this.path;
+			this.fullPath = meta.resources.rootPath + meta.cache.currResolution.path + this.path;
 		}
 		else {
-			this.fullPath = Resource.ctrl.rootPath + this.path;
+			this.fullPath = meta.resources.rootPath + this.path;
 		}
 
 		var self = this;
@@ -110,22 +110,22 @@ meta.class("Resource.Texture", "Resource.Basic",
 
 			if(!img.complete) {
 				console.warn("(Resource.Texture.load) Could not load texture from - " + img.src);
-				Resource.ctrl.loadFailed(self);
+				meta.resources.loadFailed(self);
 				return;
 			}
 
 			self.createFromImg(img);
-			Resource.ctrl.loadSuccess(self);
+			meta.resources.loadSuccess(self);
 		};
 
 		img.onerror = function(event) {
-			Resource.ctrl.loadFailed(self);
+			meta.resources.loadFailed(self);
 			self.emit(this, Resource.Event.FAILED);
 		};		
 
 		img.src = this.fullPath;
 
-		Resource.ctrl.addToLoad(this);
+		meta.resources.addToLoad(this);
 
 		// var self = this;
 		// var img = new Image();
@@ -458,3 +458,7 @@ meta.class("Resource.Texture", "Resource.Basic",
 	_loadCache: null,
 	_canvasCache: null
 });
+
+Resource.Texture.prototype._tmpImg = document.createElement("canvas");
+Resource.Texture.prototype._tmpCtx = Resource.Texture.prototype._tmpImg.getContext("2d");
+

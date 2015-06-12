@@ -18,7 +18,7 @@ meta.class("Resource.Sound", "Resource.Basic",
 				path = path.substr(0, wildCardIndex);
 			}
 
-			this.path = Resource.ctrl.rootPath + path;
+			this.path = meta.resources.rootPath + path;
 		}	
 
 		this._instances = [];
@@ -50,13 +50,13 @@ meta.class("Resource.Sound", "Resource.Basic",
 
 	load: function()
 	{
-		if(this.isLoading) { return; }
+		if(this.loading) { return; }
 
-		this.isLoading = true;
-		this.isLoaded = false;
-		Resource.ctrl.addToLoad(this);
+		this.loading = true;
+		this.loaded = false;
 
-		var resourceCtrl = Resource.ctrl;
+		var resourceCtrl = meta.resources;
+		resourceCtrl.addToLoad(this);
 		if(!resourceCtrl.isSyncLoading)
 		{
 			if(!this.syncLoading) {
