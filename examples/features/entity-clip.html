@@ -2,9 +2,9 @@
 
 <html>
     <head>
-        <title>Entity Clipping :: META</title>
+        <title>Entity Clipping // META</title>
 
-        <script src="http://infinite-games.com/meta.latest.js"></script>
+        <script src="http://meta2d.com/meta.js"></script>
     </head>
 
     <body>
@@ -19,20 +19,24 @@
                     "https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
 
                 // Create an clipping entity just to see clipping boundaries.
-                var clippingTex = new Resource.Texture();
-                clippingTex.fillRect(150, 150, "#555");
+                var clippingTex = new Resource.SVG();
+                clippingTex.fillStyle = "#555";
+                clippingTex.fillRect(0, 0, 150, 150);
+
                 var clippingEntity = new Entity.Geometry(clippingTex);
                 clippingEntity.anchor(0.5);
-                meta.view.add(clippingEntity);
+                clippingEntity.pivot(0.5);
+                meta.view.attach(clippingEntity);
 
                 entity = new Entity.Geometry("jabba");
                 entity.anchor(0.5);
-                // Or meta.math.AABB can be used to setup clipping volume.
+                entity.pivot(0.5);
+                // Setup clip region by passing other entity or by passing meta.math.AABB:
                 entity.clip(clippingEntity);
-                entity.showBounds = true;
-                meta.view.add(entity);
+                entity.debug = true;
+                meta.view.attach(entity);
 
-                meta.addDescription("Example on how to clip entities");
+                meta.info("Example on how to clip entities");
             };
 
             meta.update = function(tDelta) {

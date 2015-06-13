@@ -18,15 +18,22 @@
 
                 var entity = new Entity.Geometry("jabba");
                 entity.anchor(0.5);
+                entity.pivot(0.5);
                 entity.position(0, -70);
                 meta.view.attach(entity);
 
-                var button = new UI.Button();
+                // Create a placeholder texture for button:
+                var buttonTexture = new Resource.SVG();
+                buttonTexture.fillRect(0, 0, 100, 30);
+
+                // Create button which if is clicked will toggle entity visibilty:
+                var button = new UI.Button(buttonTexture);
                 button.text = "Toggle Visibility";
                 button.anchor(0.5);
+                button.pivot(0.5);
                 button.position(0, 70);
                 button.onClick = function() {
-                    // Toggle visibility of the entity on each click.
+                    // Toggle visibility of the entity on each click:
                     entity.visible = !entity.visible;
                 };
                 meta.view.attach(button);

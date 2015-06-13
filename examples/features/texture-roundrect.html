@@ -2,9 +2,9 @@
 
 <html>
     <head>
-        <title>Texture RoundRect :: META</title>
+        <title>Texture RoundRect // META</title>
 
-        <script src="http://infinite-games.com/meta.latest.js"></script>
+        <script src="http://meta2d.com/meta.js"></script>
     </head>
 
     <body>
@@ -13,21 +13,19 @@
         <script>
             meta.load = function()
             {
-                var texture = new Resource.Texture();
-                texture.roundRect({
-                    width: 300,
-                    height: 200,
-                    color: "#000000",
-                    fillColor: "orange",
-                    borderWidth: 20,
-                    radius: 16
-                });
+                var texture = new Resource.SVG();
+                texture.fillStyle = "orange";
+                texture.strokeStyle = "black";
+                texture.lineWidth = 16;
+                // Draw rounded rect with params: width, height, radius
+                texture.roundRect(300, 200, 16);
 
                 var entity = new Entity.Geometry(texture);
                 entity.anchor(0.5);
-                meta.view.add(entity);
+                entity.pivot(0.5);
+                meta.view.attach(entity);
 
-                meta.addDescription("Texture round rect example");
+                meta.info("Texture round rect example");
             }; 
         </script>
     </body>
