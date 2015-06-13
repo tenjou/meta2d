@@ -2,9 +2,9 @@
 
 <html>
     <head>
-        <title>Entity Input Hover :: META</title>
+        <title>Entity Hovering // META</title>
 
-        <script src="http://infinite-games.com/meta.latest.js"></script>
+        <script src="http://meta2d.com/meta.js"></script>
     </head>
 
     <body>
@@ -13,26 +13,31 @@
         <script>
             meta.load = function()
             {
-                meta.preloadTexture("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+                meta.preloadTexture(
+                    "https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
 
                 var entity = new Entity.Geometry("jabba");
                 entity.anchor(0.5);
-                meta.view.add(entity);
+                entity.pivot(0.5);
+                 // Enable input picking for this entity:
+                entity.picking = true;
+                meta.view.attach(entity);
 
-                // Called when input enters entity boundaries for the first time.
+                // If input enters the entity boundaries for the first time 
+                //  then show debug boundaries:
                 entity.onHoverEnter = function(event) {
-                    this.showBounds = true;
+                    this.debug = true;
                 };
-                // Called when input exits entity boundaries.
+                // If input exits the entity boundaries hide debug boundaries:
                 entity.onHoverExit = function(event) {
-                    this.showBounds = false;
+                    this.debug = false;
                 };
-                // Called when input moves inside entity boundaries.
+                // This is called when input moves inside entity boundaries:
                 entity.onHover = function(event) {
                     console.log("onHover");
                 };   
 
-                meta.addDescription("Entity hover example");                
+                meta.info("Entity hovering example");                
             };
         </script>
     </body>
