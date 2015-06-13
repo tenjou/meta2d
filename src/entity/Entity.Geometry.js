@@ -646,6 +646,19 @@ meta.class("Entity.Geometry",
 		this.updateFromTexture();
 	},
 
+	_onLoadingEnd: function(data, event)
+	{
+		var texture = meta.resources.getTexture(this._textureName);
+		if(!texture) {
+			console.warn("(Entity.Geometry) Unavailable texture - " + this._textureName);
+		}
+		else {
+			this.texture = texture;
+		}
+
+		meta.unsubscribe(this, Resource.Event.LOADING_END);
+	},
+
 	updateFromTexture: function()
 	{
 		if(this._texture) {
@@ -683,8 +696,16 @@ meta.class("Entity.Geometry",
 			if(typeof(texture) === "string") 
 			{
 				this._texture = meta.resources.getTexture(texture);
-				if(!this._texture) {
-					console.warn("(Entity.Geometry) Unavailable texture - " + texture);
+				if(!this._texture) 
+				{
+					if(meta.resources.loading) {
+						this._textureName = texture;
+						meta.subscribe(this, Resource.Event.LOADING_END, this._onLoadingEnd);
+					}
+					else {
+						console.warn("(Entity.Geometry) Unavailable texture - " + texture);	
+					}
+				
 					return;
 				}
 			}

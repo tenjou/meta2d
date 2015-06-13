@@ -266,7 +266,6 @@ meta.class("Resource.Texture", "Resource.Basic",
 		}
 	},
 
-
 	/**
 	 * Draw frame from the texture.
 	 * @param ctx {*} Context to draw on.

@@ -24,19 +24,21 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 				path = path.substr(0, wildCardIndex);
 			}
 
-			this.path = Resource.ctrl.rootPath + path;
+			this.path = meta.resources.rootPath + path;
 			if(!this.format) {
 				this.format = "xml";
 			}
+
+			this.load(this.path);			
 		}
 	},
 
 	load: function()
 	{	
-		if(this.isLoading) { return; }	
+		if(this.loading) { return; }	
 
-		this.isLoading = true;
-		this.isLoaded = false;	
+		this.loading = true;
+		this.loaded = false;	
 		this._isAtlasLoaded = false;	
 
 		if(!this.texture) {
@@ -46,14 +48,7 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 			this.texture = new Resource.Texture(this.texture);
 		}
 
-		if(!this.texture._isLoaded) 
-		{
-			this.texture.subscribe(this, this._onTextureEvent);
-
-			if(!this.texture._isLoading) {
-				this.texture.load();
-			}
-		}		
+		this.texture.subscribe(this, this._onTextureEvent);	
 
 		var self = this;
 		var atlasPath = this.path + "." + this.format;
@@ -64,13 +59,7 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 		}	
 		this._request.send();	
 
-		Resource.ctrl.addToLoad(this);
-
-
-		// this.texture.subscribe(this, this._onTextureEvent);
-		// this.texture.load();
-
-		// console.log(this.atlas);
+		meta.resources.addToLoad(this);
 	},
 
 	loadData: function(data, format)
@@ -81,27 +70,28 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 		}
 
 		this.format = format;
-		this.isLoaded = true;
 
+		var result = false;
 		if(format === "xml") {
 			var parser = new DOMParser();
 			var xml = parser.parseFromString(data, "text/xml");
-			return this.loadXML(xml);
+			result = this.loadXML(xml);
 		}
 		else if(format === "json") {
 			var json = JSON.parse(data);
-			return this.loadJSON(json);
+			result = this.loadJSON(json);
 		}
 		else if(format === "plist") {
 			var parser = new DOMParser();
 			var plist = parser.parseFromString(data, "text/xml");
-			return this.loadPlist(plist);
+			result = this.loadPlist(plist);
 		}
 		else {
-			console.warn("[Resource.SpriteSheet.loadData]:", "Trying to load an unsupported format - " + this.format);
+			console.warn("(Resource.SpriteSheet.loadData):", "Trying to load an unsupported format - " + this.format);
 		}
-		
-		return false;
+
+		this.loaded = result;
+		return result;
 	},
 
 	loadXML: function(xml)
@@ -380,14 +370,14 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 				this._isAtlasLoaded = true;
 				this._response = this._request.response;
 				this._request = null;
-				if(this.texture._isLoaded) {
+				if(this.texture._loaded) {
 					this.loadData(this._response, this.format);
 					meta.resources.loadSuccess(this);
 					this._response = null;
 				}
 			}
 			else {
-				this._isLoading = false;
+				this._loaded = false;
 				this._request.onreadystatechange = null;
 				this._request = null;
 				meta.resources.loadFailed(this);

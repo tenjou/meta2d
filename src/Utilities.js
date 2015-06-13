@@ -14,23 +14,11 @@ meta.emptyFunc = function() {};
 meta.emptyFuncParam = function(param) {};
 
 /**
- * Load textures. Textures added will load only after requesting them first.
+ * Load textures.
  * @param buffer {Array|String} Buffer with texture sources.
  * @param folderPath {String=} Path applied to texture sources.
  */
 meta.loadTexture = function(buffer, folderPath, tag)
-{
-	if(!meta._loadResource("Texture", buffer, folderPath, tag)) {
-		console.warn("(meta.loadTexture) Unsupported parameter was passed.");
-	}
-};
-
-/**
- * Preload textures. When texture is added it will be auto loaded without anyone requesting it first.
- * @param buffer {Array|String} Buffer with texture sources.
- * @param folderPath {String=} Path applied to texture sources.
- */
-meta.preloadTexture = function(buffer, folderPath, tag)
 {
 	if(!meta._preloadResource("Texture", buffer, folderPath, tag)) {
 		console.warn("(meta.preloadTexture) Unsupported parameter was passed.");
@@ -38,31 +26,19 @@ meta.preloadTexture = function(buffer, folderPath, tag)
 };
 
 /**
- * Load sounds. Sounds added will load only after requesting them first.
+ * Load sounds.
  * @param buffer {Array|String} Buffer with sound sources.
  * @param folderPath {String=} Path applied to sound sources.
  */
 meta.loadSound = function(buffer, folderPath, tag)
 {
-	if(!meta._loadResource("Sound", buffer, folderPath, tag)) {
+	if(!meta._preloadResource("Sound", buffer, folderPath, tag)) {
 		console.warn("(meta.loadSound) Unsupported parameter was passed.");
 	}
 };
 
 /**
- * Preload sounds. When sound is added it will be auto loaded without anyone requesting it first.
- * @param buffer {Array|String} Buffer with sound sources.
- * @param folderPath {String=} Path applied to sound sources.
- */
-meta.preloadSound = function(buffer, folderPath, tag)
-{
-	if(!meta._preloadResource("Sound", buffer, folderPath, tag)) {
-		console.warn("(meta.preloadSound) Unsupported parameter was passed.");
-	}
-};
-
-/**
- * Load sounds. Sounds added will load only after requesting them first.
+ * Load spritesheets. 
  * @param buffer {Array|String} Buffer with sound sources.
  * @param folderPath {String=} Path applied to sound sources.
  */
@@ -78,41 +54,11 @@ meta.loadSpriteSheet = function(buffer, folderPath, tag)
  * @param buffer {Array|String} Buffer with sound sources.
  * @param folderPath {String=} Path applied to sound sources.
  */
-meta.preloadFont = function(buffer, folderPath, tag)
+meta.loadFont = function(buffer, folderPath, tag)
 {
 	if(!meta._preloadResource("Font", buffer, folderPath, tag)) {
 		console.warn("(meta.loadFont) Unsupported parameter was passed.");
 	}
-};
-
-meta._loadResource = function(strType, buffer, folderPath, tag)
-{
-	if(folderPath)
-	{
-		var slashIndex = folderPath.lastIndexOf("/");
-		if(slashIndex <= 0) {
-			folderPath += "/";
-		}
-	}
-	else {
-		folderPath = "";
-	}
-
-	if(buffer instanceof Array)
-	{
-		var numResources = buffer.length;
-		for(var i = 0; i < numResources; i++) {
-			meta._addResource(strType, buffer[i], folderPath, tag);
-		}
-	}
-	else if(typeof(buffer) === "object" || typeof(buffer) === "string") {
-		meta._addResource(strType, buffer, folderPath, tag);
-	}
-	else {
-		return false;
-	}	
-
-	return true;
 };
 
 meta._preloadResource = function(strType, buffer, folderPath, tag)

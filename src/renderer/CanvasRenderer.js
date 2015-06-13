@@ -155,8 +155,17 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 				if(texture.frames > 1) {
 					texture.drawFrame(this.ctx, volume.minX | 0, volume.minY | 0, anim._frame);
 				}
-				else {
-					this.ctx.drawImage(texture.canvas, volume.minX | 0, volume.minY | 0);
+				else 
+				{
+					if(texture.fromAtlas) 
+					{
+						this.ctx.drawImage(texture.ptr.canvas, 
+							texture.x, texture.y, texture.fullWidth, texture.fullHeight, 
+							volume.minX | 0, volume.minY | 0, texture.fullWidth, texture.fullHeight);
+					}
+					else {
+						this.ctx.drawImage(texture.canvas, volume.minX | 0, volume.minY | 0);
+					}
 				}				
 			}
 		}
@@ -187,9 +196,18 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 				if(texture.frames > 1) {
 					texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, anim._frame);
 				}
-				else {
-					this.ctx.drawImage(texture.canvas, -volume.initPivotPosX, -volume.initPivotPosY);
-				}					
+				else 
+				{
+					if(texture.fromAtlas) 
+					{
+						this.ctx.drawImage(texture.ptr.canvas, 
+							texture.x, texture.y, texture.fullWidth, texture.fullHeight, 
+							-volume.initPivotPosX, -volume.initPivotPosY, texture.fullWidth, texture.fullHeight);
+					}
+					else {
+						this.ctx.drawImage(texture.canvas, -volume.initPivotPosX, -volume.initPivotPosY);
+					}
+				}
 			}
 		
 			this.ctx.globalAlpha = 1.0;
