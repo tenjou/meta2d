@@ -137,37 +137,29 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		var volume = entity.volume;
 		var anim = entity.anim;
 
+		if(entity.clipVolume) 
+		{
+			this.ctx.save();
+
+			this.ctx.beginPath();
+			this.ctx.rect(entity.clipVolume.minX | 0, entity.clipVolume.minY | 0, 
+				entity.clipVolume.width, entity.clipVolume.height);
+			this.ctx.closePath();
+			this.ctx.clip();
+		}		
+
 		if(!volume.__transformed) 
 		{
-			if(entity.__clip)
-			{
-				if(texture.frames > 1) {
-					texture.drawFrame(this.ctx, volume.minX | 0, volume.minY | 0, anim._frame);
-				}
-				else {
-					this.ctx.drawImage(texture.canvas, 
-						0, 0, volume.width, volume.height,
-						volume.minX | 0, volume.minY | 0, volume.width, volume.height);
-				}
+			if(texture.frames > 1) {
+				texture.drawFrame(this.ctx, volume.minX | 0, volume.minY | 0, anim._frame);
 			}
-			else 
-			{
-				if(texture.frames > 1) {
-					texture.drawFrame(this.ctx, volume.minX | 0, volume.minY | 0, anim._frame);
-				}
-				else 
-				{
-					if(texture.fromAtlas) 
-					{
-						this.ctx.drawImage(texture.ptr.canvas, 
-							texture.x, texture.y, texture.fullWidth, texture.fullHeight, 
-							volume.minX | 0, volume.minY | 0, texture.fullWidth, texture.fullHeight);
-					}
-					else {
-						this.ctx.drawImage(texture.canvas, volume.minX | 0, volume.minY | 0);
-					}
-				}				
+			else {
+				this.ctx.drawImage(texture.canvas, 
+					0, 0, volume.width, volume.height,
+					volume.minX | 0, volume.minY | 0, volume.width, volume.height);
 			}
+
+			this.ctx.restore();
 		}
 		else
 		{
@@ -177,36 +169,20 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 				volume.m11, volume.m12, 
 				volume.m21, volume.m22,
 				volume.x | 0, volume.y | 0);
-
-			if(entity.__clip)
+				
+			if(texture.frames > 1) {
+				texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, anim._frame);
+			}
+			else 
 			{
-				if(texture.frames > 1) {
-					texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, anim._frame);
+				if(texture.fromAtlas) 
+				{
+					this.ctx.drawImage(texture.ptr.canvas, 
+						texture.x, texture.y, texture.fullWidth, texture.fullHeight, 
+						-volume.initPivotPosX, -volume.initPivotPosY, texture.fullWidth, texture.fullHeight);
 				}
 				else {
-					var width = volume.width * 1.0 / volume.scaleX;
-					var height = volume.height * 1.0 / volume.scaleY;
-
-					this.ctx.drawImage(texture.canvas, 
-						0, 0, width, height, -volume.initPivotPosX, -volume.initPivotPosY, width, height);					
-				}	
-			}
-			else
-			{
-				if(texture.frames > 1) {
-					texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, anim._frame);
-				}
-				else 
-				{
-					if(texture.fromAtlas) 
-					{
-						this.ctx.drawImage(texture.ptr.canvas, 
-							texture.x, texture.y, texture.fullWidth, texture.fullHeight, 
-							-volume.initPivotPosX, -volume.initPivotPosY, texture.fullWidth, texture.fullHeight);
-					}
-					else {
-						this.ctx.drawImage(texture.canvas, -volume.initPivotPosX, -volume.initPivotPosY);
-					}
+					this.ctx.drawImage(texture.canvas, -volume.initPivotPosX, -volume.initPivotPosY);
 				}
 			}
 		
@@ -214,6 +190,10 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 			
 			var zoom = this.camera._zoom;
 			this.ctx.setTransform(zoom, 0, 0, zoom, -this.camera._x * zoom | 0, -this.camera._y * zoom | 0);
+		}
+
+		if(entity.clipVolume) {
+			this.ctx.restore();
 		}
 	},
 

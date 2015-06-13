@@ -602,7 +602,7 @@ meta.class("Entity.Geometry",
 			}	
 		}
 	
-		this.__clip = true;
+		//this.__clip = true;
 		this.renderer.needRender = true;
 	},
 
@@ -627,6 +627,26 @@ meta.class("Entity.Geometry",
 	},
 
 	onResize: null,
+
+	clip: function(clip)
+	{
+		if(clip instanceof Entity.Geometry) {
+			this.clipVolume = clip.volume;
+		}
+		else if(clip instanceof meta.Math.AABB) {
+			this.clipVolume = clip;
+		}
+		else {
+			this.clipVolume = null;
+		}
+
+		this.renderer.needRender = true;
+	},
+
+	clipBounds: function(width, height)
+	{
+
+	},
 
 	/**
 	 * Callback for texture events.
@@ -1294,6 +1314,9 @@ meta.class("Entity.Geometry",
 
 	_dragOffsetX: 0, _dragOffsetY: 0,
 
+	volume: null,
+	clipVolume: null,
+
 	loaded: true,
 	removed: false,
 	_visible: true,
@@ -1316,7 +1339,6 @@ meta.class("Entity.Geometry",
 	__debug: false,
 	__updateIndex: -1,
 	__pickIndex: -1,
-	__clip: false,
 
 	flags: 0
 });
