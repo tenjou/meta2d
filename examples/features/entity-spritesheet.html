@@ -2,9 +2,9 @@
 
 <html>
     <head>
-        <title>Entity Spritesheet :: META</title>
+        <title>Entity Spritesheet // META</title>
 
-        <script src="http://infinite-games.com/meta.latest.js"></script>
+        <script src="http://meta2d.com/meta.js"></script>
     </head>
 
     <body>
@@ -14,15 +14,17 @@
             meta.load = function()
             {
                 // Can load .xml, .json (hash and indexed) and .plist spritesheet formats. 
-                // Will try to load image automatically with similar name.
+                // Loader will assume that spritesheet texture is with the same name.
                 meta.loadSpriteSheet(
                     "https://dl.dropboxusercontent.com/u/145051233/meta/blocks.json");
 
+                // Create with texture id specified in spritesheet format:
                 var entity = new Entity.Geometry("block_green");
                 entity.anchor(0.5);
-                meta.view.add(entity);
+                entity.pivot(0.5);
+                meta.view.attach(entity);
                 
-                meta.addDescription("Entity spritesheet example");                
+                meta.info("Entity spritesheet example");                
             };
         </script>
     </body>
