@@ -374,90 +374,58 @@ meta.class("Resource.SVG", "Resource.Texture",
 	/**
 	 * Draw a rounded rectangle. 
 	 */
-	roundRect: function(params, height, radius, color, borderWidth)
+	roundRect: function(width, height, radius)
 	{
-		if(typeof(params) !== "object") 
+		var offset;
+		if(this._lineWidth % 2 === 1) {
+			offset = 0.5;
+		}
+		else {
+			offset = 0;
+		}
+
+		if(this.fullWidth < 2 && this.fullHeight < 2) 
 		{
-			this.roundRect({ 
-				width: params, height: height,
-				radius: radius,
-				color: color,
-				borderWidth: borderWidth
-			});
-			return;
-		}		
-		if(!params) {
-			console.warn("[Resource.Texture.rect]:", "No parameters specified.");
-			return;
+			if(offset) {
+				this.resizeSilently(width + 1, height + 1);
+			}
+			else {
+				this.resizeSilently(width, height);
+			}
+			
+			this.ctx.fillStyle = this._fillStyle;
 		}
 
-		var ctx = this.ctx;
-		var width = params.width || 1;
-		var height = params.height || 1;
-		params.color = params.color || "#0000000";
-		var radius = params.radius || 1;
-		var borderWidth = params.borderWidth || 3;
+		var halfWidth = Math.ceil(this._lineWidth / 2);
 
-		if(!params.drawOver) {
-			this.resize(width, height);
-		}		
+		this.ctx.save();
+		this.ctx.translate(offset, offset);
+		this.ctx.beginPath();
+		this.ctx.moveTo(halfWidth + radius, halfWidth);
+		this.ctx.lineTo(width - halfWidth - radius, halfWidth);
+		this.ctx.quadraticCurveTo(width - halfWidth, halfWidth, width - halfWidth, halfWidth + radius);
+		this.ctx.lineTo(width - halfWidth, height - halfWidth - radius);
+		this.ctx.quadraticCurveTo(width - halfWidth, height - halfWidth, width - halfWidth - radius, height - halfWidth);
+		this.ctx.lineTo(halfWidth + radius, height - halfWidth);
+		this.ctx.quadraticCurveTo(halfWidth, height - halfWidth, halfWidth, height - halfWidth - radius);
+		this.ctx.lineTo(halfWidth, radius + halfWidth);
+		this.ctx.quadraticCurveTo(halfWidth, halfWidth, halfWidth + radius, halfWidth);
+		this.ctx.closePath();
 
-		if(this.textureType) {
-			this._createCachedImg();
-			ctx = this._cachedCtx;
-		}		
-
-		ctx.strokeStyle = params.color;
-		ctx.lineWidth = borderWidth;
-
-		var halfWidth = Math.ceil(borderWidth / 2);
-
-		if(borderWidth % 2 === 1)
-		{
-			ctx.save();
-			ctx.translate(0.5, 0.5);
-			ctx.beginPath();
-			ctx.moveTo(halfWidth + radius, halfWidth);
-			ctx.lineTo(width - halfWidth - radius, halfWidth);
-			ctx.quadraticCurveTo(width - halfWidth, halfWidth, width - halfWidth, halfWidth + radius);
-			ctx.lineTo(width - halfWidth, height - halfWidth - radius);
-			ctx.quadraticCurveTo(width - halfWidth, height - halfWidth, width - halfWidth - radius, height - halfWidth);
-			ctx.lineTo(halfWidth + radius, height - halfWidth);
-			ctx.quadraticCurveTo(halfWidth, height - halfWidth, halfWidth, height - halfWidth - radius);
-			ctx.lineTo(halfWidth, radius + halfWidth);
-			ctx.quadraticCurveTo(halfWidth, halfWidth, halfWidth + radius, halfWidth);
-			ctx.closePath();
-			ctx.stroke();
-			ctx.restore();
-		}
-		else 
-		{
-			ctx.beginPath();
-			ctx.moveTo(halfWidth + radius, halfWidth);
-			ctx.lineTo(width - halfWidth - radius, halfWidth);
-			ctx.quadraticCurveTo(width - halfWidth, halfWidth, width - halfWidth, halfWidth + radius);
-			ctx.lineTo(width - halfWidth, height - halfWidth - radius);
-			ctx.quadraticCurveTo(width - halfWidth, height - halfWidth, width - halfWidth - radius, height - halfWidth);
-			ctx.lineTo(halfWidth + radius, height - halfWidth);
-			ctx.quadraticCurveTo(halfWidth, height - halfWidth, halfWidth, height - halfWidth - radius);
-			ctx.lineTo(halfWidth, radius + halfWidth);
-			ctx.quadraticCurveTo(halfWidth, halfWidth, halfWidth + radius, halfWidth);
-			ctx.closePath();
-			ctx.stroke();			
+		if(this._fillStyle) {
+			this.ctx.fillStyle = this._fillStyle;
+			this.ctx.fill();
 		}
 
-		if(params.fillColor) {
-			ctx.fillStyle = params.fillColor;
-			ctx.fill();
+		if(this._strokeStyle || !this._fillStyle) {
+			this.ctx.lineWidth = this._lineWidth;
+			this.ctx.strokeStyle = this._strokeStyle;
+			this.ctx.stroke();			
 		}
 
-		if(this.textureType === Resource.TextureType.WEBGL) {
-			var gl = meta.ctx;
-			gl.bindTexture(gl.TEXTURE_2D, this.image);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
-		}
+		this.ctx.restore();
 
-		this.isLoaded = true;
+		this.loaded = true;			
 	},
 
 	bazier: function(color, path, params)
