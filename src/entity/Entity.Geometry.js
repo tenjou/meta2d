@@ -836,16 +836,6 @@ meta.class("Entity.Geometry",
 
 	get static() { return this._static; },
 
-	set debugger(value) 
-	{
-		if(this._debugger === value) { return; }
-		this._debugger = value;
-
-		this.renderer.needRender = true;
-	},
-
-	get debugger() { return this._debugger; },	
-
 	set state(name)
 	{
 		if(this._state === name) { return; }
@@ -1230,20 +1220,25 @@ meta.class("Entity.Geometry",
 	/* Debug */
 	set debug(value) 
 	{
-		if(this.__debug === value) { return; }
-		this.__debug = value;
+		if(value) 
+		{
+			if(this.flags & this.Flag.DEBUG) { return; }
 
-		if(value) {
-			meta.renderer.numDebug++;
+			this.renderer.numDebug++;
+			this.flags |= this.Flag.DEBUG;
 		}
-		else {
-			meta.renderer.numDebug--;
+		else 
+		{
+			if((this.flags & this.Flag.DEBUG) === 0) { return; }
+
+			this.renderer.numDebug--;
+			this.flags &= ~this.Flag.DEBUG;
 		}
 		
 		this.renderer.needRender = true;
 	},
 
-	get debug() { return this.__debug; },
+	get debug() { return (this.flags & this.Flag.DEBUG) === this.Flag.DEBUG; },
 
 	Flag: {
 		READY: 1,
@@ -1254,7 +1249,8 @@ meta.class("Entity.Geometry",
 		IGNORE_PARENT_ALPHA: 32,
 		IGNORE_PARENT_SCALE: 64,
 		UPDATING: 128,
-		ADDED: 256
+		ADDED: 256,
+		DEBUG: 512
 	},
 
 	//

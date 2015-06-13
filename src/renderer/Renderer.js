@@ -7,6 +7,8 @@ meta.class("meta.Renderer",
 		this.holder = new Entity.Geometry();
 		this.staticHolder = new Entity.Geometry();
 
+		this.entityFlags = Entity.Geometry.prototype.Flag;
+
 		Entity.Geometry.prototype.renderer = this;
 		Entity.Geometry.prototype.parent = this.holder;
 	},
@@ -626,7 +628,6 @@ meta.class("meta.Renderer",
 
 	onCameraResize: function(data, event) 
 	{
-		console.log("here");
 		this.holder.resize(data.width, data.height);
 		this.staticHolder.resize(this.engine.width, this.engine.height);
 
@@ -701,6 +702,8 @@ meta.class("meta.Renderer",
 
 	holder: null,
 	staticHolder: null,
+
+	entityFlags: null,
 
 	camera: null,
 	cameraDefault: null,

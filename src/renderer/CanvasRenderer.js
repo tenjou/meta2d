@@ -49,7 +49,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 			for(i = 0; i < numEntities; i++) 
 			{
 				entity = this.entities[i];
-				if(entity.__debug || this.meta.cache.debug) 
+				if(entity.flags & this.entityFlags.DEBUG || this.meta.cache.debug) 
 				{
 					if(entity._static) 
 					{
