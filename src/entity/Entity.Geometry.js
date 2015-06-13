@@ -4,6 +4,7 @@ meta.class("Entity.Geometry",
 {
 	_init: function(arg) {
 		this.volume = new meta.math.AABBext();
+		this.anim = new Component.Anim(this);
 		this.initArg(arg);
 	},
 
@@ -703,11 +704,7 @@ meta.class("Entity.Geometry",
 			this.loaded = false;
 		}
 
-		if(this._texture.frames > 0) 
-		{
-			if(!this.anim) {
-				this.anim = new Component.Anim(this);
-			}
+		if(this._texture.frames > 0) {
 			this.anim.set(this._texture);
 		}
 	},

@@ -18,7 +18,6 @@ Component.Anim.prototype =
 			return;
 		}
 
-
 		this.texture = texture;
 
 		if(texture.frames > 1)
@@ -36,6 +35,7 @@ Component.Anim.prototype =
 
 			// If texture is animated but not animating:
 			if(this.autoPlay) {	
+				console.log("added");
 				meta.renderer.addAnim(this);
 			}			
 		}
@@ -68,7 +68,19 @@ Component.Anim.prototype =
 			this._frame = 0;
 		}	
 
-		this.owner.renderer.removeAnim(this);
+		meta.renderer.removeAnim(this);
+	},
+
+	reset: function()
+	{
+		if(this.reverse) {
+			this._frame = texture.frames - 1;
+		}
+		else {
+			this._frame = 0;
+		}
+
+		meta.renderer.addAnim(this);
 	},
 
 	onEnd: null,
@@ -177,7 +189,6 @@ Component.Anim.prototype =
 	_speed: 1,
 	_frame: 0,
 	__index: -1,
-	__removed: 0,
 	__delay: 0,
 	__tAnim: 0
 };

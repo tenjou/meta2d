@@ -47,17 +47,18 @@ meta.class("meta.Renderer",
 
 	update: function(tDelta)
 	{
-		// Removal:		
+		// Removal.	
 		if(this.entitiesRemove.length > 0) {
 			this._removeEntities(this.entitiesRemove);
 			this.entitiesRemove.length = 0;
 		}
 
 		this._removeUpdateEntities();
+		this._removeAnimEntities();
 		this._removePickingEntities();
 		this._removeTweens();		
 
-		// Updating:
+		// Updating.
 		this.__updating = true;	
 
 		var num = this.entitiesUpdate.length;
@@ -71,30 +72,6 @@ meta.class("meta.Renderer",
 		}
 
 		this.__updating = false;
-
-		// Remove animations:
-		if(this.entitiesAnimRemove.length > 0)
-		{
-			var index;
-			var anim = null;
-			var numAnim = this.entitiesAnim.length;
-			num = this.entitiesAnimRemove.length;
-
-			for(i = 0; i < num; i++) 
-			{
-				index = this.entitiesAnimRemove[i];
-				anim = this.entitiesAnim[index];
-				if(!anim.__removed) { continue; }
-
-				numAnim--;
-				anim.__index = -1;
-				anim.__removed = 0;
-				this.entitiesAnim[index] = this.entitiesAnim[numAnim];
-			}	
-
-			this.entitiesAnim.length = numAnim;
-			this.entitiesAnimRemove.length = 0;
-		}
 
 		if(this.needSortDepth) {
 			this.sort();
@@ -127,6 +104,35 @@ meta.class("meta.Renderer",
 			}
 
 			this.entitiesUpdateRemove.length = 0;
+		}
+	},
+
+	_removeAnimEntities: function()
+	{
+		var numRemove = this.entitiesAnimRemove.length;		
+		if(numRemove > 0)
+		{
+			var numEntities = this.entitiesAnim.length;
+			var itemsLeft = numEntities - numRemove;
+			if(itemsLeft > 0)
+			{
+				var index;
+				for(var i = 0; i < numRemove; i++) 
+				{
+					index = this.entitiesAnim.indexOf(this.entitiesAnimRemove[i]);
+					if(index < itemsLeft) {
+						this.entitiesAnim.splice(index, 1);
+					}
+					else {
+						this.entitiesAnim.pop();
+					}
+				}
+			}
+			else {
+				this.entitiesAnim.length = 0;
+			}
+
+			this.entitiesAnimRemove.length = 0;
 		}
 	},
 
@@ -339,24 +345,17 @@ meta.class("meta.Renderer",
 
 	addAnim: function(anim)
 	{
-		if(anim.__removed) {
-			anim.__removed = 0;
-		}
-		else
-		{
-			if(anim.__index !== -1) { return; }
+		if(anim.__index !== -1) { return; }
 
-			anim.__index = this.entitiesAnim.length;
-			this.entitiesAnim.push(anim);
-		}
+		anim.__index = this.entitiesAnim.push(anim) - 1;
 	},
 
 	removeAnim: function(anim)
 	{
-		if(anim.__removed || anim.__index === -1) { return; }
+		if(anim.__index === -1) { return; }
 
-		this.entitiesAnimRemove.push(anim.__index);
-		anim.__removed = 1;
+		this.entitiesAnimRemove.push(anim);
+		anim.__index = -1;
 	},
 
 	/** 
