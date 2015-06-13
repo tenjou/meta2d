@@ -46,11 +46,28 @@ meta.class("Resource.SVG", "Resource.Texture",
 
 	rect: function(x, y, width, height)
 	{
-		if(this.fullWidth < 2 && this.fullHeight < 2) {
-			this.resizeSilently(width + x, height + y);
+		var offset;
+		if(this._lineWidth % 2 === 1) {
+			offset = 0.5;
+		}
+		else {
+			offset = 0;
+		}
+
+		if(this.fullWidth < 2 && this.fullHeight < 2) 
+		{
+			if(offset) {
+				this.resizeSilently(width + x + 1, height + y + 1);
+			}
+			else {
+				this.resizeSilently(width + x, height + y);
+			}
+			
 			this.ctx.fillStyle = this._fillStyle;
 		}
 
+		this.ctx.save();
+		this.ctx.translate(offset, offset);
 		this.ctx.beginPath();
 		this.ctx.rect(x, y, width, height);
 
@@ -64,6 +81,8 @@ meta.class("Resource.SVG", "Resource.Texture",
 			this.ctx.strokeStyle = this._strokeStyle;
 			this.ctx.stroke();			
 		}
+
+		this.ctx.restore();
 
 		this.loaded = true;		
 	},
