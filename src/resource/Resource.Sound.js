@@ -9,18 +9,6 @@ meta.class("Resource.Sound", "Resource.Basic",
 			param = void(0);
 		}
 
-		if(path)
-		{
-			// Check if specific format is defined.
-			var wildCardIndex = path.lastIndexOf(".");
-			if(wildCardIndex !== -1 && (path.length - wildCardIndex) <= 5) {
-				this.format = path.substr(wildCardIndex + 1, path.length - wildCardIndex - 1);
-				path = path.substr(0, wildCardIndex);
-			}
-
-			this.path = meta.resources.rootPath + path;
-		}	
-
 		this._instances = [];
 
 		// If Web Audio API is supported.
@@ -46,6 +34,19 @@ meta.class("Resource.Sound", "Resource.Basic",
 			});	
 			this._numInstancesUsed = 0;			
 		}
+
+		if(path)
+		{
+			// Check if specific format is defined.
+			var wildCardIndex = path.lastIndexOf(".");
+			if(wildCardIndex !== -1 && (path.length - wildCardIndex) <= 5) {
+				this.format = path.substr(wildCardIndex + 1, path.length - wildCardIndex - 1);
+				path = path.substr(0, wildCardIndex);
+			}
+
+			this.path = meta.resources.rootPath + path;
+			this.load(this.path);
+		}			
 	},
 
 	load: function()
@@ -150,11 +151,11 @@ meta.class("Resource.Sound", "Resource.Basic",
 		}
 
 		this._buffer = buffer;
-		this._isLoading = false;
+		this._loading = false;
 		this._clear();
 	
-		this.isLoaded = true;
-		Resource.ctrl.loadSuccess(this);
+		this.loaded = true;
+		meta.resources.loadSuccess(this);
 
 		var numInstances = this._instances.length;
 		for(var i = 0; i < numInstances; i++) {
@@ -170,9 +171,9 @@ meta.class("Resource.Sound", "Resource.Basic",
 
 		console.warn("[Resource.Sound.load]:", "Error decoding file: " + this.path);
 
-		this._isLoading = false;
+		this._loading = false;
 		this._clear();
-		Resource.ctrl.loadFailed(this);
+		meta.resources.loadFailed(this);
 	},
 
 	_onLoadFailed: function()
@@ -187,9 +188,9 @@ meta.class("Resource.Sound", "Resource.Basic",
 
 		console.warn("[Resource.Sound.load]:", "Error loading file: " + this.path);
 
-		this._isLoading = false;
+		this._loading = false;
 		this._clear();
-		Resource.ctrl.loadFailed(this);
+		meta.resources.loadFailed(this);
 	},	
 
 
@@ -486,8 +487,8 @@ Resource.AudioInstance_legacy.prototype =
 				this.parent.path += "." + meta.device.audioFormats[this.parent._requestFormat - 1];
 			}			
 
-			this.parent._isLoading = false;
-			this.parent.isLoaded = true;
+			this.parent._loading = false;
+			this.parent.loaded = true;
 
 			var instance;
 			var instances = this.parent._instances;
@@ -498,11 +499,11 @@ Resource.AudioInstance_legacy.prototype =
 				instance.audio.load();
 			}			
 
-			Resource.ctrl.loadSuccess(parent);
-			Resource.ctrl.loadNextFromQueue();
+			meta.resources.loadSuccess(parent);
+			meta.resources.loadNextFromQueue();
 		}
 
-		this._isLoaded = true;
+		this._loaded = true;
 		if(this._autoPlay) {
 			this.audio.play();
 		}

@@ -31,7 +31,7 @@ meta.class("Resource.SVG", "Resource.Texture",
 	line: function(x1, y1, x2, y2)
 	{
 		if(this.fullWidth < 2 && this.fullHeight < 2) {
-			this.resize(x2, y2);
+			this.resizeSilently(x2, y2);
 			this.ctx.lineWidth = this._lineWidth;
 			this.ctx.strokeStyle = this._strokeStyle;
 		}		
@@ -93,7 +93,7 @@ meta.class("Resource.SVG", "Resource.Texture",
 	{
 		if(this.fullWidth < 2 && this.fullHeight < 2) {
 			var size = (radius + this._lineWidth) * 2;
-			this.resize(size, size);
+			this.resizeSilently(size, size);
 		}
 
 		this.ctx.beginPath();
@@ -123,88 +123,61 @@ meta.class("Resource.SVG", "Resource.Texture",
 	 * @param params.width {Number=} Width of area to tile.
 	 * @param params.height {Number=} Height of area to tile.
 	 */
-	tile: function(params, height, texture)
+	tile: function(texture, center)
 	{
-		if(!params) {
-			console.warn("[Resource.Texture.tile]:", "No parameters specified.");
+		if(typeof(texture) === "string") {
+			var newTexture = meta.resources.getTexture(texture);
+			if(!newTexture) {
+				console.warn("(Resource.Texture.tile): Could not get texture with name: " + texture);
+				return;							
+			}
+			texture = newTexture;
+		}
+		else if(!texture) {
+			console.warn("(Resource.Texture.tile): Invalid texture");
 			return;
 		}
 
-		if(typeof(params.texture) === "string") {
-			params.texture = meta.resources.getTexture(params.texture);
-		}
-
-		if(!params.texture) {
-			console.warn("[Resource.Texture.tile]:", "Undefined texture.");
-			return;
-		}
-
-		var texture = params.texture;
-
-		// If source texture is not yet loaded. Create chace and wait for it.
+		// If tiling texture is not loaded yet - wait for it:
 		if(!texture._loaded) 
 		{
-			if(!texture._isLoading) {
-				texture.load();
-			}
-
-			this._loadCache = { name: "tile", data: params };
 			this.loaded = false;
-			texture.subscribe(this, this.onTextureCacheEvent);
+
+			var self = this;
+			texture.subscribe(this, function(data, event) {
+				self.tile(texture, center);
+			});
 			return;
 		}
 
-		var scope = meta;
-		params.x = params.x || 0;
-		params.y = params.y || 0;
-		params.width = params.width || texture.fullWidth;
-		params.height = params.height || texture.fullHeight;
-		params.width *= scope.unitSize;
-		params.height *= scope.unitSize;
-
-		this.resize(params.width, params.height);
-
-		if(params.center) {
-			params.x += (this.fullWidth & (texture.fullWidth - 1)) / 2;
-			params.y += (this.fullHeight & (texture.fullHeight - 1)) / 2;		
-		}
-
-		var ctx = this.ctx;
-		var posX = params.x;
-		var posY = params.y;
 		var numX = Math.ceil(this.fullWidth / texture.fullWidth) || 1;
-		var numY = Math.ceil(this.fullHeight/ texture.fullHeight) || 1;
+		var numY = Math.ceil(this.fullHeight/ texture.fullHeight) || 1;		
 
+		var offsetX = 0;
+		var offsetY = 0;
 
-		if(posX > 0) {
-			numX += Math.ceil(posX / texture.fullWidth);
-			posX -= texture.fullWidth;
-		}
-		if(posY > 0) {
-			numY += Math.ceil(posY / texture.fullHeight);
-			posY -= texture.fullHeight;
+		if(center) {
+			offsetX = -((numX * texture.fullWidth) - this.fullWidth) * 0.5;
+			offsetY = -((numY * texture.fullHeight) - this.fullHeight) * 0.5;			
 		}
 
-		var origY = posY;
-
+		var posX = offsetX;
+		var posY = offsetY;
 		for(var x = 0; x < numX; x++)
 		{
 			for(var y = 0; y < numY; y++) {
-				ctx.drawImage(texture.image, posX, posY);
+				this.ctx.drawImage(texture.canvas, posX, posY);
 				posY += texture.trueHeight;
 			}
 
 			posX += texture.trueWidth;
-			posY = origY;
+			posY = offsetY;
 		}
 
 		this.loaded = true;
 	},
 
-	/**
-	 * Stroke/fill lines.	 
-	 */
-	stroke: function(buffer)
+	shape: function(buffer)
 	{	
 		var scope = meta;	
 		var unitSize = 1;
@@ -252,6 +225,10 @@ meta.class("Resource.SVG", "Resource.Texture",
 			ctx.lineTo(buffer[i] + offsetX, buffer[i + 1] + offsetY);
 		}
 
+		if(this.closePath) {
+			ctx.closePath();
+		}
+
 		if(this._fillStyle) {
 			this.ctx.fillStyle = this._fillStyle;
 			this.ctx.fill();
@@ -266,110 +243,35 @@ meta.class("Resource.SVG", "Resource.Texture",
 		this.loaded = true;
 	},
 
-	border: function(params)
-	{
-		if(!params) {
-			console.warn("[Resource.Texture.strokeBorder]:", "No parameters specified.");
-			return;
-		}
-
-		params.width = params.width || this.trueFullWidth;
-		params.height = params.height || this.trueFullHeight;
-
-		var lineWidth = 1;
-		if(params.borderWidth) {
-			lineWidth = params.borderWidth;
-		}
-
-		params.buffer = [ 0, 0, params.width - lineWidth, 0, params.width - lineWidth, 
-			params.height - lineWidth, 0, params.height - lineWidth, 0, 0 ];
-
-		this.stroke(params);
-	},
-
 	/**
 	 * Fill texture with arc.
-	 * @param params {Object} Parameters.
-	 * @param [params.x=0] {Number=} Offset from the left.
-	 * @param [params.y=0] {Number=} Offset from the top.
-	 * @param params.color {Hex} Color of the filled arc.
-	 * @param [params.borderColor="#000000"] {Hex=} Color of the filled rect.
-	 * @param params.radius {Number=} Radius of arc.
-	 * @param [params.startAngle=0] {Number=} Starting angle from where arch is being drawn from.
-	 * @param [params.endAngle=Math.PI*2] {Number=} End angle to where arc form is drawn.
-	 * @param [params.borderWidth=1] {Number=} Thickness of the line.
-	 * @param [params.drawOver=false] {Boolean=} Flag - draw over previous texture content.
 	 */
-	arc: function(params)
+	arc: function(radius, startAngle, endAngle, counterClockwise)
 	{
-		if(!params) {
-			console.warn("[Resource.Texture.arc]:", "No parameters specified.");
-			return;
+		if(this.fullWidth < 2 && this.fullHeight < 2) {
+			var size = (radius + this._lineWidth) * 2;
+			this.resizeSilently(size, size);
 		}
 
-		var ctx = this.ctx;
-		params.x = params.x || 0;
-		params.y = params.y || 0;
-		params.radius = params.radius || 5;
-		params.startAngle = params.startAngle || 0;
-		params.endAngle = params.endAngle || (Math.PI * 2);
-		params.borderWidth = params.borderWidth || 1;
-		if(!params.color && !params.borderColor) {
-			params.borderColor = params.borderColor || "#000000";
+		this.ctx.beginPath();
+		this.ctx.arc(radius + this._lineWidth, radius + this._lineWidth, radius, startAngle, endAngle, false);
+
+		if(this.closePath) {
+			this.ctx.closePath();
 		}
 
-		if(params.closePath === void(0)) {
-			params.closePath = true;
-		} else {
-			params.closePath = params.closePath;
+		if(this._fillStyle) {
+			this.ctx.fillStyle = this._fillStyle;
+			this.ctx.fill();
 		}
 
-		var size = params.radius * 2 + params.borderWidth;
-		if(!params.drawOver) {
-			this.resize(params.x + size + 1, params.y + size + 1);
+		if(this._strokeStyle || !this._fillStyle) {
+			this.ctx.lineWidth = this._lineWidth;
+			this.ctx.strokeStyle = this._strokeStyle;
+			this.ctx.stroke();			
 		}
 
-		if(this.textureType) {
-			this._createCachedImg();
-			ctx = this._cachedCtx;
-		}
-
-		ctx.lineWidth = params.borderWidth;
-		
-		ctx.clearRect(0, 0, this.trueFullWidth, this.trueFullHeight);
-		
-		if(params.closePath) 
-		{
-			ctx.beginPath();
-			ctx.arc(
-				params.x + params.radius + (params.borderWidth / 2) + 0.5, 
-				params.y + params.radius + (params.borderWidth / 2) + 0.5,
-				params.radius, params.startAngle, params.endAngle, false);
-			ctx.closePath();
-		}
-		else
-		{
-			ctx.arc(params.x + params.radius + (params.borderWidth / 2), params.y + params.radius + (params.borderWidth / 2),
-				params.radius, params.startAngle, params.endAngle, false);
-		}		
-
-		if(params.color) {
-			ctx.fillStyle = params.color;
-			ctx.fill();
-		} 
-
-		if(params.borderColor) {
-			ctx.strokeStyle = params.borderColor;
-			ctx.stroke();
-		}		
-
-		if(this.textureType === Resource.TextureType.WEBGL) {
-			var gl = meta.ctx;
-			gl.bindTexture(gl.TEXTURE_2D, this.image);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
-		}
-
-		this.isLoaded = true;
+		this.loaded = true;
 	},
 
 	/**
@@ -429,12 +331,6 @@ meta.class("Resource.SVG", "Resource.Texture",
 		this.loaded = true;			
 	},
 
-	bazier: function(color, path, params)
-	{
-		this.isLoaded = true;
-	},
-
-
 	gradient: function(buffer)
 	{
 		var gradient = this.ctx.createLinearGradient(0, 0, 0, this.fullHeight);
@@ -481,87 +377,7 @@ meta.class("Resource.SVG", "Resource.Texture",
 		this.ctx.stroke();
 		this.ctx.restore();
 
-		this.loaded = true;
-
-		// // Init.
-		// if(typeof(params) === "number") 
-		// {
-		// 	this.grid({ cellWidth: params, cellHeight: cellHeight, 
-		// 		numCellsX: numCellsX, numCellsY: numCellsY
-		// 	});
-		// 	return;
-		// }
-
-		// if(!params) {
-		// 	console.warn("[Resource.Texture.grid]:", "No params specified.");
-		// 	return;
-		// }
-
-		// var cellWidth = params.cellWidth || 1;
-		// var cellHeight = params.cellHeight || 1;
-		// var numCellsX = params.numCellsX || 1;
-		// var numCellsY = params.numCellsY || 1;
-		// params.x = params.x || 0;
-		// params.y = params.y || 0;
-		// params.color = params.color || "#000000";
-		// params.borderWidth = params.borderWidth || 1;
-		// params.drawOver = params.drawOver || false;
-
-		// var width = params.x + (params.cellWidth * params.numCellsX) + 1;
-		// var height = params.y + (params.cellHeight * params.numCellsY) + 1;	
-
-		// if(!params.drawOver) {
-		// 	this.resize(width, height);
-		// }		
-
-		// var ctx = this.ctx;	
-		// if(this.textureType) {
-		// 	this._createCachedImg();
-		// 	ctx = this._cachedCtx;
-		// }
-
-		// // Rendering.
-		// ctx.strokeStyle = params.color;
-		// ctx.lineWidth = params.borderWidth;
-
-		// ctx.save();
-		// ctx.translate(0.5, 0.5);
-
-		// for(var x = 0; x < (numCellsX + 1); x++) {
-		// 	ctx.moveTo((x * cellHeight), 0);
-		// 	ctx.lineTo((x * cellHeight), height);
-		// }
-
-		// for(var y = 0; y < (numCellsY + 1); y++) {
-		// 	ctx.moveTo(0, (y * cellHeight));
-		// 	ctx.lineTo(width, (y * cellHeight));
-		// }
-
-		// ctx.stroke();
-		// ctx.restore();
-
-		// // Update.
-		// if(this.textureType) {
-		// 	var gl = meta.ctx;
-		// 	gl.bindTexture(gl.TEXTURE_2D, this.image);
-		// 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
-		// }
-
-		// this.isLoaded = true;					
-	},
-
-
-	/**
-	 * Callback used if ond to another texture.
-	 * @param event {*} Event type.
-	 * @param data {*} Event data.
-	 */
-	onTextureEvent: function(event, data)
-	{
-		if(event === Resource.Event.LOADED) {
-			this.tile(data);
-			data.unsubscribe(this);
-		}
+		this.loaded = true;				
 	},
 
 	set lineWidth(value) {
@@ -583,7 +399,12 @@ meta.class("Resource.SVG", "Resource.Texture",
 		this.ctx.strokeStyle = hex;
 	},
 
-	get strokeStyle() { return this._strokeStyle; },	
+	get strokeStyle() { return this._strokeStyle; },
+
+	Cache: function(name, data) {
+		this.name = name;
+		this.data = data;
+	},
 
 	//
 	_lineWidth: 2,
@@ -591,5 +412,7 @@ meta.class("Resource.SVG", "Resource.Texture",
 	_lineDash: "",
 
 	_fillStyle: "",
-	_strokeStyle: ""
+	_strokeStyle: "",
+
+	closePath: false
 });
