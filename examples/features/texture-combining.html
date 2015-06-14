@@ -2,13 +2,13 @@
 
 <html>
 	<head>
-		<title>Texture Tiling // META</title>
+		<title>Texture Combining // META</title>
 
 		<script src="http://meta2d.com/meta.js"></script>
 	</head>
 
 	<body>
-		<!-- Example on how to create draw tiled texture. -->
+		<!-- Example on how to combine different functions to create custom textures. -->
 
 		<script>
             meta.load = function()
@@ -18,13 +18,13 @@
 
                 var texture = new Resource.SVG();
                 texture.resize(meta.world.width, meta.world.height);
-                // Draw tile on the texture with params: (textureName, centered):
+                texture.gradient([ 0, "#ff0000", 1, "#4fb6e1" ]);
                 texture.tile("grid", true);
 
                 var bg = new Entity.Geometry(texture);
                 meta.view.attach(bg);
 
-                meta.info("Texture tiling example");
+                meta.info("Texture combining example");
             };
 		</script>
 	</body>

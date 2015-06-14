@@ -2,31 +2,30 @@
 
 <html>
 	<head>
-		<title>Texture Shape - META</title>
+		<title>Texture Shape // META</title>
 
-		<script src="http://infinite-games.com/meta.latest.js"></script>
+		<script src="http://meta2d.com/meta.js"></script>
 	</head>
 
 	<body>
-         <!-- Example on how to draw a renderer independant shapes. -->
+         <!-- Example on how to draw shapes on the texture. -->
 
 		<script>
             meta.load = function()
             {
-                var texture = new Resource.Texture();
-                texture.stroke({
-                    borderWidth: 4,     // Line width.
-                    borderColor: "red", // Color of lines.
-                    color: "black",     // Fill color. 
-                    // Define line points in format: x1, y1, x2 ...
-                    buffer: [ -100, 100, 100, 100, 0, -100 ]
-                });
+                var texture = new Resource.SVG();
+                texture.fillStyle = "black";
+                texture.strokeStyle = "red";
+                texture.lineWidth = 4;
+                texture.closePath = true;
+                texture.shape([ -100, 100, 100, 100, 0, -100 ]);
 
                 var entity = new Entity.Geometry(texture);
                 entity.anchor(0.5);
-                meta.view.add(entity);
+                entity.pivot(0.5);
+                meta.view.attach(entity);
 
-                meta.addDescription("Texture shape example");
+                meta.info("Texture shape example");
             };
 		</script>
 	</body>

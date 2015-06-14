@@ -2,9 +2,9 @@
 
 <html>
     <head>
-        <title>Sound Loop :: META</title>
+        <title>Sound Loop // META</title>
 
-        <script src="http://infinite-games.com/meta.latest.js"></script>
+        <script src="http://meta2d.com/meta.js"></script>
     </head>
 
     <body>
@@ -13,16 +13,16 @@
         <script>
             meta.load = function()
             {
-                // Will try to load one of available formats.
+                // Will try to load one user supported formats.
                 // Add prefix to filename if specific format should be loaded, 
-                //  for example: "sample.mp3".
-                meta.preloadSound(
+                //  for example: "sample.mp3" to force to load file with mp3 format.
+                meta.loadSound(
                     "https://dl.dropboxusercontent.com/u/145051233/meta/audio/sample");
 
-                // Set true to play looped.
-                meta.getSound("sample").play(true);
+                // Set true to play looped sound:
+                meta.resources.getSound("sample").play(true);
 
-                meta.addDescription("Looped sound example"); 
+                meta.info("Sound looping example"); 
             };
         </script>
     </body>

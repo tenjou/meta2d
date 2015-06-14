@@ -2,31 +2,27 @@
 
 <html>
 	<head>
-		<title>Texture Gradient :: META</title>
+		<title>Texture Gradient // META</title>
 
-		<script src="http://infinite-games.com/meta.latest.js"></script>
+		<script src="http://meta2d.com/meta.js"></script>
 	</head>
 
 	<body>
-        <!-- Example of how to create a renderer independant gradient -->
+        <!-- Example of how to draw gradient on the texture. -->
 
 		<script>
             meta.load = function()
             {
-	var bg = new Entity.Geometry();
-	bg.texture = new Resource.Texture();
-	// Create gradient in size of screen.
-	bg.texture.gradient({
-		width: meta.world.width, // Screen width.
-		height: meta.world.height, // Screen height
-		dirY: 1, // Gradient direction from up to down.
-		// Gradient color stops from 0 to 1.
-		colors: [ [ 0, "#277ac1" ], [ 1, "#ffffff" ] ]
-	});	
-	bg.positionTopLeft(0, 0);
-	meta.view.add(bg);
+                // Create gradient in size of the screen.
+                var texture = new Resource.SVG();
+                texture.resize(meta.world.width, meta.world.height);
+                // Setup the color stops in range from 0 to 1:
+                texture.gradient([ 0, "#ff0000", 0.5, "#00ff00", 1, "#0000ff" ]);
 
-	meta.addDescription("Texture gradient example");
+                var bg = new Entity.Geometry(texture);
+                meta.view.attach(bg);
+
+                meta.info("Texture gradient example");
             };
 		</script>
 	</body>

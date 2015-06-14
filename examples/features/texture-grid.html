@@ -2,29 +2,30 @@
 
 <html>
 	<head>
-		<title>Texture Circle // META</title>
+		<title>Texture Grid // META</title>
 
 		<script src="http://meta2d.com/meta.js"></script>
 	</head>
 
 	<body>
-        <!-- Example of how to draw a circle on the texture. -->
+        <!-- Example on how to draw grid on the texture. -->
 
 		<script>
             meta.load = function()
             {
                 var texture = new Resource.SVG();
-                texture.fillStyle = "yellow";
-                texture.strokeStyle = "black";
+                texture.strokeStyle = "red";
                 texture.lineWidth = 3;
-                texture.circle(60); // Set radius of the circle.
+                // Draw grid on texture with params: 
+                //  (numCellsX, numCellsY, cellWidth, cellHeight):
+                texture.grid(6, 6, 64, 64);     
 
                 var entity = new Entity.Geometry(texture);
                 entity.anchor(0.5);
                 entity.pivot(0.5);
                 meta.view.attach(entity);
 
-                meta.info("Texture circle example");
+                meta.info("Texture grid example");
             };
 		</script>
 	</body>
