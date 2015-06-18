@@ -6,11 +6,11 @@ Input.Event =
 {
 	KEY_DOWN: "keydown",
 	KEY_UP: "keyup",
-	DOWN: "down",
-	UP: "up",
-	MOVE: "move",
-	CLICK: "click",
-	DBCLICK: "dbclick"
+	DOWN: "inputDown",
+	UP: "inputUp",
+	MOVE: "inputMove",
+	CLICK: "inpucClick",
+	DBCLICK: "inputDbClick"
 };
 
 Input.Key =
@@ -91,7 +91,7 @@ Input.Key =
 	TILDE: 192,
 	APOSTROPHE: 222,
 
-	BUTTON_LEFT: 0,
-	BUTTON_MIDDLE: 1,
-	BUTTON_RIGHT: 2
+	BUTTON_LEFT: 256 + 0,
+	BUTTON_MIDDLE: 256 + 1,
+	BUTTON_RIGHT: 256 + 2
 };

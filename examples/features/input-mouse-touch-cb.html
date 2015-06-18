@@ -2,26 +2,30 @@
 
 <html>
     <head>
-        <title>Input Mouse & Touch // META</title>
+        <title>Input Mouse & Touch :: META</title>
 
         <script src="http://meta2d.com/meta.js"></script>
     </head>
 
     <body>
-        <!-- Example on how to use mouse or touch events. Both mouse and touch events are cosidered as the same event. -->
+        <!-- Example on how to use mouse or touch events. -->
 
         <script>
             var coordTxt = null;
 
+            function HandleInput(data, event) {
+                coordTxt.text = data.x + ", " + data.y;
+            };
+
             meta.load = function()
             {
-                coordTxt = new Entity.Text("stuff");
+                coordTxt = new Entity.Text("stuff");;
                 coordTxt.anchor(0.5);
                 coordTxt.pivot(0.5);
                 meta.view.attach(coordTxt);
 
-                meta.subscribe(this, Input.Event.CLICK, HandleInput);
-                meta.subscribe(this, Input.Event.MOVE, HandleInput);
+                // "inputMove" will work for both mouse or touch events:
+                meta.subscribe(this, "inputMove", HandleInput);
 
                 meta.info("Input - mouse & touch example");                
             };
