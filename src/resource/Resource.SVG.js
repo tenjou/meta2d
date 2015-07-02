@@ -116,14 +116,8 @@ meta.class("Resource.SVG", "Resource.Texture",
 
 	/**
 	 * Tile source texture on top.
-	 * @param params {Object} Parameters.
-	 * @param params.texture {Resource.Texture|String} Texture object or name of the texture in resources pool.
-	 * @param params.x {Number=} Offset on x axis.
-	 * @param params.y {Number=} Offset on y axis.
-	 * @param params.width {Number=} Width of area to tile.
-	 * @param params.height {Number=} Height of area to tile.
 	 */
-	tile: function(texture, center)
+	tileInside: function(texture, center, offsetX, offsetY)
 	{
 		if(typeof(texture) === "string") {
 			var newTexture = meta.resources.getTexture(texture);
@@ -145,7 +139,7 @@ meta.class("Resource.SVG", "Resource.Texture",
 
 			var self = this;
 			texture.subscribe(this, function(data, event) {
-				self.tile(texture, center);
+				self.tile(texture, center, offsetX, offsetY);
 			});
 			return;
 		}
@@ -153,25 +147,81 @@ meta.class("Resource.SVG", "Resource.Texture",
 		var numX = Math.ceil(this.fullWidth / texture.fullWidth) || 1;
 		var numY = Math.ceil(this.fullHeight/ texture.fullHeight) || 1;		
 
-		var offsetX = 0;
-		var offsetY = 0;
+		var textureOffsetX = offsetX;
+		var textureOffsetY = offsetY;
 
 		if(center) {
-			offsetX = -((numX * texture.fullWidth) - this.fullWidth) * 0.5;
-			offsetY = -((numY * texture.fullHeight) - this.fullHeight) * 0.5;			
+			textureOffsetX = -((numX * texture.fullWidth) - this.fullWidth) * 0.5;
+			textureOffsetY = -((numY * texture.fullHeight) - this.fullHeight) * 0.5;			
 		}
 
-		var posX = offsetX;
-		var posY = offsetY;
+		var posX = textureOffsetX;
+		var posY = textureOffsetY;
 		for(var x = 0; x < numX; x++)
 		{
 			for(var y = 0; y < numY; y++) {
 				this.ctx.drawImage(texture.canvas, posX, posY);
-				posY += texture.trueHeight;
+				posY += texture.trueHeight + offsetY;
 			}
 
-			posX += texture.trueWidth;
-			posY = offsetY;
+			posX += texture.trueWidth + offsetX;
+			posY = textureOffsetY;
+		}
+
+		this.loaded = true;	
+	},
+
+	tile: function(texture, numX, numY, center, offsetX, offsetY)
+	{
+		if(typeof(texture) === "string") {
+			var newTexture = meta.resources.getTexture(texture);
+			if(!newTexture) {
+				console.warn("(Resource.Texture.tile): Could not get texture with name: " + texture);
+				return;							
+			}
+			texture = newTexture;
+		}
+		else if(!texture) {
+			console.warn("(Resource.Texture.tile): Invalid texture");
+			return;
+		}
+
+		// If tiling texture is not loaded yet - wait for it:
+		if(!texture._loaded) 
+		{
+			this.loaded = false;
+
+			var self = this;
+			texture.subscribe(this, function(data, event) {
+				self.tile(texture, center, offsetX, offsetY);
+			});
+			return;
+		}
+
+		var textureWidth = numX * (texture.fullWidth + offsetX) + offsetX;
+		var textureHeight = numY * (texture.fullHeight + offsetY) + offsetY;
+
+		this.resizeSilently(textureWidth, textureHeight);
+
+		var textureOffsetX = offsetX;
+		var textureOffsetY = offsetY;
+
+		if(center) {
+			textureOffsetX = -((numX * texture.fullWidth) - this.fullWidth) * 0.5;
+			textureOffsetY = -((numY * texture.fullHeight) - this.fullHeight) * 0.5;			
+		}
+
+		var posX = textureOffsetX;
+		var posY = textureOffsetY;
+		for(var x = 0; x < numX; x++)
+		{
+			for(var y = 0; y < numY; y++) {
+				this.ctx.drawImage(texture.canvas, posX, posY);
+				posY += texture.trueHeight + offsetY;
+			}
+
+			posX += texture.trueWidth + offsetX;
+			posY = textureOffsetY;
 		}
 
 		this.loaded = true;
