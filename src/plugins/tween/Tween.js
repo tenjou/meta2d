@@ -35,7 +35,6 @@ meta.Tween.prototype =
 			cache.numRepeat = this.numRepeat;
 			this.next();
 			this._play();
-			this.cache = null;
 		}
 
 		return this;
@@ -156,8 +155,13 @@ meta.Tween.prototype =
 
 		if(cache.index === this.chain.length)
 		{
-			if(cache.numRepeat === 0) {
+			if(cache.numRepeat === 0) 
+			{
 				this.stop();
+				if(this.onDone) {
+					this.onDone.call(this.cache);
+				}
+
 				return this;
 			}
 			else
@@ -168,11 +172,11 @@ meta.Tween.prototype =
 					cache.numRepeat--;
 					if(cache.numRepeat === 0) 
 					{
+						this.stop();
 						if(this.onDone) {
 							this.onDone.call(this.cache);
-						}	
+						}
 
-						this.stop();
 						return this;
 					}
 				}
