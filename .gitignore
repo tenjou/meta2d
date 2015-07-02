@@ -1,7 +1,6 @@
 .DS_Store
 .idea
-templates/*
-templates_old/*
+projects/*
 renderer/*
 store/*
 renderer/*

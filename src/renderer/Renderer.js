@@ -19,7 +19,7 @@ meta.class("meta.Renderer",
 
 		this.camera = meta.camera;
 		this.cameraDefault = this.camera;
-		this.cameraUI = new meta.Camera();
+		//this.cameraUI = new meta.Camera();
 
 		this.chn = {
 			onDown: 		meta.createChannel(Entity.Event.INPUT_DOWN),
@@ -630,14 +630,9 @@ meta.class("meta.Renderer",
 		this.holder.resize(data.width, data.height);
 		this.staticHolder.resize(this.engine.width, this.engine.height);
 
-		var entity;
 		var numEntities = this.entities.length;
-		for(var i = 0; i < numEntities; i++) 
-		{
-			entity = this.entities[i];
-			if(entity.parent !== this.holder) { continue; }
-
-			entity._updateResize();
+		for(var i = 0; i < numEntities; i++) {
+			this.entities[i]._updateResize();
 		}	
 	},
 

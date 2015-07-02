@@ -384,7 +384,7 @@ meta.class("Entity.Geometry",
 		else {
 			this.anchorPosX = (this.parent.volume.width) * this._anchorX;
 			this.anchorPosY = (this.parent.volume.height) * this._anchorY;			
-		}	
+		}
 
 		this.updateTotalOffset();	
 	},
