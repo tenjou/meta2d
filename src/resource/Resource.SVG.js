@@ -122,13 +122,13 @@ meta.class("Resource.SVG", "Resource.Texture",
 		if(typeof(texture) === "string") {
 			var newTexture = meta.resources.getTexture(texture);
 			if(!newTexture) {
-				console.warn("(Resource.Texture.tile): Could not get texture with name: " + texture);
+				console.warn("(Resource.Texture.tileInside): Could not get texture with name: " + texture);
 				return;							
 			}
 			texture = newTexture;
 		}
 		else if(!texture) {
-			console.warn("(Resource.Texture.tile): Invalid texture");
+			console.warn("(Resource.Texture.tileInside): Invalid texture");
 			return;
 		}
 
@@ -139,20 +139,22 @@ meta.class("Resource.SVG", "Resource.Texture",
 
 			var self = this;
 			texture.subscribe(this, function(data, event) {
-				self.tile(texture, center, offsetX, offsetY);
+				self.tileInside(texture, center, offsetX, offsetY);
 			});
 			return;
 		}
 
 		var numX = Math.ceil(this.fullWidth / texture.fullWidth) || 1;
-		var numY = Math.ceil(this.fullHeight/ texture.fullHeight) || 1;		
+		var numY = Math.ceil(this.fullHeight/ texture.fullHeight) || 1;	
+		var textureWidth = numX * (texture.fullWidth + offsetX) + offsetX;
+		var textureHeight = numY * (texture.fullHeight + offsetY) + offsetY;	
 
 		var textureOffsetX = offsetX;
 		var textureOffsetY = offsetY;
 
 		if(center) {
-			textureOffsetX = -((numX * texture.fullWidth) - this.fullWidth) * 0.5;
-			textureOffsetY = -((numY * texture.fullHeight) - this.fullHeight) * 0.5;			
+			textureOffsetX = -(textureWidth - this.fullWidth) * 0.5;
+			textureOffsetY = -(textureHeight - this.fullHeight) * 0.5;			
 		}
 
 		var posX = textureOffsetX;
@@ -171,7 +173,7 @@ meta.class("Resource.SVG", "Resource.Texture",
 		this.loaded = true;	
 	},
 
-	tile: function(texture, numX, numY, center, offsetX, offsetY)
+	tile: function(texture, numX, numY, offsetX, offsetY)
 	{
 		if(typeof(texture) === "string") {
 			var newTexture = meta.resources.getTexture(texture);
@@ -193,7 +195,7 @@ meta.class("Resource.SVG", "Resource.Texture",
 
 			var self = this;
 			texture.subscribe(this, function(data, event) {
-				self.tile(texture, center, offsetX, offsetY);
+				self.tile(data, numX, numY, offsetX, offsetY);
 			});
 			return;
 		}
@@ -205,12 +207,6 @@ meta.class("Resource.SVG", "Resource.Texture",
 
 		var textureOffsetX = offsetX;
 		var textureOffsetY = offsetY;
-
-		if(center) {
-			textureOffsetX = -((numX * texture.fullWidth) - this.fullWidth) * 0.5;
-			textureOffsetY = -((numY * texture.fullHeight) - this.fullHeight) * 0.5;			
-		}
-
 		var posX = textureOffsetX;
 		var posY = textureOffsetY;
 		for(var x = 0; x < numX; x++)
