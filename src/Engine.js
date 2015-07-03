@@ -297,6 +297,8 @@ meta.engine =
 		for(n = 0; n < numTimers; n++)
 		{
 			timer = this.timers[n];
+			if(timer.paused) { continue; }
+
 			timer.tAccumulator += tDelta;
 
 			while(timer.tAccumulator >= timer.tDelta)
