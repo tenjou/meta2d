@@ -101,8 +101,8 @@ meta.class("Entity.Geometry",
 				child = this.children[i];
 				if(child.ignoreParentPos) { continue; }
 
-				child._parentX = this.volume.x - this.volume.pivotPosX;
-				child._parentY = this.volume.y - this.volume.pivotPosY;
+				child._parentX = this.volume.x - this.volume.pivotPosX - this.offsetPosX;
+				child._parentY = this.volume.y - this.volume.pivotPosY - this.offsetPosY;
 				child.updateTotalOffset();
 			}
 		}
@@ -795,6 +795,7 @@ meta.class("Entity.Geometry",
 
 		if(!this.children) {
 			this.children = [ entity ];
+			this._updateScale();
 		}
 		else {
 			this.children.push(entity);
@@ -804,7 +805,6 @@ meta.class("Entity.Geometry",
 		if(this._debugger) { entity._debugger = true; }
 
 		entity.parent = this;
-		this.updatePos();
 		entity._updateAnchor();
 		this.updateZ();
 
@@ -821,8 +821,13 @@ meta.class("Entity.Geometry",
 		}		
 	},
 
-	detach: function(entity) {
-		this.renderer.needRender = true;
+	detach: function(entity) 
+	{
+		entity.parent = this.renderer.holder;
+
+		if(this._view && this._view._active) {
+			this.renderer.removeEntity(entity);
+		}	
 	},
 
 	detachAll: function()
@@ -835,7 +840,6 @@ meta.class("Entity.Geometry",
 		}
 
 		this.children = null;
-		this.renderer.needRender = true;
 	},
 
 	set visible(value) 
