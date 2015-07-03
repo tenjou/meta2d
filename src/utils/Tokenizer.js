@@ -108,8 +108,20 @@ meta.Tokenizer.prototype =
 			var endChar = this.currChar;
 
 			this.nextChar();
-			while(this.currChar !== endChar)
+			var peekChar = this.peekChar();
+
+			for(;;)
 			{
+				if(this.currChar === endChar) 
+				{
+					if(this.currChar === peekChar) {
+						this.token.str += this.currChar;
+						this.nextChar();
+					}
+
+					break;
+				}
+
 				if(this.currChar === "\0") {
 					this.token.type = this.Type.EOF;
 					return this.token;
@@ -136,18 +148,21 @@ meta.Tokenizer.prototype =
 
 	nextChar: function() 
 	{
-		if(this.cursor >= this.bufferLength) {
-			this.currChar = "\0";
+		this.currChar = this.peekChar();
+		this.cursor++;
+
+		if(this.currChar === "\n" || this.currChar === "\0") {
 			this.token.line++;
 		}
-		else {
-			this.currChar = this.buffer.charAt(this.cursor);
-			if(this.currChar === "\n" || this.currChar === "\0") {
-				this.token.line++;
-			}				
-		}	
+	},
 
-		this.cursor++;
+	peekChar: function()
+	{
+		if(this.cursor >= this.bufferLength) {
+			return "\0";
+		}
+
+		return this.buffer.charAt(this.cursor);
 	},
 
 	Type: {
