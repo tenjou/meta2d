@@ -6,12 +6,7 @@ meta.class("Entity.Text", "Entity.Geometry",
 	{
 		this.texture = new Resource.Texture();
 		this._texture.resize(this._fontSize, this._fontSize);
-
-		var type = typeof(params);
-		if(type === "string" || type === "number") {
-			this._text = params;
-			this.updateTxt();
-		}	
+		this.text = params;
 	},
 
 	initArg: function() {},
@@ -22,6 +17,8 @@ meta.class("Entity.Text", "Entity.Geometry",
 
 		if(this._bitmapFont) 
 		{
+			if(!this._bitmapFont.loaded) { return; }
+
 			var canvas = this._bitmapFont.texture.canvas;
 			var chars = this._bitmapFont.chars;
 
@@ -88,8 +85,21 @@ meta.class("Entity.Text", "Entity.Geometry",
 		this.renderer.needRender = true;
 	},
 
-	set text(text) { 
-		this._text = text;
+	set text(text) 
+	{ 
+		if(text !== void(0))
+		{
+			if(typeof(text) === "number") {
+				this._text = text + "";
+			}
+			else {
+				this._text = text;
+			}
+		}
+		else {
+			this._text = "";
+		}
+		
 		this.updateTxt();
 	},
 
@@ -97,7 +107,7 @@ meta.class("Entity.Text", "Entity.Geometry",
 
 	set font(font) 
 	{
-		var fontResource = Resource.ctrl.getResource(font, Resource.Type.FONT);
+		var fontResource = meta.resources.getResource(font, Resource.Type.FONT);
 		if(!fontResource) {
 			this._font = font;
 			this._bitmapFont = null;
@@ -228,9 +238,8 @@ meta.class("Entity.Text", "Entity.Geometry",
 	get shadowOffsetX() { return this._shadowOffsetY; },
 	get shadowOffsetY() { return this._shadowOffsetY; },
 
-	_onFontEvent: function(data, event)
-	{
-		console.log("font", event);
+	_onFontEvent: function(data, event) {
+		this.updateTxt();
 	},
 
 	//
