@@ -5,7 +5,7 @@ meta.class("Resource.Font", "Resource.Basic",
 	init: function(path, tag)
 	{
 		if(path) {
-			this.load(Resource.ctrl.rootPath + path);
+			this.load(meta.resources.rootPath + path);
 		}			
 	},
 
@@ -35,7 +35,7 @@ meta.class("Resource.Font", "Resource.Basic",
 
 		this.chars = new Array(256);
 
-		Resource.ctrl.addToLoad(this);
+		meta.resources.addToLoad(this);
 
 		this.texture = new Resource.Texture(path);
 		this.texture.subscribe(this, this._onTextureEvent);
@@ -48,6 +48,10 @@ meta.class("Resource.Font", "Resource.Basic",
 		});
 	},
 
+	_onError: function() {
+		meta.resources.loadFailed(self);
+	},
+
 	parse_fnt: function(data) 
 	{
 		this.tokenizer.setup(data);
@@ -58,7 +62,7 @@ meta.class("Resource.Font", "Resource.Basic",
 
 		this._loadedFormat = true;
 		if(this.texture._loaded) {
-			Resource.ctrl.loadSuccess(self);
+			meta.resources.loadSuccess(self);
 			this.loaded = true;
 		}
 	},
@@ -137,9 +141,8 @@ meta.class("Resource.Font", "Resource.Basic",
 		{
 			case Resource.Event.LOADED: 
 			{
-				this._loadedFormat = true;
-				if(this.texture._loaded) {
-					Resource.ctrl.loadSuccess(self);
+				if(this._loadedFormat) {
+					meta.resources.loadSuccess(self);
 					this.loaded = true;
 				}
 			} break;
