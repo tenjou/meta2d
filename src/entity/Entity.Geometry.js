@@ -275,12 +275,12 @@ meta.class("Entity.Geometry",
 		this._offsetX = x;
 		this._offsetY = y;
 		if(this._texture) {
-			this.offsetPosX = Math.round((this._offsetX + this._texture.offsetX) * this.volume.scaleX);
-			this.offsetPosY = Math.round((this._offsetY + this._texture.offsetY) * this.volume.scaleY);	
+			this.offsetPosX = Math.round((this._offsetX + this._texture.offsetX));
+			this.offsetPosY = Math.round((this._offsetY + this._texture.offsetY));	
 		}
 		else {
-			this.offsetPosX = Math.round(this._offsetX * this.volume.scaleX);
-			this.offsetPosY = Math.round(this._offsetY * this.volume.scaleY);
+			this.offsetPosX = Math.round(this._offsetX);
+			this.offsetPosY = Math.round(this._offsetY);
 		}
 
 		this.updateTotalOffset();
@@ -821,9 +821,14 @@ meta.class("Entity.Geometry",
 		}		
 	},
 
-	detach: function(entity) 
+	_detach: function(entity)
 	{
 		entity.parent = this.renderer.holder;
+	},
+
+	detach: function(entity) 
+	{
+		this._detach(entity);
 
 		if(this._view && this._view._active) {
 			this.renderer.removeEntity(entity);
@@ -836,7 +841,11 @@ meta.class("Entity.Geometry",
 
 		var numChildren = this.children.length;
 		for(var i = 0; i < numChildren; i++) {
-			this.detach(this.children[i]);
+			this._detach(this.children[i]);
+		}
+
+		if(this._view && this._view._active) {
+			this.renderer.removeEntities(this.children);
 		}
 
 		this.children = null;
