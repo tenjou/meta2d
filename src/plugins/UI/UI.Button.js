@@ -15,11 +15,11 @@ meta.class("UI.Button", "Entity.Geometry",
 	},
 
 	onDown: function() {
-		this.offset(2, 2);
+		this.move(2, 2);
 	},
 
 	onUp: function() {
-		this.offset(0, 0);
+		this.move(-2, -2);
 	},
 
 	set text(str)
