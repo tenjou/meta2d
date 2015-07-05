@@ -60,6 +60,16 @@ meta.class("Resource.Font", "Resource.Basic",
 			this._parseToken_fnt();	
 		}
 
+		// Normalize offsetY:
+		var currChar;
+		for(var key in this.chars)
+		{
+			currChar = this.chars[key];	
+			if(currChar.offsetY > this._minOffsetY) {
+				currChar.offsetY -= this._minOffsetY;
+			}
+		}
+
 		this._loadedFormat = true;
 		if(this.texture._loaded) {
 			meta.resources.loadSuccess(self);
@@ -102,6 +112,15 @@ meta.class("Resource.Font", "Resource.Basic",
 							token = this.tokenizer.nextToken();
 							rect.y = token.value;	
 							break;	
+
+						case "yoffset":
+							this.tokenizer.nextToken();
+							token = this.tokenizer.nextToken();
+							rect.offsetY = token.value;
+							if(token.value < this._minOffsetY && token.value !== 0) {
+								this._minOffsetY = token.value;
+							}
+							break;
 
 						case "width":
 							this.tokenizer.nextToken();
@@ -159,6 +178,7 @@ meta.class("Resource.Font", "Resource.Basic",
 		this.width = 0;
 		this.height = 0;
 		this.kerning = 0;
+		this.offsetY = 0;
 	},
 
 	//
@@ -171,6 +191,7 @@ meta.class("Resource.Font", "Resource.Basic",
 	chars: null,
 	height: 1,
 
-	_loadedFormat: false
+	_loadedFormat: false,
+	_minOffsetY: Number.MAX_VALUE
 });
 

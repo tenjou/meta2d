@@ -43,7 +43,7 @@ meta.class("Entity.Text", "Entity.Geometry",
 				if(!charRect) { continue; }
 
 				ctx.drawImage(canvas, charRect.x, charRect.y, charRect.width, charRect.height, 
-					posX, 0, charRect.width, charRect.height);
+					posX, charRect.offsetY, charRect.width, charRect.height);
 				posX += charRect.kerning;
 			}
 		}
