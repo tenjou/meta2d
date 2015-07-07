@@ -46,7 +46,7 @@ meta.class("meta.Controller",
 		}		
 
 		this.view.active = false;
-		this.flags &= ~this.Flag.LOADED | this.Flag.READY;	
+		this.flags &= ~(this.Flag.LOADED | this.Flag.READY);	
 	},
 
 	onFirstLoad: null,
