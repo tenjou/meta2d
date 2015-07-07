@@ -99,7 +99,7 @@ meta.class("Entity.Geometry",
 			for(var i = 0; i < numChildren; i++) 
 			{
 				child = this.children[i];
-				if(child.ignoreParentPos) { continue; }
+				if(child.flags & this.Flag.IGNORE_PARENT_POS) { continue; }
 
 				child._parentX = this.volume.x - this.volume.pivotPosX - this.offsetPosX;
 				child._parentY = this.volume.y - this.volume.pivotPosY - this.offsetPosY;
@@ -793,21 +793,28 @@ meta.class("Entity.Geometry",
 			return;			
 		}
 
+		entity.parent = this;
+
 		if(!this.children) {
 			this.children = [ entity ];
 			this._updateScale();
 		}
-		else {
-			this.children.push(entity);
+		else 
+		{
+			this.children.push(entity);	
+
+			if((entity.flags & this.Flag.IGNORE_PARENT_POS) === 0) {
+				entity._parentX = this.volume.x - this.volume.pivotPosX - this.offsetPosX;
+				entity._parentY = this.volume.y - this.volume.pivotPosY - this.offsetPosY;
+				entity.updateTotalOffset();
+			}
 		}
 
 		if(this._static) { entity._static = true; }
 		if(this._debugger) { entity._debugger = true; }
-
-		entity.parent = this;
-		entity._updateAnchor();
+		
 		this.updateZ();
-
+		
 		if(this.totalAngle !== 0) {
 			this.updateAngle();
 		}
@@ -819,6 +826,8 @@ meta.class("Entity.Geometry",
 		if(this._view && this._view._active) {
 			this.renderer.addEntity(entity);
 		}		
+
+		this.renderer.needRender = true;	
 	},
 
 	_detach: function(entity)
