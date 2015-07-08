@@ -192,7 +192,7 @@ meta.engine =
 		if(num > 0 && !this.meta.resources.loading) 
 		{
 			var controller;
-			for(n = 0; n < num; n++) {
+			for(n = 0; n < this.controllersReady.length; n++) {
 				controller = this.controllersReady[n];
 				if(controller.flags & controller.Flag.LOADED) {
 					controller.ready();
