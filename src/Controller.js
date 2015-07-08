@@ -61,6 +61,15 @@ meta.class("meta.Controller",
 	{
 		if(this.flags & this.Flag.READY) { return; }
 
+		if((this.flags & this.Flag.FIRST_READY) === 0)
+		{
+			if(this.onFirstReady) {
+				this.onFirstReady();
+			}
+
+			this.flags |= this.Flag.FIRST_READY;
+		}
+
 		if(this.onReady) {
 			this.onReady();
 		}
@@ -79,7 +88,8 @@ meta.class("meta.Controller",
 	Flag: {
 		LOADED: 1,
 		READY: 2,
-		FIRST_LOADED: 4
+		FIRST_LOADED: 4,
+		FIRST_READY: 8
 	},
 
 	//
