@@ -287,6 +287,22 @@ meta.shuffleArray = function(array)
 	return array;
 };
 
+meta.shuffleArrayRange = function(array, num) 
+{
+	var temp, item;
+
+	while(num) 
+	{
+		item = Math.floor(Math.random() * num--);
+
+		temp = array[num];
+		array[num] = array[item];
+		array[item] = temp;
+	}
+
+	return array;
+};
+
 meta.rotateArray = function(array)
 {
 	var tmp = array[0];
