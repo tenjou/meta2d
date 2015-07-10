@@ -15,41 +15,57 @@ meta.class("UI.Button", "Entity.Geometry",
 	},
 
 	onDown: function() {
-		this.move(2, 2);
+		this.move(this.pressOffset, this.pressOffset);
 	},
 
 	onUp: function() {
-		this.move(-2, -2);
+		this.move(-this.pressOffset, -this.pressOffset);
+	},
+
+	_createLabel: function(text)
+	{
+		if(!text) {
+			text = "";
+		}
+
+		this._label = new Entity.Text(text);
+		this._label.pivot(0.5);
+		this._label.anchor(0.5);
+		this._label.pickable = false;
+		this._label.size = 12;
+		this._label.color = "#ffffff";
+		this.attach(this._label);
 	},
 
 	set text(str)
 	{
-		if(!this._text)
-		{
-			this._text = new Entity.Text(str);
-			this._text.size = 12;
-			this._text.color = "#ffffff";
-			this.attach(this._text);
-
-			this._text.pivot(0.5);
-			this._text.anchor(0.5);
-			this._text.pickable = false;		
+		if(!this._label) {
+			this._createLabel(str);
 		}
 		else {
-			this._text.setText(str);
+			this._label.text = str;
 		}
 	},
 
 	get text()
 	{
-		if(!this._text) {
+		if(!this._label) {
 			return "";
 		}
 
-		return this._text._text;
+		return this._label.text;
 	},
 
+	get label() 
+	{
+		if(!this._label) {
+			this._createLabel();
+		} 
+
+		return this._label;
+	},
 
 	//
-	_text: null
+	_label: null,
+	pressOffset: 2
 });
