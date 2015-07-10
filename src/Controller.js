@@ -43,7 +43,18 @@ meta.class("meta.Controller",
 
 		if(this.onUnload) {
 			this.onUnload();
-		}		
+		}
+
+		if(this.onUpdate) {
+			var buffer = meta.engine.controllersUpdate;
+			var num = buffer.length;
+			for(var n = 0; n < num; n++) {
+				if(buffer[n] === this) {
+					buffer.splice(n, 1);
+					break;
+				}
+			}
+		}
 
 		this.view.active = false;
 		this.flags &= ~(this.Flag.LOADED | this.Flag.READY);	
@@ -54,6 +65,8 @@ meta.class("meta.Controller",
 	onLoad: null,
 
 	onUnload: null,
+
+	onFirstReady: null,
 
 	onReady: null,	
 
@@ -74,16 +87,14 @@ meta.class("meta.Controller",
 			this.onReady();
 		}
 
+		if(this.onUpdate) {
+			meta.engine.controllersUpdate.push(this);
+		}
+
 		this.flags |= this.Flag.READY;
 	},
 
-	/**
-	 * Called in regular intervals that is defined in meta.tUpdate.
-	 * @param tDelta {Number} The time difference between current and previous frame.
-	 */
-	update: null,
-
-	render: null,
+	onUpdate: null,
 
 	Flag: {
 		LOADED: 1,
