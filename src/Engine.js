@@ -80,34 +80,19 @@ meta.engine =
 		cache.views["master"] = masterView;
 		cache.view = masterView;
 
-		// // Create loading view.
-		// var loadingView = new meta.View("loading");
-		// //loadingView.bgColor = "#000000";
-		// loadingView.z = 999999;
-		// cache.views["loading"] = loadingView;
-		// cache.loadingView = loadingView;	
-
 		var numFuncs = cache.initFuncs.length;
 		for(var i = 0; i < numFuncs; i++) {
 			cache.initFuncs[i]();
 		}
 
-		this.inited = true;
-
 		console.log(" ");
 
+		this.inited = true;
 		this._loadAll();
 	},
 
 	_loadAll: function()
 	{
-		if(meta.device.support.consoleCSS) {
-			console.log("%c(Loading started)", "background: #eee; font-weight: bold;");
-		}
-		else {
-			console.log("(Loading started)");
-		}
-
 		if(!meta._loadAllScripts()) {
 			this._continueLoad();
 		}
@@ -128,34 +113,20 @@ meta.engine =
 		this.loadPlugins();
 		this.loaded = true;
 
-		if(!this.meta.resources.loading) {
-			this.onReady();
-		}
+		meta.cache.view.active = true;
+		this._startMainLoop();
 	},
 
 	onReady: function()
 	{
+		console.log("onready")
+		this.flags |= this.Flag.READY;
 		this.readyPlugins();
-
-		if(this.ready) { return; }	
-
-		this.ready = true;
 
 		var numFuncs = meta.cache.readyFuncs.length;
 		for(var i = 0; i < numFuncs; i++) {
 			meta.cache.readyFuncs[i]();
-		}
-
-		meta.cache.view.active = true;
-
-		if(meta.device.support.consoleCSS) {
-			console.log("%c(Loading ended)", "background: #eee; font-weight: bold;");
-		}
-		else {
-			console.log("(Loading ended)");
 		}		
-
-		this._startMainLoop();
 	},
 
 	loadPlugins: function() 
@@ -398,12 +369,30 @@ meta.engine =
 		meta.renderer.needRender = true;
 	},
 
-	onLoadingStart: function(data, event) {},
+	onLoadingStart: function(data, event) 
+	{
+		meta.loading.load();
+
+		if(meta.device.support.consoleCSS) {
+			console.log("%c(Loading started)", "background: #eee; font-weight: bold;");
+		}
+		else {
+			console.log("(Loading started)");
+		}
+	},
 
 	onLoadingEnd: function(data, event) 
 	{
-		this.loadingResources = false;
-		if(this.loaded) {
+		if(meta.device.support.consoleCSS) {
+			console.log("%c(Loading ended)", "background: #eee; font-weight: bold;");
+		}
+		else {
+			console.log("(Loading ended)");
+		}
+		
+		meta.loading.unload();
+
+		if((this.flags & this.Flag.READY) === 0) {
 			this.onReady();
 		}
 	},
@@ -725,6 +714,11 @@ meta.engine =
 
 	get adapt() { return this._adapt; },
 
+	Flag: {
+		LOADED: 4,
+		READY: 8
+	},
+
 	//
 	elementStyle: "padding:0; margin:0;",
 	canvasStyle: "position:absolute; overflow:hidden; translateZ(0); " +
@@ -750,6 +744,7 @@ meta.engine =
 	autoInit: true,
 	autoMetaTags: true,	
 
+	flags: 0,
 	inited: false,
 	loading: false,
 	loaded: false,
