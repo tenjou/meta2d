@@ -584,6 +584,9 @@ meta.class("Entity.Geometry",
 		if(this._alpha < 0) {
 			this._alpha = 0;
 		} 
+		else if(this._alpha > 1) {
+			this._alpha = 1;
+		}
 		
 		this.volume.__transformed = 1;
 		this.renderer.needRender = true;
