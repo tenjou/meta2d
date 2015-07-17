@@ -59,7 +59,6 @@ meta.controller("meta.loading",
 		var resources = meta.resources;
 		var percents = Math.min((100 / resources.numTotalToLoad) * (resources.numTotalToLoad - resources.numToLoad + 1), 100);
 		this.progress.clipBounds(percents, 3);
-		console.log(data.path);
 	},
 
 	//
