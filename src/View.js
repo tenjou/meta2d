@@ -106,7 +106,7 @@ meta.View.prototype =
 
 		this.entities.push(entity);
 
-		if(this._active && meta.engine.ready) {
+		if(this._active && (meta.engine.flags & meta.engine.Flag.READY)) {
 			meta.renderer.addEntity(entity);
 		}
 	},
@@ -289,6 +289,7 @@ meta.View.prototype =
 
 	_makeActive: function()
 	{
+		console.log("add", this.entities.length)
 		meta.renderer.addEntities(this.entities);
 
 		if(this.views)

@@ -119,7 +119,6 @@ meta.engine =
 
 	onReady: function()
 	{
-		console.log("onready")
 		this.flags |= this.Flag.READY;
 		this.readyPlugins();
 
@@ -156,22 +155,26 @@ meta.engine =
 
 	update: function(tDelta)
 	{
+		var n, num;
+
 		this._updateTimers(meta.time.delta);
 
-		var n;
-		var num = this.controllersReady.length;
-		if(num > 0 && !this.meta.resources.loading) 
+		if(this.flags & this.Flag.READY)
 		{
-			var controller;
-			for(n = 0; n < this.controllersReady.length; n++) {
-				controller = this.controllersReady[n];
-				if(controller.flags & controller.Flag.LOADED) {
-					controller.ready();
+			num = this.controllersReady.length;
+			if(num > 0 && !this.meta.resources.loading) 
+			{
+				var controller;
+				for(n = 0; n < this.controllersReady.length; n++) {
+					controller = this.controllersReady[n];
+					if(controller.flags & controller.Flag.LOADED) {
+						controller.ready();
+					}
 				}
-			}
 
-			this.controllersReady.length = 0;
-		} 
+				this.controllersReady.length = 0;
+			} 
+		}
 
 		num = this.updateFuncs.length;
 		for(n = 0; n < num; n++) {
