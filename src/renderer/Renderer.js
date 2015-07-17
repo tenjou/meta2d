@@ -146,15 +146,9 @@ meta.class("meta.Renderer",
 			if(itemsLeft > 0)
 			{
 				var index;
-				for(var i = 0; i < numRemove; i++) 
-				{
+				for(var i = 0; i < numRemove; i++) {
 					index = this.entitiesPicking.indexOf(this.entitiesPickingRemove[i]);
-					if(index < itemsLeft) {
-						this.entitiesPicking.splice(index, 1);
-					}
-					else {
-						this.entitiesPicking.pop();
-					}
+					this.entitiesPicking.splice(index, 1);
 				}
 			}
 			else {
