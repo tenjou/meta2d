@@ -10,6 +10,7 @@ meta.class("Resource.Manager",
 	init: function()
 	{
 		this._chn_added = meta.createChannel(Resource.Event.ADDED);
+		this._chn_loaded = meta.createChannel(Resource.Event.LOADED);
 		this._chn_loadingStart = meta.createChannel(Resource.Event.LOADING_START)
 		this._chn_loadingEnd = meta.createChannel(Resource.Event.LOADING_END);
 
@@ -105,7 +106,6 @@ meta.class("Resource.Manager",
 		subBuffer[resource.name] = null;
 	},
 
-
 	/**
 	 * Flag texture that must be loaded.
 	 * @param resource {Resource.Basic} Resource to load. 
@@ -120,6 +120,7 @@ meta.class("Resource.Manager",
 		resource.loading = true;
 
 		this.numToLoad++;
+		this.numTotalToLoad++;
 	},
 
 	/**
@@ -137,6 +138,8 @@ meta.class("Resource.Manager",
 		subBuffer.push(resource);
 		resource.loading = false;
 		resource.inUse = true;
+
+		this._chn_loaded.emit(resource, Resource.Event.LOADED);
 
 		if(!meta.engine.ready)
 		{
@@ -157,6 +160,8 @@ meta.class("Resource.Manager",
 	loadFailed: function(resource)
 	{
 		resource.loading = false;
+
+		this._chn_loaded.emit(resource, Resource.Event.LOADED);
 
 		if(!meta.engine.ready)
 		{
@@ -293,11 +298,13 @@ meta.class("Resource.Manager",
 
 	numLoaded: 0,
 	numToLoad: 0,
+	numTotalToLoad: 0,
 
 	_syncQueue: null,
 	isSyncLoading: false,
 
 	_chn_added: null,
+	_chn_loaded: null,
 	_chn_loadingStart: null,
 	_chn_loadingEnd: null,
 	_uniqueID: 0,
