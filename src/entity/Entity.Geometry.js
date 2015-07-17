@@ -578,8 +578,13 @@ meta.class("Entity.Geometry",
 	get flipX() { return this.volume.flipX; },
 	get flipY() { return this.volume.flipY; },
 
-	set alpha(value) {
+	set alpha(value) 
+	{
 		this._alpha = value;
+		if(this._alpha < 0) {
+			this._alpha = 0;
+		} 
+		
 		this.volume.__transformed = 1;
 		this.renderer.needRender = true;
 	},

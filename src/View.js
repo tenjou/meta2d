@@ -289,7 +289,6 @@ meta.View.prototype =
 
 	_makeActive: function()
 	{
-		console.log("add", this.entities.length)
 		meta.renderer.addEntities(this.entities);
 
 		if(this.views)
