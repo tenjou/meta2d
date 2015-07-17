@@ -142,8 +142,16 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 			this.ctx.save();
 
 			this.ctx.beginPath();
-			this.ctx.rect(entity.clipVolume.minX | 0, entity.clipVolume.minY | 0, 
-				entity.clipVolume.width, entity.clipVolume.height);
+
+			if(entity.flags & this.entityFlags.CLIP_BOUNDS) {
+				this.ctx.rect(entity.volume.minX | 0, entity.volume.minY | 0, 
+					entity.clipVolume.width, entity.clipVolume.height);
+			}
+			else {
+				this.ctx.rect(entity.clipVolume.minX | 0, entity.clipVolume.minY | 0, 
+					entity.clipVolume.width, entity.clipVolume.height);
+			}
+
 			this.ctx.closePath();
 			this.ctx.clip();
 		}		

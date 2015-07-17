@@ -30,7 +30,7 @@ meta.class("Entity.Geometry",
 	createBody: function(comp) 
 	{
 		if(!comp) {
-			comp = Component.Body;
+			comp = Physics.Body;
 		}
 		this.addComponent("body", comp);
 	},
@@ -645,7 +645,15 @@ meta.class("Entity.Geometry",
 
 	clipBounds: function(width, height)
 	{
+		if(!this.clipVolume) {
+			this.clipVolume = new meta.math.AABB(0, 0, width, height);
+		}
+		else {
+			this.clipVolume.set(0, 0, width, height);
+		}
 
+		this.flags |= this.Flag.CLIP_BOUNDS;
+		this.renderer.needRender = true;
 	},
 
 	/**
@@ -1131,6 +1139,7 @@ meta.class("Entity.Geometry",
 		}
 
 		var comp = new obj(this);
+		comp.owner = this;
 
 		if(name) 
 		{
@@ -1310,7 +1319,8 @@ meta.class("Entity.Geometry",
 		IGNORE_PARENT_SCALE: 64,
 		UPDATING: 128,
 		ADDED: 256,
-		DEBUG: 512
+		DEBUG: 512,
+		CLIP_BOUNDS: 1024
 	},
 
 	//
