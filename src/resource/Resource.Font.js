@@ -49,7 +49,7 @@ meta.class("Resource.Font", "Resource.Basic",
 	},
 
 	_onError: function() {
-		meta.resources.loadFailed(self);
+		meta.resources.loadFailed(this);
 	},
 
 	parse_fnt: function(data) 
@@ -72,7 +72,7 @@ meta.class("Resource.Font", "Resource.Basic",
 
 		this._loadedFormat = true;
 		if(this.texture._loaded) {
-			meta.resources.loadSuccess(self);
+			meta.resources.loadSuccess(this);
 			this.loaded = true;
 		}
 	},
@@ -161,7 +161,7 @@ meta.class("Resource.Font", "Resource.Basic",
 			case Resource.Event.LOADED: 
 			{
 				if(this._loadedFormat) {
-					meta.resources.loadSuccess(self);
+					meta.resources.loadSuccess(this);
 					this.loaded = true;
 				}
 			} break;
