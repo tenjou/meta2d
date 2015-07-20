@@ -578,21 +578,47 @@ meta.class("Entity.Geometry",
 	get flipX() { return this.volume.flipX; },
 	get flipY() { return this.volume.flipY; },
 
+	// ALPHA
 	set alpha(value) 
 	{
+		if(this._alpha === value) { return; }
+
 		this._alpha = value;
-		if(this._alpha < 0) {
-			this._alpha = 0;
-		} 
-		else if(this._alpha > 1) {
-			this._alpha = 1;
-		}
-		
-		this.volume.__transformed = 1;
-		this.renderer.needRender = true;
+		this.updateAlpha();
 	},
 
 	get alpha() { return this._alpha; },	
+
+	updateAlpha: function()
+	{
+		this.totalAlpha = this._alpha * this.parent.totalAlpha;
+		if(this.totalAlpha < 0) {
+			this.totalAlpha = 0;
+		}
+		else if(this.totalAlpha > 1) {
+			this.totalAlpha = 1;
+		}
+
+		if(this.children)
+		{
+			var child;
+			var num = this.children.length;
+			for(var n = 0; n < num; n++) 
+			{
+				child = this.children[n];
+				if(child.flags & this.Flag.IGNORE_PARENT_ALPHA) {
+					continue;
+				}
+
+				child.updateAlpha();
+			}
+		}
+
+		
+
+		this.volume.__transformed = 1;
+		this.renderer.needRender = true;
+	},
 
 	resize: function(width, height) 
 	{
@@ -834,6 +860,9 @@ meta.class("Entity.Geometry",
 		if(this.totalAngle !== 0) {
 			this.updateAngle();
 		}
+		if(this.totalAlpha !== 1) {
+			this.updateAlpha();
+		}
 
 		if(!this._visible) {
 			entity.visible = false;
@@ -849,6 +878,10 @@ meta.class("Entity.Geometry",
 	_detach: function(entity)
 	{
 		entity.parent = this.renderer.holder;
+
+		if(this.totalAlpha !== 1) {
+			entity.updateAlpha();
+		}
 	},
 
 	detach: function(entity) 
@@ -1341,7 +1374,7 @@ meta.class("Entity.Geometry",
 	_x: 0, _y: 0, _parentX: 0, _parentY: 0,
 	_z: 0, totalZ: 0, _parentZ: 0,
 	_angle: 0, _parentAngle: 0,
-	_alpha: 1, totalAlpha: 0, _parentAlpha: 0,
+	_alpha: 1, totalAlpha: 1,
 	_scaleX: 1, _scaleY: 1, _parentScaleX: 1, _parentScaleY: 1,
 	
 	_offsetX: 0, _offsetY: 0,

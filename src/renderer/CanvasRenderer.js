@@ -171,7 +171,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		}
 		else
 		{
-			this.ctx.globalAlpha = entity._alpha;
+			this.ctx.globalAlpha = entity.totalAlpha;
 
 			this.ctx.transform(
 				volume.m11, volume.m12, 
