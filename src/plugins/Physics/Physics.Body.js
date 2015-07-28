@@ -10,7 +10,7 @@ meta.class("Physics.Body",
 
 	load: function() {
 		this._volume = this.owner.volume;
-		Physics.ctrl.bodies.push(this);		
+		Physics.bodies.push(this);		
 	},
 
 	unload: function() {

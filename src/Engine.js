@@ -228,7 +228,7 @@ meta.engine =
 		
 		var num = this.renderFuncs.length;
 		for(var n = 0; n < num; n++) {
-			this.renderFuncs[n](tDeltaF);
+			this.renderFuncs[n](this.time.tDeltaF);
 		}	
 
 		this._fpsCounter++;

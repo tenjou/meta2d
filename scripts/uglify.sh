@@ -57,6 +57,7 @@ cat meta.js \
 	plugins/tween/Tween.js \
 	plugins/tween/Easing.js \
 	plugins/tween/Link.js \
+	Loading.js \
 	Loader.js \
 	| uglifyjs --output ../versions/meta.js --mangle -c dead_code=false,unused=false,side_effects=false --screw-ie8
 
