@@ -1,6 +1,5 @@
 .DS_Store
 .idea
-projects/*
 renderer/*
 store/*
 renderer/*
