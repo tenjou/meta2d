@@ -745,7 +745,7 @@ meta.class("Entity.Geometry",
 		}
 	},	
 
-	set texture(texture)
+	setTexture: function(texture)
 	{
 		if(this.texture === texture) { return; }
 
@@ -792,7 +792,13 @@ meta.class("Entity.Geometry",
 		}
 	},
 
-	get texture() { return this._texture; },
+	set texture(texture) {
+		this.setTexture(texture)
+	},
+
+	get texture() { 
+		return this._texture; 
+	},
 
 	set updating(value) 
 	{
@@ -868,6 +874,7 @@ meta.class("Entity.Geometry",
 			entity.visible = false;
 		}
 
+		entity._view = this._view;
 		if(this._view && this._view._active) {
 			this.renderer.addEntity(entity);
 		}		
