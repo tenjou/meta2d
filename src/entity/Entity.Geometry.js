@@ -745,9 +745,11 @@ meta.class("Entity.Geometry",
 		}
 	},	
 
-	setTexture: function(texture)
+	onTextureChange: null,
+
+	set texture(texture) 
 	{
-		if(this.texture === texture) { return; }
+		if(this._texture === texture) { return; }
 
 		if(this._texture) {
 			this._texture.unsubscribe(this);
@@ -787,13 +789,11 @@ meta.class("Entity.Geometry",
 			this.loaded = false;
 		}
 
-		if(this._texture.frames > 0) {
-			this.anim.set(this._texture);
-		}
-	},
+		this.anim.set(this._texture);
 
-	set texture(texture) {
-		this.setTexture(texture)
+		if(this.onTextureChange) {
+			this.onTextureChange();
+		}
 	},
 
 	get texture() { 

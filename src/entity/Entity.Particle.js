@@ -1,27 +1,27 @@
 "use strict";
 
-meta.class("Entity.Particle", "Entity.Geometry", 
+meta.class("Entity.ParticleEmitter", "Entity.Geometry", 
 {
 	init: function()
 	{
 		this.particles = [];
-		this.totalParticles = this.cfg.totalParticles;
-
 		this._canvas = document.createElement("canvas");
 		this._ctx = this._canvas.getContext("2d");
+
+		this.preset = "meteor";
 	},
 
 	update: function(tDelta) 
 	{
 		this.elapsed += tDelta;
-		if(this.elapsed > this.duration) {
+		if(this.elapsed > this.cfg.duration) {
 			this.updating = false;
 			return;
 		}
 
-		if(this.cfg.emissionRate > 0)
+		if(this.emissionRate > 0)
 		{
-			var rate = 1.0 / this.cfg.emissionRate;
+			var rate = 1.0 / this.emissionRate;
 			this.emissionCounter += tDelta;
 
 			var num = Math.floor(this.emissionCounter / rate);
@@ -96,8 +96,8 @@ meta.class("Entity.Particle", "Entity.Geometry",
 
 	updateParticle: function(particle, tDelta)
 	{
-		particle.forcesX = (this.cfg.gravityX) * tDelta;
-		particle.forcesY = (this.cfg.gravityY) * tDelta;
+		particle.forcesX = (this.gravityX) * tDelta;
+		particle.forcesY = (this.gravityY) * tDelta;
 		particle.velX += particle.forcesX;
 		particle.vecY += particle.forcesY
 
@@ -170,32 +170,22 @@ meta.class("Entity.Particle", "Entity.Geometry",
 		}
 	},
 
-	reset: function()
-	{
-
+	reset: function() {
+		this.numActive = 0;
+		this.elapsed = 0;
 	},
 
-	setTexture: function(texture)
+	onTextureChange: function()
 	{
-		this._super(texture);
-
 		if(!this.texture) 
 		{
-			if(this._cache.texture) {
+			if(!this._svgTexture) {
 				this._svgTexture = new Resource.SVG();
 				this._svgTexture.fillStyle = "white";
 				this._svgTexture.circle(this.cfg.radius);
 			}
 			this.texture = this._svgTexture;
 		}
-	},
-
-	updateFromTexture: function() 
-	{
-		this._super();
-
-		this._canvas.width = this.texture.width;
-		this._canvas.height = this.texture.height;
 	},
 
 	set totalParticles(value) 
@@ -216,7 +206,46 @@ meta.class("Entity.Particle", "Entity.Geometry",
 	get totalParticles() { 
 		return this.cfg.totalParticles;
 	},
- 
+
+	set textureAdditive(value) {
+		this.cfg.textureAdditive = value;
+	},
+
+	get textureAdditive() {
+		return this.cfg.textureAdditive;
+	},
+
+	set radius(value) 
+	{
+		this.cfg.radius = value;
+
+		if(this._texture === this._svgTexture) {
+			this._svgTexture.circle(this.cfg.radius);
+		}
+	},
+
+	get radius() {
+		return this.cfg.radius;
+	},
+
+	set preset(name) 
+	{
+		var preset = this.presets[name];
+		for(var key in preset)
+		{
+			if(this.cfg[key] === preset[key]) {
+				continue;
+			}
+
+			this.cfg[key] = preset[key];
+		}
+
+		this.texture = this.cfg.texture;
+		this.textureAdditive = this.cfg.textureAdditive;
+		this._canvas.width = this.texture.width;
+		this._canvas.height = this.texture.height;	
+	},
+
 	Particle: function()
 	{
 		this.life = 0;
@@ -235,54 +264,79 @@ meta.class("Entity.Particle", "Entity.Geometry",
 		this.scaleDelta = 1;
 	},
 
-	cfg: 
-	{
-		totalParticles: 150,
-		emissionRate: 75,
-
-		life: 2,
-		lifeVar: 1,
-
-		xVar: 0,
-		yVar: 0,
-
-		speed: 15,
-		speedVar: 5,
-		angle: 90,
-		angleVar: 360,
-		gravityX: -200,
-		gravityY: -200,
-		radialAccel: 0,
-		radialAccelVar: 0,
-		tangentialAccel: 0,
-		tangentialAccelVar: 0,
-
-		startColor: [ 51, 102, 179, 1 ],
-		startColorVar: [ 0, 0, 51, 0.1 ],
-		endColor: [ 0, 0, 0, 1 ],
-		endColorVar: [ 0, 0, 0, 0 ],
-		scale: 1.0,
-		scaleVar: 1.0,
-		endScale: 1.0,
-		endScaleVar: 1.0,
-
-		texture: null,
-		radius: 10
-	},
-
 	//
 	particles: null,
-
 	numActive: 0,
 
 	emissionCounter: 0,
 	elapsed: 0,
-	duration: Infinity,
-
-	addictive: false,
 
 	_endColor: new Float32Array(4),
 	_canvas: null,
 	_ctx: null,
-	_svgTexture: null
+	_svgTexture: null,
+
+	// Configuration & Presets
+	cfg: {
+		totalParticles: 0,
+		emissionRate: 0,
+
+		duration: Infinity,
+
+		xVar: 0, yVar: 0,
+		life: 1, lifeVar: 0,
+
+		speed: 0, speedVar: 0,
+		angle: 0, angleVar: 0,
+		gravityX: 0, gravityY: 0,
+		radialAccel: 0, radialAccelVar: 0,
+		tangentialAccel: 0, tangentialAccelVar: 0,
+
+		texture: null,
+		textureAdditive: false,
+		radius: 10
+	},
+
+	presets: 
+	{
+		empty: {
+			totalParticles: 50,
+			emissionRate: 10,
+			life: 1,
+			lifeVar: 0,
+		},
+
+		meteor: {
+			totalParticles: 150,
+			emissionRate: 75,
+			life: 2,
+			lifeVar: 1,
+
+			xVar: 0,
+			yVar: 0,
+
+			speed: 15,
+			speedVar: 5,
+			angle: 90,
+			angleVar: 360,
+			gravityX: -200,
+			gravityY: -200,
+			radialAccel: 0,
+			radialAccelVar: 0,
+			tangentialAccel: 0,
+			tangentialAccelVar: 0,
+
+			startColor: [ 51, 102, 179, 1 ],
+			startColorVar: [ 0, 0, 51, 0.1 ],
+			endColor: [ 0, 0, 0, 1 ],
+			endColorVar: [ 0, 0, 0, 0 ],
+			scale: 1.0,
+			scaleVar: 1.0,
+			endScale: 1.0,
+			endScaleVar: 1.0,
+
+			textureAdditive: true,
+			radius: 10
+		}
+	}
 });

@@ -111,6 +111,17 @@ meta._addResource = function(strType, data, folderPath, tag)
 	return resource;
 };
 
+meta.loadFile = function(file, tag)
+{
+	if(!(file instanceof File)) {
+		console.warn("(meta.loadFile) Invalid file has been passed.");
+	}
+
+	var resource = new Resource.Texture(file, tag)
+	meta.resources.add(resource);
+	return resource;
+};
+
 /**
  * Cross browser support window.onload like function.
  * @param func {Function} Callback function to call when window is loaded.

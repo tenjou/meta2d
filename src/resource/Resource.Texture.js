@@ -33,23 +33,29 @@ meta.class("Resource.Texture", "Resource.Basic",
 		this.generate();
 
 		// If argument is string threat as path:
-		var type = typeof(data);
-		if(type === "string") {
-			this.load(data);
+		if(data instanceof File) {
+			this.loadFile(data);
 		}
-		else if(type === "object") 
+		else
 		{
-			for(var key in data) {
-				this[key] = data[key];
+			var type = typeof(data);
+			if(type === "string") {
+				this.load(data);
 			}
+			else if(type === "object") 
+			{
+				for(var key in data) {
+					this[key] = data[key];
+				}
 
-			if(this.framesX > 1 || this.framesY > 1) {
-				this.frames = this.framesX * this.framesY;
-				this.animated = true;
-			}
+				if(this.framesX > 1 || this.framesY > 1) {
+					this.frames = this.framesX * this.framesY;
+					this.animated = true;
+				}
 
-			if(this.path) {
-				this.load(this.path);
+				if(this.path) {
+					this.load(this.path);
+				}
 			}
 		}
 	},
@@ -116,6 +122,11 @@ meta.class("Resource.Texture", "Resource.Basic",
 
 			self.createFromImg(img);
 			meta.resources.loadSuccess(self);
+
+			// if(this.path.indexOf("blob:") !== 0) {
+			// 	console.log("revoke");
+			// 	window.URL.revokeObjectURL(this.path);
+			// }
 		};
 
 		img.onerror = function(event) {
@@ -140,6 +151,42 @@ meta.class("Resource.Texture", "Resource.Basic",
 		// }
 
 		// img.src = this.fullPath;
+	},
+
+	loadFile: function(file)
+	{
+		if(this.loading) { return; }
+		this.loaded = false;
+
+		this.path = window.URL.createObjectURL(file);
+		this.fullPath = this.path;
+
+		var self = this;
+		var img = new Image();
+
+		img.onload = function()
+		{
+			if(!img.complete) {
+				console.warn("(Resource.Texture.load) Could not load texture from - " + img.src);
+				meta.resources.loadFailed(self);
+				return;
+			}
+
+			self.createFromImg(img);
+			meta.resources.loadSuccess(self);
+
+			window.URL.revokeObjectURL(self.path);
+			console.log(self.name)
+		};
+
+		img.onerror = function(event) {
+			meta.resources.loadFailed(self);
+			self.emit(this, Resource.Event.FAILED);
+		};		
+
+		img.src = this.fullPath;
+
+		meta.resources.addToLoad(this);
 	},
 
 	/**
