@@ -4,12 +4,8 @@ meta.class("Entity.Particle", "Entity.Geometry",
 {
 	init: function()
 	{
-		var max = this.cfg.numMax;
-
-		this.particles = new Array(max);
-		for(var n = 0; n < max; n++) {
-			this.particles[n] = new this.Particle();
-		}
+		this.particles = [];
+		this.totalParticles = this.cfg.totalParticles;
 
 		this._canvas = document.createElement("canvas");
 		this._ctx = this._canvas.getContext("2d");
@@ -33,8 +29,8 @@ meta.class("Entity.Particle", "Entity.Geometry",
 			{
 				this.emissionCounter -= (num * rate);
 
-				if(num > (this.cfg.numMax - this.numActive)) {
-					num = (this.cfg.numMax - this.numActive);
+				if(num > (this.cfg.totalParticles - this.numActive)) {
+					num = (this.cfg.totalParticles - this.numActive);
 				}
 
 				var newNumActive = this.numActive + num;
@@ -202,6 +198,25 @@ meta.class("Entity.Particle", "Entity.Geometry",
 		this._canvas.height = this.texture.height;
 	},
 
+	set totalParticles(value) 
+	{
+		var num = this.particles.length;
+		this.particles.length = value;
+		this.cfg.totalParticles = value;
+
+		for(var n = num; n < value; n++) {
+			this.particles[n] = new this.Particle();
+		}
+
+		if(this.numActive > value) {
+			this.numActive = value;
+		}
+	},
+
+	get totalParticles() { 
+		return this.cfg.totalParticles;
+	},
+ 
 	Particle: function()
 	{
 		this.life = 0;
@@ -222,7 +237,7 @@ meta.class("Entity.Particle", "Entity.Geometry",
 
 	cfg: 
 	{
-		numMax: 150,
+		totalParticles: 150,
 		emissionRate: 75,
 
 		life: 2,
