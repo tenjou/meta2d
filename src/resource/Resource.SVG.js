@@ -91,11 +91,9 @@ meta.class("Resource.SVG", "Resource.Texture",
 	 */	
 	circle: function(radius)
 	{
-		if(this.fullWidth < 2 && this.fullHeight < 2) {
-			var size = (radius + this._lineWidth) * 2;
-			this.resizeSilently(size, size);
-		}
-
+		var size = (radius + this._lineWidth) * 2;
+		this.resizeSilently(size, size);
+		
 		this.ctx.beginPath();
 		this.ctx.arc(radius + this._lineWidth, radius + this._lineWidth, radius, 0, Math.PI * 2, false);
 		this.ctx.closePath();
