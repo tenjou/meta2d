@@ -2,12 +2,8 @@
 
 meta.class("Entity.ParticleEmitter", "Entity.Geometry", 
 {
-	init: function()
-	{
+	init: function() {
 		this.particles = [];
-		this._canvas = document.createElement("canvas");
-		this._ctx = this._canvas.getContext("2d");
-
 		this.preset = "meteor";
 	},
 
@@ -19,9 +15,9 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 			return;
 		}
 
-		if(this.emissionRate > 0)
+		if(this.cfg.emissionRate > 0)
 		{
-			var rate = 1.0 / this.emissionRate;
+			var rate = 1.0 / this.cfg.emissionRate;
 			this.emissionCounter += tDelta;
 
 			var num = Math.floor(this.emissionCounter / rate);
@@ -96,8 +92,8 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 
 	updateParticle: function(particle, tDelta)
 	{
-		particle.forcesX = (this.gravityX) * tDelta;
-		particle.forcesY = (this.gravityY) * tDelta;
+		particle.forcesX = (this.cfg.gravityX) * tDelta;
+		particle.forcesY = (this.cfg.gravityY) * tDelta;
 		particle.velX += particle.forcesX;
 		particle.vecY += particle.forcesY
 
@@ -117,10 +113,19 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 
 	draw: function(ctx)
 	{
+		if(!this._texture.loaded) { return; }
+
 		var tDelta = meta.time.deltaF;
 		var img = this.texture.canvas;
-		var parentX = this.volume.minX;
-		var parentY = this.volume.minY;
+		var parentX = this.volume.minX - (img.width * 0.5);
+		var parentY = this.volume.minY - (img.height * 0.5);
+
+		if(this.cfg.textureAdditive) {
+			ctx.globalCompositeOperation = "lighter";
+		}
+		else {
+			ctx.globalCompositeOperation = "source-over";
+		}
 
 		var particle, color;
 		for(var n = 0; n < this.numActive; n++) 
@@ -128,10 +133,18 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 			particle = this.particles[n];
 			color = particle.color;
 
+			if(color[3] > 1) {
+				color[3] = 1;
+			}
+			if(color[3] < 0) {
+				color[3] = 0;
+			}
 			this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
 			this._ctx.globalCompositeOperation = "source-over";
 			this._ctx.globalAlpha = color[3];
 			this._ctx.drawImage(img, 0, 0);
+
+
 
 			this._ctx.globalCompositeOperation = "source-atop";
 			this._ctx.fillStyle = "rgba(" + 
@@ -147,7 +160,6 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 			this._ctx.globalCompositeOperation = "source-over";
 			this._ctx.globalAlpha = color[3];			
 
-			ctx.globalCompositeOperation = 'lighter';
 			ctx.drawImage(this._canvas, parentX + particle.x, parentY + particle.y);
 		}
 	},
@@ -175,17 +187,47 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 		this.elapsed = 0;
 	},
 
-	onTextureChange: function()
+	set texture(value) 
 	{
-		if(!this.texture) 
+		if(!value) 
 		{
 			if(!this._svgTexture) {
 				this._svgTexture = new Resource.SVG();
 				this._svgTexture.fillStyle = "white";
 				this._svgTexture.circle(this.cfg.radius);
 			}
-			this.texture = this._svgTexture;
+
+			this._texture = this._svgTexture;
 		}
+		else {
+			this._texture = value;
+		}
+
+		if(this._texture.loaded) {
+			this.updateTintCanvas();
+		}
+		else {
+			this.texture.subscribe(this, this.onTextureEvent);
+		}
+	},
+
+	get texture() {
+		return this._texture;
+	},
+
+	updateTintCanvas: function() 
+	{
+		if(!this._canvas) {
+			this._canvas = document.createElement("canvas");
+			this._ctx = this._canvas.getContext("2d");
+		}
+		this._canvas.width = this._texture.width;
+		this._canvas.height = this._texture.height;			
+	},
+
+	onTextureEvent: function(data, event) {
+		this.updateTintCanvas();
+		this._texture.unsubscribe(this);
 	},
 
 	set totalParticles(value) 
@@ -220,7 +262,9 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 		this.cfg.radius = value;
 
 		if(this._texture === this._svgTexture) {
+			this._svgTexture.clear();
 			this._svgTexture.circle(this.cfg.radius);
+			this.updateTintCanvas();
 		}
 	},
 
@@ -240,10 +284,8 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 			this.cfg[key] = preset[key];
 		}
 
-		this.texture = this.cfg.texture;
+		this.totalParticles = this.cfg.totalParticles;
 		this.textureAdditive = this.cfg.textureAdditive;
-		this._canvas.width = this.texture.width;
-		this._canvas.height = this.texture.height;	
 	},
 
 	Particle: function()
@@ -270,6 +312,8 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 
 	emissionCounter: 0,
 	elapsed: 0,
+
+	tintingEnabled: false,
 
 	_endColor: new Float32Array(4),
 	_canvas: null,
@@ -307,13 +351,13 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 		},
 
 		meteor: {
-			totalParticles: 150,
-			emissionRate: 75,
-			life: 2,
-			lifeVar: 1,
+			totalParticles: 45,
+			emissionRate: 40,
+			life: 1,
+			lifeVar: 0.1,
 
-			xVar: 0,
-			yVar: 0,
+			xVar: 2,
+			yVar: 2,
 
 			speed: 15,
 			speedVar: 5,
@@ -326,7 +370,7 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 			tangentialAccel: 0,
 			tangentialAccelVar: 0,
 
-			startColor: [ 51, 102, 179, 1 ],
+			startColor: [ 255, 42, 0, 1 ],
 			startColorVar: [ 0, 0, 51, 0.1 ],
 			endColor: [ 0, 0, 0, 1 ],
 			endColorVar: [ 0, 0, 0, 0 ],
