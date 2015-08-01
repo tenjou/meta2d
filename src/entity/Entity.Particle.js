@@ -313,8 +313,6 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 	emissionCounter: 0,
 	elapsed: 0,
 
-	tintingEnabled: false,
-
 	_endColor: new Float32Array(4),
 	_canvas: null,
 	_ctx: null,

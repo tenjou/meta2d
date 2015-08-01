@@ -67,19 +67,30 @@
 
 		<script src="src/main.js"></script>
 		<script src="lib/stats.min.js"></script>
-		<script src="lib/dat.gui.min.js"></script>
 
 		<style>
-			.ac {
+			.right-menu {
 				position: absolute;
 				right: 0;
+				background-color: #282828;
+				width: 240px;
+				height: 100%;
+				z-index: 9999;
 			}
 
-			input[type="file"] {
-				font-size: 11px;
+			.right-menu .header {
+				background-color: #3d3d3d;
 			}
 		</style>
 	</head>
 
-	<body></body>
+	<body>
+		<div class="right-menu">
+			<ul>
+				<li>
+					<div class="header">Particle System</div>
+				</li>
+			</ul>
+		</div>
+	</body>
 </html>
