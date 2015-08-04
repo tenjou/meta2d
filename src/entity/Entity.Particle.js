@@ -10,14 +10,14 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 	update: function(tDelta) 
 	{
 		this.elapsed += tDelta;
-		if(this.elapsed > this.cfg.duration) {
+		if(this.elapsed > this.duration) {
 			this.updating = false;
 			return;
 		}
 
-		if(this.cfg.emissionRate > 0)
+		if(this.emissionRate > 0)
 		{
-			var rate = 1.0 / this.cfg.emissionRate;
+			var rate = 1.0 / this.emissionRate;
 			this.emissionCounter += tDelta;
 
 			var num = Math.floor(this.emissionCounter / rate);
@@ -25,8 +25,8 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 			{
 				this.emissionCounter -= (num * rate);
 
-				if(num > (this.cfg.totalParticles - this.numActive)) {
-					num = (this.cfg.totalParticles - this.numActive);
+				if(num > (this.particles.length - this.numActive)) {
+					num = (this.particles.length - this.numActive);
 				}
 
 				var newNumActive = this.numActive + num;
@@ -58,42 +58,45 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 
 	initParticle: function(particle)
 	{
-		particle.x = meta.random.numberF(-1, 1) * this.cfg.xVar;
-		particle.y = meta.random.numberF(-1, 1) * this.cfg.yVar;
-		particle.life = this.cfg.life + (meta.random.numberF(-1, 1) * this.cfg.lifeVar);
+		particle.x = meta.random.numberF(-1, 1) * this.xVar;
+		particle.y = meta.random.numberF(-1, 1) * this.yVar;
+		particle.life = this.life + (meta.random.numberF(-1, 1) * this.lifeVar);
 
-		var speed = this.cfg.speed + (meta.random.numberF(-1, 1) * this.cfg.speedVar);
-		var angle = this.cfg.angle + (meta.random.numberF(-1, 1) * this.cfg.angleVar);
+		var speed = this.speed + (meta.random.numberF(-1, 1) * this.speedVar);
+		var angle = this.startAngle + (meta.random.numberF(-1, 1) * this.startAngleVar);
 		particle.velX = Math.cos((Math.PI * angle) / 180) * speed;
 		particle.vecY = -Math.sin((Math.PI * angle) / 180) * speed;
 
-		particle.radialAccel = this.cfg.radialAccel + (this.cfg.radialAccelVar * meta.random.numberF(-1, 1));
-		particle.tangentialAccel = this.cfg.tangentialAccel + (this.cfg.tangentialAccelVar * meta.random.numberF(-1, 1));
+		particle.radialAccel = this.radialAccel + (this.radialAccelVar * meta.random.numberF(-1, 1));
+		particle.tangentialAccel = this.tangentialAccel + (this.tangentialAccelVar * meta.random.numberF(-1, 1));
 
-		particle.color[0] = this.cfg.startColor[0] + (this.cfg.startColorVar[0] * meta.random.numberF(-1, 1));
-		particle.color[1] = this.cfg.startColor[1] + (this.cfg.startColorVar[1] * meta.random.numberF(-1, 1));
-		particle.color[2] = this.cfg.startColor[2] + (this.cfg.startColorVar[2] * meta.random.numberF(-1, 1));
-		particle.color[3] = this.cfg.startColor[3] + (this.cfg.startColorVar[3] * meta.random.numberF(-1, 1));
+		if(this._textureTinting)
+		{
+			particle.color[0] = this.startColor[0] + (this.startColorVar[0] * meta.random.numberF(-1, 1));
+			particle.color[1] = this.startColor[1] + (this.startColorVar[1] * meta.random.numberF(-1, 1));
+			particle.color[2] = this.startColor[2] + (this.startColorVar[2] * meta.random.numberF(-1, 1));
+			particle.color[3] = this.startColor[3] + (this.startColorVar[3] * meta.random.numberF(-1, 1));
 
-		this._endColor[0] = this.cfg.endColor[0] + (this.cfg.endColorVar[0] * meta.random.numberF(-1, 1));
-		this._endColor[1] = this.cfg.endColor[1] + (this.cfg.endColorVar[1] * meta.random.numberF(-1, 1));
-		this._endColor[2] = this.cfg.endColor[2] + (this.cfg.endColorVar[2] * meta.random.numberF(-1, 1));
-		this._endColor[3] = this.cfg.endColor[3] + (this.cfg.endColorVar[3] * meta.random.numberF(-1, 1));
+			this._endColor[0] = this.endColor[0] + (this.endColorVar[0] * meta.random.numberF(-1, 1));
+			this._endColor[1] = this.endColor[1] + (this.endColorVar[1] * meta.random.numberF(-1, 1));
+			this._endColor[2] = this.endColor[2] + (this.endColorVar[2] * meta.random.numberF(-1, 1));
+			this._endColor[3] = this.endColor[3] + (this.endColorVar[3] * meta.random.numberF(-1, 1));
 
-		particle.colorDelta[0] = (this._endColor[0] - this.cfg.startColor[0]) / particle.life;
-		particle.colorDelta[1] = (this._endColor[1] - this.cfg.startColor[1]) / particle.life;
-		particle.colorDelta[2] = (this._endColor[2] - this.cfg.startColor[2]) / particle.life;
-		particle.colorDelta[3] = (this._endColor[3] - this.cfg.startColor[3]) / particle.life;
+			particle.colorDelta[0] = (this._endColor[0] - this.startColor[0]) / particle.life;
+			particle.colorDelta[1] = (this._endColor[1] - this.startColor[1]) / particle.life;
+			particle.colorDelta[2] = (this._endColor[2] - this.startColor[2]) / particle.life;
+			particle.colorDelta[3] = (this._endColor[3] - this.startColor[3]) / particle.life;	
+		}
 
-		particle.scale = this.cfg.scale + (this.cfg.scaleVar * meta.random.numberF(-1, 1));
-		var endScale = this.cfg.endScale + (this.cfg.endScaleVar * meta.random.numberF(-1, 1));
+		particle.scale = this.startScale + (this.startScaleVar * meta.random.numberF(-1, 1));
+		var endScale = this.endScale + (this.endScaleVar * meta.random.numberF(-1, 1));
 		particle.scaleDelta = (endScale - particle.scale) / particle.life;
 	},
 
 	updateParticle: function(particle, tDelta)
 	{
-		particle.forcesX = (this.cfg.gravityX) * tDelta;
-		particle.forcesY = (this.cfg.gravityY) * tDelta;
+		particle.forcesX = (this.gravityX) * tDelta;
+		particle.forcesY = (this.gravityY) * tDelta;
 		particle.velX += particle.forcesX;
 		particle.vecY += particle.forcesY
 
@@ -120,7 +123,7 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 		var parentX = this.volume.minX - (img.width * 0.5);
 		var parentY = this.volume.minY - (img.height * 0.5);
 
-		if(this.cfg.textureAdditive) {
+		if(this._textureAdditive) {
 			ctx.globalCompositeOperation = "lighter";
 		}
 		else {
@@ -160,7 +163,7 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 			this._ctx.globalCompositeOperation = "source-over";
 			this._ctx.globalAlpha = color[3];			
 
-			ctx.drawImage(this._canvas, parentX + particle.x, parentY + particle.y);
+			ctx.drawImage(this.texture.canvas, parentX + particle.x, parentY + particle.y);
 		}
 	},
 
@@ -194,7 +197,7 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 			if(!this._svgTexture) {
 				this._svgTexture = new Resource.SVG();
 				this._svgTexture.fillStyle = "white";
-				this._svgTexture.circle(this.cfg.radius);
+				this._svgTexture.circle(this._radius);
 			}
 
 			this._texture = this._svgTexture;
@@ -233,8 +236,8 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 	set totalParticles(value) 
 	{
 		var num = this.particles.length;
+
 		this.particles.length = value;
-		this.cfg.totalParticles = value;
 
 		for(var n = num; n < value; n++) {
 			this.particles[n] = new this.Particle();
@@ -246,30 +249,38 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 	},
 
 	get totalParticles() { 
-		return this.cfg.totalParticles;
+		return this.particles.length;
 	},
 
 	set textureAdditive(value) {
-		this.cfg.textureAdditive = value;
+		this._textureAdditive = value;
 	},
 
 	get textureAdditive() {
-		return this.cfg.textureAdditive;
+		return this._textureAdditive;
+	},
+
+	set textureTinting(value) {
+		this._textureTinting = value;
+	},
+
+	get textureTinting() {
+		return this._textureTinting;
 	},
 
 	set radius(value) 
 	{
-		this.cfg.radius = value;
+		this._radius = value;
 
 		if(this._texture === this._svgTexture) {
 			this._svgTexture.clear();
-			this._svgTexture.circle(this.cfg.radius);
+			this._svgTexture.circle(this._radius);
 			this.updateTintCanvas();
 		}
 	},
 
 	get radius() {
-		return this.cfg.radius;
+		return this._radius;
 	},
 
 	set preset(name) 
@@ -277,15 +288,14 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 		var preset = this.presets[name];
 		for(var key in preset)
 		{
-			if(this.cfg[key] === preset[key]) {
+			if(this[key] === preset[key]) {
 				continue;
 			}
 
-			this.cfg[key] = preset[key];
+			this[key] = preset[key];
 		}
 
-		this.totalParticles = this.cfg.totalParticles;
-		this.textureAdditive = this.cfg.textureAdditive;
+		this.textureAdditive = this._textureAdditive;
 	},
 
 	Particle: function()
@@ -310,35 +320,34 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 	particles: null,
 	numActive: 0,
 
+	emissionRate: 0,
 	emissionCounter: 0,
 	elapsed: 0,
+	duration: Infinity,
+	life: 1, lifeVar: 0,
 
+	xVar: 0, yVar: 0,
+	speed: 0, speedVar: 0,
+	startAngle: 0, startAngleVar: 0,
+
+	startScale: 1.0, startScaleVar: 0,
+	endScale: 1.0, endScaleVar: 0,
+
+	gravityX: 0, gravityY: 0,
+	radialAccel: 0, radialAccelVar: 0,
+	tangentialAccel: 0, tangentialAccelVar: 0,
+
+	startColor: null, startColorVar: null,
+	endColor: null, endColorVar: null,
 	_endColor: new Float32Array(4),
 	_canvas: null,
 	_ctx: null,
 	_svgTexture: null,
 
-	// Configuration & Presets
-	cfg: {
-		totalParticles: 0,
-		emissionRate: 0,
+	_radius: 10,
+	_textureAdditive: false,
 
-		duration: Infinity,
-
-		xVar: 0, yVar: 0,
-		life: 1, lifeVar: 0,
-
-		speed: 0, speedVar: 0,
-		angle: 0, angleVar: 0,
-		gravityX: 0, gravityY: 0,
-		radialAccel: 0, radialAccelVar: 0,
-		tangentialAccel: 0, tangentialAccelVar: 0,
-
-		texture: null,
-		textureAdditive: false,
-		radius: 10
-	},
-
+	//
 	presets: 
 	{
 		empty: {

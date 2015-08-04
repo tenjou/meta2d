@@ -437,8 +437,8 @@ meta.engine =
 			containerHeight = window.innerHeight;
 		}
 		else {
-			containerWidth = container.clientWidth;
-			containerHeight = container.clientHeight;
+			containerWidth = this.container.clientWidth;
+			containerHeight = this.container.clientHeight;
 		}
 
 		if(width === 0) {
