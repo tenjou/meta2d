@@ -220,18 +220,18 @@ meta.class("meta.Renderer",
 	},
 
 	addEntity: function(entity) {
-		this._addEntity(entity);
+		this._addEntity(entity, false);
 	},
 
 	addEntities: function(entities)
 	{
 		var numEntities = entities.length;
 		for(var i = 0; i < numEntities; i++) {
-			this._addEntity(entities[i]);
+			this._addEntity(entities[i], false);
 		}
 	},	
 
-	_addEntity: function(entity) 
+	_addEntity: function(entity, reuse) 
 	{
 		entity.flags |= entity.Flag.ADDED;
 
@@ -257,23 +257,32 @@ meta.class("meta.Renderer",
 			this.numDebug++;
 		}
 
-		if(!entity._debugger) {
-			this.numEntities++;
-		}
-
 		entity._updateAnchor();
 
-		if(entity.flags & entity.Flag.WILL_REMOVE) {
+		if(reuse || entity.flags & entity.Flag.WILL_REMOVE) 
+		{
 			var index = this.entitiesRemove.indexOf(entity);
 			this.entitiesRemove[index] = null;
 			entity.flags &= ~entity.Flag.WILL_REMOVE;
+
+			reuse = true;
 		}
-		else {
+		else 
+		{
+			if(!entity._debugger) {
+				this.numEntities++;
+			}
+
 			this.entities.push(entity);
 		}
 
-		if(entity.children) {
-			this.addEntities(entity.children);
+		if(entity.children) 
+		{
+			var entities = entity.children
+			var numEntities = entities.length;
+			for(var i = 0; i < numEntities; i++) {
+				this._addEntity(entities[i], reuse);
+			}
 		}
 	},
 
