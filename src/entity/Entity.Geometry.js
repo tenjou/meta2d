@@ -841,6 +841,11 @@ meta.class("Entity.Geometry",
 			return;			
 		}
 
+		if(entity.parent !== this.renderer.holder) {
+			console.warn("(Entity.Geometry.attach) Trying to attach entity that has already been attached to other entity");
+			return;
+		}
+
 		entity.parent = this;
 
 		if(!this.children) {
@@ -1368,7 +1373,8 @@ meta.class("Entity.Geometry",
 		UPDATING: 128,
 		ADDED: 256,
 		DEBUG: 512,
-		CLIP_BOUNDS: 1024
+		CLIP_BOUNDS: 1024,
+		WILL_REMOVE: 2048
 	},
 
 	//
