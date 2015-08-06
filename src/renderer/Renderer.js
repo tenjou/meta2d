@@ -263,7 +263,14 @@ meta.class("meta.Renderer",
 
 		entity._updateAnchor();
 
-		this.entities.push(entity);
+		if(entity.flags & entity.Flag.WILL_REMOVE) {
+			var index = this.entitiesRemove.indexOf(entity);
+			this.entitiesRemove[index] = null;
+			entity.flags &= ~entity.Flag.WILL_REMOVE;
+		}
+		else {
+			this.entities.push(entity);
+		}
 
 		if(entity.children) {
 			this.addEntities(entity.children);
@@ -272,27 +279,19 @@ meta.class("meta.Renderer",
 
 	removeEntity: function(entity)
 	{
-		if((entity.flags & entity.Flag.ADDED) === 0) { return; }
+		if(entity.flags & entity.Flag.WILL_REMOVE) { return; }
 
+		entity.flags |= entity.Flag.WILL_REMOVE;
 		entity.flags &= ~entity.Flag.ADDED;
-
+		
 		this.entitiesRemove.push(entity);
 	},
 
 	removeEntities: function(entities)
 	{
-		var entity;
 		var numRemove = entities.length;
-
-		for(var i = 0; i < numRemove; i++) 
-		{
-			entity = entities[i];
-
-			if((entity.flags & entity.Flag.ADDED) === 0) { return; }
-
-			entity.flags &= ~entity.Flag.ADDED;
-
-			this.entitiesRemove.push(entity);
+		for(var i = 0; i < numRemove; i++) {
+			this.removeEntity(entities[i]);
 		}
 	},
 
@@ -303,6 +302,7 @@ meta.class("meta.Renderer",
 		for(var i = 0; i < numRemove; i++) 
 		{
 			entity = entities[i];
+			if(!entity) { continue; }
 			
 			for(n = 0; n < this.numEntities; n++) 
 			{
@@ -329,9 +329,9 @@ meta.class("meta.Renderer",
 
 			if(entity.removed) {
 				entity._remove();
-			}	
+			}		
 
-			entity.__added = false;		
+			entity.flags &= ~entity.Flag.WILL_REMOVE;
 		}
 
 		this.needSortDepth = true;

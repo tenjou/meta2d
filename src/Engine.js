@@ -182,10 +182,8 @@ meta.engine =
 		}
 
 		num = this.controllersUpdate.length;
-		if(num > 0) {
-			for(n = 0; n < num; n++) {
-				this.controllersUpdate[n].onUpdate(tDelta);
-			}
+		for(n = 0; n < num; n++) {
+			this.controllersUpdate[n].onUpdate(tDelta);
 		}
 
 		this.meta.renderer.update(tDelta);
