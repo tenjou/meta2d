@@ -203,12 +203,12 @@ meta.Camera.prototype =
 		}
 		else if(event === inputEvent.DOWN)
 		{
-			if(data.keyCode !== 0) { return; }
+			if(data.keyCode !== 256) { return; }
 			this._startDrag(data);
 		}
 		else if(event === inputEvent.UP)
 		{
-			if(data.keyCode !== 0) { return; }
+			if(data.keyCode !== 256) { return; }
 			this._endDrag(data);
 		}
 	},
