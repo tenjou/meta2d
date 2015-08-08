@@ -87,9 +87,13 @@ meta.class("Resource.Basic",
 
 	get loaded() { return this._loaded; },
 
+	Flag: {
+		ADDED: 8
+	},
 
 	//
 	id: 0,
+	flags: 0,
 	type: Resource.Type.BASIC,
 	name: "unknown",
 	path: "",

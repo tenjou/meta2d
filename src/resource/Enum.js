@@ -35,7 +35,9 @@ Resource.Event =
 	LOADING_START: "res-loading-started",
 
 	/** All resources are loaded. */	
-	LOADING_END: "res-loading-ended"
+	LOADING_END: "res-loading-ended",
+
+	LOADING_UPDATE: "red-loadig-update"
 };
 
 /**

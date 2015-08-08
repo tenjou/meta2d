@@ -13,9 +13,18 @@ meta.class("Resource.Manager",
 		this._chn_loaded = meta.createChannel(Resource.Event.LOADED);
 		this._chn_loadingStart = meta.createChannel(Resource.Event.LOADING_START)
 		this._chn_loadingEnd = meta.createChannel(Resource.Event.LOADING_END);
+		this._chn_loadingUpdate = meta.createChannel(Resource.Event.LOADING_UPDATE)
 
 		meta.subscribe(this, meta.Event.ADAPT, this.onAdapt);
 
+		// 
+		var self = this;
+		this._xhr = new XMLHttpRequest();
+		this._xhr.onreadystatechange = function() {
+			self._loadFileStateChange();
+		}
+
+		// Audio
 		var proto = Resource.Sound.prototype;
 		if(meta.device.isAudioAPI) 
 		{
@@ -38,7 +47,6 @@ meta.class("Resource.Manager",
 		}
 	},
 
-
 	/**
 	 * Add a resource for managing.
 	 * @param resource {Resource.Basic} Resource to add.
@@ -46,6 +54,11 @@ meta.class("Resource.Manager",
 	 */
 	add: function(resource)
 	{
+		if(resource.flags & resource.Flag.ADDED) {
+			return;
+		}
+		resource.flags |= resource.Flag.ADDED;
+
 		var subBuffer = this.resources[resource.type];
 		if(!subBuffer) {
 			subBuffer = {};
@@ -106,6 +119,48 @@ meta.class("Resource.Manager",
 		subBuffer[resource.name] = null;
 	},
 
+	_updateLoading: function()
+	{
+		this.numToLoad--;
+		this._chn_loadingUpdate.emit(this, Resource.Event.LOADING_UPDATE);
+
+		if(this.numToLoad === 0) {
+			this.numTotalToLoad = 0;
+			this.loading = false;
+			this._chn_loadingEnd.emit(this, Resource.Event.LOADING_END);
+		}		
+	},
+
+	loadFile: function(path, onSuccess)
+	{
+		if(!this.loading) {
+			this.loading = true;
+			this._chn_loadingStart.emit(this, Resource.Event.LOADING_START);
+		}
+
+		this.numToLoad++;
+		this.numTotalToLoad++;
+
+		this._xhrOnSuccess = onSuccess;
+		this._xhr.open("GET", path, true);
+		this._xhr.send();
+	},
+
+	_loadFileStateChange: function()
+	{
+		if(this._xhr.readyState === 4)
+		{
+			if(this._xhr.status === 200) 
+			{
+				if(this._xhrOnSuccess) {
+					this._xhrOnSuccess(this._xhr.response);
+				}
+			}
+
+			this._updateLoading();
+		}
+	},
+
 	/**
 	 * Flag texture that must be loaded.
 	 * @param resource {Resource.Basic} Resource to load. 
@@ -117,6 +172,7 @@ meta.class("Resource.Manager",
 			this._chn_loadingStart.emit(this, Resource.Event.LOADING_START);
 		}
 
+		this.add(resource);
 		resource.loading = true;
 
 		this.numToLoad++;
@@ -134,43 +190,26 @@ meta.class("Resource.Manager",
 			subBuffer = [];
 			this.resourcesInUse[resource.type] = subBuffer;
 		}
+		
+		this.numLoaded++;
 
-		subBuffer.push(resource);
 		resource.loading = false;
 		resource.inUse = true;
+		subBuffer.push(resource);
 
 		this._chn_loaded.emit(resource, Resource.Event.LOADED);
-
-		if(!meta.engine.ready)
-		{
-			this.loading = false;
-			this.numToLoad--;
-			this.numLoaded++;
-
-			if(this.numToLoad === 0) {
-				this._chn_loadingEnd.emit(this, Resource.Event.LOADING_END);
-			}
-		}
+		this._updateLoading();
 	},
 
 	/**
 	 * Remove flag that resource is loading.
 	 * @param resource {Resource.Basic}
 	 */
-	loadFailed: function(resource)
+	loadFailed: function(resource) 
 	{
 		resource.loading = false;
 
-		this._chn_loaded.emit(resource, Resource.Event.LOADED);
-
-		if(!meta.engine.ready)
-		{
-			this.numToLoad--;
-
-			if(this.numToLoad === 0) {
-				this._chn_loadingEnd.emit(this, Resource.Event.LOADING_END);
-			}
-		}
+		this._updateLoading();
 	},
 
 
@@ -292,6 +331,9 @@ meta.class("Resource.Manager",
 	},
 
 	//
+	_xhr: null,
+	_xhrOnSuccess: null,
+
 	resources: {},
 	resourcesInUse: {},
 	rootPath: "",
@@ -307,6 +349,7 @@ meta.class("Resource.Manager",
 	_chn_loaded: null,
 	_chn_loadingStart: null,
 	_chn_loadingEnd: null,
+	_chn_loadingUpdate: null,
 	_uniqueID: 0,
 
 	loading: false

@@ -33,7 +33,7 @@ meta.controller("meta.loading",
 		progressTexture.fillStyle = "white";
 		progressTexture.fillRect(0, 0, 100, 3);
 		this.progress = new Entity.Geometry(progressTexture);
-		this.progress.clipBounds(20, 3);
+		this.progress.clipBounds(0, 3);
 		this.progress.pivot(0.5);
 		this.progress.anchor(0.5);
 		this.progress.position(0, 5);
@@ -42,12 +42,12 @@ meta.controller("meta.loading",
 
 	onLoad: function() {
 		meta.subscribe(this, meta.Event.CAMERA_RESIZE, this.onResize);
-		meta.subscribe(this, Resource.Event.LOADED, this.onResourceLoaded);
+		meta.subscribe(this, Resource.Event.LOADING_UPDATE, this.onResourceLoaded);
 	},
 
 	onUnload: function() {
 		meta.unsubscribe(this, meta.Event.CAMERA_RESIZE);
-		meta.unsubscribe(this, Resource.Event.LOADED);
+		meta.unsubscribe(this, Resource.Event.LOADING_UPDATE);
 	},
 
 	onResize: function(data){
@@ -55,9 +55,9 @@ meta.controller("meta.loading",
 		this.bg.texture.fillRect(0, 0, data.width, data.height);
 	},
 
-	onResourceLoaded: function(data) {
-		var resources = meta.resources;
-		var percents = Math.min((100 / resources.numTotalToLoad) * (resources.numTotalToLoad - resources.numToLoad + 1), 100);
+	onResourceLoaded: function(mgr) 
+	{
+		var percents = Math.min((100 / mgr.numTotalToLoad) * (mgr.numTotalToLoad - mgr.numToLoad), 100);
 		this.progress.clipBounds(percents, 3);
 	},
 

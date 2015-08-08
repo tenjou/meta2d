@@ -106,8 +106,6 @@ meta._addResource = function(strType, data, folderPath, tag)
 		resource = new Resource[strType](folderPath + data, tag);
 	};
 
-	meta.resources.add(resource);
-
 	return resource;
 };
 
@@ -118,7 +116,6 @@ meta.loadFile = function(file, tag)
 	}
 
 	var resource = new Resource.Texture(file, tag)
-	meta.resources.add(resource);
 	return resource;
 };
 

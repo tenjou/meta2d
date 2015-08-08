@@ -97,7 +97,7 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 	loadXML: function(xml)
 	{
 		if(!xml) {
-			console.warn("[Resource.SpriteSheet.loadXML]:", "Invalid XML file.");
+			console.warn("(Resource.SpriteSheet.loadXML) Invalid XML file.");
 			return false;
 		}
 
@@ -120,7 +120,7 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 			else if(node.nodeName === "dict") {
 				return this.loadPlist(xml);
 			}
-		}
+		} 
 
 		return true;
 	},
