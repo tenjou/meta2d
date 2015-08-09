@@ -37,6 +37,7 @@ cat meta.js \
 	entity/Entity.Geometry.js \
 	entity/Entity.Text.js \
 	entity/Entity.Tiling.js \
+	entity/Entity.Tilemap.js \
 	entity/Entity.Particle.js \
 	components/Component.js \
 	components/Component.Anim.js \

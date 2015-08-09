@@ -276,6 +276,15 @@ meta.Camera.prototype =
 		scope.renderer.needRender = true;
 	},
 
+	position: function(x, y)
+	{
+		if(this._x === x && this._y === y) { return; }
+
+		this._x = x;
+		this._y = y;
+		this._moved = true;
+		this.updateView();
+	},
 
 	set x(value)
 	{
