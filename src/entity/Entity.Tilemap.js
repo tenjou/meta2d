@@ -155,54 +155,64 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 			this._dataInfo.length = num;
 		}
 
-		var tileset;
-		var tilesets = this.parent.tilesets;
-		var numTilesets = tilesets.length;
+		this._tilesets = this.parent.tilesets;
+		this._numTilesets = this._tilesets.length;
 
-		var gid, i;
-		for(var n = 0; n < num; n++) 
+		for(var n = 0; n < num; n++) {
+			this._updateDataInfoCell(n);
+		}
+
+		this.renderer.needRender = true;
+	},
+
+	_updateDataInfoCell: function(id) 
+	{
+		var gid = this._data[id];
+
+		if(!gid) {
+			this._dataInfo[id] = null;
+		}
+		else 
 		{
-			gid = this._data[n];
-
-			if(!gid) {
-				this._dataInfo[n] = null;
-			}
-			else 
+			if(gid & 0x20000000 || gid & 0x40000000 || gid & 0x80000000) 
 			{
-				if(gid & 0x20000000 || gid & 0x40000000 || gid & 0x80000000) 
-				{
-					if(!this._dataFlags) {
-						this._dataFlags = new Uint32Array(this._data.length);
-					}
-
-					var flag = 0;
-					flag |= (gid & 0x20000000);
-					flag |= (gid & 0x40000000);
-					flag |= (gid & 0x80000000);
-					this._dataFlags[n] = flag;
-
-					gid &= 536870911;
+				if(!this._dataFlags) {
+					this._dataFlags = new Uint32Array(this._data.length);
 				}
 
-				// Find the correct tileset/texture:
-				var tileset = tilesets[0];
-				for(i = 1; i < numTilesets; i++) 
-				{
-					if(gid < tilesets[i].gid) {
-						break;
-					}
+				var flag = 0;
+				flag |= (gid & 0x20000000);
+				flag |= (gid & 0x40000000);
+				flag |= (gid & 0x80000000);
+				this._dataFlags[id] = flag;
 
-					tileset = tilesets[i];
-				}
-
-				this._dataInfo[n] = tileset.getCell(gid);
+				gid &= 536870911;
 			}
+
+			// Find the correct tileset/texture:
+			var tileset = this._tilesets[0];
+			for(var i = 1; i < this._numTilesets; i++) 
+			{
+				if(gid < this._tilesets[i].gid) {
+					break;
+				}
+
+				tileset = this._tilesets[i];
+			}
+
+			this._dataInfo[id] = tileset.getCell(gid);
 		}
 	},
 
-	setTileAt: function(x, y, gid)
+	setTile: function(x, y, gid)
 	{
-		
+		var id = x + (y * this.tilesX);
+		this._data[id] = gid;
+
+		if(this.parent.loaded) {
+			this._updateDataInfoCell(id);
+			this.renderer.needRender = true;
+		}
 	},
 
 	set data(data) 
@@ -225,7 +235,10 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 	tileHeight: 0,
 	_data: null,
 	_dataInfo: null,
-	_dataFlags: null
+	_dataFlags: null,
+
+	_tilesets: null,
+	_numTilesets: 0
 });
 
 meta.class("Entity.Tilemap", "Entity.Geometry",
