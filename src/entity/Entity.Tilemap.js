@@ -129,10 +129,10 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 				{
 					info = this._dataInfo[id++];
 					if(info) 
-					{ 
+					{
 						ctx.drawImage(info.canvas, 
-							info.posX, info.posY, info.tileWidth, info.tileHeight, 
-							posX, posY, info.tileWidth, info.tileHeight);
+							info.posX, info.posY, this.tileWidth, this.tileHeight, 
+							posX, posY, this.tileWidth, this.tileHeight);
 					}
 
 					posX += this.tileWidth;
@@ -202,14 +202,14 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 
 	setTileAt: function(x, y, gid)
 	{
-
+		
 	},
 
 	set data(data) 
 	{
 		this._data = data;
 
-		if(meta.resources.loaded) {
+		if(!meta.resources.loading) {
 			this._updateDataInfo();
 		}
 	},
@@ -279,7 +279,12 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 
 	createTileset: function(gid, texture, tileWidth, tileHeight)
 	{
-		var tileset = new meta.Tileset(this, gid, texture, tileWidth, tileHeight);
+		if(gid < 1) {
+			console.warn("(Entity.Tilemap.createTileset) gid argument should be 1 or larger number");
+			return;
+		}
+
+		var tileset = new meta.Tileset(this, gid, texture, tileWidth || 0, tileHeight || 0);
 		this.tilesets.push(tileset);
 	},
 
@@ -291,8 +296,9 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		layer.tileWidth = this.tileWidth;
 		layer.tileHeight = this.tileHeight;
 		layer.resize(tilesX * this.tileWidth, tilesY * this.tileHeight);
-		layer.data = data;
 		this.attach(layer);
+
+		layer.data = data;
 
 		return layer;
 	},
@@ -365,7 +371,6 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 			}
 			else if(node.nodeName === "layer") {
 				this._parse_tmx_layer(node);
-				break;
 			}
 			else if(node.nodeName === "objectgroup") {
 
@@ -425,6 +430,12 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		}
 
 		this.createLayer(tilesX, tilesY, data);
+	},
+
+	LayerFlag: {
+		FLIP_HORIZONTALLY: 0x80000000,
+		FLIP_VERTICALLY: 0x40000000,
+		FLIP_DIAGONALLY: 0x20000000
 	},
 
 	//
@@ -520,7 +531,7 @@ meta.Tileset.prototype =
 			if(slashIndex === -1) {
 				slashIndex = 0;
 			}
-			var imgName = src.substr(slashIndex, wildcardIndex, wildcardIndex - slashIndex);
+			var imgName = src.substr(slashIndex + 1, wildcardIndex - slashIndex - 1);
 
 			var texture = meta.resources.getTexture(imgName);
 			if(!texture) {
@@ -534,12 +545,8 @@ meta.Tileset.prototype =
 			this.parent.numToLoad++;
 			this._texture.subscribe(this, this._onTextureEvent);
 		}
-		else 
-		{
+		else {
 			this.updateTexture();
-			if(this.parent.numToLoad === 0) {
-				this.parent.finishLoading();
-			}
 		}
 	},
 
