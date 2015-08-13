@@ -396,6 +396,8 @@ meta.engine =
 		if((this.flags & this.Flag.READY) === 0) {
 			this.onReady();
 		}
+
+		meta.renderer.needRender = true;
 	},
 
 	onScriptLoadingEnd: function() {

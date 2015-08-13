@@ -139,24 +139,49 @@ meta.class("meta.Renderer",
 	_removePickingEntities: function()
 	{
 		var numRemove = this.entitiesPickingRemove.length;
-		if(numRemove > 0) 
+		if(numRemove === 0) { return; }
+		
+		var numEntities = this.entitiesPicking.length;
+		var itemsLeft = numEntities - numRemove;
+		if(itemsLeft > 0)
 		{
-			var numEntities = this.entitiesPicking.length;
-			var itemsLeft = numEntities - numRemove;
-			if(itemsLeft > 0)
+			var n, entity;
+			var startID = Number.MAX_SAFE_INTEGER;
+
+			for(var i = 0; i < numRemove; i++) 
 			{
-				var index;
-				for(var i = 0; i < numRemove; i++) {
-					index = this.entitiesPicking.indexOf(this.entitiesPickingRemove[i]);
-					this.entitiesPicking.splice(index, 1);
+				entity = this.entitiesPickingRemove[i];
+
+				for(n = 0; n < numEntities; n++) 
+				{
+					if(this.entitiesPicking[n] === entity) 
+					{
+						this.entitiesPicking[n] = null;
+
+						if(n < startID) {
+							startID = n;
+						}
+						break;
+					}
 				}
 			}
-			else {
-				this.entitiesPicking.length = 0;
+
+			for(n = startID + 1; n < numEntities; n++)
+			{
+				value = this.entitiesPicking[n];
+				if(value) {
+					this.entitiesPicking[startID++] = value;
+				}
 			}
 
-			this.entitiesPickingRemove.length = 0;
-		}	
+			this.entitiesPicking.length = itemsLeft;
+		}
+		else {
+			this.entitiesPicking.length = 0;
+		}
+
+		this.entitiesPickingRemove.length = 0;
+	
 	},
 
 	_removeTweens: function()
@@ -307,6 +332,7 @@ meta.class("meta.Renderer",
 	_removeEntities: function(entities)
 	{
 		var entity, n;
+		var startID = Number.MAX_SAFE_INTEGER;
 		var numRemove = entities.length;
 		for(var i = 0; i < numRemove; i++) 
 		{
@@ -315,10 +341,13 @@ meta.class("meta.Renderer",
 			
 			for(n = 0; n < this.numEntities; n++) 
 			{
-				if(this.entities[n] === entity) {
-					this.numEntities--;
-					this.entities[n] = this.entities[this.numEntities];
-					this.entities.pop();
+				if(this.entities[n] === entity) 
+				{
+					this.entities[n] = null;
+
+					if(n < startID) {
+						startID = n;
+					}
 					break;
 				}
 			}
@@ -343,7 +372,19 @@ meta.class("meta.Renderer",
 			entity.flags &= ~entity.Flag.WILL_REMOVE;
 		}
 
-		this.needSortDepth = true;
+		var value;
+		for(n = startID + 1; n < this.numEntities; n++)
+		{
+			value = this.entities[n];
+			if(value) {
+				this.entities[startID++] = value;
+			}
+		}
+
+		this.numEntities -= numRemove;
+		this.entities.length = this.numEntities;
+
+		this.needRender = true;
 	},
 
 	addAnim: function(anim)

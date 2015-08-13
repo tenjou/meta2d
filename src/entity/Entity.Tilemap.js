@@ -209,7 +209,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 	{
 		this._data = data;
 
-		if(!meta.resources.loading) {
+		if(this.parent.loaded) {
 			this._updateDataInfo();
 		}
 	},
