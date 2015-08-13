@@ -73,6 +73,11 @@ meta.View.prototype =
 	 */
 	attach: function(entity)
 	{
+		if(!(entity instanceof Entity.Geometry)) {
+			console.warn("(meta.View.attach) Trying to add invalid entity");
+			return;
+		}
+
 		if(entity.removed) {
 			console.warn("(meta.View.add) Removed entity can not be added to the view.");
 			return;
