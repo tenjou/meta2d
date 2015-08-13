@@ -155,14 +155,15 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 			this._dataInfo.length = num;
 		}
 
+		var tileset;
 		var tilesets = this.parent.tilesets;
-		var tileset = tilesets[0];
 		var numTilesets = tilesets.length;
 
-		var gid, cell, i;
+		var gid, i;
 		for(var n = 0; n < num; n++) 
 		{
 			gid = this._data[n];
+
 			if(!gid) {
 				this._dataInfo[n] = null;
 			}
@@ -183,9 +184,8 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 					gid &= 536870911;
 				}
 
-				cell = this._dataInfo[n];
-
 				// Find the correct tileset/texture:
+				var tileset = tilesets[0];
 				for(i = 1; i < numTilesets; i++) 
 				{
 					if(gid < tilesets[i].gid) {
