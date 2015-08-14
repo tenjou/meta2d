@@ -112,7 +112,7 @@ meta.View.prototype =
 		this.entities.push(entity);
 
 		if(this._active && (meta.engine.flags & meta.engine.Flag.READY)) {
-			meta.renderer.addEntity(entity);
+			meta.renderer.addEntity(entity, false);
 		}
 	},
 

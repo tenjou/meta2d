@@ -166,6 +166,7 @@ meta.class("meta.Renderer",
 				}
 			}
 
+			var value;
 			for(n = startID + 1; n < numEntities; n++)
 			{
 				value = this.entitiesPicking[n];
@@ -181,7 +182,6 @@ meta.class("meta.Renderer",
 		}
 
 		this.entitiesPickingRemove.length = 0;
-	
 	},
 
 	_removeTweens: function()
@@ -244,31 +244,11 @@ meta.class("meta.Renderer",
 		this.needRender = true;			
 	},
 
-	addEntity: function(entity) {
-		this._addEntity(entity, false);
-	},
-
-	addEntities: function(entities)
-	{
-		var numEntities = entities.length;
-		for(var i = 0; i < numEntities; i++) {
-			this._addEntity(entities[i], false);
-		}
-	},	
-
-	_addEntity: function(entity, reuse) 
+	addEntity: function(entity, reuse) 
 	{
 		entity.flags |= entity.Flag.ADDED;
 
-		if(entity._z === 0)
-		{
-			if(this.preserveOrder) {
-				entity.z = this.currZ;
-				this.currZ += 0.0000001;
-				this.needSortDepth = true;
-			}
-		}
-		else {
+		if(!entity._z === 0) {
 			this.needSortDepth = true;
 		}
 
@@ -306,10 +286,18 @@ meta.class("meta.Renderer",
 			var entities = entity.children
 			var numEntities = entities.length;
 			for(var i = 0; i < numEntities; i++) {
-				this._addEntity(entities[i], reuse);
+				this.addEntity(entities[i], reuse);
 			}
 		}
-	},
+	},	
+
+	addEntities: function(entities)
+	{
+		var numEntities = entities.length;
+		for(var i = 0; i < numEntities; i++) {
+			this.addEntity(entities[i], false);
+		}
+	},	
 
 	removeEntity: function(entity)
 	{
@@ -768,7 +756,6 @@ meta.class("meta.Renderer",
 	tweensRemove: [],
 
 	_needRender: true,
-	preserveOrder: false,
 	needSortDepth: false,
 
 	_renderFuncs: [],
