@@ -18,6 +18,7 @@ meta.class("meta.Renderer",
 		this.engine = meta.engine;
 
 		this.camera = meta.camera;
+		this.cameraVolume = this.camera.volume;
 		this.cameraDefault = this.camera;
 		//this.cameraUI = new meta.Camera();
 
@@ -734,6 +735,7 @@ meta.class("meta.Renderer",
 	entityFlags: null,
 
 	camera: null,
+	cameraVolume: null,
 	cameraDefault: null,
 	cameraUI: null,
 

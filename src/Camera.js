@@ -269,8 +269,6 @@ meta.Camera.prototype =
 		}
 
 		this.volume.move(-diffX, -diffY);
-		this._x = this.volume.minX;
-		this._y = this.volume.minY;
 
 		this._chnMove.emit(this, scope.Event.CAMERA_MOVE);
 		scope.renderer.needRender = true;
@@ -278,28 +276,27 @@ meta.Camera.prototype =
 
 	position: function(x, y)
 	{
-		if(this._x === x && this._y === y) { return; }
+		if(this.volume.x === x && this.volume.y === y) { return; }
 
-		this._x = x;
-		this._y = y;
+		this.volume.position(x, y);
 		this._moved = true;
 		this.updateView();
 	},
 
 	set x(value)
 	{
-		if(this._x === value) { return; }
+		if(this.volume.x === value) { return; }
 
-		this._x = value;
+		this.volume.position(value, this.volume.y);
 		this._moved = true;
 		this.updateView();
 	},
 
 	set y(value)
 	{
-		if(this._y === value) { return; }
+		if(this.volume.y === value) { return; }
 
-		this._y = value;
+		this.volume.position(this.volume.x, value);
 		this._moved = true;
 		this.updateView();
 	},
