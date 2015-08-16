@@ -280,12 +280,13 @@ meta.removeFromArray = function(item, array)
 
 meta.shuffleArray = function(array) 
 {
-	var length = array.length;
+	var rand = meta.random;
+	var length = array.length
 	var temp, item;
 
 	while(length) 
 	{
-		item = Math.floor(Math.random() * length--);
+		item = rand.number(0, --length);
 
 		temp = array[length];
 		array[length] = array[item];
@@ -295,16 +296,18 @@ meta.shuffleArray = function(array)
 	return array;
 };
 
-meta.shuffleArrayRange = function(array, num) 
+meta.shuffleArrayRange = function(array, endRange, startRange) 
 {
+	var startRange = startRange || 0;
+	var rand = meta.random;
 	var temp, item;
 
-	while(num) 
+	while(endRange > startRange) 
 	{
-		item = Math.floor(Math.random() * num--);
+		item = rand.number(0, --endRange);
 
-		temp = array[num];
-		array[num] = array[item];
+		temp = array[endRange];
+		array[endRange] = array[item];
 		array[item] = temp;
 	}
 
