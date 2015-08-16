@@ -164,8 +164,6 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 			else {
 				this.ctx.drawImage(texture.canvas, volume.minX | 0, volume.minY | 0);
 			}
-
-			this.ctx.restore();
 		}
 		else
 		{
