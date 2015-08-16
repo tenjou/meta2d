@@ -217,11 +217,12 @@ meta.class("meta.Renderer",
 	{
 		var i, j, tmp1, tmp2;
 		var num = this.entities.length;
-		for(i = 0; i < num; i++) {
+		for(i = 0; i < num; i++) 
+		{
 			for(j = i; j > 0; j--) {
 				tmp1 = this.entities[j];
 				tmp2 = this.entities[j - 1];
-				if(tmp1.totalZ - tmp2.totalZ < 0) {
+				if(tmp1.totalZ < tmp2.totalZ) {
 					this.entities[j] = tmp2;
 					this.entities[j - 1] = tmp1;
 				}
@@ -229,11 +230,12 @@ meta.class("meta.Renderer",
 		}
 
 		num = this.entitiesPicking.length;
-		for(i = 0; i < num; i++) {
+		for(i = 0; i < num; i++) 
+		{
 			for(j = i; j > 0; j--) {
 				tmp1 = this.entitiesPicking[j];
 				tmp2 = this.entitiesPicking[j - 1];
-				if(tmp1.totalZ - tmp2.totalZ < 0) {
+				if(tmp1.totalZ < tmp2.totalZ) {
 					this.entitiesPicking[j] = tmp2;
 					this.entitiesPicking[j - 1] = tmp1;
 				}
