@@ -868,7 +868,7 @@ meta.class("Entity.Geometry",
 		
 		this.updateZ();
 		
-		if(this.totalAngle !== 0) {
+		if(this.volume.angle !== 0) {
 			this.updateAngle();
 		}
 		if(this.totalAlpha !== 1) {

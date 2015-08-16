@@ -162,9 +162,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 				texture.drawFrame(this.ctx, volume.minX | 0, volume.minY | 0, anim._frame);
 			}
 			else {
-				this.ctx.drawImage(texture.canvas, 
-					0, 0, volume.width, volume.height,
-					volume.minX | 0, volume.minY | 0, volume.width, volume.height);
+				this.ctx.drawImage(texture.canvas, volume.minX | 0, volume.minY | 0);
 			}
 
 			this.ctx.restore();
