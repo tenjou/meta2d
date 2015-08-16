@@ -137,38 +137,9 @@ meta.import = function(path)
 
 	var buffer = path.split("/");
 	var name = buffer[0];
-	
-	// Get version:
-	var version;
-	if(buffer.length === 1) {
-		version = "latest";
-		path += "/latest";
-	}
-	else {
-		version = buffer[buffer.length - 1];
-	}
-
-	// Check if package already is added.
-	var module = meta.modules[name];
-	if(module) 
-	{
-		if(module.version !== version) 
-		{
-			console.error("(meta.loadPackage) There is already added module [" + 
-				module.name + "] but with different version: " + module.version);
-		}
-
-		return;
-	}
-
-	module = {
-		name: name,
-		version: version
-	};
-	meta.modules[name] = module;
 
 	if(!meta.isUrl(path)) {
-		path = meta.importUrl + path + "/module.js";
+		path = meta.importUrl + path + "/" + path + ".js";
 	}
 
 	meta.loadScript(path, null);
