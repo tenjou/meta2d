@@ -30,8 +30,8 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 		var minY = this.volume.minY + (startTileY * this.tileHeight);
 
 		var id = 0, info;
-		var posX = minX;
-		var posY = minY;
+		var posX = minX | 0;
+		var posY = minY | 0;
 
 		if(this._dataFlags)
 		{
@@ -118,7 +118,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 					posX += this.tileWidth;
 				}
 
-				posX = minX;
+				posX = minX | 0;
 				posY += this.tileHeight;
 			}
 		}
