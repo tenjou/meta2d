@@ -8,10 +8,10 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 
 		var cameraVolume = meta.camera.volume;
 
-		var startTileX = Math.floor(cameraVolume.minX / this.tileWidth);
-		var startTileY = Math.floor(cameraVolume.minY / this.tileHeight);
-		var endTileX = Math.ceil(cameraVolume.maxX / this.tileWidth);
-		var endTileY = Math.ceil(cameraVolume.maxY / this.tileHeight);
+		var startTileX = Math.floor((cameraVolume.minX - this.volume.minX) / this.tileWidth);
+		var startTileY = Math.floor((cameraVolume.minY - this.volume.minY) / this.tileHeight);
+		var endTileX = Math.ceil((cameraVolume.maxX - this.volume.minX) / this.tileWidth);
+		var endTileY = Math.ceil((cameraVolume.maxY - this.volume.minY) / this.tileHeight);
 
 		if(startTileX < 0) {
 			startTileX = 0;
@@ -26,9 +26,12 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 			endTileY = this.tilesY;
 		}
 
+		var minX = this.volume.minX + (startTileX * this.tileWidth);
+		var minY = this.volume.minY + (startTileY * this.tileHeight);
+
 		var id = 0, info;
-		var posX = startTileX * this.tileWidth;
-		var posY = startTileY * this.tileHeight;
+		var posX = minX;
+		var posY = minY;
 
 		if(this._dataFlags)
 		{
@@ -115,7 +118,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 					posX += this.tileWidth;
 				}
 
-				posX = startTileX * this.tileWidth;
+				posX = minX;
 				posY += this.tileHeight;
 			}
 		}
@@ -138,7 +141,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 					posX += this.tileWidth;
 				}
 
-				posX = startTileX * this.tileWidth;
+				posX = minX;
 				posY += this.tileHeight;
 			}
 		}
