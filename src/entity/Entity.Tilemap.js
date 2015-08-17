@@ -149,6 +149,8 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 
 	_updateDataInfo: function()
 	{
+		this.totalTiles = this.tilesX * this.tilesY;
+
 		var num = this._data.length;
 
 		if(!this._dataInfo) {
@@ -218,6 +220,22 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 		}
 	},
 
+	gridFromWorldPos: function(worldX, worldY) 
+	{
+		var gridX = Math.floor((worldX - this.volume.minX) / this.tileWidth);
+		var gridY = Math.floor((worldY - this.volume.minY) / this.tileHeight);
+		var id = gridX + (gridY * this.tilesX);
+		
+		if(id < 0) { 
+			return null;
+		}
+		if(id >= this.totalTiles) {
+			return null;
+		}
+
+		return [ gridX, gridY ];
+	},
+
 	set data(data) 
 	{
 		this._data = data;
@@ -234,6 +252,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 	//
 	tilesX: 0,
 	tilesY: 0,
+	totalTiles: 0,
 	tileWidth: 0,
 	tileHeight: 0,
 	_data: null,
