@@ -8,11 +8,16 @@
  */
 meta.class("meta.Controller",
 {
-	init: function() {
+	init: function() 
+	{
 		this.view = meta.createView(this.__lastName__);
+
+		if(this.onInit) {
+			this.onInit();
+		}
 	},
 
-	release: null,
+	onInit: null,
 
 	load: function() 
 	{
@@ -33,7 +38,7 @@ meta.class("meta.Controller",
 
 		meta.engine.controllersReady.push(this);
 
-		this.view.active = true;
+		this.view.visible = true;
 		this.flags |= this.Flag.LOADED;
 	},
 
@@ -56,7 +61,7 @@ meta.class("meta.Controller",
 			}
 		}
 
-		this.view.active = false;
+		this.view.visible = false;
 		this.flags &= ~(this.Flag.LOADED | this.Flag.READY);	
 	},
 
@@ -119,6 +124,7 @@ function _addClassInstance(cls)
 		return;
 	}
 	
+	var name;
 	var scope = window;
 	var prevScope = scope;
 	for(var n = 0; n < num; n++) 
@@ -138,9 +144,20 @@ function _addClassInstance(cls)
 		return;
 	}
 
-	var instance = new cls();
-	instance.name = name;
-	scope[name] = instance;	
+	cls.prototype.name = name;
+
+	if(meta.engine.inited) {
+		scope[name] = new cls();	
+	}
+	else 
+	{
+		if(!meta.cache.ctrlsToCreate) {
+			meta.cache.ctrlsToCreate = [{ cls: cls, scope: scope }];
+		}
+		else {
+			meta.cache.ctrlsToCreate.push({ cls: cls, scope: scope });
+		}
+	}
 };	
 
 meta.classes = {};
@@ -168,3 +185,7 @@ meta.controller = function(name, extend, obj)
 meta.plugin = function(name, extend, obj) {
 	meta.class("meta.plugins." + name, extend, obj, _addClassInstance);
 };
+
+meta.controller("Test", {
+
+});

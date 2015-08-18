@@ -880,7 +880,7 @@ meta.class("Entity.Geometry",
 		}
 
 		entity._view = this._view;
-		if(this._view && this._view._active) {
+		if(this._view && (this._view.flags & this._view.Flag.VISIBLE)) {
 			this.renderer.addEntity(entity);
 		}		
 
@@ -900,9 +900,9 @@ meta.class("Entity.Geometry",
 	{
 		this._detach(entity);
 
-		if(this._view && this._view._active) {
+		if(this._view && (this._view.flags & this._view.Flag.VISIBLE)) {
 			this.renderer.removeEntity(entity);
-		}	
+		}
 	},
 
 	detachAll: function()
@@ -914,7 +914,7 @@ meta.class("Entity.Geometry",
 			this._detach(this.children[i]);
 		}
 
-		if(this._view && this._view._active) {
+		if(this._view && (this._view.flags & this._view.Flag.VISIBLE)) {
 			this.renderer.removeEntities(this.children);
 		}
 

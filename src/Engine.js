@@ -75,15 +75,27 @@ meta.engine =
 
 		var cache = meta.cache;
 
-		// Create master view.
+		// create master view:
 		var masterView = new meta.View("master");
 		cache.views["master"] = masterView;
 		cache.view = masterView;
 
-		var numFuncs = cache.initFuncs.length;
-		for(var i = 0; i < numFuncs; i++) {
-			cache.initFuncs[i]();
+		// create controller instances:
+		var ctrlInfo;
+		var ctrlsToCreate = cache.ctrlsToCreate;
+		var num = ctrlsToCreate.length;
+		for(var n = 0; n < num; n++) {
+			ctrlInfo = ctrlsToCreate[n];
+			ctrlInfo.scope[ctrlInfo.cls.prototype.name] = new ctrlInfo.cls();
 		}
+		cache.ctrlsToCreate = null;
+
+		// init:
+		num = cache.initFuncs.length;
+		for(n = 0; n < num; n++) {
+			cache.initFuncs[n]();
+		}
+		cache.initFuncs = null;
 
 		console.log(" ");
 
@@ -113,7 +125,7 @@ meta.engine =
 		this.loadPlugins();
 		this.loaded = true;
 
-		meta.cache.view.active = true;
+		meta.cache.view._parentVisible(true);
 		this._startMainLoop();
 	},
 

@@ -41,6 +41,8 @@ var meta =
 		view: null,
 		views: {},
 
+
+
 		scripts: null,
 		pendingScripts: null, // IE<10
 		numScriptsToLoad: 0,
@@ -50,7 +52,7 @@ var meta =
 		imageSmoothing: true
 	},
 
-	set init(func) 
+	set onInit(func) 
 	{
 		this.cache.initFuncs.push(func);
 		if(this.engine && this.engine.inited) {
@@ -58,7 +60,7 @@ var meta =
 		}
 	},
 
-	set load(func) 
+	set onLoad(func) 
 	{
 		this.cache.loadFuncs.push(func);
 		if(this.engine && this.engine.loaded) {
@@ -66,7 +68,7 @@ var meta =
 		}
 	},
 
-	set ready(func) 
+	set onReady(func) 
 	{
 		this.cache.readyFuncs.push(func);
 		if(this.engine && this.engine.ready) {
@@ -74,11 +76,11 @@ var meta =
 		}
 	},
 
-	set update(func) {
+	set onUpdate(func) {
 		this.engine.updateFuncs.push(func);
 	},
 
-	set render(func) {
+	set onRender(func) {
 		this.engine.renderFuncs.push(func);
 	},	
 

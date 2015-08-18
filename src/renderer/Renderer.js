@@ -79,6 +79,74 @@ meta.class("meta.Renderer",
 		}		
 	},
 
+	_removeEntities: function(entities)
+	{		
+		this._removeStartID = Number.MAX_SAFE_INTEGER;
+
+		this._removeEntitiesGroup(entities);
+
+		var value;
+		for(var n = this._removeStartID + 1; n < this.numEntities; n++)
+		{
+			value = this.entities[n];
+			if(value) {
+				this.entities[this._removeStartID++] = value;
+			}
+		}
+
+		this.numEntities -= this._numRemove;
+		this.entities.length = this.numEntities;
+		this._numRemove = 0;
+
+		this.needRender = true;
+	},
+
+	_removeEntitiesGroup: function(entities)
+	{
+		var entity, n;
+		var numRemove = entities.length;
+
+		this._numRemove += numRemove;
+		
+		for(var i = 0; i < numRemove; i++) 
+		{
+			entity = entities[i];
+			if(!entity) { continue; }
+			
+			for(n = 0; n < this.numEntities; n++) 
+			{
+				if(this.entities[n] === entity) 
+				{
+					this.entities[n] = null;
+
+					if(n < this._removeStartID) {
+						this._removeStartID = n;
+					}
+					break;
+				}
+			}
+
+			if(entity.__updateIndex !== -1) {
+				this.entitiesUpdateRemove.push(entity);
+				entity.__updateIndex = -1;
+			}
+			if(entity.__pickIndex !== -1) {
+				this.entitiesPickingRemove.push(entity);
+				entity.__pickIndex = -1;
+			}
+
+			if(entity.children) {
+				this._removeEntitiesGroup(entity.children);
+			}
+
+			if(entity.removed) {
+				entity._remove();
+			}		
+
+			entity.flags &= ~entity.Flag.WILL_REMOVE;
+		}
+	},
+
 	_removeUpdateEntities: function()
 	{
 		var numRemove = this.entitiesUpdateRemove.length;		
@@ -318,64 +386,6 @@ meta.class("meta.Renderer",
 		for(var i = 0; i < numRemove; i++) {
 			this.removeEntity(entities[i]);
 		}
-	},
-
-	_removeEntities: function(entities)
-	{
-		var entity, n;
-		var startID = Number.MAX_SAFE_INTEGER;
-		var numRemove = entities.length;
-		for(var i = 0; i < numRemove; i++) 
-		{
-			entity = entities[i];
-			if(!entity) { continue; }
-			
-			for(n = 0; n < this.numEntities; n++) 
-			{
-				if(this.entities[n] === entity) 
-				{
-					this.entities[n] = null;
-
-					if(n < startID) {
-						startID = n;
-					}
-					break;
-				}
-			}
-
-			if(entity.__updateIndex !== -1) {
-				this.entitiesUpdateRemove.push(entity);
-				entity.__updateIndex = -1;
-			}
-			if(entity.__pickIndex !== -1) {
-				this.entitiesPickingRemove.push(entity);
-				entity.__pickIndex = -1;
-			}
-
-			if(entity.children) {
-				this._removeEntities(entity.children);
-			}
-
-			if(entity.removed) {
-				entity._remove();
-			}		
-
-			entity.flags &= ~entity.Flag.WILL_REMOVE;
-		}
-
-		var value;
-		for(n = startID + 1; n < this.numEntities; n++)
-		{
-			value = this.entities[n];
-			if(value) {
-				this.entities[startID++] = value;
-			}
-		}
-
-		this.numEntities -= numRemove;
-		this.entities.length = this.numEntities;
-
-		this.needRender = true;
 	},
 
 	addAnim: function(anim)
@@ -742,6 +752,8 @@ meta.class("meta.Renderer",
 	entities: [],
 	entitiesRemove: [],
 	numEntities: 0,
+	_numRemove: 0,
+	_removeStartID: 0,
 
 	entitiesUpdate: [],
 	entitiesUpdateRemove: [],
