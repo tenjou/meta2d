@@ -303,7 +303,6 @@ meta.View.prototype =
 				this.flags |= this.Flag.VISIBLE;
 
 				if(this.entities.length) {
-					console.log("add", this.name)
 					meta.renderer.addEntities(this.entities);
 				}
 			}
@@ -317,7 +316,6 @@ meta.View.prototype =
 				this.flags &= ~this.Flag.VISIBLE;
 
 				if(this.entities.length) {
-					console.log("remove", this.name)
 					meta.renderer.removeEntities(this.entities);
 				}
 			}
@@ -421,6 +419,12 @@ meta.View.prototype =
 
 	set static(value) 
 	{
+		if((value && (this.flags & this.Flag.STATIC))) ||
+		   (!value && (this.flags & this.Flag.STATIC) === 0))
+		{
+			return;
+		}
+
 		if(this.flags & this.Flag.STATIC) 
 		{ 
 			if(value) {
