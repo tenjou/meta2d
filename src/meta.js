@@ -2,7 +2,7 @@
 
 var meta = 
 {
-	version: "0.8.0",
+	version: "0.8.1 pre-release",
 	importUrl: "http://meta2d.com/store/",
 
 	device: null,

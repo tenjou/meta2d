@@ -11,7 +11,7 @@
         <!-- Example on how to scale entities. -->
 
         <script>
-            meta.load = function()
+            meta.onLoad = function()
             {
                 meta.loadTexture("https://dl.dropboxusercontent.com/u/145051233/meta/shrine.png");
 
@@ -20,6 +20,7 @@
                 entity.pivot(0.5)
                 // Make entity 2x wider and 2x smaller:
                 entity.scale(2, 0.5);
+                entity.debug = true;
                 meta.view.attach(entity);
 
                 meta.info("Entity scaling example");

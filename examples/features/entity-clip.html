@@ -13,7 +13,7 @@
         <script>
             var entity;
 
-            meta.load = function()
+            meta.onLoad = function()
             {
                 meta.loadTexture(
                     "https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
@@ -39,7 +39,7 @@
                 meta.info("Example on how to clip entities");
             };
 
-            meta.update = function(tDelta) {
+            meta.onUpdate = function(tDelta) {
                 entity.angle += 20 * tDelta;
             };
         </script>
