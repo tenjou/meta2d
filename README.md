@@ -3,7 +3,7 @@ META v0.8.1 pre-release
 
 Meta is free and fast open source HTML5 game engine for making cross platform games, supports Canvas and WebGL rendering and Dopple for native compilation.
 
-#####Note: Engine is currently focusing on developing libraries and tool for developing tile based games. Different type of games are at lower priority.
+#####**Engine is currently focusing on developing libraries and tool for developing tile based games. Different type of games are at lower priority.**
 
 Features
 ====
@@ -17,7 +17,7 @@ Features
 	* Request features you need that makes sense to be part of engine
 5. **Model View Controller (MVC)** - Engine architecture follows MVC principles but optimized for game and application development.
 5. **Entity** - Powerfull way to make any object that is part of screen topology:
-	* Pivot
+	* Pivots
 	* Anchor points
 	* Rotating
 	* Scaling
@@ -32,21 +32,10 @@ Features
 	* LookAt
 6. **Input** - Multiple ways to handle keyboard/mouse and touch events. Keybind system.
 7. **Audio** - Supports automatic loading for supported audio formats and handles multiple simultaneous playing instances. Uses AudioAPI or fallback to legacy Audio element.
-8. **Text**
-	* Canvas fonts
-	* Bitmap fonts
+8. **Text** - Canvas and bitmap fonts
 9. **Tweening**
-10. **SVG** - Helper texture resoruce that helps to generate SVG textures for prototyping or other needs:
-	* FillRect
-	* Rect
-	* Lines
-	* Shape
-	* RoundRect
-	* Circle
-	* Arc
-	* Tiling
-	* Gradient
-	* Grid
+10. **SVG** - Helper texture resoruce that helps to generate SVG textures for prototyping or other needs: 
+	* Supports: FillRect, Rect, Lines, Shape, RoundRect, Circle, Arc, Tiling, Gradient, Grid.
 11. **Camera** - Comes with utilities to handle different resolutions, scaling, fitting, zooming.
 12. **Tilemaps** - Additionally supporting Tiled editor .tmx and .json formats.
 13. **Arcade physics**
@@ -56,10 +45,7 @@ Features
 16. **Timer**
 17. **Fullscreen**
 18. **Store import** - Import plugins from store with just one code line.
-19. **UI elements**
-	* Button
-	* Checkbox
-	* Progress Bar
+19. **UI elements** - button, checkbox, progress bar.
 20. **Optional libraries**:
 	* AStar pathfinding - [GitHub](https://github.com/InfiniteFoundation/metaAstar)
 	* Procedural generation - [GitHub](https://github.com/InfiniteFoundation/metaProcedural)
