@@ -2,16 +2,11 @@
 
 meta.class("Resource.Sound", "Resource.Basic", 
 {
-	init: function(param, path)
+	onCreate: function(data, tag)
 	{
-		if(typeof(param) === "string") {
-			path = param;
-			param = void(0);
-		}
-
 		this._instances = [];
 
-		// If Web Audio API is supported.
+		// check if Web Audio API is supported:
 		var self = this;
 		if(meta.device.isAudioAPI)
 		{	
@@ -35,60 +30,66 @@ meta.class("Resource.Sound", "Resource.Basic",
 			this._numInstancesUsed = 0;			
 		}
 
-		if(path)
+		if(typeof(data) === "string")
 		{
-			// Check if specific format is defined.
-			var wildCardIndex = path.lastIndexOf(".");
-			if(wildCardIndex !== -1 && (path.length - wildCardIndex) <= 5) {
-				this.format = path.substr(wildCardIndex + 1, path.length - wildCardIndex - 1);
-				path = path.substr(0, wildCardIndex);
+			var path;
+
+			// check if specific format is defined:
+			var wildCardIndex = data.lastIndexOf(".");
+			if(wildCardIndex !== -1 && (data.length - wildCardIndex) <= 5) {
+				this.format = data.substr(wildCardIndex + 1, data.length - wildCardIndex - 1);
+				path = meta.resources.rootPath + data.substr(0, wildCardIndex);
+			}
+			else {
+				path = meta.resources.rootPath + data;
 			}
 
-			this.path = meta.resources.rootPath + path;
-			this.load(this.path);
-		}			
+			this.load(path);
+		}		
 	},
 
-	load: function()
+	load: function(path)
 	{
 		if(this.loading) { return; }
 
 		this.loading = true;
 		this.loaded = false;
+		this.path = path;
 
-		var resourceCtrl = meta.resources;
-		resourceCtrl.addToLoad(this);
-		if(!resourceCtrl.isSyncLoading)
-		{
-			if(!this.syncLoading) {
-				resourceCtrl.isSyncLoading = true;
-			}
-			
-			this._loadNextExtension();
-		}
-		else {
-			resourceCtrl.addToQueue(this);
-		}
-	},
-
-	forceLoad: function() {
+		meta.resources.addToLoad(this);
 		this._loadNextExtension();
 	},
-
 
 	_loadNextExtension: function()
 	{
 		var url;
+		var formats = meta.device.audioFormats;
+		var numFormats = formats.length;
 
-		if(this.format) {
-			url = this.path;
+		if(this.format) 
+		{
+			var supported = false;
+
+			for(var n = 0; n < numFormats; n++) 
+			{
+				if(this.format === formats[n]) {
+					supported = true;
+					break;
+				}
+			}
+
+			if(!supported) {
+				console.log("(Resource.Sound) Trying to load unsupported sound format: " + this.format);
+				this._onLoadFailed();
+				return;
+			}
+
+			url = this.path + "." + this.format;
 		}
 		else
 		{
-			var audioFormats = meta.device.audioFormats;
-
 			this._requestFormat++;
-			if(this._requestFormat > audioFormats.length) {
+			if(this._requestFormat > numFormats) {
 				this._onLoadFailed();
 				return;
 			}
@@ -169,7 +170,7 @@ meta.class("Resource.Sound", "Resource.Basic",
 			this.path += "." + meta.device.audioFormats[this._requestFormat - 1];
 		}
 
-		console.warn("[Resource.Sound.load]:", "Error decoding file: " + this.path);
+		console.warn("(Resource.Sound.load) Error decoding file: " + this.path);
 
 		this._loading = false;
 		this._clear();
@@ -186,7 +187,7 @@ meta.class("Resource.Sound", "Resource.Basic",
 			}
 		}
 
-		console.warn("[Resource.Sound.load]:", "Error loading file: " + this.path);
+		console.warn("(Resource.Sound.load) Error loading file: " + this.path);
 
 		this._loading = false;
 		this._clear();
@@ -194,15 +195,15 @@ meta.class("Resource.Sound", "Resource.Basic",
 	},	
 
 
-	// play: function(isLoop, time)
+	// play: function(looping, time)
 	// {
-	// 	isLoop = isLoop || false;
+	// 	looping = looping || false;
 	// 	time = time || 0;
 
 	// 	var instance = this._getInstance();
-	// 	instance.isLoop = isLoop;
+	// 	instance.looping = looping;
 
-	// 	if(!this._isLoaded) {
+	// 	if(!this._loaded) {
 	// 		return instance;
 	// 	}
 	// 	else {
@@ -211,7 +212,7 @@ meta.class("Resource.Sound", "Resource.Basic",
 
 	// 	time += this._context.currentTime;
 	// 	instance.gainNode.gain.value = instance._mixedVolume;
-	// 	instance.source.loop = instance.isLoop;
+	// 	instance.source.loop = instance.looping;
 	// 	instance.source.start(0);
 
 	// 	return instance;
@@ -230,10 +231,10 @@ meta.class("Resource.Sound", "Resource.Basic",
 	// },
 
 
-	play: function(isLoop, time) 
+	play: function(looping, time) 
 	{
 		var instance = this._getInstance();
-		instance.isLoop = isLoop || false;
+		instance.looping = looping || false;
 		instance.play(time);
 	},
 
@@ -267,7 +268,7 @@ meta.class("Resource.Sound", "Resource.Basic",
 
 		var source = this._context.createBufferSource();
 		source.buffer = this._buffer;
-		source.loop = instance._isLoop;
+		source.loop = instance._loaded;
 		source.connect(gainNode);
 		if(!source.start) {
 			source.start = source.noteOn;
@@ -334,7 +335,7 @@ meta.class("Resource.Sound", "Resource.Basic",
 
 	get volume() { return this._volume; },
 
-	get isPlaying() 
+	get playing() 
 	{ 
 		if(this._numInstancesUsed > 0) {
 			return true;
@@ -350,7 +351,7 @@ meta.class("Resource.Sound", "Resource.Basic",
 	_instances: null,
 	_numInstancesUsed: 0,
 
-	_autoIsLoop: false,
+	_autoLooping: false,
 	_autoTime: 0,
 
 	_context: null,
@@ -390,11 +391,11 @@ Resource.AudioInstance_legacy = function(parent)
 {
 	this.id = -1;
 	this.parent = parent;
-	this.isPlaying = false;
-	this.isLoop = false;
+	this.playing = false;
+	this.looping = false;
 	this._canPlay = false;
 	this._metaLoaded = false;
-	this._isLoaded = false;
+	this._loaded = false;
 
 	this._volume = 1.0;
 	this._mixedVolume = 1.0;	
@@ -409,9 +410,10 @@ Resource.AudioInstance_legacy.prototype =
 {
 	play: function(time) 
 	{
-		this.isPlaying = true;
+		this.playing = true;
 
-		if(this._isLoaded) {
+		this._loaded = true;
+		if(this._loaded) {
 			this.audio.currentTime = time || 0;
 			this.audio.play();
 		}
@@ -421,25 +423,25 @@ Resource.AudioInstance_legacy.prototype =
 	},
 
 	stop: function() {
-		this.isPlaying = false;
-		this.isLoop = false;
+		this.playing = false;
+		this.looping = false;
 		this.audio.pause();
 		this.parent._clearInstance(this);
 	},
 
 	_stop: function() {
-		this.isPlaying = false;
-		this.isLoop = false;
+		this.playing = false;
+		this.looping = false;
 		this.audio.pause();
 	},
 
 	pause: function() {
-		this.isPlaying = false;
+		this.playing = false;
 		this.audio.pause();
 	},
 
 	resume: function() {
-		this.isPlaying = true;
+		this.playing = true;
 		this.audio.play();
 	},
 
@@ -473,7 +475,7 @@ Resource.AudioInstance_legacy.prototype =
 			self._onEnd(); 
 		}, false);
 
-		if(this.parent._isLoaded) {
+		if(this.parent._loaded) {
 			this.audio.src = this.parent.path;
 			this.audio.load();
 		}		
@@ -481,7 +483,7 @@ Resource.AudioInstance_legacy.prototype =
 
 	_onLoaded: function()
 	{
-		if(!this.parent._isLoaded) 
+		if(!this.parent._loaded) 
 		{
 			if(!this.parent.format) {
 				this.parent.path += "." + meta.device.audioFormats[this.parent._requestFormat - 1];
@@ -511,15 +513,15 @@ Resource.AudioInstance_legacy.prototype =
 
 	_onEnd: function()
 	{
-		if(this.isLoop) {
+		if(this.looping) {
 			
 			this.audio.play();
 			this.audio.currentTime = 0;
 		}
 		else 
 		{
-			if(this.isPlaying) {
-				this.isPlaying = false;
+			if(this.playing) {
+				this.playing = false;
 				this.parent._clearInstance(this);
 			}
 		}
@@ -528,7 +530,7 @@ Resource.AudioInstance_legacy.prototype =
 
 	set currentTime(time)
 	{
-		if(!this.isPlaying) {
+		if(!this.playing) {
 			this.audio.play();
 			this.audio.currentTime = time || 0;
 			this.audio.pause();
