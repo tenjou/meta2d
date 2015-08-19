@@ -39,7 +39,8 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		var entity = null;
 
 		/* Debug */
-		if(this.meta.cache.debug || this.numDebug > 0) 
+		var isEngineReady = this.meta.engine.flags & this.meta.engine.Flag.READY;
+		if(isEngineReady && (this.meta.cache.debug || this.numDebug > 0))
 		{
 			this.ctx.save();
 			this.ctx.lineWidth = 2;
@@ -161,8 +162,17 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 			if(texture.frames > 1) {
 				texture.drawFrame(this.ctx, volume.minX | 0, volume.minY | 0, anim._frame);
 			}
-			else {
-				this.ctx.drawImage(texture.canvas, volume.minX | 0, volume.minY | 0);
+			else 
+			{
+				if(texture.fromAtlas) 
+				{
+					this.ctx.drawImage(texture.ptr.canvas, 
+						texture.x, texture.y, texture.fullWidth, texture.fullHeight, 
+						volume.minX | 0, volume.minY | 0, texture.fullWidth, texture.fullHeight);
+				}
+				else {
+					this.ctx.drawImage(texture.canvas, volume.minX | 0, volume.minY | 0);
+				}
 			}
 		}
 		else
