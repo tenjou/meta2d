@@ -419,27 +419,10 @@ meta.View.prototype =
 
 	set static(value) 
 	{
-		if((value && (this.flags & this.Flag.STATIC))) ||
+		if((value && (this.flags & this.Flag.STATIC)) ||
 		   (!value && (this.flags & this.Flag.STATIC) === 0))
 		{
 			return;
-		}
-
-		if(this.flags & this.Flag.STATIC) 
-		{ 
-			if(value) {
-				return;
-			}
-
-			this.flags |= this.Flag.STATIC;
-		}
-		else
-		{
-			if(!value) {
-				return;
-			}
-
-			this.flags &= ~this.Flag.STATIC;
 		}
 
 		var numEntities = this.entities.length;
