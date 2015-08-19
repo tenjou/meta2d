@@ -150,6 +150,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 	updateFromData: function()
 	{
 		this.totalTiles = this.tilesX * this.tilesY;
+		this.resize(this.tilesX * this.tileWidth, this.tilesY * this.tileHeight);
 
 		var num = this._data.length;
 
