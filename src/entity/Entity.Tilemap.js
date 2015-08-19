@@ -147,7 +147,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 		}
 	},
 
-	_updateDataInfo: function()
+	updateFromData: function()
 	{
 		this.totalTiles = this.tilesX * this.tilesY;
 
@@ -236,12 +236,50 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 		return [ gridX, gridY ];
 	},
 
+	createBackup: function()
+	{
+		if(!this.data) {
+			console.warn("(Entity.Tilemap.saveBackup) No data available for backup");
+			return;
+		}
+
+		if(!this.backup) {
+			this.backup = new Uint32Array(this.totalTiles);
+		}
+		else if(this.backup.length !== this.totalTiles) {
+			this.backup.length = this.totalTiles;
+		}
+
+		for(var n = 0; n < this.totalTiles; n++) {
+			this.backup[n] = this.data[n];
+		}
+	},
+
+	useBackup: function()
+	{
+		if(!this.backup) { 
+			console.warn("(Entity.Tilemap.saveBackup) No backup available");
+			return; 
+		}
+
+		if(this.backup.length !== this.totalTiles) {
+			console.warn("(Entity.Tilemap.saveBackup) Incompatible backup");
+			return; 
+		}
+
+		for(var n = 0; n < this.totalTiles; n++) {
+			this.data[n] = this.backup[n];
+		}
+
+		this.updateFromData();
+	},
+
 	set data(data) 
 	{
 		this._data = data;
 
 		if(this.parent.loaded) {
-			this._updateDataInfo();
+			this.updateFromData();
 		}
 	},
 
@@ -342,7 +380,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 	{
 		var num = this.children.length;
 		for(var n = 0; n < num; n++) {
-			this.children[n]._updateDataInfo();
+			this.children[n].updateFromData();
 		}
 
 		this.loaded = true;
