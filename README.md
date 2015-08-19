@@ -5,6 +5,9 @@ Meta is free and fast open source HTML5 game engine for making cross platform ga
 
 #####**Engine is currently focusing on developing libraries and tool for developing tile based games. Different type of games are at lower priority.**
 
+* [Offical Website](http://meta2d.com/)
+* [Examples](http://meta2d.com/examples)
+
 Features
 ====
 
@@ -72,6 +75,3 @@ Features that can be expecteded in next releases:
 3. Tilemap collision/physics system
 4. Tilemap editor in browser
 5. Tilemap texture caching
-
-* [Offical Website](http://meta2d.com/)
-* [Examples](http://meta2d.com/examples)
