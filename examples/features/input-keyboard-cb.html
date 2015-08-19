@@ -15,7 +15,7 @@
             var directionX = 0;
             var directionY = 0;
 
-            meta.load = function() 
+            meta.onLoad = function() 
             {
                 meta.loadTexture("http://i.imgur.com/85w15oW.png");
 
@@ -33,7 +33,7 @@
                 meta.input.onChange(Input.Key.SPACE, OnChange);
             };
 
-            meta.update = function(tDelta)
+            meta.onUpdate = function(tDelta)
             {
                 var speed = 200 * tDelta;
                 entity.move(directionX * speed, directionY * speed);

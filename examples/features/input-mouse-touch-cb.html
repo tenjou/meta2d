@@ -13,11 +13,7 @@
         <script>
             var coordTxt = null;
 
-            function HandleInput(data, event) {
-                coordTxt.text = data.x + ", " + data.y;
-            };
-
-            meta.load = function()
+            meta.onLoad = function()
             {
                 coordTxt = new Entity.Text("stuff");;
                 coordTxt.anchor(0.5);
@@ -28,6 +24,10 @@
                 meta.subscribe(this, "inputMove", HandleInput);
 
                 meta.info("Input - mouse & touch example");                
+            };
+
+            function HandleInput(data, event) {
+                coordTxt.text = data.x + ", " + data.y;
             };
         </script>
     </body>

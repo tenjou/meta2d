@@ -13,7 +13,19 @@
 		<script>
             var player = null;
 
-            meta.update = function(tDelta)
+            meta.onLoad = function()
+            {
+                meta.loadTexture("http://i.imgur.com/85w15oW.png");
+
+                player = new Entity.Geometry("85w15oW");
+                player.anchor(0.5);
+                player.pivot(0.5);
+                meta.view.attach(player);
+
+                meta.info("Use WASD or arrows to move the entity."); 
+            };
+
+            meta.onUpdate = function(tDelta)
             {
                 var pressed = meta.input.pressed;
 
@@ -38,18 +50,6 @@
 
                 var speed = 200 * tDelta;
                 player.move(directionX * speed, directionY * speed);
-            };
-
-            meta.load = function()
-            {
-                meta.loadTexture("http://i.imgur.com/85w15oW.png");
-
-                player = new Entity.Geometry("85w15oW");
-                player.anchor(0.5);
-                player.pivot(0.5);
-                meta.view.attach(player);
-
-                meta.info("Use WASD or arrows to move the entity."); 
             };
 		</script>
 	</body>
