@@ -35,7 +35,6 @@ Component.Anim.prototype =
 
 			// If texture is animated but not animating:
 			if(this.autoPlay) {	
-				console.log("added");
 				meta.renderer.addAnim(this);
 			}			
 		}
