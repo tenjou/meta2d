@@ -11,21 +11,21 @@
 		<!-- Example on how to combine different functions to create custom textures. -->
 
 		<script>
-            meta.load = function()
-            {
-                meta.loadTexture(
-                    "https://dl.dropboxusercontent.com/u/145051233/img/grid.png");
+			meta.onLoad = function()
+			{
+				meta.loadTexture(
+					"https://dl.dropboxusercontent.com/u/145051233/img/grid.png");
 
-                var texture = new Resource.SVG();
-                texture.resize(meta.world.width, meta.world.height);
-                texture.gradient([ 0, "#ff0000", 1, "#4fb6e1" ]);
-                texture.tile("grid", true);
+				var texture = new Resource.SVG();
+				texture.resize(meta.world.width, meta.world.height);
+				texture.gradient([ 0, "#ff0000", 1, "#4fb6e1" ]);
+				texture.tileAuto("grid", true);
 
-                var bg = new Entity.Geometry(texture);
-                meta.view.attach(bg);
+				var bg = new Entity.Geometry(texture);
+				meta.view.attach(bg);
 
-                meta.info("Texture combining example");
-            };
+				meta.info("Texture combining example");
+			};
 		</script>
 	</body>
 </html>

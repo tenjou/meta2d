@@ -41,8 +41,6 @@ var meta =
 		view: null,
 		views: {},
 
-
-
 		scripts: null,
 		pendingScripts: null, // IE<10
 		numScriptsToLoad: 0,
