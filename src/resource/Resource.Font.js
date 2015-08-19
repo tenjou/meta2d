@@ -2,7 +2,7 @@
 
 meta.class("Resource.Font", "Resource.Basic", 
 {
-	init: function(path, tag)
+	onCreate: function(path, tag)
 	{
 		if(path) {
 			this.load(meta.resources.rootPath + path);

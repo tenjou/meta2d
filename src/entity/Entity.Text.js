@@ -2,7 +2,7 @@
 
 meta.class("Entity.Text", "Entity.Geometry", 
 {
-	init: function(params)
+	onCreate: function(params)
 	{
 		this.texture = new Resource.Texture();
 		this._texture.resize(this._fontSize, this._fontSize);

@@ -2,7 +2,7 @@
 
 meta.class("Resource.SpriteSheet", "Resource.Basic", 
 {
-	init: function(param, path)
+	onCreate: function(param, path)
 	{
 		if(typeof(param) === "string") {
 			path = param;

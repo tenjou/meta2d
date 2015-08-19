@@ -2,10 +2,15 @@
 
 meta.class("Entity.Geometry",
 {
-	_init: function(arg) {
+	init: function(arg) 
+	{
 		this.volume = new meta.math.AABBext();
 		this.anim = new Component.Anim(this);
 		this.initArg(arg);
+
+		if(this.onCreate) {
+			this.onCreate(arg);
+		}
 	},
 
 	initArg: function(arg)
@@ -26,6 +31,8 @@ meta.class("Entity.Geometry",
 			this.texture = arg;
 		}
 	},
+
+	onCreate: null,
 
 	createBody: function(comp) 
 	{

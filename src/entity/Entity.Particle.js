@@ -2,7 +2,7 @@
 
 meta.class("Entity.ParticleEmitter", "Entity.Geometry", 
 {
-	init: function() {
+	onCreate: function() {
 		this.particles = [];
 		this.preset = "meteor";
 	},

@@ -12,13 +12,19 @@
  */
 meta.class("Resource.Basic", 
 {
-	_init: function(data, tag) 
+	init: function(data, tag) 
 	{
 		this.id = meta.resources.getUniqueID();
 		if(tag) {
 			this.tag = tag;
-		}		
+		}	
+
+		if(this.onCreate) {
+			this.onCreate(data, tag);
+		}	
 	},
+
+	onCreate: null,
 
 
 	/**

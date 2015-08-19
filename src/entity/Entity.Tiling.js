@@ -2,7 +2,7 @@
 
 meta.class("Entity.Tiling", "Entity.Geometry", 
 {
-	init: function(texture) 
+	onCreate: function(texture) 
 	{
 		var volume = meta.camera.volume;
 		var newTexture = new Resource.Texture();

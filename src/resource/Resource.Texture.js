@@ -28,7 +28,7 @@ meta.class("Resource.Texture", "Resource.Basic",
 	 * @param path {String=} Texture path.
 	 * @function
 	 */
-	init: function(data, tag)
+	onCreate: function(data, tag)
 	{
 		this.generate();
 
