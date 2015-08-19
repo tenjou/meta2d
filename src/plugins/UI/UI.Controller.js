@@ -2,7 +2,7 @@
 
 meta.class("UI.Controller", "meta.Controller", 
 {
-	init: function()
+	onFirstReady: function()
 	{
 		var buttonTex = new Resource.Texture();
 		buttonTex.fillRect({

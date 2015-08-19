@@ -2,7 +2,7 @@
 
 meta.class("UI.Button", "Entity.Geometry", 
 {
-	init: function() {
+	onCreate: function() {
 		this.picking = true;
 	},
 
