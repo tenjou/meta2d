@@ -127,6 +127,10 @@ meta.engine =
 
 		meta.cache.view._parentVisible(true);
 		this._startMainLoop();
+
+		if(!meta.resources.loading) {
+			this.onReady();
+		}
 	},
 
 	onReady: function()

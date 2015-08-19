@@ -11,11 +11,11 @@ meta.class("Resource.SVG", "Resource.Texture",
 	 */
 	fillRect: function(x, y, width, height) 
 	{
-		if(this.fullWidth < 2 && this.fullHeight < 2) {
+		if((this.flags & this.TextureFlag.RESIZED) === 0) {
 			this.resizeSilently(width + x, height + y);
-			this.ctx.fillStyle = this._fillStyle;
 		}
 
+		this.ctx.fillStyle = this._fillStyle;
 		this.ctx.fillRect(x, y, width, height);
 
 		this.loaded = true;
@@ -30,11 +30,33 @@ meta.class("Resource.SVG", "Resource.Texture",
 	 */
 	line: function(x1, y1, x2, y2)
 	{
-		if(this.fullWidth < 2 && this.fullHeight < 2) {
-			this.resizeSilently(x2, y2);
-			this.ctx.lineWidth = this._lineWidth;
-			this.ctx.strokeStyle = this._strokeStyle;
-		}		
+		if((this.flags & this.TextureFlag.RESIZED) === 0) 
+		{
+			var minX, maxX, minY, maxY;
+
+			if(x1 < x2) {
+				minX = x1;
+				maxX = x2;
+			}
+			else {
+				minX = x2;
+				maxX = x1;
+			}
+
+			if(y1 < y2) {
+				minY = y1;
+				maxY = y2;
+			}
+			else {
+				minY = y2;
+				maxY = y1;
+			}
+
+			this.resizeSilently(maxX, maxY);
+		}	
+
+		this.ctx.strokeStyle = this._strokeStyle;
+		this.ctx.lineWidth = this._lineWidth;
 
 		this.ctx.beginPath();
 		this.ctx.moveTo(x1, y1);
@@ -54,7 +76,7 @@ meta.class("Resource.SVG", "Resource.Texture",
 			offset = 0;
 		}
 
-		if(this.fullWidth < 2 && this.fullHeight < 2) 
+		if((this.flags & this.TextureFlag.RESIZED) === 0) 
 		{
 			if(offset) {
 				this.resizeSilently(width + x + 1, height + y + 1);
@@ -92,7 +114,10 @@ meta.class("Resource.SVG", "Resource.Texture",
 	circle: function(radius)
 	{
 		var size = (radius + this._lineWidth) * 2;
-		this.resizeSilently(size, size);
+
+		if((this.flags & this.TextureFlag.RESIZED) === 0) {
+			this.resizeSilently(size, size);
+		}
 		
 		this.ctx.beginPath();
 		this.ctx.arc(radius + this._lineWidth, radius + this._lineWidth, radius, 0, Math.PI * 2, false);
@@ -115,18 +140,18 @@ meta.class("Resource.SVG", "Resource.Texture",
 	/**
 	 * Tile source texture on top.
 	 */
-	tileInside: function(texture, center, offsetX, offsetY)
+	tileAuto: function(texture, center, offsetX, offsetY)
 	{
 		if(typeof(texture) === "string") {
 			var newTexture = meta.resources.getTexture(texture);
 			if(!newTexture) {
-				console.warn("(Resource.Texture.tileInside): Could not get texture with name: " + texture);
+				console.warn("(Resource.Texture.tileAuto): Could not get texture with name: " + texture);
 				return;							
 			}
 			texture = newTexture;
 		}
 		else if(!texture) {
-			console.warn("(Resource.Texture.tileInside): Invalid texture");
+			console.warn("(Resource.Texture.tileAuto): Invalid texture");
 			return;
 		}
 
@@ -137,10 +162,13 @@ meta.class("Resource.SVG", "Resource.Texture",
 
 			var self = this;
 			texture.subscribe(this, function(data, event) {
-				self.tileInside(texture, center, offsetX, offsetY);
+				self.tileAuto(texture, center, offsetX, offsetY);
 			});
 			return;
 		}
+
+		offsetX = offsetX || 0;
+		offsetY = offsetY || 0;
 
 		var numX = Math.ceil(this.fullWidth / texture.fullWidth) || 1;
 		var numY = Math.ceil(this.fullHeight/ texture.fullHeight) || 1;	
@@ -252,8 +280,12 @@ meta.class("Resource.SVG", "Resource.Texture",
 		var halfLineWidth = this._lineWidth / 2;
 		var offsetX = -minX + halfLineWidth;
 		var offsetY = -minY + halfLineWidth;
-		this.resizeSilently((maxX - minX + this._lineWidth), 
-			maxY - minY + this._lineWidth);
+
+		if((this.flags & this.TextureFlag.RESIZED) === 0) 
+		{
+			this.resizeSilently((maxX - minX + this._lineWidth), 
+						maxY - minY + this._lineWidth);
+		}
 
 		ctx.lineWidth = this._lineWidth;
 		if(this._lineCap) {
@@ -292,7 +324,7 @@ meta.class("Resource.SVG", "Resource.Texture",
 	 */
 	arc: function(radius, startAngle, endAngle, counterClockwise)
 	{
-		if(this.fullWidth < 2 && this.fullHeight < 2) {
+		if((this.flags & this.TextureFlag.RESIZED) === 0) {
 			var size = (radius + this._lineWidth) * 2;
 			this.resizeSilently(size, size);
 		}
@@ -331,7 +363,7 @@ meta.class("Resource.SVG", "Resource.Texture",
 			offset = 0;
 		}
 
-		if(this.fullWidth < 2 && this.fullHeight < 2) 
+		if((this.flags & this.TextureFlag.RESIZED) === 0) 
 		{
 			if(offset) {
 				this.resizeSilently(width + 1, height + 1);
@@ -339,8 +371,6 @@ meta.class("Resource.SVG", "Resource.Texture",
 			else {
 				this.resizeSilently(width, height);
 			}
-			
-			this.ctx.fillStyle = this._fillStyle;
 		}
 
 		var halfWidth = Math.ceil(this._lineWidth / 2);
@@ -396,7 +426,9 @@ meta.class("Resource.SVG", "Resource.Texture",
 		var width = numX * sizeX;
 		var height = numY * sizeY;
 
-		this.resize(width + this.lineWidth, height + this.lineWidth);
+		if((this.flags & this.TextureFlag.RESIZED) === 0) {
+			this.resizeSilently(width + this.lineWidth, height + this.lineWidth);
+		}
 
 		this.ctx.strokeStyle = this.strokeStyle;
 		this.ctx.lineWidth = this.lineWidth;

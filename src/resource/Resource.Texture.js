@@ -240,6 +240,8 @@ meta.class("Resource.Texture", "Resource.Basic",
 			return; 
 		}
 
+		this.flags |= this.TextureFlag.RESIZED;
+
 		this.trueFullWidth = width;
 		this.trueFullHeight = height;
 
@@ -469,12 +471,18 @@ meta.class("Resource.Texture", "Resource.Basic",
 		this.resize(canvas.width, canvas.height);
 	},
 
+	TextureFlag: {
+		RESIZED: 1
+	},
+
 	//
 	type: Resource.Type.TEXTURE,
 
 	ptr: null,
 	canvas: null,
 	ctx: null,
+
+	flags: 0,
 
 	_x: 0, _y: 0,
 	width: 0, height: 0,
