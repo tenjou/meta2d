@@ -70,8 +70,8 @@ Features that can be expecteded in next releases:
 1. Tilemap supporting auto tiling
 2. Multiple character controllers
 3. Tilemap collision/physics system
-4. Tilemap texture caching
-5. Tilemap editor in browser
+4. Tilemap editor in browser
+5. Tilemap texture caching
 
 * [Offical Website](http://meta2d.com/)
 * [Examples](http://meta2d.com/examples)
