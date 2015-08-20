@@ -141,7 +141,9 @@ meta.engine =
 		var numFuncs = meta.cache.readyFuncs.length;
 		for(var i = 0; i < numFuncs; i++) {
 			meta.cache.readyFuncs[i]();
-		}		
+		}
+
+		meta.renderer.needRender = true;
 	},
 
 	loadPlugins: function() 

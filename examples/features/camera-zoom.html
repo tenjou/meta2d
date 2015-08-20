@@ -2,28 +2,28 @@
 
 <html>
     <head>
-        <title>Camera Zoom :: META</title>
+        <title>Camera Zoom // META</title>
 
-        <script src="http://infinite-games.com/meta.latest.js"></script>
+        <script src="http://meta2d.com/meta.js"></script>
     </head>
 
     <body>
         <!-- Example on how to change camera zoom. -->
 
         <script>
-            meta.load = function()
+            meta.onLoad = function()
             {
                 // Zoom camera in two times.
                 meta.camera.zoom = 2.0;
 
-                meta.preloadTexture(
-                    "https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
+                meta.loadTexture("https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
 
                 var entity = new Entity.Geometry("jabba");
+                entity.pivot(0.5);
                 entity.anchor(0.5);
-                meta.view.add(entity);       
+                meta.view.attach(entity);       
 
-                meta.addDescription("Camera zoom example");                     
+                meta.info("Camera zooming example");                     
             };
         </script>
     </body>
