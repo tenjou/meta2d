@@ -278,8 +278,7 @@ meta.View.prototype =
 
 		var view;
 		var numChildren = this.views.length;
-		var numViews = this.views.length;
-		for(var i = 0; i < numViews; i++) 
+		for(var i = 0; i < numChildren; i++) 
 		{
 			view = this.views[i];
 			view.parentView = null;
@@ -292,32 +291,35 @@ meta.View.prototype =
 		this.views.length = 0;
 	},
 
-	_visible: function(value)
+	_updateVisible: function()
 	{
-		if(value)
+		var visible = false;
+
+		if((this.flags & this.Flag.CHILD_VISIBLE) && 
+		   (this.flags & this.Flag.PARENT_VISIBLE)) 
 		{
-			this.flags |= this.Flag.CHILD_VISIBLE;
+			if(this.flags & this.Flag.VISIBLE) {
+				return;
+			}
 
-			if(this.flags & this.Flag.PARENT_VISIBLE)
-			{
-				this.flags |= this.Flag.VISIBLE;
+			this.flags |= this.Flag.VISIBLE;
+			visible = true;
 
-				if(this.entities.length) {
-					meta.renderer.addEntities(this.entities);
-				}
+			if(this.entities.length) {
+				meta.renderer.addEntities(this.entities);
 			}
 		}
 		else
 		{
-			this.flags &= ~this.Flag.CHILD_VISIBLE;
+			if((this.flags & this.Flag.VISIBLE) === 0) {
+				return;
+			}
 
-			if(this.flags & this.Flag.VISIBLE)
-			{
-				this.flags &= ~this.Flag.VISIBLE;
+			this.flags &= ~this.Flag.VISIBLE;
+			visible = false;
 
-				if(this.entities.length) {
-					meta.renderer.removeEntities(this.entities);
-				}
+			if(this.entities.length) {
+				meta.renderer.removeEntities(this.entities);
 			}
 		}
 
@@ -325,47 +327,33 @@ meta.View.prototype =
 		{
 			var numViews = this.views.length;
 			for(var n = 0; n < numViews; n++) {
-				this.views[n]._parentVisible(value); 
+				this.views[n]._parentVisible(visible); 
 			}
 		}	
 	},
 
 	_parentVisible: function(value)
 	{
-		if(value)
-		{
+		if(value) {
 			this.flags |= this.Flag.PARENT_VISIBLE;
-
-			if(this.flags & this.Flag.CHILD_VISIBLE) {
-				this._visible(true);
-			}
 		}
-		else
-		{
+		else {
 			this.flags &= ~this.Flag.PARENT_VISIBLE;
-
-			if(this.flags & this.Flag.CHILD_VISIBLE) {
-				this._visible(false);
-			}
 		}
+
+		this._updateVisible();
 	},
 
 	set visible(value)
 	{
-		if(value)
-		{
-			if(this.flags & this.Flag.CHILD_VISIBLE) {
-				return;
-			}
+		if(value) {
+			this.flags |= this.Flag.CHILD_VISIBLE;
+		}
+		else {
+			this.flags &= ~this.Flag.CHILD_VISIBLE;
+		}
 
-			this._visible(true);
-		}
-		else
-		{
-			if(this.flags & this.Flag.CHILD_VISIBLE) {
-				this._visible(false);
-			}
-		}
+		this._updateVisible();
 	},
 
 	get visible() { 
@@ -465,7 +453,6 @@ meta.createView = function(name)
 	}
 
 	view = new meta.View(name);
-	meta.view.attachView(view);
 	meta.cache.views[name] = view;
 
 	return view;
@@ -495,7 +482,15 @@ meta.setView = function(view)
 		}
 	}
 
-	if(view.flags & view.Flag.CHILD_VISIBLE) { 
+	var masterView = cache.view;
+
+	if(view === masterView) {
+		console.warn("(meta.setView) Cannot modify master view");
+		return;
+	}
+
+	if(view.parentView) {
+		console.warn("(meta.setView) View is already attached to master or other view");
 		return;
 	}
 

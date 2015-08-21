@@ -37,8 +37,8 @@ meta.class("meta.Controller",
 		}
 
 		meta.engine.controllersReady.push(this);
-
-		this.view.visible = true;
+		meta.cache.view.attachView(this.view);
+		
 		this.flags |= this.Flag.LOADED;
 	},
 
