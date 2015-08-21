@@ -2,34 +2,37 @@
 
 <html>
     <head>
-        <title>View Create :: META</title>
+        <title>View creation // META</title>
 
-        <script src="http://infinite-games.com/meta.latest.js"></script>
+        <script src="http://meta2d.com/meta.js"></script>
     </head>
 
     <body>
         <!-- Example on how to create custom views. -->
 
         <script>
-            meta.load = function()
+            meta.onLoad = function()
             {
-                meta.preloadTexture(
+                meta.loadTexture(
                     "https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
 
-                // Get view (one will be created if not found).
-                var exampleView = meta.getView("example");
+                var exampleView = meta.createView("example");
+
+                // To get view - meta.getView("example") can be called.
 
                 var entity = new Entity.Geometry("jabba");
+                entity.pivot(0.5);
                 entity.anchor(0.5);
                 // Add entity to our custom view.
                 // By default if view is not added to master view (meta.view) 
                 //  then his entities will not be visible.
-                exampleView.add(entity);
+                exampleView.attach(entity);
 
-                // Make our view visible (will add "example" view to the master view).
+                // Make our view visible. 
+                // This will attach "example" view to the master view which is parent of all views.
                 meta.setView("example");
 
-                meta.addDescription("View creation example");
+                meta.info("View creation example");
             };
         </script>
     </body>

@@ -2,32 +2,34 @@
 
 <html>
 	<head>
-		<title>Tween :: META</title>
+		<title>Tween // META</title>
 
-		<script src="http://infinite-games.com/meta.latest.js"></script>
+		<script src="http://meta2d.com/meta.js"></script>
 	</head>
 
 	<body>
 		<!-- Example on how to use tweening. -->
 
 		<script>
-			meta.load = function()
+			meta.onLoad = function()
 			{
-				meta.preloadTexture(
+				meta.loadTexture(
 					"https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
 
 				var entity = new Entity.Geometry("jabba");
+				entity.pivot(0.5);
 				entity.anchor(0.4);
-				// Setup tween via chaining.
+				meta.view.attach(entity);
+
+				// setup tween via chaining:
 				entity.tween
 					.to({ x: 200, y: 0, angle: 360 }, 2000)
 					.to({ y: 200 }, 1000)
 					.easing("bounceOut")
 					.repeat()
 					.play();
-				meta.view.add(entity);
 
-				meta.addDescription("Tween example");
+				meta.info("Tween example");
 			};
 		</script>
 	</body>

@@ -2,13 +2,13 @@
 
 <html>
     <head>
-        <title>Timer :: META</title>
+        <title>Timer // META</title>
 
-        <script src="http://infinite-games.com/meta.latest.js"></script>
+        <script src="http://meta2d.com/meta.js"></script>
     </head>
 
     <body>
-        <!-- Example on how to use engine built in synchronized timer. -->
+        <!-- Example on how to use engine built timers. -->
 
         <script>
             function SpawnEntity()
@@ -16,18 +16,18 @@
                 var entity = new Entity.Geometry("jabba");
                 // Set random position.
                 entity.position(meta.world.randX, meta.world.randY);
-                meta.view.add(entity);
+                meta.view.attach(entity);
             };
 
-            meta.load = function()
+            meta.onLoad = function()
             {
-                meta.preloadTexture(
+                meta.loadTexture(
                     "https://dl.dropboxusercontent.com/u/145051233/meta/jabba.png");
 
-                // Spawn an entity every 1000ms.
+                // spawn one entity every 1000ms:
                 meta.addTimer(SpawnEntity, 1000);
 
-                meta.addDescription("Timer example - spawn one entity every 1000ms"); 
+                meta.info("Timer example - spawn one entity every 1000ms"); 
             };
         </script>
     </body>
