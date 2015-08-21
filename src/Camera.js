@@ -40,6 +40,8 @@ meta.Camera = function()
 	this._chnMove = null;
 	this._chnResize = null;
 
+	this._followEntity = null;
+
 	//
 	this.init();
 };
@@ -69,6 +71,16 @@ meta.Camera.prototype =
 		this._chnMove.release();
 		meta.unsubscribe(this, meta.Event.RESIZE);
 		meta.unsubscribe(this, meta.Event.WORLD_RESIZE);
+	},
+
+	update: function(tDelta)
+	{
+		if(!this._followEntity) { return; }
+
+		var entityVolume = this._followEntity.volume;
+		var cameraX = Math.floor(entityVolume.x - Math.floor(this.volume.width / 2));
+		var cameraY = Math.floor(entityVolume.y - Math.floor(this.volume.height / 2));
+		this.position(cameraX, cameraY);
 	},
 
 	/** Update camera view. */
@@ -281,6 +293,16 @@ meta.Camera.prototype =
 		this.volume.position(x, y);
 		this._moved = true;
 		this.updateView();
+	},
+
+	follow: function(entity)
+	{
+		if(!(entity instanceof Entity.Geometry)) {
+			console.warn("(meta.Camera.follow): Invalid entity - should be part of Entity.Geometry");
+			return;
+		}
+
+		this._followEntity = entity;
 	},
 
 	set x(value)

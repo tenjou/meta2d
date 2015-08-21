@@ -204,6 +204,7 @@ meta.engine =
 			this.controllersUpdate[n].onUpdate(tDelta);
 		}
 
+		this.meta.camera.update(tDelta);
 		this.meta.renderer.update(tDelta);
 	},
 
