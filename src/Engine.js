@@ -50,7 +50,7 @@ meta.engine =
 
 		// Fullscreen API:
 		if(meta.device.support.fullScreen) {
-			this.cb.fullscreen = function() { self.cb.fullscreen(); };
+			this.cb.fullscreen = function() { self.onFullScreenChangeCB(); };
 			document.addEventListener(meta.device.fullScreenOnChange, this.cb.fullscreen);
 		}
 
@@ -662,13 +662,16 @@ meta.engine =
 		if(value) 
 		{
 			if(!device.support.fullScreen) {
-				console.warn("(meta.engine.enterFullScreen): Device does not support fullscreen mode");
+				console.warn("(meta.engine.fullscreen): Device does not support fullscreen mode");
 				return;
 			}
+
+			console.log(device.fullScreenRequest);
 
 			document.documentElement[device.fullScreenRequest](Element.ALLOW_KEYBOARD_INPUT);			
 		}
 		else {
+			console.log("exit")
 			document[meta.device.fullScreenExit]();
 		}
 	},

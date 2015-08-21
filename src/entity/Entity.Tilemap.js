@@ -240,7 +240,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 	saveData: function()
 	{
 		if(!this.data) {
-			console.warn("(Entity.Tilemap.saveData) No data available for saving");
+			console.warn("(Entity.Tilemap.saveData): No data available for saving");
 			return;
 		}
 
@@ -259,12 +259,12 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 	restoreData: function()
 	{
 		if(!this.savedData) { 
-			console.warn("(Entity.Tilemap.restoreData) No saved data available");
+			console.warn("(Entity.Tilemap.restoreData): No saved data available");
 			return; 
 		}
 
 		if(this.savedData.length !== this.totalTiles) {
-			console.warn("(Entity.Tilemap.restoreData) Incompatible data saved");
+			console.warn("(Entity.Tilemap.restoreData): Incompatible data saved");
 			this.savedData = null;
 			return; 
 		}
@@ -314,7 +314,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 	load: function(path)
 	{
 		if(!path) { 
-			console.warn("(Entity.Tilemap.load) Invalid path specified");
+			console.warn("(Entity.Tilemap.load): Invalid path specified");
 			return; 
 		}
 
@@ -330,7 +330,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		var self = this;
 		var parseFunc = this["_parse_" + ext];
 		if(!parseFunc) {
-			console.warn("(Entity.Tilemap.load) Unsupported file format: " + ext);
+			console.warn("(Entity.Tilemap.load): Unsupported file format: " + ext);
 			return; 
 		}
 		
@@ -355,7 +355,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 	createTileset: function(gid, texture, tileWidth, tileHeight)
 	{
 		if(gid < 1) {
-			console.warn("(Entity.Tilemap.createTileset) gid argument should be 1 or larger number");
+			console.warn("(Entity.Tilemap.createTileset): gid argument should be 1 or larger number");
 			return;
 		}
 
@@ -477,12 +477,12 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 			{
 				strData = dataNode.innerHTML.split(",");
 				if(strData.length !== num) {
-					console.warn("(Entity.Tilemap._parse_tmx) Layer resolution does not match with data size");
+					console.warn("(Entity.Tilemap._parse_tmx): Layer resolution does not match with data size");
 					return;
 				}
 			}
 			else {
-				console.warn("(Entity.Tilemap._parse_tmx) Unsupported layer encoding used: " + encoding);
+				console.warn("(Entity.Tilemap._parse_tmx): Unsupported layer encoding used: " + encoding);
 				return;
 			}
 
