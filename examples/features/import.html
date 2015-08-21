@@ -2,25 +2,46 @@
 
 <html>
     <head>
-        <title>Import :: META</title>
+        <title>Import // META</title>
 
-        <script src="http://infinite-games.com/meta.latest.js"></script>
+        <script src="http://meta2d.com/meta.js"></script>
     </head>
 
     <body>
-        <!-- Example on how to load assets from Infinite Store. -->
+        <!-- Example on how to load libraries or assets from meta2d store. -->
 
         <script>
-            // Import library that has predefined Entity.Example class.
-            meta.import("meta-example");
+            // Import procedural library from meta2d engine cloud store:
+            meta.import("Procedural");
 
-            meta.load = function()
+            meta.onLoad = function()
             {
-                var entity = new Entity.Example();
-                entity.anchor(0.5);
-                meta.view.add(entity);
+                var tilesX = 64;
+                var tilesY = 64;
+                var tileWidth = 8;
+                var tileHeight = 8;
 
-                meta.addDescription("Example on how to load external libraries from engine store");
+                var generator = new Procedural.Generator();
+                generator.gen(tilesX, tilesY);
+
+                var groundTexture = new Resource.SVG();
+                groundTexture.fillStyle = "orange";
+                groundTexture.fillRect(0, 0, tileWidth, tileHeight); 
+
+                var wallTexture = new Resource.SVG();
+                wallTexture.fillStyle = "#101010";
+                wallTexture.fillRect(0, 0, tileWidth, tileHeight); 
+
+                var tilemap = new Entity.Tilemap();
+                tilemap.anchor(0.5);
+                tilemap.pivot(0.5);
+                tilemap.create(tilesX, tilesY, tileWidth, tileHeight);
+                tilemap.createTileset(1, groundTexture);
+                tilemap.createTileset(2, wallTexture);
+                tilemap.createLayer(generator.cellsX, generator.cellsY, generator.data);
+                meta.view.attach(tilemap);
+
+                meta.info("Example on how to load libraries or assets from meta2d store");
             };
         </script>
     </body>

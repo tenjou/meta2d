@@ -53,7 +53,7 @@
                 tilemap.createTileset(3, playerTexture);
                 layer = tilemap.createLayer(generator.cellsX, generator.cellsY, generator.data);
                 layer.setTile(playerCellX, playerCellY, 3);
-                layer.createBackup();
+                layer.saveData();
                 meta.view.attach(tilemap);
 
                 meta.subscribe(this, Input.Event.CLICK, OnInputClick);
@@ -64,7 +64,7 @@
                 var targetGrid = layer.gridFromWorldPos(data.x, data.y);
                 if(targetGrid) 
                 {
-                    layer.useBackup();
+                    layer.restoreData();
 
                     var path = astar.search(playerCellX, playerCellY, targetGrid[0], targetGrid[1]);
                     if(!path) { 

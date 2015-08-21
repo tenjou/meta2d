@@ -2,9 +2,9 @@
 
 <html>
 	<head>
-		<title>Events Local :: META</title>
+		<title>Local events // META</title>
 
-		<script src="http://infinite-games.com/meta.latest.js"></script>
+		<script src="http://meta2d.com/meta.js"></script>
 	</head>
 
 	<body>
@@ -21,12 +21,13 @@
                 else if(event === "create") 
                 {
                     var entity = new Entity.Geometry("jabba");
+                    entity.pivot(0.5);
                     entity.anchor(data);
-                    meta.view.add(entity);
+                    meta.view.attach(entity);
                 }
             };
 
-            meta.load = function()
+            meta.onLoad = function()
             {
                 var channel = meta.createChannel("Example");
                 channel.subscribe(this, Listener);
@@ -38,7 +39,7 @@
                 // Create second entity.
                 channel.emit(0.6, "create");
 
-                meta.addDescription("Local event example");
+                meta.info("Local event example");
             };
         </script>
 	</body>

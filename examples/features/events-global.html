@@ -2,9 +2,9 @@
 
 <html>
 	<head>
-		<title>Events Global :: META</title>
+		<title>Global events // META</title>
 
-		<script src="http://infinite-games.com/meta.latest.js"></script>
+		<script src="http://meta2d.com/meta.js"></script>
 	</head>
 
 	<body>
@@ -21,12 +21,13 @@
                 else if(event === "create") 
                 {
                     var entity = new Entity.Geometry("jabba");
+                    entity.pivot(0.5);
                     entity.anchor(data);
-                    meta.view.add(entity);
+                    meta.view.attach(entity);
                 }
             };
 
-            meta.load = function()
+            meta.onLoad = function()
             {
                 meta.createChannel("Example");
                 meta.subscribe(window, "Example", Listener);
@@ -38,7 +39,7 @@
                 // Create second entity.
                 meta.emit("Example", 0.6, "create");
 
-                meta.addDescription("Global event example");
+                meta.info("Global event example");
             };
         </script>
 	</body>
