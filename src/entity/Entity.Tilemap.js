@@ -237,39 +237,40 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 		return [ gridX, gridY ];
 	},
 
-	createBackup: function()
+	saveData: function()
 	{
 		if(!this.data) {
-			console.warn("(Entity.Tilemap.saveBackup) No data available for backup");
+			console.warn("(Entity.Tilemap.saveData) No data available for saving");
 			return;
 		}
 
-		if(!this.backup) {
-			this.backup = new Uint32Array(this.totalTiles);
+		if(!this.savedData) {
+			this.savedData = new Uint32Array(this.totalTiles);
 		}
-		else if(this.backup.length !== this.totalTiles) {
-			this.backup.length = this.totalTiles;
+		else if(this.savedData.length !== this.totalTiles) {
+			this.savedData.length = this.totalTiles;
 		}
 
 		for(var n = 0; n < this.totalTiles; n++) {
-			this.backup[n] = this.data[n];
+			this.savedData[n] = this.data[n];
 		}
 	},
 
-	useBackup: function()
+	restoreData: function()
 	{
-		if(!this.backup) { 
-			console.warn("(Entity.Tilemap.saveBackup) No backup available");
+		if(!this.savedData) { 
+			console.warn("(Entity.Tilemap.restoreData) No saved data available");
 			return; 
 		}
 
-		if(this.backup.length !== this.totalTiles) {
-			console.warn("(Entity.Tilemap.saveBackup) Incompatible backup");
+		if(this.savedData.length !== this.totalTiles) {
+			console.warn("(Entity.Tilemap.restoreData) Incompatible data saved");
+			this.savedData = null;
 			return; 
 		}
 
 		for(var n = 0; n < this.totalTiles; n++) {
-			this.data[n] = this.backup[n];
+			this.data[n] = this.savedData[n];
 		}
 
 		this.updateFromData();
