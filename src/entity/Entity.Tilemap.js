@@ -210,7 +210,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 		}
 	},
 
-	setTile: function(x, y, gid)
+	setGid: function(x, y, gid)
 	{
 		var id = x + (y * this.tilesX);
 		this._data[id] = gid;
@@ -219,6 +219,20 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 			this._updateDataInfoCell(id);
 			this.renderer.needRender = true;
 		}
+	},
+
+	getGid: function(x, y) 
+	{
+		var id = x + (y * this.tilesX);
+
+		if(id < 0) {
+			return 0;
+		}
+		if(id >= this.totalTiles) {
+			return 0;
+		}
+
+		return this.data[id];
 	},
 
 	gridFromWorldPos: function(worldX, worldY) 
@@ -290,6 +304,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 	},
 
 	//
+	name: "Undefined",
 	tilesX: 0,
 	tilesY: 0,
 	totalTiles: 0,
@@ -363,7 +378,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		this.tilesets.push(tileset);
 	},
 
-	createLayer: function(tilesX, tilesY, data)
+	createLayer: function(tilesX, tilesY, data, name)
 	{
 		var layer = new Entity.TilemapLayer();
 		layer.tilesX = tilesX;
@@ -374,6 +389,10 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		this.attach(layer);
 
 		layer.data = data;
+
+		if(name) {
+			layer.name = name;
+		}
 
 		return layer;
 	},
@@ -403,13 +422,16 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 			this.createTileset(tileset.firstgid, this.folderPath + tileset.image, tileset.tileWidth, tileset.tileHeight);
 		}
 
-		var layer;
+		var layer, layerInfo;
 		var layers = json.layers;
 		num = layers.length;
 		for(n = 0; n < num; n++)
 		{
-			layer = layers[n];
-			this.createLayer(layer.width, layer.height, layer.data);
+			layerInfo = layers[n];
+			layer = this.createLayer(layerInfo.width, layerInfo.height, layerInfo.data, layerInfo.name);
+			if(layerInfo.visible) {
+				layer.visible = layerInfo.visible;
+			}
 		}
 
 		if(this.numToLoad === 0) {
@@ -459,8 +481,15 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 
 	_parse_tmx_layer: function(node)
 	{
+		var name = node.getAttribute("name");
 		var tilesX = parseInt(node.getAttribute("width"));
 		var tilesY = parseInt(node.getAttribute("height"));
+
+		var visible = true;
+		var visibleStr = node.getAttribute("visible");
+		if(visibleStr) {
+			visible = parseInt(visible);
+		}
 
 		var dataNode = node.children[0];
 		var encoding = dataNode.getAttribute("encoding");
@@ -504,7 +533,27 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 			}
 		}
 
-		this.createLayer(tilesX, tilesY, data);
+		var layer = this.createLayer(tilesX, tilesY, data, name);
+		layer.visible = visible;
+	},
+
+	getLayer: function(name)
+	{
+		if(!name) {
+			return null;
+		}
+		if(!this.children) {
+			return null;
+		}
+
+		var num = this.children.length;
+		for(var n = 0; n < num; n++) {
+			if(this.children[n].name === name) {
+				return this.children[n];
+			}
+		}
+
+		return null;
 	},
 
 	LayerFlag: {
