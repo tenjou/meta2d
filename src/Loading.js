@@ -5,6 +5,7 @@ meta.controller("meta.loading",
 	onFirstLoad: function() 
 	{
 		this.view.z = Number.MAX_SAFE_INTEGER;
+		this.view.static = true;
 
 		var bgTexture = new Resource.SVG();
 		bgTexture.fillStyle = "#030303";

@@ -23,8 +23,10 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 
 		this.ctx.save();
 
+//		console.log("----")
+
 		var zoom = this.camera._zoom;
-		this.ctx.setTransform(zoom, 0, 0, zoom, -this.cameraVolume.x * zoom | 0, -this.cameraVolume.y * zoom | 0);
+		this.ctx.setTransform(zoom, 0, 0, zoom, -Math.floor(this.cameraVolume.x * zoom), -Math.floor(this.cameraVolume.y * zoom));
 
 		numEntities = this.entities.length;
 		for(i = 0; i < numEntities; i++) {
@@ -64,7 +66,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 						}
 						
 						this.drawVolume(entity);
-						this.ctx.setTransform(zoom, 0, 0, zoom, -this.cameraVolume.x * zoom | 0, -this.cameraVolume.y * zoom | 0);
+						this.ctx.setTransform(zoom, 0, 0, zoom, -Math.floor(this.cameraVolume.x * zoom), -Math.floor(this.cameraVolume.y * zoom));
 					}
 					else {				
 						this.drawVolume(entity);
@@ -93,6 +95,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 
 	drawEntity: function(entity)
 	{
+		
 		if(!entity._visible) { return; }
 
 		if(entity._static) 
@@ -115,7 +118,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 				this._drawEntity(entity);
 			}			
 			
-			this.ctx.setTransform(zoom, 0, 0, zoom, -this.cameraVolume.x * zoom | 0, -this.cameraVolume.y * zoom | 0);
+			this.ctx.setTransform(zoom, 0, 0, zoom, -Math.floor(this.cameraVolume.x * zoom), -Math.floor(this.cameraVolume.y * zoom));
 		}
 		else 
 		{
@@ -133,7 +136,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 	_drawEntity: function(entity)
 	{
 		var texture = entity._texture;
-		if(!texture) { return; }
+		if(!texture || !entity._texture._loaded) { return; }
 
 		var volume = entity.volume;
 		var anim = entity.anim;
@@ -145,22 +148,34 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 			this.ctx.beginPath();
 
 			if(entity.flags & this.entityFlags.CLIP_BOUNDS) {
-				this.ctx.rect(entity.volume.minX | 0, entity.volume.minY | 0, 
+				this.ctx.rect(Math.floor(entity.volume.minX), Math.floor(entity.volume.minY), 
 					entity.clipVolume.width, entity.clipVolume.height);
 			}
 			else {
-				this.ctx.rect(entity.clipVolume.minX | 0, entity.clipVolume.minY | 0, 
+				this.ctx.rect(Math.floor(entity.clipVolume.minX), Math.floor(entity.clipVolume.minY), 
 					entity.clipVolume.width, entity.clipVolume.height);
 			}
 
 			this.ctx.closePath();
 			this.ctx.clip();
-		}		
+		}
+		
+		if(entity.flags & entity.Flag.DYNAMIC_CLIP)
+		{
+			if(volume.width > 0 && volume.height > 0)
+			{
+				this.ctx.drawImage(texture.canvas, 
+					0, 0, volume.width, volume.height,
+					Math.floor(volume.minX), Math.floor(volume.minY), volume.width, volume.height);
+			}
+
+			return;
+		}
 
 		if(!volume.__transformed) 
 		{
 			if(texture.frames > 1) {
-				texture.drawFrame(this.ctx, volume.minX | 0, volume.minY | 0, anim._frame);
+				texture.drawFrame(this.ctx, Math.floor(volume.minX), Math.floor(volume.minY), anim._frame);
 			}
 			else 
 			{
@@ -168,10 +183,10 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 				{
 					this.ctx.drawImage(texture.ptr.canvas, 
 						texture.x, texture.y, texture.fullWidth, texture.fullHeight, 
-						volume.minX | 0, volume.minY | 0, texture.fullWidth, texture.fullHeight);
+						Math.floor(volume.minX), Math.floor(volume.minY), texture.fullWidth, texture.fullHeight);
 				}
 				else {
-					this.ctx.drawImage(texture.canvas, volume.minX | 0, volume.minY | 0);
+					this.ctx.drawImage(texture.canvas, Math.floor(volume.minX), Math.floor(volume.minY));
 				}
 			}
 		}
@@ -182,7 +197,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 			this.ctx.transform(
 				volume.m11, volume.m12, 
 				volume.m21, volume.m22,
-				volume.x | 0, volume.y | 0);
+				Math.floor(volume.x), Math.floor(volume.y));
 				
 			if(texture.frames > 1) {
 				texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, anim._frame);
@@ -203,7 +218,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 			this.ctx.globalAlpha = 1.0;
 			
 			var zoom = this.camera._zoom;
-			this.ctx.setTransform(zoom, 0, 0, zoom, -this.camera.volume.x * zoom | 0, -this.camera.volume.y * zoom | 0);
+			this.ctx.setTransform(zoom, 0, 0, zoom, -Math.floor(this.camera.volume.x * zoom), -Math.floor(this.camera.volume.y * zoom));
 		}
 
 		if(entity.clipVolume) {
@@ -225,9 +240,9 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		{
 			this.ctx.save();
 
-			this.ctx.translate(volume.x | 0, volume.y | 0);
+			this.ctx.translate(Math.floor(volume.x), Math.floor(volume.y));
 			this.ctx.rotate(entity.volume.angle);
-			this.ctx.translate(-volume.x | 0, -volume.y | 0);
+			this.ctx.translate(-Math.floor(volume.x), -Math.floor(volume.y));
 
 			this._drawVolume(volume);
 

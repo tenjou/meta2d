@@ -204,8 +204,8 @@ meta.engine =
 			this.controllersUpdate[n].onUpdate(tDelta);
 		}
 
-		this.meta.camera.update(tDelta);
 		this.meta.renderer.update(tDelta);
+		this.meta.camera.update(tDelta);
 	},
 
 	render: function()
@@ -268,7 +268,7 @@ meta.engine =
 				var index;
 				for(var n = 0; n < numRemove; n++) 
 				{
-					index = this.timers.indexOf(this.timersRemove[i]);
+					index = this.timers.indexOf(this.timersRemove[n]);
 					if(index < itemsLeft) {
 						this.timers.splice(index, 1);
 					}
@@ -524,6 +524,7 @@ meta.engine =
 
 	onFocusChange: function(value)
 	{
+		console.log("FOCUS CHANGE")
 		this.focus = value;
 		if(this.enablePauseOnBlur) {
 			this.pause = !value;
@@ -534,6 +535,7 @@ meta.engine =
 
 	onVisibilityChange: function()
 	{
+		console.log("VISIBILITY CHANGE")
 		if(document[meta.device.hidden]) {
 			this.onFocusChange(false);
 		}

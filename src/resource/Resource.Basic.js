@@ -19,12 +19,12 @@ meta.class("Resource.Basic",
 			this.tag = tag;
 		}	
 
-		if(this.onCreate) {
-			this.onCreate(data, tag);
+		if(this.onInit) {
+			this.onInit(data, tag);
 		}	
 	},
 
-	onCreate: null,
+	onInit: null,
 
 
 	/**
@@ -110,5 +110,8 @@ meta.class("Resource.Basic",
 
 	_loaded: false,
 	loading: false,
-	used: false
+	used: false,
+
+	steps: 1,
+	currStep: 0
 });

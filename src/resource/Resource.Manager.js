@@ -17,34 +17,13 @@ meta.class("Resource.Manager",
 
 		meta.subscribe(this, meta.Event.ADAPT, this.onAdapt);
 
-		// 
+		meta.audio = new Resource.AudioManager();
+
 		var self = this;
 		this._xhr = new XMLHttpRequest();
 		this._xhr.onreadystatechange = function() {
 			self._loadFileStateChange();
-		}
-
-		// Audio
-		var proto = Resource.Sound.prototype;
-		if(meta.device.isAudioAPI) 
-		{
-			proto._context = new AudioContext();
-
-			console.log("%cAudio: %cWebAudio ", 
-				"font-weight: bold; padding: 2px 0 2px 0;", 
-				"padding: 2px 0 2px 0;");	
-		}
-		else 
-		{
-			proto._loadFromUrl = proto._loadFromUrl_legacy;
-			proto._clear = proto._clear_legacy;
-			proto._createInstance = proto._createInstance_legacy;
-			proto._syncLoading = true;
-
-			console.log("%cAudio: %c<audio> ", 
-				"font-weight: bold; padding: 2px 0 1px 0; width: 500px;", 
-				"padding: 2px 0 1px 0;");				
-		}
+		};
 	},
 
 	/**
@@ -175,8 +154,9 @@ meta.class("Resource.Manager",
 		this.add(resource);
 		resource.loading = true;
 
-		this.numToLoad++;
-		this.numTotalToLoad++;
+		resource.currStep = 0;
+		this.numToLoad += resource.steps;
+		this.numTotalToLoad += resource.steps;
 	},
 
 	/**
@@ -191,6 +171,7 @@ meta.class("Resource.Manager",
 			this.resourcesInUse[resource.type] = subBuffer;
 		}
 		
+		resource.currStep++;
 		this.numLoaded++;
 
 		resource.loading = false;
@@ -207,11 +188,20 @@ meta.class("Resource.Manager",
 	 */
 	loadFailed: function(resource) 
 	{
-		resource.loading = false;
-
+		this.numLoaded += resource.steps - resource.currStep;
 		this._updateLoading();
+
+		resource.loading = false;
 	},
 
+	nextStep: function(resource) 
+	{
+		if(resource.currStep < resource.steps) {
+			resource.currStep++;
+			this.numLoaded++;
+			this._updateLoading();
+		}
+	},
 
 	getResource: function(name, type)
 	{

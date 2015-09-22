@@ -647,11 +647,33 @@ meta.class("Entity.Geometry",
 		this.renderer.needRender = true;
 	},
 
-	set width(width) {
+	set width(width) 
+	{
+		if(this.texture) 
+		{
+			if(this.volume.width !== width) {
+				this.flags |= this.Flag.DYNAMIC_CLIP;
+			}
+			else {
+				this.flags &= ~this.Flag.DYNAMIC_CLIP;
+			}
+		}
+
 		this.resize(width, this.volume.height);
 	},
 
-	set height(height) {
+	set height(height) 
+	{
+		if(this.texture) 
+		{
+			if(this.volume.height !== height) {
+				this.flags |= this.Flag.DYNAMIC_CLIP;
+			}
+			else {
+				this.flags &= ~this.Flag.DYNAMIC_CLIP;
+			}
+		}
+
 		this.resize(this.volume.width, height);
 	},
 
@@ -674,7 +696,7 @@ meta.class("Entity.Geometry",
 		if(clip instanceof Entity.Geometry) {
 			this.clipVolume = clip.volume;
 		}
-		else if(clip instanceof meta.Math.AABB) {
+		else if(clip instanceof meta.math.AABB) {
 			this.clipVolume = clip;
 		}
 		else {
@@ -1381,7 +1403,8 @@ meta.class("Entity.Geometry",
 		ADDED: 256,
 		DEBUG: 512,
 		CLIP_BOUNDS: 1024,
-		WILL_REMOVE: 2048
+		WILL_REMOVE: 2048,
+		DYNAMIC_CLIP: 4096
 	},
 
 	//

@@ -101,7 +101,7 @@ meta.View.prototype =
 		if(this._z !== 0) {
 			entity.updateZ();
 		}
-		if(this._static) {
+		if(this.flags & this.Flag.STATIC) {
 			entity.static = true;
 		}
 
@@ -407,10 +407,21 @@ meta.View.prototype =
 
 	set static(value) 
 	{
-		if((value && (this.flags & this.Flag.STATIC)) ||
-		   (!value && (this.flags & this.Flag.STATIC) === 0))
+		if(value) 
 		{
-			return;
+			if(this.flags & this.Flag.STATIC) {
+				return;
+			}
+
+			this.flags |= this.Flag.STATIC;
+		}
+		else 
+		{
+			if((this.flags & this.Flag.STATIC) === 0) {
+				return; 
+			}
+
+			this.flags &= ~this.Flag.STATIC;
 		}
 
 		var numEntities = this.entities.length;

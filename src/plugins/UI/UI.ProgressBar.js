@@ -4,6 +4,8 @@ meta.class("UI.ProgressBar", "Entity.Geometry",
 {
 	init: function(texture, fillTexture) 
 	{
+		this._super(texture);
+
 		var fill = new Entity.Geometry(fillTexture);
 		this.attach(fill);		
 		this.updateUnits();
@@ -11,8 +13,10 @@ meta.class("UI.ProgressBar", "Entity.Geometry",
 
 	updateProgress: function()
 	{
-		console.log(this._fillWidth);
-		var units = this._fillWidth 
+		var units = Math.floor((this._fillWidth / 100) * this._value);
+		var fill = this.children[0]; 
+		fill.width = units;
+		//this.children[0].width = 40;
 	},
 
 	updateUnits: function()
@@ -22,7 +26,6 @@ meta.class("UI.ProgressBar", "Entity.Geometry",
 		if(texture._loaded) {
 			this._fillWidth = texture.fullWidth
 		}
-
 	},
 
 	set min(value) 
@@ -43,10 +46,10 @@ meta.class("UI.ProgressBar", "Entity.Geometry",
 
 	set value(value) 
 	{
-		if(value < this._value) { 
+		if(value < this._min) { 
 			value = this._min; 
 		}
-		else if(value > this._value) { 
+		else if(value > this._max) { 
 			value = this._max;
 		}
 
@@ -80,7 +83,7 @@ meta.class("UI.ProgressBar", "Entity.Geometry",
 	//
 	_min: 0,
 	_max: 100,
-	_value: 0,
+	_value: 100,
 	_unit: 1,
 	_fillWidth: 1
 });

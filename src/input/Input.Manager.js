@@ -622,6 +622,7 @@ meta.class("Input.Manager",
 	 */
 	onFocus: function(data, event)
 	{
+		console.log("FOCUS", data)
 		if(data === false) {
 			this.resetInput();
 		}

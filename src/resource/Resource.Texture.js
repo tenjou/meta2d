@@ -28,7 +28,7 @@ meta.class("Resource.Texture", "Resource.Basic",
 	 * @param path {String=} Texture path.
 	 * @function
 	 */
-	onCreate: function(data, tag)
+	onInit: function(data, tag)
 	{
 		this.generate();
 
@@ -48,7 +48,10 @@ meta.class("Resource.Texture", "Resource.Basic",
 					this[key] = data[key];
 				}
 
-				if(this.framesX > 1 || this.framesY > 1) {
+				if(data.frames) {
+					this.animated = true;
+				}
+				else if(this.framesX > 1 || this.framesY > 1) {
 					this.frames = this.framesX * this.framesY;
 					this.animated = true;
 				}

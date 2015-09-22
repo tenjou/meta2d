@@ -26,8 +26,8 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 			endTileY = this.tilesY;
 		}
 
-		var minX = this.volume.minX + (startTileX * this.tileWidth);
-		var minY = this.volume.minY + (startTileY * this.tileHeight);
+		var minX = Math.floor(this.volume.minX + (startTileX * this.tileWidth));
+		var minY = Math.floor(this.volume.minY + (startTileY * this.tileHeight));
 
 		var id = 0, info;
 		var posX = minX | 0;
@@ -135,7 +135,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 					{
 						ctx.drawImage(info.canvas, 
 							info.posX, info.posY, this.tileWidth, this.tileHeight, 
-							posX, posY, this.tileWidth, this.tileHeight);
+							Math.floor(posX), Math.floor(posY), this.tileWidth, this.tileHeight);
 					}
 
 					posX += this.tileWidth;
@@ -491,7 +491,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 			visible = parseInt(visible);
 		}
 
-		var dataNode = node.children[0];
+		var dataNode = node.firstElementChild;
 		var encoding = dataNode.getAttribute("encoding");
 
 		var n;
@@ -504,7 +504,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 
 			if(encoding === "csv")
 			{
-				strData = dataNode.innerHTML.split(",");
+				strData = dataNode.textContent.split(",");
 				if(strData.length !== num) {
 					console.warn("(Entity.Tilemap._parse_tmx): Layer resolution does not match with data size");
 					return;

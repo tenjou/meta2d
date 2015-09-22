@@ -2,24 +2,28 @@
 
 meta.class("Resource.Sound", "Resource.Basic", 
 {
-	onCreate: function(data, tag)
+	onInit: function(data, tag)
 	{
 		this._instances = [];
 
 		// check if Web Audio API is supported:
 		var self = this;
-		if(meta.device.isAudioAPI)
+		if(meta.device.audioAPI)
 		{	
 			this._request = new XMLHttpRequest();
 			this._request.responseType = "arraybuffer";
 			this._request.onreadystatechange = function() {
 				self._onStateChange();
 			}
+
+			this._gainNode = meta.audio.context.createGain();
+			this._gainNode.connect(meta.audio.gainNode);
 		}
 		else 
 		{
 			this._context = this._getInstance();
-			this._context.audio.addEventListener("error", function() {
+			this._context.audio.addEventListener("error", function() 
+			{
 				if(!self.format) {
 					self._loadNextExtension();
 				}
@@ -30,21 +34,8 @@ meta.class("Resource.Sound", "Resource.Basic",
 			this._numInstancesUsed = 0;			
 		}
 
-		if(typeof(data) === "string")
-		{
-			var path;
-
-			// check if specific format is defined:
-			var wildCardIndex = data.lastIndexOf(".");
-			if(wildCardIndex !== -1 && (data.length - wildCardIndex) <= 5) {
-				this.format = data.substr(wildCardIndex + 1, data.length - wildCardIndex - 1);
-				path = meta.resources.rootPath + data.substr(0, wildCardIndex);
-			}
-			else {
-				path = meta.resources.rootPath + data;
-			}
-
-			this.load(path);
+		if(typeof(data) === "string") {
+			this.load(data);
 		}		
 	},
 
@@ -52,9 +43,18 @@ meta.class("Resource.Sound", "Resource.Basic",
 	{
 		if(this.loading) { return; }
 
+		// check if specific format is defined:
+		var wildCardIndex = path.lastIndexOf(".");
+		if(wildCardIndex !== -1 && (path.length - wildCardIndex) <= 5) {
+			this.format = path.substr(wildCardIndex + 1, path.length - wildCardIndex - 1);
+			this.path = meta.resources.rootPath + path.substr(0, wildCardIndex);
+		}
+		else {
+			this.path = meta.resources.rootPath + path;
+		}
+
 		this.loading = true;
 		this.loaded = false;
-		this.path = path;
 
 		meta.resources.addToLoad(this);
 		this._loadNextExtension();
@@ -62,7 +62,7 @@ meta.class("Resource.Sound", "Resource.Basic",
 
 	_loadNextExtension: function()
 	{
-		var url;
+		var path;
 		var formats = meta.device.audioFormats;
 		var numFormats = formats.length;
 
@@ -84,7 +84,7 @@ meta.class("Resource.Sound", "Resource.Basic",
 				return;
 			}
 
-			url = this.path + "." + this.format;
+			path = this.path + "." + this.format;
 		}
 		else
 		{
@@ -94,38 +94,36 @@ meta.class("Resource.Sound", "Resource.Basic",
 				return;
 			}
 
-			url = this.path + "." + meta.device.audioFormats[this._requestFormat - 1];
+			path = this.path + "." + meta.device.audioFormats[this._requestFormat - 1];
 		}
 
-		this._loadFromUrl(url);
+		this._loadFromPath(path);
 	},
 
+	//
+	_loadFromPath: null,
 
-	_loadFromUrl: function(url) {
-		this._request.open("GET", url, true);
+	_loadFromPath_WebAudio: function(path) 
+	{
+		this._request.open("GET", path, true);
 		this._request.send();
 	},
 
-	_loadFromUrl_legacy: function(url) {
-		this._context.audio.src = url;
+	_loadFromPath_Audio: function(path) 
+	{
+		this._context.audio.src = path;
 		this._context.audio.load();
-	},	
-
-
-	_clear: function() {
-		this._request.onreadystatechange = null;
-		this._request = null;
 	},
 
-	_clear_legacy: function() {},
-
-
+	//
 	_onStateChange: function()
 	{
 		if(this._request.readyState === 4)
 		{
 			if(this._request.status === 200) 
 			{
+				meta.resources.nextStep(this);
+
 				var self = this;
 				this._context.decodeAudioData(this._request.response, 
 					function(buffer) { self._onDecodeSuccess(buffer); },
@@ -142,8 +140,8 @@ meta.class("Resource.Sound", "Resource.Basic",
 					this._onLoadFailed();
 				}
 			}
-		}		
-	},
+		}        
+	},	
 
 	_onDecodeSuccess: function(buffer)
 	{
@@ -153,14 +151,15 @@ meta.class("Resource.Sound", "Resource.Basic",
 
 		this._buffer = buffer;
 		this._loading = false;
-		this._clear();
-	
+
 		this.loaded = true;
 		meta.resources.loadSuccess(this);
 
+		var instance;
 		var numInstances = this._instances.length;
 		for(var i = 0; i < numInstances; i++) {
-			this._createSource(this._instances[i]);
+			instance = this._instances[i];
+			instance.play();
 		}
 	},
 
@@ -173,7 +172,6 @@ meta.class("Resource.Sound", "Resource.Basic",
 		console.warn("(Resource.Sound.load) Error decoding file: " + this.path);
 
 		this._loading = false;
-		this._clear();
 		meta.resources.loadFailed(this);
 	},
 
@@ -190,64 +188,38 @@ meta.class("Resource.Sound", "Resource.Basic",
 		console.warn("(Resource.Sound.load) Error loading file: " + this.path);
 
 		this._loading = false;
-		this._clear();
 		meta.resources.loadFailed(this);
 	},	
 
+	onEnd: null,
 
-	// play: function(looping, time)
-	// {
-	// 	looping = looping || false;
-	// 	time = time || 0;
-
-	// 	var instance = this._getInstance();
-	// 	instance.looping = looping;
-
-	// 	if(!this._loaded) {
-	// 		return instance;
-	// 	}
-	// 	else {
-	// 		this._createSource(instance);
-	// 	}
-
-	// 	time += this._context.currentTime;
-	// 	instance.gainNode.gain.value = instance._mixedVolume;
-	// 	instance.source.loop = instance.looping;
-	// 	instance.source.start(0);
-
-	// 	return instance;
-	// },
-
-	// stop: function()
-	// {
-	// 	for(var i = 0; i < this._numInstancesUsed; i++) {
-	// 		this._instances[i].source.stop();
-	// 	}
-	// },
-
-	// pause: function()
-	// {
-		
-	// },
-
-
-	play: function(looping, time) 
+	play: function(looping, offset)
 	{
+		if(meta.device.audioAPI) {
+			this._gainNode.gain.value = this._volume;
+		}
+
 		var instance = this._getInstance();
-		instance.looping = looping || false;
-		instance.play(time);
+		instance.play(looping, offset);	
 	},
 
 	stop: function()
 	{
-		for(var i = 0; i < this._numInstancesUsed; i++) {
-			this._instances[i]._stop();
+		if(meta.device.audioAPI) {
+			this._gainNode.gain.value = 0;
 		}
-		this._numInstancesUsed = 0;
+
+		for(var i = 0; i < this._numInstancesUsed; i++) {
+			this._instances[i].stop();
+		}
 	},
 
 	pause: function()
 	{
+		if(meta.device.audioAPI) {
+			this._gainNode.gain.value = 0;
+		}
+
 		for(var i = 0; i < this._numInstancesUsed; i++) {
 			this._instances[i].pause();
 		}
@@ -255,54 +227,30 @@ meta.class("Resource.Sound", "Resource.Basic",
 
 	resume: function()
 	{
+		if(meta.device.audioAPI) {
+			this._gainNode.gain.value = this._volume;
+		}
+
 		for(var i = 0; i < this._numInstancesUsed; i++) {
 			this._instances[i].resume();
 		}
 	},	
 
+	//
+	_createInstance: null,
 
-	_createSource: function(instance) 
-	{
-		var gainNode = this._context.createGain();
-		gainNode.connect(this._context.destination);
-
-		var source = this._context.createBufferSource();
-		source.buffer = this._buffer;
-		source.loop = instance._loaded;
-		source.connect(gainNode);
-		if(!source.start) {
-			source.start = source.noteOn;
-		}	
-		if(!source.stop) {
-			source.stop = source.noteOff;
-		}		
-
-		var self = this;
-		source.onended = function() {
-			self._clearInstance(instance);
-		};				
-
-		instance.source = source;
-		instance.gainNode = gainNode;
-
-		return source;
-	},	
-
-
-	_createInstance: function() {
-		return new Resource.AudioInstance();
+	_createInstance_WebAudio: function() {
+		return new Resource.AudioInstance(this);
 	},
 
-	_createInstance_legacy: function() {
-		return new Resource.AudioInstance_legacy(this);
+	_createInstance_Audio: function() {
+		return new Resource.AudioInstance_Audio(this);
 	},
-
 
 	_getInstance: function()
 	{
 		if(this._instances.length === this._numInstancesUsed) {
-			this._instances.length += 1;
-			this._instances[this._numInstancesUsed] = this._createInstance();
+			this._instances.push(this._createInstance());
 		}
 
 		var instance = this._instances[this._numInstancesUsed];
@@ -319,17 +267,23 @@ meta.class("Resource.Sound", "Resource.Basic",
 		var lastInstance = this._instances[this._numInstancesUsed];
 		lastInstance.id = instance.id;
 		this._instances[instance.id] = lastInstance;
+		this._instances[this._numInstancesUsed] = instance;
 	},
-
 
 	set volume(value) 
 	{
 		if(this._volume === value) { return; }
 		this._volume = value;
 
-		var numInstances = this._instances.length;
-		for(var i = 0; i < numInstances; i++) {
-			this._instances[i].volume = value;
+		if(meta.device.audioAPI) {
+			this._gainNode.gain.value = value;
+		}
+		else
+		{
+			var numInstances = this._instances.length;
+			for(var i = 0; i < numInstances; i++) {
+				this._instances[i].volume = value;
+			}	
 		}
 	},
 
@@ -337,12 +291,74 @@ meta.class("Resource.Sound", "Resource.Basic",
 
 	get playing() 
 	{ 
-		if(this._numInstancesUsed > 0) {
-			return true;
+		var instance = this._instances[0];
+		if(!instance) {
+			return false;
 		}
-		return false;
+
+		return instance.playing;
 	},
 
+	get paused() 
+	{ 
+		var instance = this._instances[0];
+		if(!instance) {
+			return false;
+		}
+
+		return instance.paused;
+	},
+
+	get looping() 
+	{ 
+		var instance = this._instances[0];
+		if(!instance) {
+			return false;
+		}
+
+		return instance.looping;
+	},	
+
+	get duration() 
+	{
+		if(meta.device.audioAPI) 
+		{
+			if(this._buffer) { 
+				return this._buffer.duration; 
+			}
+			else 
+			{
+				var instance = this._instances[0];
+				if(!instance) {
+					return 0;
+				}
+
+				return instance.audio.duration;
+			}
+		}
+
+		return 0;
+	},
+
+	set currentTime(offset)
+	{
+		var instance = this._instances[0];
+		if(!instance) {
+			return;
+		}
+
+		instance.currentTime = offset;
+	},
+
+	get currentTime()
+	{
+		var instance = this._instances[0];
+		if(!instance) {
+			return 0;
+		}
+
+		return instance.currentTime;
+	},
 
 	//
 	type: Resource.Type.SOUND,
@@ -351,88 +367,222 @@ meta.class("Resource.Sound", "Resource.Basic",
 	_instances: null,
 	_numInstancesUsed: 0,
 
-	_autoLooping: false,
-	_autoTime: 0,
-
 	_context: null,
 	_buffer: null,
 
 	_request: null,
 	_requestFormat: 0,
 
-	_volume: 1.0,
-
-	_isInQueue: false,
-	_syncLoading: false
+	_gainNode: null,
+	_volume: 1.0
 });
 
-Resource.AudioInstance = function()
+Resource.AudioInstance = function(parent)
 {
+	this.parent = parent;
 	this.id = -1;
 	this.source = null;
-	this.gainNode = null;
-	this.auto;
-	this._volume = 1.0;
-	this._mixedVolume = 1.0;
+
+	this.looping = false;
+	this.paused = false;
+	this.playing = false;
+	this.offset = 0;
+
+	this.tStart = 0;
+	this.tPaused = 0;
+
+	var self = this;
+	this.onEndFunc = function() 
+	{
+		if(self.parent.onEnd) {
+			self.parent.onEnd(self.parent);
+		}
+
+		if(!self.paused) 
+		{
+			if(self.looping) {
+				self.play(true, 0);
+			}
+			else {
+				self.parent._clearInstance(self);
+			}
+		}
+	};
 };
 
 Resource.AudioInstance.prototype =
 {
-	set volume(value) {
-		this._mixedVolume = this._volume * value;
-		this.gainNode.gain.value = this._mixedVolume;
+	play: function(looping, offset)
+	{
+		looping = looping || false;
+		offset = offset || 0;
+
+		this.paused = false;
+
+		if(!this.parent._loaded) {
+			this.autoPlay = true;
+			this.looping = looping;
+			this.offset = offset;
+		}
+		else 
+		{
+			this.playing = true;
+
+			if(!this.autoPlay) {
+				this.looping = looping;
+				this.offset = offset;
+			}
+			else {
+				this.autoPlay = false;
+			}
+
+			if(this.offset < 0) {
+				this.offset = 0;
+			}
+			else if(this.offset > this.source.buffer.duration) {
+				this.offset = this.source.buffer.duration;
+			}			
+
+			this.source = meta.audio.context.createBufferSource();
+			this.source.buffer = this.parent._buffer;
+			this.source.connect(this.parent._gainNode);
+			this.source.onended = this.onEndFunc;
+			this.source.start(0, this.offset);
+
+			this.tStart = this.source.context.currentTime - this.offset;
+		}
 	},
 
-	get volume() { return this._volume; },
-	get mixedVolume() { return this._mixedVolume; }
+	stop: function()
+	{
+		if(!this.source) { return; }
+
+		this.paused = false;
+		this.looping = false;
+
+		this.source.stop(this.source.context.currentTime + 0.2);
+	},
+
+	pause: function()
+	{
+		if(this.paused) { return; }
+
+		this.paused = true;
+
+		if(this.playing) { 
+			this.tPaused = this.source.context.currentTime - this.tStart;
+		}
+		else {
+			this.tPaused = 0;
+		}
+
+		if(this.source) {
+			this.source.disconnect(this.parent._gainNode);
+			this.source.stop(0);
+		}
+	},
+
+	resume: function() {
+		this.play(this.looping, this.tPaused);
+	},
+
+	set currentTime(offset)
+	{
+		this.stop();
+		this.play(this.looping, offset);
+	},
+
+	get currentTime() 
+	{
+		if(!this.playing) {
+			return 0;
+		}
+
+		return this.source.context.currentTime - this.tStart;
+	},
+
+	//
+	autoPlay: false
 };
 
-Resource.AudioInstance_legacy = function(parent)
+Resource.AudioInstance_Audio = function(parent)
 {
-	this.id = -1;
 	this.parent = parent;
-	this.playing = false;
-	this.looping = false;
-	this._canPlay = false;
-	this._metaLoaded = false;
-	this._loaded = false;
+	this.id = -1;
 
-	this._volume = 1.0;
-	this._mixedVolume = 1.0;	
+	this.looping = false;
+	this.paused = false;
+	this.playing = false;
+	this.offset = 0;
 
 	this.audio = new Audio();
 	this.audio.preload = "auto";
 
+	//
+	this._canPlay = false;
+	this._metaLoaded = false;
+	this._loaded = false;
+
+	var self = this;
+	this._canPlayFunc = function() {
+		self.audio.removeEventListener("canplaythrough", self._canPlayFunc);
+		self._canPlay = true;
+		if(meta.device.support.onloadedmetadata && self._metaLoaded) {
+			self._onLoaded();
+		}		
+	};
+
+	this._metaFunc = function() {
+		self.audio.removeEventListener("loadedmetadata", self._metaFunc);
+		self._metaLoaded = true;
+		if(self.canPlay) {
+			self._onLoaded();
+		}
+	};
+
+	this._onEndedFunc = function() { 
+		self._onEnd();
+	};
+
 	this._addEvents(parent);
 };
 
-Resource.AudioInstance_legacy.prototype =
+Resource.AudioInstance_Audio.prototype =
 {
-	play: function(time) 
+	play: function(looping, offset) 
 	{
-		this.playing = true;
+		looping = looping || false;
+		offset = offset || 0;
 
-		this._loaded = true;
-		if(this._loaded) {
-			this.audio.currentTime = time || 0;
+		this.paused = false;
+
+		if(!this._loaded) {
+			this.autoPlay = true;
+			this.looping = looping;
+			this.offset = offset;
+		}
+		else 
+		{
+			this.playing = true;
+
+			if(!this.autoPlay) {
+				this.looping = looping;
+				this.offset = offset;
+			}
+			else {
+				this.autoPlay = false;
+			}
+
+			this.audio.currentTime = this.offset;
 			this.audio.play();
 		}
-		else {
-			this._autoPlay = true;
-		}
 	},
 
-	stop: function() {
+	stop: function() 
+	{
 		this.playing = false;
-		this.looping = false;
 		this.audio.pause();
 		this.parent._clearInstance(this);
-	},
-
-	_stop: function() {
-		this.playing = false;
-		this.looping = false;
-		this.audio.pause();
 	},
 
 	pause: function() {
@@ -445,38 +595,18 @@ Resource.AudioInstance_legacy.prototype =
 		this.audio.play();
 	},
 
-
 	_addEvents: function() 
 	{
-		var self = this;
+		this.audio.addEventListener("canplaythrough", this._canPlayFunc, false);
 
-		var canPlayFunc = function() {
-			self.audio.removeEventListener("canplaythrough", canPlayFunc);
-			self._canPlay = true;
-			if(meta.device.support.onloadedmetadata && self._metaLoaded) {
-				self._onLoaded();
-			}		
-		};
-		this.audio.addEventListener("canplaythrough", canPlayFunc, false);
-
-		if(meta.device.support.onloadedmetadata)
-		{
-			var metaFunc = function() {
-				self.audio.removeEventListener("loadedmetadata", metaFunc);
-				self._metaLoaded = true;
-				if(self._canPlay) {
-					self._onLoaded();
-				}
-			};
-			this.audio.addEventListener("loadedmetadata", metaFunc, false);			
+		if(meta.device.support.onloadedmetadata) {			
+			this.audio.addEventListener("loadedmetadata", this._metaFunc, false);			
 		}
 
-		this.audio.addEventListener("ended", function() { 
-			self._onEnd(); 
-		}, false);
+		this.audio.addEventListener("ended", this._onEndedFunc, false);
 
 		if(this.parent._loaded) {
-			this.audio.src = this.parent.path;
+			this.audio.src = this.parent.fullPath;
 			this.audio.load();
 		}		
 	},
@@ -491,13 +621,14 @@ Resource.AudioInstance_legacy.prototype =
 
 			this.parent._loading = false;
 			this.parent.loaded = true;
+			this.parent.fullPath = this.parent.path + "." + this.parent.format;
 
 			var instance;
 			var instances = this.parent._instances;
 			var numInstances = this.parent._instances.length;
 			for(var i = 1; i < numInstances; i++) {
 				instance = instances[i];
-				instance.audio.src = this.parent.path;
+				instance.audio.src = this.parent.fullPath;
 				instance.audio.load();
 			}			
 
@@ -506,15 +637,14 @@ Resource.AudioInstance_legacy.prototype =
 		}
 
 		this._loaded = true;
-		if(this._autoPlay) {
-			this.audio.play();
+		if(this.autoPlay) {
+			this.play(false, 0);
 		}
 	},
 
 	_onEnd: function()
 	{
 		if(this.looping) {
-			
 			this.audio.play();
 			this.audio.currentTime = 0;
 		}
@@ -526,7 +656,6 @@ Resource.AudioInstance_legacy.prototype =
 			}
 		}
 	},
-
 
 	set currentTime(time)
 	{
@@ -544,20 +673,12 @@ Resource.AudioInstance_legacy.prototype =
 		return this.audio.currentTime;
 	},
 
-
 	set volume(value) 
 	{
-		if(value > 1.0) { value = 1.0; }
-		else if(value < 0.0) { value = 0.0; }
-
-		this._mixedVolume = this._volume * value;
-		this.audio.volume = this._mixedVolume;
+		var mixedVolume = value * meta.audio._volume;
+		this.audio.volume = mixedVolume;
 	},
 
-	get volume() { return this._volume; },
-	get mixedVolume() { return this._mixedVolume; },
-
-
 	//
-	_autoPlay: false
+	autoPlay: false
 };

@@ -22,7 +22,7 @@ meta.Device = function()
 
 	this.mobile = false;
 	this.isPortrait = false;
-	this.isAudioAPI = false;
+	this.audioAPI = false;
 
 	this.hidden = null;
 	this.visibilityChange = null;
@@ -130,6 +130,10 @@ meta.Device.prototype =
 	 */
 	modernize: function()
 	{
+		if(!Number.MAX_SAFE_INTEGER) {
+			Number.MAX_SAFE_INTEGER = 9007199254740991;
+		}
+
 		this.supportConsole();
 		this.supportPageVisibility();
 		this.supportFullScreen();
@@ -334,9 +338,9 @@ meta.Device.prototype =
 				window.msAudioContext;
 		}
 
-		// if(window.AudioContext) {
-		// 	this.isAudioAPI = true;
-		// }
+		if(window.AudioContext) {
+			this.audioAPI = true;
+		}
 	}
 };
 

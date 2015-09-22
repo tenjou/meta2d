@@ -78,8 +78,8 @@ meta.Camera.prototype =
 		if(!this._followEntity) { return; }
 
 		var entityVolume = this._followEntity.volume;
-		var cameraX = Math.floor(entityVolume.x - Math.floor(this.volume.width / 2));
-		var cameraY = Math.floor(entityVolume.y - Math.floor(this.volume.height / 2));
+		var cameraX = (Math.floor(entityVolume.x) - Math.floor(this.volume.width / 2));
+		var cameraY = (Math.floor(entityVolume.y) - Math.floor(this.volume.height / 2));
 		this.position(cameraX, cameraY);
 	},
 

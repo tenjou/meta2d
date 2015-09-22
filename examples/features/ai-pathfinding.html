@@ -52,7 +52,7 @@
                 tilemap.createTileset(2, wallTexture);
                 tilemap.createTileset(3, playerTexture);
                 layer = tilemap.createLayer(generator.cellsX, generator.cellsY, generator.data);
-                layer.setTile(playerCellX, playerCellY, 3);
+                layer.setGid(playerCellX, playerCellY, 3);
                 layer.saveData();
                 meta.view.attach(tilemap);
 
@@ -74,12 +74,10 @@
                     var num = path.length;
                     for(var n = 0; n < num; n++) {
                         var node = path.pop();
-                        layer.setTile(node.x, node.y, 3);
+                        layer.setGid(node.x, node.y, 3);
                     }
                 }
             };
-
-
         </script>
     </body>
 </html>

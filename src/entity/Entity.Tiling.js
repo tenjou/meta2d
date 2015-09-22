@@ -51,7 +51,7 @@ meta.class("Entity.Tiling", "Entity.Geometry",
 		}
 
 		if(typeof(texture) === "string") {
-			this.tileTexture = meta.getTexture(texture);
+			this.tileTexture = meta.resources.getTexture(texture);
 			if(!this.tileTexture) {
 				console.warn("(Entity.Tiling.tile) Could not find texture with a name - " + texture);
 				return;

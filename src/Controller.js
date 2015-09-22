@@ -61,7 +61,7 @@ meta.class("meta.Controller",
 			}
 		}
 
-		this.view.visible = false;
+		meta.cache.view.detachView(this.view);
 		this.flags &= ~(this.Flag.LOADED | this.Flag.READY);	
 	},
 
