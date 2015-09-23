@@ -38,7 +38,7 @@ meta.class("Resource.Font", "Resource.Basic",
 		meta.resources.addToLoad(this);
 
 		this.texture = new Resource.Texture(path);
-		this.texture.subscribe(this, this._onTextureEvent);
+		this.texture.subscribe(this._onTextureEvent, this);
 
 		var self = this;
 		meta.ajax({

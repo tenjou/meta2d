@@ -48,7 +48,7 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 			this.texture = new Resource.Texture(this.texture);
 		}
 
-		this.texture.subscribe(this, this._onTextureEvent);	
+		this.texture.subscribe(this._onTextureEvent, this);	
 
 		var self = this;
 		var atlasPath = this.path + "." + this.format;

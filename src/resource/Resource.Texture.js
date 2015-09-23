@@ -378,7 +378,7 @@ meta.class("Resource.Texture", "Resource.Basic",
 
 				this._loadCache = { name: "drawOver", texture: texture, x: x, y: y };
 				this.isLoaded = false;
-				texture.subscribe(this, this.onTextureCacheEvent);
+				texture.subscribe(this.onTextureCacheEvent, this);
 				return;	
 			}		
 		}

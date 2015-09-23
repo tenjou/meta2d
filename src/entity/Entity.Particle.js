@@ -210,7 +210,7 @@ meta.class("Entity.ParticleEmitter", "Entity.Geometry",
 			this.updateTintCanvas();
 		}
 		else {
-			this.texture.subscribe(this, this.onTextureEvent);
+			this.texture.subscribe(this.onTextureEvent, this);
 		}
 	},
 

@@ -118,7 +118,7 @@ meta.class("Entity.Text", "Entity.Geometry",
 
 			if(!fontResource._loaded) {
 				this._texture.clear();
-				fontResource.subscribe(this, this._onFontEvent);
+				fontResource.subscribe(this._onFontEvent, this);
 				return;
 			}
 		}

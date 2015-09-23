@@ -355,10 +355,10 @@ meta.Camera.prototype =
 		var events = [ Input.Event.DOWN, Input.Event.UP, Input.Event.MOVE ];
 
 		if(value) {
-			meta.subscribe(this, events, this._onInput);
+			meta.subscribe(events, this._onInput, this);
 		}
 		else {
-			meta.unsubscribe(this, events);
+			meta.unsubscribe(events, this);
 			this._dragging = false;
 		}
 	},

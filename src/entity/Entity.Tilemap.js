@@ -667,7 +667,7 @@ meta.Tileset.prototype =
 
 		if(!this._texture.loaded) {
 			this.parent.numToLoad++;
-			this._texture.subscribe(this, this._onTextureEvent);
+			this._texture.subscribe(this._onTextureEvent, this);
 		}
 		else {
 			this.updateTexture();

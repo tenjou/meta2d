@@ -62,7 +62,7 @@ meta.class("Entity.Tiling", "Entity.Geometry",
 		}
 
 		if(!this.tileTexture._loaded) {
-			this.tileTexture.subscribe(this, this.onTextureEvent);
+			this.tileTexture.subscribe(this.onTextureEvent, this);
 			return;
 		}
 
@@ -80,10 +80,10 @@ meta.class("Entity.Tiling", "Entity.Geometry",
 		
 		var follow = opts.follow || false;
 		if(follow !== this.follow) {
-			meta.subscribe(this, meta.Event.CAMERA_MOVE, this.onResize);	
+			meta.subscribe(meta.Event.CAMERA_MOVE, this.onResize, this);	
 		}
 		else {
-			meta.unsubscribe(this, meta.Event.CAMERA_MOVE);
+			meta.unsubscribe(meta.Event.CAMERA_MOVE, this);
 		}
 		this.follow = follow;
 

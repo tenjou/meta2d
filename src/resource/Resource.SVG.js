@@ -161,9 +161,9 @@ meta.class("Resource.SVG", "Resource.Texture",
 			this.loaded = false;
 
 			var self = this;
-			texture.subscribe(this, function(data, event) {
+			texture.subscribe(function(data, event) {
 				self.tileAuto(texture, center, offsetX, offsetY);
-			});
+			}, this);
 			return;
 		}
 
@@ -220,9 +220,9 @@ meta.class("Resource.SVG", "Resource.Texture",
 			this.loaded = false;
 
 			var self = this;
-			texture.subscribe(this, function(data, event) {
+			texture.subscribe(function(data, event) {
 				self.tile(data, numX, numY, offsetX, offsetY);
-			});
+			}, this);
 			return;
 		}
 
