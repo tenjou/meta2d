@@ -159,7 +159,9 @@ meta.class("Resource.Sound", "Resource.Basic",
 		var numInstances = this._instances.length;
 		for(var i = 0; i < numInstances; i++) {
 			instance = this._instances[i];
-			instance.play();
+			if(instance.autoPlay) {
+				instance.play();
+			}
 		}
 	},
 
@@ -401,6 +403,7 @@ Resource.AudioInstance = function(parent)
 		if(!self.paused) 
 		{
 			if(self.looping) {
+				self.source.disconnect();
 				self.play(true, 0);
 			}
 			else {
@@ -414,6 +417,8 @@ Resource.AudioInstance.prototype =
 {
 	play: function(looping, offset)
 	{
+		console.log("PLAY", this.parent.path);
+
 		looping = looping || false;
 		offset = offset || 0;
 

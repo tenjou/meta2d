@@ -25,6 +25,7 @@ cat meta.js \
 	math/Random.js \
 	resource/Enum.js \
 	resource/Resource.Manager.js \
+	resource/Resource.AudioManager.js \
 	resource/Resource.Basic.js \
 	resource/Resource.Texture.js \
 	resource/Resource.Sound.js \
