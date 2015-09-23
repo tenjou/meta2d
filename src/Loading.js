@@ -42,13 +42,13 @@ meta.controller("meta.loading",
 	},
 
 	onLoad: function() {
-		meta.subscribe(this, meta.Event.CAMERA_RESIZE, this.onResize);
-		meta.subscribe(this, Resource.Event.LOADING_UPDATE, this.onResourceLoaded);
+		meta.camera.onResize.add(this.onResize, this);
+		meta.resources.onLoadingUpdate.add(this.onResourceLoaded, this);
 	},
 
 	onUnload: function() {
-		meta.unsubscribe(this, meta.Event.CAMERA_RESIZE);
-		meta.unsubscribe(this, Resource.Event.LOADING_UPDATE);
+		meta.camera.onResize.remove(this);
+		meta.resources.onLoadingUpdate.remove(this);
 	},
 
 	onResize: function(data){

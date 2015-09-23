@@ -35,7 +35,7 @@ meta.class("Input.Manager",
 
 		this._addEventListeners();
 		this._loadIgnoreKeys();
-		meta.subscribe(this, meta.Event.FOCUS, this.onFocus);
+		meta.engine.onBlur.add(this.resetInput, this);
 
 		this.keyID = new Array(numTotalKeys);
 		var keyEnum = Input.Key;
@@ -47,15 +47,13 @@ meta.class("Input.Manager",
 	/** Add all DOM input event listeners. */
 	_addEventListeners: function()
 	{
-		this.chn = {
-			keyDown: meta.createChannel(Input.Event.KEY_DOWN),
-			keyUp: meta.createChannel(Input.Event.KEY_UP),
-			inputDown: meta.createChannel(Input.Event.DOWN),
-			inputUp: meta.createChannel(Input.Event.UP),
-			inputMove: meta.createChannel(Input.Event.MOVE),
-			inputClick: meta.createChannel(Input.Event.CLICK),
-			inputDbClick: meta.createChannel(Input.Event.DBCLICK)
-		};
+		this.onKeyDown = meta.createChannel(Input.Event.KEY_DOWN);
+		this.onKeyUp = meta.createChannel(Input.Event.KEY_UP);
+		this.onDown =  meta.createChannel(Input.Event.DOWN);
+		this.onUp = meta.createChannel(Input.Event.UP);
+		this.onMove = meta.createChannel(Input.Event.MOVE);
+		this.onClick = meta.createChannel(Input.Event.CLICK);
+		this.onDbClick = meta.createChannel(Input.Event.DBCLICK);
 
 		var self = this;
 		window.addEventListener("mousedown", function(event) { self.handleMouseDown(event); });
@@ -133,7 +131,7 @@ meta.class("Input.Manager",
 		this._event.y = 0;
 		this._event.keyCode = keyCode;
 
-		this.chn.keyDown.emit(this._event, Input.Event.KEY_DOWN);
+		this.onKeyDown.emit(this._event, Input.Event.KEY_DOWN);
 
 		// Callbacks:
 		if(this._onDownCBS && this._onDownCBS[keyCode]) 
@@ -152,7 +150,7 @@ meta.class("Input.Manager",
 				var self = this;
 				this._inputTimer = meta.addTimer(this, function() {
 					self._event.keyCode = self._repeatKey;
-					self.chn.keyDown.emit(self._event, Input.Event.KEY_DOWN);
+					self.onKeyDown.emit(self._event, Input.Event.KEY_DOWN);
 				}, this.keyRepeat);
 			}
 
@@ -207,7 +205,7 @@ meta.class("Input.Manager",
 		this._event.y = 0;
 		this._event.keyCode = keyCode;
 
-		this.chn.keyUp.emit(this._event, Input.Event.KEY_UP);
+		this.onKeyUp.emit(this._event, Input.Event.KEY_UP);
 
 		// Callbacks:
 		if(this._onUpCBS && this._onUpCBS[keyCode]) 
@@ -260,7 +258,7 @@ meta.class("Input.Manager",
 		this._event.y = this.y;
 		this._event.keyCode = keyCode;
 
-		this.chn.inputDown.emit(this._event, Input.Event.DOWN);
+		this.onDown.emit(this._event, Input.Event.DOWN);
 
 		// Callbacks:
 		if(this._onDownCBS && this._onDownCBS[keyCode]) 
@@ -311,8 +309,8 @@ meta.class("Input.Manager",
 		this._event.y = this.y;
 		this._event.keyCode = keyCode;
 
-		this.chn.inputUp.emit(this._event, Input.Event.UP);
-		this.chn.inputClick.emit(this._event, Input.Event.CLICK);
+		this.onUp.emit(this._event, Input.Event.UP);
+		this.onClick.emit(this._event, Input.Event.CLICK);
 
 		// Callbacks:
 		if(this._onUpCBS && this._onUpCBS[keyCode]) 
@@ -353,7 +351,7 @@ meta.class("Input.Manager",
 		this._event.y = this.y;
 		this._event.keyCode = -1;
 
-		this.chn.inputMove.emit(this._event, Input.Event.MOVE);
+		this.onMove.emit(this._event, Input.Event.MOVE);
 		this._event.entity = null;
 	},
 
@@ -393,7 +391,7 @@ meta.class("Input.Manager",
 		this._event.y = this.y;
 		this._event.keyCode = keyCode;
 
-		this.chn.inputDbClick.emit(this._event, Input.Event.DBCLICK);
+		this.onDbClick.emit(this._event, Input.Event.DBCLICK);
 
 		// Callbacks:
 		if(this._onUpCBS && this._onUpCBS[keyCode]) 
@@ -466,7 +464,7 @@ meta.class("Input.Manager",
 				this.y = y;
 			}
 
-			this.chn.inputDown.emit(this._event, Input.Event.DOWN);
+			this.onDown.emit(this._event, Input.Event.DOWN);
 
 			// Callbacks:
 			if(this._onDownCBS && this._onDownCBS[keyCode]) 
@@ -545,8 +543,8 @@ meta.class("Input.Manager",
 			this._event.y = y;
 			this._event.keyCode = id;
 
-			this.chn.inputDown.emit(this._event, Input.Event.UP);
-			this.chn.inputClick.emit(this._event, Input.Event.CLICK);
+			this.onDown.emit(this._event, Input.Event.UP);
+			this.onClick.emit(this._event, Input.Event.CLICK);
 
 			// Callbacks:
 			if(this._onUpCBS && this._onUpCBS[keyCode]) 
@@ -610,21 +608,8 @@ meta.class("Input.Manager",
 			this._event.y = y;
 			this._event.keyCode = keyCode;
 
-			this.chn.inputMove.emit(this._event, Input.Event.MOVE);
+			this.onMove.emit(this._event, Input.Event.MOVE);
 			this._event.entity = null;
-		}
-	},
-
-	/**
-	 * @description Callback onFocus.
-	 * @param event {meta.Event.FOCUS} Type of event.
-	 * @param data {boolean} Flag if window is focused.
-	 */
-	onFocus: function(data, event)
-	{
-		console.log("FOCUS", data)
-		if(data === false) {
-			this.resetInput();
 		}
 	},
 
@@ -651,7 +636,7 @@ meta.class("Input.Manager",
 			if(this.keys[i]) {
 				this.keys[i] = 0;
 				this._event.keyCode = i;
-				this.chn.keyUp.emit(this._event, Input.Event.KEY_UP);
+				this.onKeyUp.emit(this._event, Input.Event.KEY_UP);
 			}
 		}
 
@@ -665,7 +650,7 @@ meta.class("Input.Manager",
 		{
 			for(i = 0; i < this.numTouches; i++) {
 				this._event.keyCode = i;
-				this.chn.inputUp.emit(this._event, Input.Event.UP);
+				this.onUp.emit(this._event, Input.Event.UP);
 			}
 
 			this.touches.length = 0;
@@ -852,8 +837,16 @@ meta.class("Input.Manager",
 	},
 
 	//
+	onKeyDown: null,
+	onKeyUp: null,
+	onDown: null,
+	onUp: null,
+	onMove: null,
+	onClick: null,
+	onDbClick: null,
+
+	//
 	engine: meta.engine,
-	chn: null,
 
 	keyID: null,
 

@@ -37,10 +37,11 @@ meta.Camera = function()
 	this._centerY = true;
 	this._worldBounds = false;
 
-	this._chnMove = null;
-	this._chnResize = null;
-
 	this._followEntity = null;
+
+	//
+	this.onResize = meta.createChannel(meta.Event.CAMERA_RESIZE);
+	this.onMove = meta.createChannel(meta.Event.CAMERA_MOVE);
 
 	//
 	this.init();
@@ -50,11 +51,8 @@ meta.Camera.prototype =
 {
 	init: function()
 	{
-		this._chnMove = meta.createChannel(meta.Event.CAMERA_MOVE);
-		this._chnResize = meta.createChannel(meta.Event.CAMERA_RESIZE);
-
-		meta.subscribe(this, meta.Event.RESIZE, this._onResize);
-		meta.subscribe(this, meta.Event.WORLD_RESIZE, this._onWorldResize);
+		meta.engine.onResize.add(this._onResize, this);
+		meta.subscribe(meta.Event.WORLD_RESIZE, this._onWorldResize, this);
 
 		this.zoomBounds = {
 			width: -1, height: -1,
@@ -68,9 +66,9 @@ meta.Camera.prototype =
 	 */
 	release: function() 
 	{
-		this._chnMove.release();
-		meta.unsubscribe(this, meta.Event.RESIZE);
-		meta.unsubscribe(this, meta.Event.WORLD_RESIZE);
+		this.onMove.release();
+		meta.engine.onResize.remove(this);
+		meta.world.onResize.remove(this);
 	},
 
 	update: function(tDelta)
@@ -126,10 +124,10 @@ meta.Camera.prototype =
 		}
 		
 		if(this._wasResized) {
-			this._chnResize.emit(this, meta.Event.CAMERA_RESIZE);
+			this.onResize.emit(this, meta.Event.CAMERA_RESIZE);
 			this._wasResized = false;
 		}
-		this._chnMove.emit(this, meta.Event.CAMERA_MOVE);
+		this.onMove.emit(this, meta.Event.CAMERA_MOVE);
 	},
 
 	updateZoom: function() 
@@ -282,7 +280,7 @@ meta.Camera.prototype =
 
 		this.volume.move(-diffX, -diffY);
 
-		this._chnMove.emit(this, scope.Event.CAMERA_MOVE);
+		this.onMove.emit(this, scope.Event.CAMERA_MOVE);
 		scope.renderer.needRender = true;
 	},
 

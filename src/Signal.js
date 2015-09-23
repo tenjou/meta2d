@@ -12,7 +12,7 @@ meta.Channel = function(name)
 	this.subs = [];
 	this.numSubs = 0;
 
-	this._isEmiting = false;
+	this._emitting = false;
 	this._subsToRemove = null;
 };
 
@@ -32,7 +32,7 @@ meta.Channel.prototype =
 	 */
 	emit: function(data, event)
 	{
-		this._isEmiting = true;
+		this._emitting = true;
 
 		var sub;
 		for(var i = 0; i < this.numSubs; i++) {
@@ -40,7 +40,7 @@ meta.Channel.prototype =
 			sub.func.call(sub.owner, data, event);
 		}
 
-		this._isEmiting = false;
+		this._emitting = false;
 
 		// Remove subs from this channel that offd while emited.
 		if(this._subsToRemove) 
@@ -59,7 +59,7 @@ meta.Channel.prototype =
 	 * @param owner {Object} Pointer to the owner object.
 	 * @param func {Function} Callback function.
 	 */
-	subscribe: function(owner, func, priority)
+	add: function(func, owner, priority)
 	{
 		priority = priority || 0;
 
@@ -93,9 +93,9 @@ meta.Channel.prototype =
 	 * Unsubscribe from the channel.
 	 * @param owner {Object} Pointer to the owner object.
 	 */
-	unsubscribe: function(owner)
+	remove: function(owner)
 	{
-		if(this._isEmiting) 
+		if(this._emitting) 
 		{
 			if(!this._subsToRemove) {
 				this._subsToRemove = [];
@@ -119,6 +119,11 @@ meta.Channel.prototype =
 		if(this._havePriority) {
 			this.subs.sort(this._sortFunc);
 		}		
+	},
+
+	removeAll: function() {
+		this.subs = [];
+		this.numSubs = 0;
 	},
 
 	_sortFunc: function(a, b) {
@@ -182,7 +187,7 @@ meta.releaseChannel = function(name)
  * @param func {Function} Callback function that will be called when emit arrives.
  * @memberof! <global>
  */
-meta.subscribe = function(owner, channel, func, priority)
+meta.subscribe = function(channel, func, owner, priority)
 {
 	if(typeof(owner) !== "object") {
 		console.warn("(meta.subscribe) No owner passed.");
@@ -211,7 +216,7 @@ meta.subscribe = function(owner, channel, func, priority)
 	{
 		var numChannels = channel.length;
 		for(var i = 0; i < numChannels; i++) {
-			meta.subscribe(owner, channel[i], func, priority);
+			meta.subscribe(channel[i], func, owner, priority);
 		}
 		return;
 	}
@@ -220,7 +225,7 @@ meta.subscribe = function(owner, channel, func, priority)
 		return;
 	}
 
-	channel.subscribe(owner, func, priority);
+	channel.add(func, owner, priority);
 };
 
 /**
@@ -229,7 +234,7 @@ meta.subscribe = function(owner, channel, func, priority)
  * @param channel {meta.Channel|String|Array} Name, object or array of the channels to unsubscribe from.
  * @memberof! <global>
  */
-meta.unsubscribe = function(owner, channel)
+meta.unsubscribe = function(channel, owner)
 {
 	if(typeof(channel) === "string")
 	{
@@ -243,7 +248,7 @@ meta.unsubscribe = function(owner, channel)
 	{
 		var numChannels = channel.length;
 		for(var i = 0; i < numChannels; i++) {
-			meta.unsubscribe(owner, channel[i]);
+			meta.unsubscribe(channel[i], owner);
 		}
 		return;
 	}
@@ -252,7 +257,7 @@ meta.unsubscribe = function(owner, channel)
 		return;
 	}
 
-	channel.unsubscribe(owner);
+	channel.remove(owner);
 };
 
 /**

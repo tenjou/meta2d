@@ -18,21 +18,19 @@ meta.engine =
 			this._addMetaTags();
 		}
 
-		// Channels:
-		this.chn = {
-			resize: meta.createChannel(meta.Event.RESIZE),
-			adapt: meta.createChannel(meta.Event.FULLSCREEN),
-			focus: meta.createChannel(meta.Event.FOCUS),
-			fullScreen: meta.createChannel(meta.Event.FULLSCREEN),
-			debug: meta.createChannel(meta.Event.DEBUG)
-		};
+		this.onResize = meta.createChannel(meta.Event.RESIZE);
+		this.onAdapt = meta.createChannel(meta.Event.ADAPT);
+		this.onBlur = meta.createChannel(meta.Event.BLUR);
+		this.onFocus = meta.createChannel(meta.Event.FOCUS);
+		this.onFullscreen = meta.createChannel(meta.Event.FULLSCREEN);
+		this.onDebug = meta.createChannel(meta.Event.DEBUG);
 
 		// Callbacks:
 		var self = this;
 		this.cb = {
-			resize: function(event) { self.onResize(); },
-			focus: function(event) { self.onFocusChange(true); },
-			blur: function(event) { self.onFocusChange(false); }
+			resize: function(event) { self.updateResolution(); },
+			focus: function(event) { self.handleFocus(true); },
+			blur: function(event) { self.handleFocus(false); }
 		};
 
 		window.addEventListener("resize", this.cb.resize, false);
@@ -40,13 +38,12 @@ meta.engine =
 
 		// Page Visibility API:
 		if(meta.device.hidden) {
-			this.cb.visibilityChange = function() { self.onVisibilityChange(); };
+			this.cb.visibilityChange = function() { self.handleVisibilityChange(); };
 			document.addEventListener(meta.device.visibilityChange, this.cb.visibilityChange);
 		}
-		else {
-			window.addEventListener("focus", this.cb.focus);
-			window.addEventListener("blur", this.cb.blur);
-		}	
+
+		window.addEventListener("focus", this.cb.focus);
+		window.addEventListener("blur", this.cb.blur);		
 
 		// Fullscreen API:
 		if(meta.device.support.fullScreen) {
@@ -54,17 +51,18 @@ meta.engine =
 			document.addEventListener(meta.device.fullScreenOnChange, this.cb.fullscreen);
 		}
 
-		meta.subscribe(this, Resource.Event.LOADING_START, this.onLoadingStart);
-		meta.subscribe(this, Resource.Event.LOADING_END, this.onLoadingEnd);
-
-		meta.world = new meta.World(0, 0);
 		meta.camera = new meta.Camera();
+		meta.world = new meta.World(0, 0);
 		meta.resources = new Resource.Manager();
 		meta.input = new Input.Manager();
 		meta.debugger = new meta.Debugger();
 
+		var resources = meta.resources;
+		resources.onLoadingStart.add(this.onLoadingStart, this);
+		resources.onLoadingEnd.add(this.onLoadingEnd, this);
+
 		this.sortAdaptions();
-		this.onResize();	
+		this.updateResolution();	
 
 		this._initAll();
 	},
@@ -379,7 +377,7 @@ meta.engine =
 		scope.cache.currResolution = newResolution;
 		scope.unitSize = newResolution.unitSize;	
 		scope.unitRatio = 1.0 / scope.unitSize;	
-		this.chn.adapt.emit(newResolution, meta.Event.ADAPT);
+		this.onAdapt.emit(newResolution, meta.Event.ADAPT);
 
 		return true;
 	},	
@@ -431,7 +429,7 @@ meta.engine =
 	},
 
 	/* Resizing */
-	onResize: function() {
+	updateResolution: function() {
 		this._resize(this.meta.cache.width, this.meta.cache.height);
 	},
 
@@ -509,7 +507,7 @@ meta.engine =
 		}
 		
 		this._updateOffset();
-		this.chn.resize.emit(this, meta.Event.RESIZE);
+		this.onResize.emit(this, meta.Event.RESIZE);
 
 		meta.renderer.needRender = true;
 	},
@@ -522,25 +520,33 @@ meta.engine =
 		this._resize(this.meta.cache.width, this.meta.cache.height);
 	},
 
-	onFocusChange: function(value)
+	handleFocus: function(value)
 	{
-		console.log("FOCUS CHANGE")
+		if(this.focus === value) {
+			return;
+		}
+
 		this.focus = value;
+
 		if(this.enablePauseOnBlur) {
 			this.pause = !value;
 		}
 
-		this.chn.focus.emit(value, meta.Event.FOCUS);
-	},
-
-	onVisibilityChange: function()
-	{
-		console.log("VISIBILITY CHANGE")
-		if(document[meta.device.hidden]) {
-			this.onFocusChange(false);
+		if(value) {
+			this.onFocus.emit(value, meta.Event.FOCUS);
 		}
 		else {
-			this.onFocusChange(true);
+			this.onBlur.emit(value, meta.Event.BLUR);
+		}
+	},
+
+	handleVisibilityChange: function()
+	{
+		if(document[meta.device.hidden]) {
+			this.handleFocus(false);
+		}
+		else {
+			this.handleFocus(true);
 		}
 	},
 
@@ -549,6 +555,8 @@ meta.engine =
 		var fullscreen = document.fullscreenElement || document.webkitFullscreenElement ||
 				document.mozFullScreenElement || document.msFullscreenElement;
 		meta.device.fullscreen = !!fullscreen;
+
+		this.onFullscreen.emit(meta.device.fullscreen, meta.Event.FULLSCREEN);
 	},
 
 	onCtxLost: function() {
@@ -700,7 +708,7 @@ meta.engine =
 		}
 
 		this._container.appendChild(this.canvas);
-		this.onResize();
+		this.updateResolution();
 	},
 
 	get container() { return this._container; },
@@ -710,7 +718,7 @@ meta.engine =
     {
     	meta.cache.imageSmoothing = value;
 		if(this.inited) {
-			this.onResize();
+			this.updateResolution();
 		}
     },
 
@@ -729,14 +737,14 @@ meta.engine =
 
 	set center(value) {
 		this._center = value;
-		this.onResize();
+		this.updateResolution();
 	},
 
 	get center() { return this._center; },
 
 	set adapt(value) {
 		this._adapt = value;
-		this.onResize();
+		this.updateResolution();
 	},
 
 	get adapt() { return this._adapt; },
@@ -745,6 +753,13 @@ meta.engine =
 		LOADED: 4,
 		READY: 8
 	},
+
+	//
+	onResize: null,
+	onBlur: null,
+	onFocus: null,
+	onFullscreen: null,
+	onDebug: null,
 
 	//
 	elementStyle: "padding:0; margin:0;",
@@ -765,7 +780,6 @@ meta.engine =
 	canvas: null,
 	ctx: null,
 
-	chn: null,
 	cb: null,
 
 	autoInit: true,

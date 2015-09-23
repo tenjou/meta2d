@@ -22,6 +22,7 @@ meta.class("meta.Renderer",
 		this.cameraDefault = this.camera;
 		//this.cameraUI = new meta.Camera();
 
+
 		this.chn = {
 			onDown: 		meta.createChannel(Entity.Event.INPUT_DOWN),
 			onUp: 			meta.createChannel(Entity.Event.INPUT_UP),
@@ -35,13 +36,14 @@ meta.class("meta.Renderer",
 			onHoverExit: 	meta.createChannel(Entity.Event.HOVER_EXIT)
 		};
 
-		meta.subscribe(this, [ Input.Event.DOWN, Input.Event.UP ], this.onInput, meta.Priority.HIGH);
-		meta.subscribe(this, Input.Event.MOVE, this.onInputMove, meta.Priority.HIGH);
-		meta.subscribe(this, Input.Event.DBCLICK, this.onInputDbClick, meta.Priority.HIGH);
+		meta.input.onDown.add(this.onInputDown, this, meta.Priority.HIGH);
+		meta.input.onUp.add(this.onInputUp, this, meta.Priority.HIGH);
+		meta.input.onMove.add(this.onInputMove, this, meta.Priority.HIGH);
+		meta.input.onDbClick.add(this.onInputDbClick, this, meta.Priority.HIGH);
 
-		meta.subscribe(this, meta.Event.ADAPT, this.onAdapt);	
-		meta.subscribe(this, meta.Event.CAMERA_RESIZE, this.onCameraResize);
-		meta.subscribe(this, meta.Event.CAMERA_MOVE, this.onCameraMove);
+		meta.engine.onAdapt.add(this.onAdapt, this);
+		meta.camera.onResize.add(this.onCameraResize, this);
+		meta.camera.onMove.add(this.onCameraMove, this);
 
 		this.holder.resize(this.camera.volume.width, this.camera.volume.height);
 	},
@@ -408,79 +410,82 @@ meta.class("meta.Renderer",
 	 * @param data {*} Event data.
 	 * @param event {*} Event type.
 	 */
-	onInput: function(data, event)
+	onInputDown: function(data, event)
 	{
 		if(!this.enablePicking) { return; }
 
 		this._checkHover(data);
+		if(!this.hoverEntity) { return; }
 
-		var inputEvent = Input.Event;
-		if(inputEvent.DOWN === event)
+		//
+		data.entity = this.hoverEntity;
+		this.pressedEntity = this.hoverEntity;
+		this.pressedEntity.pressed = true;
+
+		if(this.pressedEntity._style) {
+			this.pressedEntity._onDown.call(this.pressedEntity, data);
+		}
+		if(this.pressedEntity.onDown) {
+			this.pressedEntity.onDown.call(this.pressedEntity, data);
+		}
+		
+		this.chn.onDown.emit(data, Entity.Event.INPUT_DOWN);
+	},
+
+	onInputUp: function(data, event)
+	{
+		if(!this.enablePicking) { return; }
+
+		this._checkHover(data);
+		if(!this.hoverEntity) { return; }
+
+		//
+		if(this.pressedEntity) 
 		{
-			if(!this.hoverEntity) { return; }
-
 			data.entity = this.hoverEntity;
-			this.pressedEntity = this.hoverEntity;
-			this.pressedEntity.pressed = true;
 
+			// INPUT UP
+			this.pressedEntity.pressed = false;
 			if(this.pressedEntity._style) {
-				this.pressedEntity._onDown.call(this.pressedEntity, data);
+				this.pressedEntity._onUp.call(this.pressedEntity, event);
 			}
-			if(this.pressedEntity.onDown) {
-				this.pressedEntity.onDown.call(this.pressedEntity, data);
+			if(this.pressedEntity.onUp) {
+				this.pressedEntity.onUp.call(this.pressedEntity, event);
 			}
 			
-			this.chn.onDown.emit(data, Entity.Event.INPUT_DOWN);
-		}
-		else if(inputEvent.UP === event)
-		{
-			if(this.pressedEntity) 
-			{
-				data.entity = this.hoverEntity;
+			this.chn.onUp.emit(this.pressedEntity, Entity.Event.INPUT_UP);	
 
-				// INPUT UP
-				this.pressedEntity.pressed = false;
+			// CLICK
+			if(this.pressedEntity === this.hoverEntity) 
+			{
 				if(this.pressedEntity._style) {
-					this.pressedEntity._onUp.call(this.pressedEntity, event);
+					this.pressedEntity._onClick.call(this.pressedEntity, data);
 				}
-				if(this.pressedEntity.onUp) {
-					this.pressedEntity.onUp.call(this.pressedEntity, event);
+				if(this.pressedEntity.onClick) {
+					this.pressedEntity.onClick.call(this.pressedEntity, data);
 				}
 				
-				this.chn.onUp.emit(this.pressedEntity, Entity.Event.INPUT_UP);	
-
-				// CLICK
-				if(this.pressedEntity === this.hoverEntity) 
-				{
-					if(this.pressedEntity._style) {
-						this.pressedEntity._onClick.call(this.pressedEntity, data);
-					}
-					if(this.pressedEntity.onClick) {
-						this.pressedEntity.onClick.call(this.pressedEntity, data);
-					}
-					
-					this.chn.onClick.emit(data, Entity.Event.CLICK);
-				}
-
-				// DRAG END?
-				if(this.pressedEntity.dragged) 
-				{
-					data.entity = this.pressedEntity;
-					this.pressedEntity.dragged = false;
-
-					if(this.pressedEntity._style) {
-						this.pressedEntity._onDragEnd.call(this.pressedEntity, data);
-					}
-					if(this.pressedEntity.onDragEnd) {
-						this.pressedEntity.onDragEnd.call(this.pressedEntity, data);
-					}
-					
-					this.chn.onDragEnd.emit(data, Entity.Event.DRAG_END);
-					data.entity = this.hoverEntity;				
-				}					
-
-				this.pressedEntity = null;				
+				this.chn.onClick.emit(data, Entity.Event.CLICK);
 			}
+
+			// DRAG END?
+			if(this.pressedEntity.dragged) 
+			{
+				data.entity = this.pressedEntity;
+				this.pressedEntity.dragged = false;
+
+				if(this.pressedEntity._style) {
+					this.pressedEntity._onDragEnd.call(this.pressedEntity, data);
+				}
+				if(this.pressedEntity.onDragEnd) {
+					this.pressedEntity.onDragEnd.call(this.pressedEntity, data);
+				}
+				
+				this.chn.onDragEnd.emit(data, Entity.Event.DRAG_END);
+				data.entity = this.hoverEntity;				
+			}					
+
+			this.pressedEntity = null;				
 		}
 	},
 

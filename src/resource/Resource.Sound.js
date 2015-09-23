@@ -434,19 +434,20 @@ Resource.AudioInstance.prototype =
 			}
 			else {
 				this.autoPlay = false;
-			}
+			}		
+
+			this.source = meta.audio.context.createBufferSource();
+			this.source.buffer = this.parent._buffer;
+			this.source.connect(this.parent._gainNode);
+			this.source.onended = this.onEndFunc;
 
 			if(this.offset < 0) {
 				this.offset = 0;
 			}
 			else if(this.offset > this.source.buffer.duration) {
 				this.offset = this.source.buffer.duration;
-			}			
-
-			this.source = meta.audio.context.createBufferSource();
-			this.source.buffer = this.parent._buffer;
-			this.source.connect(this.parent._gainNode);
-			this.source.onended = this.onEndFunc;
+			}	
+			
 			this.source.start(0, this.offset);
 
 			this.tStart = this.source.context.currentTime - this.offset;

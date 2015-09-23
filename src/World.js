@@ -6,8 +6,8 @@ meta.class("meta.World",
 	{
 		this.volume = new meta.math.AABB(0, 0, 0, 0);
 
-		this._chn = meta.createChannel(meta.Event.WORLD_RESIZE);
-		meta.subscribe(this, meta.Event.CAMERA_RESIZE, this._updateBounds);
+		this.onResize = meta.createChannel(meta.Event.WORLD_RESIZE);
+		meta.camera.onResize.add(this._updateBounds, this);
 	},
 
 	bounds: function(minX, minY, maxX, maxY) {
@@ -72,11 +72,13 @@ meta.class("meta.World",
 	get height() { return this.volume.height; },
 
 	//
+	onResize: null,
+
+	//
 	volume: null,
 	centerX: 0,
 	centerY: 0,
 
-	_chn: null,
 	shapes: null,
 
 	_adapt: true,

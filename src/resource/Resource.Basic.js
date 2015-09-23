@@ -32,13 +32,13 @@ meta.class("Resource.Basic",
 	 * @param owner {*} Listener object.
 	 * @param func {Function} Listener callback function.
 	 */
-	subscribe: function(owner, func)
+	subscribe: function(func, owner)
 	{
 		if(!this.chn) {
 			this.chn = meta.createChannel("__res" + this.id);
 		}
 
-		this.chn.subscribe(owner, func);
+		this.chn.add(func, owner);
 	},
 
 	/**

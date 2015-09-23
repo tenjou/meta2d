@@ -9,13 +9,11 @@ meta.class("Resource.Manager",
 {
 	init: function()
 	{
-		this._chn_added = meta.createChannel(Resource.Event.ADDED);
-		this._chn_loaded = meta.createChannel(Resource.Event.LOADED);
-		this._chn_loadingStart = meta.createChannel(Resource.Event.LOADING_START)
-		this._chn_loadingEnd = meta.createChannel(Resource.Event.LOADING_END);
-		this._chn_loadingUpdate = meta.createChannel(Resource.Event.LOADING_UPDATE)
-
-		meta.subscribe(this, meta.Event.ADAPT, this.onAdapt);
+		this.onAdded = meta.createChannel(Resource.Event.ADDED);
+		this.onLoaded = meta.createChannel(Resource.Event.LOADED);
+		this.onLoadingStart = meta.createChannel(Resource.Event.LOADING_START)
+		this.onLoadingEnd = meta.createChannel(Resource.Event.LOADING_END);
+		this.onLoadingUpdate = meta.createChannel(Resource.Event.LOADING_UPDATE)
 
 		meta.audio = new Resource.AudioManager();
 
@@ -24,6 +22,8 @@ meta.class("Resource.Manager",
 		this._xhr.onreadystatechange = function() {
 			self._loadFileStateChange();
 		};
+
+		meta.engine.onAdapt.add(this.onAdapt, this);
 	},
 
 	/**
@@ -69,7 +69,7 @@ meta.class("Resource.Manager",
 
 		subBuffer[resource.name] = resource;
 
-		this._chn_added.emit(resource, Resource.Event.ADDED);
+		this.onAdded.emit(resource, Resource.Event.ADDED);
 
 		return resource;
 	},
@@ -101,12 +101,12 @@ meta.class("Resource.Manager",
 	_updateLoading: function()
 	{
 		this.numToLoad--;
-		this._chn_loadingUpdate.emit(this, Resource.Event.LOADING_UPDATE);
+		this.onLoadingUpdate.emit(this, Resource.Event.LOADING_UPDATE);
 
 		if(this.numToLoad === 0) {
 			this.numTotalToLoad = 0;
 			this.loading = false;
-			this._chn_loadingEnd.emit(this, Resource.Event.LOADING_END);
+			this.onLoadingEnd.emit(this, Resource.Event.LOADING_END);
 		}		
 	},
 
@@ -114,7 +114,7 @@ meta.class("Resource.Manager",
 	{
 		if(!this.loading) {
 			this.loading = true;
-			this._chn_loadingStart.emit(this, Resource.Event.LOADING_START);
+			this.onLoadingStart.emit(this, Resource.Event.LOADING_START);
 		}
 
 		this.numToLoad++;
@@ -148,7 +148,7 @@ meta.class("Resource.Manager",
 	{
 		if(!this.loading) {
 			this.loading = true;
-			this._chn_loadingStart.emit(this, Resource.Event.LOADING_START);
+			this.onLoadingStart.emit(this, Resource.Event.LOADING_START);
 		}
 
 		this.add(resource);
@@ -178,7 +178,7 @@ meta.class("Resource.Manager",
 		resource.inUse = true;
 		subBuffer.push(resource);
 
-		this._chn_loaded.emit(resource, Resource.Event.LOADED);
+		this.onLoaded.emit(resource, Resource.Event.LOADED);
 		this._updateLoading();
 	},
 
@@ -335,12 +335,13 @@ meta.class("Resource.Manager",
 	_syncQueue: null,
 	isSyncLoading: false,
 
-	_chn_added: null,
-	_chn_loaded: null,
-	_chn_loadingStart: null,
-	_chn_loadingEnd: null,
-	_chn_loadingUpdate: null,
 	_uniqueID: 0,
 
-	loading: false
+	loading: false,
+
+	onAdded: null,
+	onLoaded: null,
+	onLoadingStart: null,
+	onLoadingEnd: null,
+	onLoadingUpdate: null	
 });

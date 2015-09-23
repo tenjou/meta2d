@@ -5,6 +5,7 @@ meta.Event = {
 	WORLD_RESIZE: "world-resize",
 	CAMERA_MOVE: "camera-move",
 	CAMERA_RESIZE: "camera-resize",
+	BLUR: "blur",
 	FOCUS: "focus",
 	FULLSCREEN: "fullscreen",
 	ADAPT: "adapt",

@@ -17,7 +17,7 @@ meta.Debugger = function()
 meta.Debugger.prototype =
 {
 	init: function() {
-		meta.subscribe(this, meta.Event.DEBUG, this.onDebug);
+		meta.engine.onDebug.add(this.onDebug, this);
 	},
 
 	create: function()
@@ -137,13 +137,13 @@ meta.Debugger.prototype =
 		var self = this;
 		this.timer = meta.addTimer(this, function() {
 			self.updateTxt();
-		}, 1000)
+		}, 1000);
 
-		meta.subscribe(this, Input.Event.MOVE, this.onInputMove);
-		meta.subscribe(this, meta.Event.RESIZE, this.onResize);
-		meta.subscribe(this, meta.Event.WORLD_RESIZE, this.onWorldResize);
-		meta.subscribe(this, meta.Event.CAMERA_MOVE, this.onCameraMove);
-		meta.subscribe(this, meta.Event.CAMERA_RESIZE, this.onCameraResize);
+		meta.input.onInputMove.add(this.onInputMove, this);
+		meta.engine.onResize.add(this.onResize, this);
+		meta.world.onResize.add(this.onWorldResize, this);
+		meta.camera.onResize.add(this.onCameraResize, this);
+		meta.camera.onMove.add(this.onCameraMova, this);
 
 		this.updateTxt();
 
@@ -156,11 +156,11 @@ meta.Debugger.prototype =
 
 	unload: function()
 	{
-		meta.unsubscribe(this, Input.Event.MOVE);
-		meta.unsubscribe(this, meta.Event.RESIZE);
-		meta.unsubscribe(this, meta.Event.WORLD_RESIZE);
-		meta.unsubscribe(this, meta.Event.CAMERA_MOVE);
-		meta.unsubscribe(this, meta.Event.CAMERA_RESIZE);
+		meta.input.onInputMove.remove(this);
+		meta.engine.onResize.remove(this);
+		meta.world.onResize.remove(tthis);
+		meta.camera.onResize.remove(this);
+		meta.camera.onMove.remove(this);
 
 		this.timer.stop();
 		this.view.active = false;

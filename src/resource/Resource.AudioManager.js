@@ -6,7 +6,6 @@ meta.class("Resource.AudioManager",
 	{
 		// Audio
 		var audioProto = Resource.Sound.prototype;
-		meta.device.audioAPI = false;
 		if(meta.device.audioAPI) 
 		{
 			this.context = new AudioContext();

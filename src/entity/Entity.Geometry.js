@@ -747,7 +747,7 @@ meta.class("Entity.Geometry",
 			this.texture = texture;
 		}
 
-		meta.unsubscribe(this, Resource.Event.LOADING_END);
+		meta.resources.onLoadingEnd.remove(this);
 	},
 
 	updateFromTexture: function()
@@ -793,7 +793,7 @@ meta.class("Entity.Geometry",
 				{
 					if(meta.resources.loading) {
 						this._textureName = texture;
-						meta.subscribe(this, Resource.Event.LOADING_END, this._onLoadingEnd);
+						meta.resources.onLoadingEnd.add(this._onLoadingEnd, this);
 					}
 					else {
 						console.warn("(Entity.Geometry) Unavailable texture - " + texture);	
@@ -806,7 +806,7 @@ meta.class("Entity.Geometry",
 				this._texture = texture;
 			}
 
-			this._texture.subscribe(this, this._onTextureEvent);
+			this._texture.subscribe(this._onTextureEvent, this);
 
 			if(this._texture._loaded) {
 				this.updateFromTexture();

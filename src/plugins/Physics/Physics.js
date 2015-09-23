@@ -4,7 +4,7 @@ meta.plugin("Physics",
 {
 	init: function() {
 		this.manifold = new this.Manifold();
-		meta.subscribe(this, meta.Event.DEBUG, this.onDebug);
+		meta.engine.onDebug.add(this.onDebug, this);
 	},
 
 	update: function(tDelta)
