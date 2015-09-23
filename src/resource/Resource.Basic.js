@@ -49,7 +49,7 @@ meta.class("Resource.Basic",
 	{
 		if(!this.chn) { return; }
 
-		this.chn.unsubscribe(owner);
+		this.chn.remove(owner);
 		if(this.chn.numSubs === 0) {
 			this.chn.remove();
 			this.chn = null;
