@@ -417,8 +417,6 @@ Resource.AudioInstance.prototype =
 {
 	play: function(looping, offset)
 	{
-		console.log("PLAY", this.parent.path);
-
 		looping = looping || false;
 		offset = offset || 0;
 
