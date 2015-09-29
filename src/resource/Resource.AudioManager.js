@@ -6,7 +6,7 @@ meta.class("Resource.AudioManager",
 	{
 		// Audio
 		var audioProto = Resource.Sound.prototype;
-		if(meta.device.audioAPI) 
+		if(meta.device.audioAPI && meta.flags.audioAPI) 
 		{
 			this.context = new AudioContext();
 			this.gainNode = this.context.createGain();
@@ -50,7 +50,7 @@ meta.class("Resource.AudioManager",
 	{
 		this._volume = meta.math.clamp(value, 0.0, 1.0);
 
-		if(this._muted) {
+		if(this._mute) {
 			return;
 		}
 		
@@ -70,10 +70,10 @@ meta.class("Resource.AudioManager",
 		return this._volume;
 	},
 
-	set muted(value) 
+	set mute(value) 
 	{
-		if(this._muted === value) { return; }
-		this._muted = value;
+		if(this._mute === value) { return; }
+		this._mute = value;
 
 		var volume;
 		if(value) {
@@ -95,8 +95,8 @@ meta.class("Resource.AudioManager",
 		}
 	},
 
-	get muted() {
-		return this._muted;
+	get mute() {
+		return this._mute;
 	},
 
 	//
@@ -104,5 +104,5 @@ meta.class("Resource.AudioManager",
 	gainNode: null,
 
 	_volume: 0.5,
-	_muted: false
+	_mute: false
 });

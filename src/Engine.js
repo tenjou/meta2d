@@ -11,6 +11,8 @@ meta.engine =
 		this._container = document.body;
 		this._container.style.cssText = this.elementStyle;
 
+		this.parseFlags();
+
 		this._createRenderer();
 		this._printInfo();
 
@@ -65,6 +67,21 @@ meta.engine =
 		this.updateResolution();	
 
 		this._initAll();
+	},
+
+	parseFlags: function()
+	{
+		var flag, flagName, flagValue, flagSepIndex;
+		var flags = window.location.hash.substr(1).split(",")
+		var num = flags.length;
+
+		for(var n = 0; n < num; n++) {
+			flag = flags[n];
+			flagSepIndex = flag.indexOf("=");
+			flagName = flag.substr(0, flagSepIndex).replace(/ /g, "");
+			flagValue = eval(flag.substr(flagSepIndex + 1).replace(/ /g, ""));
+			meta.flags[flagName] = flagValue;
+		}
 	},
 
 	_initAll: function()

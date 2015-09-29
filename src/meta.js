@@ -13,6 +13,11 @@ var meta =
 	channels: [],
 	modules: {},
 
+	flags: {
+		webGL: true,
+		audioAPI: true
+	},
+
 	time: {
 		delta: 0,
 		deltaF: 0,
