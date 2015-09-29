@@ -6,6 +6,7 @@ meta.class("Entity.Text", "Entity.Geometry",
 	{
 		this.texture = new Resource.Texture();
 		this._texture.resize(this._fontSize, this._fontSize);
+		this._textBuffer = new Array(1);
 		this.text = params;
 	},
 
@@ -13,7 +14,12 @@ meta.class("Entity.Text", "Entity.Geometry",
 
 	updateTxt: function()
 	{
+		var n, i, fontHeight;
 		var ctx = this._texture.ctx;
+		var width = 0;
+		var posX = 0;
+		var posY = 0;
+		var numLines = this._textBuffer.length;	
 
 		if(this._bitmapFont) 
 		{
@@ -21,45 +27,73 @@ meta.class("Entity.Text", "Entity.Geometry",
 
 			var canvas = this._bitmapFont.texture.canvas;
 			var chars = this._bitmapFont.chars;
-
-			var width = 0;
 			var charRect = null;
-			var numChars = this._text.length;
-			for(var n = 0; n < numChars; n++) 
-			{
-				charRect = chars[this._text.charCodeAt(n)];
-				if(!charRect) { continue; }
+			var numChars, tmpWidth, currText;
 
-				width += charRect.kerning;
+			fontHeight = this._bitmapFont.height;
+
+			for(n = 0; n < numLines; n++) 
+			{
+				currText = this._textBuffer[n];
+				numChars = currText.length;
+				tmpWidth = 0;
+
+				for(i = 0; i < numChars; i++)
+				{
+					charRect = chars[currText.charCodeAt(i)];
+					if(!charRect) { continue; }
+
+					tmpWidth += charRect.kerning;
+				}
+
+				if(tmpWidth > width) {
+					width = tmpWidth;
+				}
 			}
 
 			this._texture.clear();
-			this._texture.resize(width, this._bitmapFont.height);
+			this._texture.resize(width, fontHeight * numLines);
 
-			var posX = 0;
-			for(n = 0; n < numChars; n++) 
+			for(n = 0; n < numLines; n++) 
 			{
-				charRect = chars[this._text.charCodeAt(n)];
-				if(!charRect) { continue; }
+				currText = this._textBuffer[n];
+				numChars = currText.length;
 
-				ctx.drawImage(canvas, charRect.x, charRect.y, charRect.width, charRect.height, 
-					posX, charRect.offsetY, charRect.width, charRect.height);
-				posX += charRect.kerning;
+				for(i = 0; i < numChars; i++)
+				{
+					charRect = chars[currText.charCodeAt(i)];
+					if(!charRect) { continue; }
+
+					ctx.drawImage(canvas, charRect.x, charRect.y, charRect.width, charRect.height, 
+						posX, posY + charRect.offsetY, charRect.width, charRect.height);
+					posX += charRect.kerning;
+				}
+
+				posY += fontHeight;
+				posX = 0;
 			}
 		}
 		else
 		{
 			ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
 
-			var metrics = ctx.measureText(this._text);
-			var width = metrics.width;
-			var offsetX = 0;
+			var metrics;
+			for(n = 0; n < numLines; n++) 
+			{
+				metrics = ctx.measureText(this._textBuffer[n]);
+				if(metrics.width > width) {
+					width = metrics.width;
+				}
+			}
 
 			if(this._shadow) {
 				width += this._shadowBlur * 2;
-				offsetX += this._shadowBlur;
+				posX += this._shadowBlur;
 			}
-			this._texture.resize(width, this._fontSize * 1.3);
+
+			fontHeight = (this._fontSize * 1.3);
+
+			this._texture.resize(width, fontHeight * numLines);
 
 			ctx.clearRect(0, 0, this.volume.initWidth, this.volume.initHeight);
 			ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
@@ -73,12 +107,20 @@ meta.class("Entity.Text", "Entity.Geometry",
 				ctx.shadowBlur = this._shadowBlur;
 			}
 
-			ctx.fillText(this._text, offsetX, 0);
-
 			if(this._outline) {
 				ctx.lineWidth = this._outlineWidth;
 				ctx.strokeStyle = this._outlineColor;
-				ctx.strokeText(this._text, offsetX, 0);
+			}		
+
+			for(n = 0; n < numLines; n++)
+			{
+				ctx.fillText(this._textBuffer[n], posX, posY);
+
+				if(this._outline) {
+					ctx.strokeText(this._textBuffer[n], posY, posY);
+				}
+
+				posY += fontHeight;
 			}
 		}
 
@@ -91,13 +133,24 @@ meta.class("Entity.Text", "Entity.Geometry",
 		{
 			if(typeof(text) === "number") {
 				this._text = text + "";
+				this._textBuffer[0] = this._text;
 			}
-			else {
+			else 
+			{
 				this._text = text;
+
+				var newlineIndex = text.indexOf("\n");
+				if(newlineIndex !== -1) {
+					this._textBuffer = text.split("\n");
+				}
+				else {
+					this._textBuffer[0] = this._text;
+				}
 			}
 		}
 		else {
 			this._text = "";
+			this._textBuffer[0] = this._text;
 		}
 		
 		this.updateTxt();
@@ -246,6 +299,8 @@ meta.class("Entity.Text", "Entity.Geometry",
 	_bitmapFont: null,
 
 	_text: "",
+	_textBuffer: null,
+
 	_font: "Tahoma",
 	_fontSize: 12,
 	_fontSizePx: "12px",
