@@ -24,9 +24,9 @@
                     meta.view.attach(entity);
                 }
 
-                meta.subscribe(this, Entity.Event.DRAG_START, OnDragStart);
-                meta.subscribe(this, Entity.Event.DRAG_END, OnDragEnd);
-                meta.subscribe(this, Entity.Event.DRAG, OnDragMove);
+                meta.subscribe(Entity.Event.DRAG_START, OnDragStart, this);
+                meta.subscribe(Entity.Event.DRAG_END, OnDragEnd, this);
+                meta.subscribe(Entity.Event.DRAG, OnDragMove, this);
             }
 
             function OnDragStart(data, event) {

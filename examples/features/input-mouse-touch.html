@@ -20,8 +20,8 @@
                 coordTxt.pivot(0.5);
                 meta.view.attach(coordTxt);
 
-                meta.subscribe(this, Input.Event.CLICK, HandleInput);
-                meta.subscribe(this, Input.Event.MOVE, HandleInput);
+                meta.subscribe(Input.Event.CLICK, HandleInput, this);
+                meta.subscribe(Input.Event.MOVE, HandleInput, this);
 
                 meta.info("Input - mouse & touch example");                
             };

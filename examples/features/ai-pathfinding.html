@@ -56,7 +56,7 @@
                 layer.saveData();
                 meta.view.attach(tilemap);
 
-                meta.subscribe(this, Input.Event.CLICK, OnInputClick);
+                meta.subscribe(Input.Event.CLICK, OnInputClick, this);
             };
 
             function OnInputClick(data, event)

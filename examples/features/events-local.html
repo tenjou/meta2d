@@ -30,7 +30,7 @@
             meta.onLoad = function()
             {
                 var channel = meta.createChannel("Example");
-                channel.subscribe(this, Listener);
+                channel.add(Listener, this);
 
                 // Load texture.
                 channel.emit(null, "load");
