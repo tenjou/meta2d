@@ -1,7 +1,11 @@
 "use strict";
 
-meta.controller("meta.loading", 
+meta.controller("meta.Loading", 
 {
+	onInit: function() {
+		meta.loading = this;			
+	},
+
 	onFirstLoad: function() 
 	{
 		this.view.z = Number.MAX_SAFE_INTEGER;

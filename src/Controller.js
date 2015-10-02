@@ -10,7 +10,7 @@ meta.class("meta.Controller",
 {
 	init: function() 
 	{
-		this.view = meta.createView(this.__lastName__);
+		this.view = meta.createView("__ctrl__" + meta.cache.ctrlUniqueID++);
 
 		if(this.onInit) {
 			this.onInit();
@@ -160,7 +160,8 @@ function _addClassInstance(cls)
 	}
 };	
 
-meta.classes = {};
+meta.controllers = {};
+meta.cache.ctrlUniqueID = 0;
 
 meta.controller = function(name, extend, obj) 
 {
@@ -179,13 +180,9 @@ meta.controller = function(name, extend, obj)
 		extend = "meta.Controller";
 	}
 
-	meta.class("meta.constrollers." +name, extend, obj, _addClassInstance);
+	meta.class("meta.controllers." + name, extend, obj, _addClassInstance);
 };
 
 meta.plugin = function(name, extend, obj) {
 	meta.class("meta.plugins." + name, extend, obj, _addClassInstance);
 };
-
-meta.controller("Test", {
-
-});

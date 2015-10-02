@@ -47,7 +47,7 @@ meta.Channel.prototype =
 		{
 			var numToRemove = this._subsToRemove.length;
 			for(var n = 0; n < numToRemove; n++) {
-				this.unsubscribe(this._subsToRemove[n]);
+				this.remove(this._subsToRemove[n]);
 			}
 
 			this._subsToRemove = null;
