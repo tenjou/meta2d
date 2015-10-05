@@ -52,6 +52,7 @@ meta.class("meta.Renderer",
 	{
 		// Removal.	
 		if(this.entitiesRemove.length > 0) {
+			console.log(this.entitiesRemove)
 			this._removeEntities(this.entitiesRemove);
 			this.entitiesRemove.length = 0;
 		}
@@ -107,8 +108,6 @@ meta.class("meta.Renderer",
 	{
 		var entity, n;
 		var numRemove = entities.length;
-
-		this._numRemove += numRemove;
 		
 		for(var i = 0; i < numRemove; i++) 
 		{
@@ -120,6 +119,7 @@ meta.class("meta.Renderer",
 				if(this.entities[n] === entity) 
 				{
 					this.entities[n] = null;
+					this._numRemove++;
 
 					if(n < this._removeStartID) {
 						this._removeStartID = n;

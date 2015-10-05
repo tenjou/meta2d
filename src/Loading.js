@@ -3,12 +3,13 @@
 meta.controller("meta.Loading", 
 {
 	onInit: function() {
+		meta.preloading = this;
 		meta.loading = this;			
 	},
 
 	onFirstLoad: function() 
 	{
-		this.view.z = Number.MAX_SAFE_INTEGER;
+		this.view.z = Number.MAX_SAFE_INTEGER - 10;
 		this.view.static = true;
 
 		var bgTexture = new Resource.SVG();
@@ -17,31 +18,21 @@ meta.controller("meta.Loading",
 		this.bg = new Entity.Geometry(bgTexture);
 		this.view.attach(this.bg);
 
-		var loadingText = new Entity.Text();
-		loadingText.color = "white";
-		loadingText.text = "LOADING";
-		loadingText.pivot(0.5);
-		loadingText.anchor(0.5);
-		loadingText.position(0, -8);
-		this.view.attach(loadingText);
-
 		var progressShadowTexture = new Resource.SVG();
 		progressShadowTexture.fillStyle = "#222";
-		progressShadowTexture.fillRect(0, 0, 100, 3);
+		progressShadowTexture.fillRect(0, 0, 100, 4);
 		var progressShadow = new Entity.Geometry(progressShadowTexture);
 		progressShadow.pivot(0.5);
 		progressShadow.anchor(0.5);
-		progressShadow.position(0, 5);
 		this.view.attach(progressShadow);
 
 		var progressTexture = new Resource.SVG();
 		progressTexture.fillStyle = "white";
-		progressTexture.fillRect(0, 0, 100, 3);
+		progressTexture.fillRect(0, 0, 100, 4);
 		this.progress = new Entity.Geometry(progressTexture);
-		this.progress.clipBounds(0, 3);
+		this.progress.clipBounds(0, 4);
 		this.progress.pivot(0.5);
 		this.progress.anchor(0.5);
-		this.progress.position(0, 5);
 		this.view.attach(this.progress);
 	},
 
@@ -63,7 +54,7 @@ meta.controller("meta.Loading",
 	onResourceLoaded: function(mgr) 
 	{
 		var percents = Math.min((100 / mgr.numTotalToLoad) * (mgr.numTotalToLoad - mgr.numToLoad), 100);
-		this.progress.clipBounds(percents, 3);
+		this.progress.clipBounds(percents, 4);
 	},
 
 	//

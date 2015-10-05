@@ -139,11 +139,11 @@ meta.Debugger.prototype =
 			self.updateTxt();
 		}, 1000);
 
-		meta.input.onInputMove.add(this.onInputMove, this);
+		meta.input.onMove.add(this.onInputMove, this);
 		meta.engine.onResize.add(this.onResize, this);
 		meta.world.onResize.add(this.onWorldResize, this);
 		meta.camera.onResize.add(this.onCameraResize, this);
-		meta.camera.onMove.add(this.onCameraMova, this);
+		meta.camera.onMove.add(this.onCameraMove, this);
 
 		this.updateTxt();
 
@@ -151,7 +151,7 @@ meta.Debugger.prototype =
 		this.onCameraResize(meta.camera, 0);
 		this.onResize(meta.engine);
 		this.onWorldResize(meta.world, 0);
-		this.onInputMove(Input.ctrl, 0);	
+		this.onInputMove(meta.input, 0);	
 	},
 
 	unload: function()

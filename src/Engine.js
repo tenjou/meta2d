@@ -114,22 +114,39 @@ meta.engine =
 
 		console.log(" ");
 
-		this.inited = true;
+		this.flags |= this.Flag.INITED;
 		this._loadAll();
 	},
 
 	_loadAll: function()
 	{
 		if(!meta._loadAllScripts()) {
-			this._continueLoad();
+			this._handlePreload();
 		}
 	},
 
-	_continueLoad: function()
+	_handlePreload: function()
 	{
-		this.loading = true;
-
 		this.meta.renderer.load();
+
+		var cache = meta.cache;
+		var numFuncs = cache.preloadFuncs.length;
+
+		for(var i = 0; i < numFuncs; i++) {
+			cache.preloadFuncs[i]();
+		}
+
+		meta.cache.view._parentVisible(true);
+		this._startMainLoop();
+
+		if(!meta.resources.loading) {
+			this._handleLoad();
+		}
+	},
+
+	_handleLoad: function()
+	{
+		this.flags |= this.Flag.PRELOADED;
 
 		var cache = meta.cache;
 		var numFuncs = cache.loadFuncs.length;
@@ -138,19 +155,15 @@ meta.engine =
 		}
 
 		this.loadPlugins();
-		this.loaded = true;
-
-		meta.cache.view._parentVisible(true);
-		this._startMainLoop();
 
 		if(!meta.resources.loading) {
-			this.onReady();
+			this._handleReady();
 		}
 	},
 
-	onReady: function()
+	_handleReady: function()
 	{
-		this.flags |= this.Flag.READY;
+		this.flags |= this.Flag.LOADED;
 		this.readyPlugins();
 
 		var numFuncs = meta.cache.readyFuncs.length;
@@ -158,6 +171,7 @@ meta.engine =
 			meta.cache.readyFuncs[i]();
 		}
 
+		this.flags |= this.Flag.READY;
 		meta.renderer.needRender = true;
 	},
 
@@ -406,36 +420,61 @@ meta.engine =
 
 	onLoadingStart: function(data, event) 
 	{
-		meta.loading.load();
+		this.flags |= this.Flag.LOADING;
 
-		if(meta.device.support.consoleCSS) {
-			console.log("%c(Loading started)", "background: #eee; font-weight: bold;");
+		var state;
+
+		if(!this.preloaded) {
+			state = "Preloading";
+			meta.preloading.load();
 		}
 		else {
-			console.log("(Loading started)");
+			state = "Loading";
+			meta.loading.load();
+		}
+
+		if(meta.device.support.consoleCSS) {
+			console.log("%c(" + state + " started)", "background: #eee; font-weight: bold;");
+		}
+		else {
+			console.log("(" + state + " started)");
 		}
 	},
 
 	onLoadingEnd: function(data, event) 
 	{
-		if(meta.device.support.consoleCSS) {
-			console.log("%c(Loading ended)", "background: #eee; font-weight: bold;");
+		this.flags &= ~this.Flag.LOADING;
+
+		var state;
+
+		// if(!this.preloaded) {
+		// 	state = "Preloading";
+		// 	meta.preloading.unload();
+		// }
+		// else {
+		// 	state = "Loading";
+		// 	meta.loading.unload();
+		// }
+
+		// if(meta.device.support.consoleCSS) {
+		// 	console.log("%c(" + state + " ended)", "background: #eee; font-weight: bold;");
+		// }
+		// else {
+		// 	console.log("(" + state + " ended)");
+		// }
+
+		if(!this.preloaded) {
+			this._handleLoad();
 		}
 		else {
-			console.log("(Loading ended)");
-		}
-		
-		meta.loading.unload();
-
-		if((this.flags & this.Flag.READY) === 0) {
-			this.onReady();
+			this._handleReady();
 		}
 
 		meta.renderer.needRender = true;
 	},
 
 	onScriptLoadingEnd: function() {
-		this._continueLoad();
+		this._handlePreload();
 	},
 
 	updateLoading: function() 
@@ -766,9 +805,32 @@ meta.engine =
 
 	get adapt() { return this._adapt; },
 
+	get inited() { 
+		return (this.flags & this.Flag.INITED) === this.Flag.INITED; 
+	},
+
+	get loading() { 
+		return (this.flags & this.Flag.LOADING) === this.Flag.LOADING; 
+	},
+
+	get preloaded() { 
+		return (this.flags & this.Flag.PRELOADED) === this.Flag.PRELOADED; 
+	},
+
+	get loaded() { 
+		return (this.flags & this.Flag.LOAED) === this.Flag.LOADED; 
+	},			
+
+	get ready() { 
+		return (this.flags & this.Flag.READY) === this.Flag.READY; 
+	},
+
 	Flag: {
-		LOADED: 4,
-		READY: 8
+		LOADING: 1,
+		INITED: 2,
+		PRELOADED: 4,
+		LOADED: 8,
+		READY: 16
 	},
 
 	//
@@ -803,10 +865,6 @@ meta.engine =
 	autoMetaTags: true,	
 
 	flags: 0,
-	inited: false,
-	loading: false,
-	loaded: false,
-	ready: false,
 	focus: false,
 	pause: false,
 	webgl: false,

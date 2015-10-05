@@ -13,6 +13,9 @@ var meta =
 	channels: [],
 	modules: {},
 
+	loading: null,
+	preloading: null,
+
 	flags: {
 		webGL: true,
 		audioAPI: true
@@ -40,6 +43,7 @@ var meta =
 		timerIndex: 0,
 
 		initFuncs: [], 
+		preloadFuncs: [],
 		loadFuncs: [], 
 		readyFuncs: [],
 
@@ -59,6 +63,14 @@ var meta =
 	{
 		this.cache.initFuncs.push(func);
 		if(this.engine && this.engine.inited) {
+			func();
+		}
+	},
+
+	set onPreload(func)
+	{
+		this.cache.preloadFuncs.push(func);
+		if(this.engine && this.engine.preloaded) {
 			func();
 		}
 	},

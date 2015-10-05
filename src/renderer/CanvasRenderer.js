@@ -23,8 +23,6 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 
 		this.ctx.save();
 
-//		console.log("----")
-
 		var zoom = this.camera._zoom;
 		this.ctx.setTransform(zoom, 0, 0, zoom, -Math.floor(this.cameraVolume.x * zoom), -Math.floor(this.cameraVolume.y * zoom));
 
@@ -41,8 +39,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		var entity = null;
 
 		/* Debug */
-		var isEngineReady = this.meta.engine.flags & this.meta.engine.Flag.READY;
-		if(isEngineReady && (this.meta.cache.debug || this.numDebug > 0))
+		if(this.meta.cache.debug || this.numDebug > 0)
 		{
 			this.ctx.save();
 			this.ctx.lineWidth = 2;
