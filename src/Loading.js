@@ -14,7 +14,7 @@ meta.controller("meta.Loading",
 
 		var bgTexture = new Resource.SVG();
 		bgTexture.fillStyle = "#030303";
-		bgTexture.fillRect(0, 0, 2, 2);
+		bgTexture.fillRect(0, 0, 1, 1);
 		this.bg = new Entity.Geometry(bgTexture);
 		this.bg.fitIn(meta.camera.width, meta.camera.height);
 		this.view.attach(this.bg);

@@ -447,21 +447,21 @@ meta.engine =
 
 		var state;
 
-		// if(!this.preloaded) {
-		// 	state = "Preloading";
-		// 	meta.preloading.unload();
-		// }
-		// else {
-		// 	state = "Loading";
-		// 	meta.loading.unload();
-		// }
+		if(!this.preloaded) {
+			state = "Preloading";
+			meta.preloading.unload();
+		}
+		else {
+			state = "Loading";
+			meta.loading.unload();
+		}
 
-		// if(meta.device.support.consoleCSS) {
-		// 	console.log("%c(" + state + " ended)", "background: #eee; font-weight: bold;");
-		// }
-		// else {
-		// 	console.log("(" + state + " ended)");
-		// }
+		if(meta.device.support.consoleCSS) {
+			console.log("%c(" + state + " ended)", "background: #eee; font-weight: bold;");
+		}
+		else {
+			console.log("(" + state + " ended)");
+		}
 
 		if(!this.preloaded) {
 			this._handleLoad();

@@ -52,7 +52,6 @@ meta.class("meta.Renderer",
 	{
 		// Removal.	
 		if(this.entitiesRemove.length > 0) {
-			console.log(this.entitiesRemove)
 			this._removeEntities(this.entitiesRemove);
 			this.entitiesRemove.length = 0;
 		}
