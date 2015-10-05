@@ -14,8 +14,9 @@ meta.controller("meta.Loading",
 
 		var bgTexture = new Resource.SVG();
 		bgTexture.fillStyle = "#030303";
-		bgTexture.fillRect(0, 0, meta.camera.width, meta.camera.height);
+		bgTexture.fillRect(0, 0, 2, 2);
 		this.bg = new Entity.Geometry(bgTexture);
+		this.bg.fitIn(meta.camera.width, meta.camera.height);
 		this.view.attach(this.bg);
 
 		var progressShadowTexture = new Resource.SVG();
@@ -46,9 +47,8 @@ meta.controller("meta.Loading",
 		meta.resources.onLoadingUpdate.remove(this);
 	},
 
-	onResize: function(data){
-		this.bg.texture.resizeSilently(data.width, data.height);
-		this.bg.texture.fillRect(0, 0, data.width, data.height);
+	onResize: function(data) {
+		this.bg.fitIn(data.width, data.height);
 	},
 
 	onResourceLoaded: function(mgr) 

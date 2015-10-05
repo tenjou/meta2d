@@ -515,7 +515,7 @@ meta.class("Entity.Geometry",
 
 		this._updateAnchor();
 	
-		if(this.children) 
+		if(this.children)
 		{
 			var child;
 			var numChildren = this.children.length;
@@ -532,6 +532,27 @@ meta.class("Entity.Geometry",
 		}
 
 		this.renderer.needRender = true;		
+	},
+
+	fitIn: function(width, height)
+	{
+		if(this.volume.width < 1) 
+		{
+			if(this.volume.height < 1) {
+				this.volume.resize(1, 1);
+			}
+			else {
+				this.volume.resize(1, this.volume.initHeight);
+			}
+		}
+		else if(this.volume.height < 1) {
+			this.volume.resize(this.volume.initWidth, 1);
+		}
+
+		this.flags |= this.Flag.FIT_IN;
+		this.scale(
+			width / this.volume.initWidth,
+			height / this.volume.initHeight);
 	},
 
 	/** 
@@ -621,8 +642,6 @@ meta.class("Entity.Geometry",
 			}
 		}
 
-		
-
 		this.volume.__transformed = 1;
 		this.renderer.needRender = true;
 	},
@@ -642,8 +661,7 @@ meta.class("Entity.Geometry",
 				this.children[i]._updateResize();
 			}	
 		}
-	
-		//this.__clip = true;
+
 		this.renderer.needRender = true;
 	},
 
@@ -752,13 +770,32 @@ meta.class("Entity.Geometry",
 
 	updateFromTexture: function()
 	{
-		if(this._texture) {
+		if(this._texture) 
+		{
+			if(this.flags & this.Flag.FIT_IN) 
+			{
+				this.scale(
+					this.volume.width / this._texture.width,
+					this.volume.height / this._texture.height);
+			}
+
 			this.volume.resize(this._texture.width, this._texture.height);
+
 			this.totalOffsetX = Math.round((this._offsetX + this._texture.offsetX) * this.volume.scaleX);
 			this.totalOffsetY = Math.round((this._offsetY + this._texture.offsetY) * this.volume.scaleY);				
 		}
-		else {
-			this.volume.resize(0, 0);
+		else 
+		{
+			if(this.flags & this.Flag.FIT_IN) 
+			{
+				this.scale(
+					this.volume.width,
+					this.volume.height);
+			}
+			else {
+				this.volume.resize(1, 1);
+			}
+
 			this.totalOffsetX = Math.round(this._offsetX * this.volume.scaleX);
 			this.totalOffsetY = Math.round(this._offsetY * this.volume.scaleY);				
 		}
@@ -1404,7 +1441,8 @@ meta.class("Entity.Geometry",
 		DEBUG: 512,
 		CLIP_BOUNDS: 1024,
 		WILL_REMOVE: 2048,
-		DYNAMIC_CLIP: 4096
+		DYNAMIC_CLIP: 4096,
+		FIT_IN: 8192
 	},
 
 	//
