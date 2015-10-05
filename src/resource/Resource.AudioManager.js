@@ -14,6 +14,7 @@ meta.class("Resource.AudioManager",
 			this.gainNode.gain.value = this._volume;
 
 			audioProto._context = this.context;
+			audioProto._prepare = audioProto._prepare_WebAudio;
 			audioProto._loadFromPath = audioProto._loadFromPath_WebAudio;
 			audioProto._createInstance = audioProto._createInstance_WebAudio;
 			audioProto.steps = 2;
@@ -30,6 +31,7 @@ meta.class("Resource.AudioManager",
 		}
 		else 
 		{
+			audioProto._prepare = audioProto._prepare_Audio;
 			audioProto._loadFromPath = audioProto._loadFromPath_Audio;
 			audioProto._createInstance = audioProto._createInstance_Audio;
 			audioProto._syncLoading = true;

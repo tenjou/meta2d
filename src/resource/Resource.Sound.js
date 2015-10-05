@@ -6,37 +6,44 @@ meta.class("Resource.Sound", "Resource.Basic",
 	{
 		this._instances = [];
 
-		// check if Web Audio API is supported:
-		var self = this;
-		if(meta.device.audioAPI)
-		{	
-			this._request = new XMLHttpRequest();
-			this._request.responseType = "arraybuffer";
-			this._request.onreadystatechange = function() {
-				self._onStateChange();
-			}
-
-			this._gainNode = meta.audio.context.createGain();
-			this._gainNode.connect(meta.audio.gainNode);
-		}
-		else 
-		{
-			this._context = this._getInstance();
-			this._context.audio.addEventListener("error", function() 
-			{
-				if(!self.format) {
-					self._loadNextExtension();
-				}
-				else {
-					self._onLoadFailed();
-				}
-			});	
-			this._numInstancesUsed = 0;			
-		}
+		this._prepare();
 
 		if(typeof(data) === "string") {
 			this.load(data);
 		}		
+	},
+
+	_prepare: null,
+
+	_prepare_Audio: function()
+	{
+		var self = this;
+
+		this._context = this._getInstance();
+		this._context.audio.addEventListener("error", function() 
+		{
+			if(!self.format) {
+				self._loadNextExtension();
+			}
+			else {
+				self._onLoadFailed();
+			}
+		});	
+		this._numInstancesUsed = 0;	
+	},
+
+	_prepare_WebAudio: function()
+	{
+		var self = this;
+
+		this._request = new XMLHttpRequest();
+		this._request.responseType = "arraybuffer";
+		this._request.onreadystatechange = function() {
+			self._onStateChange();
+		}
+
+		this._gainNode = meta.audio.context.createGain();
+		this._gainNode.connect(meta.audio.gainNode);
 	},
 
 	load: function(path)
