@@ -435,9 +435,6 @@ meta.class("meta.Renderer",
 	{
 		if(!this.enablePicking) { return; }
 
-		this._checkHover(data);
-		if(!this.hoverEntity) { return; }
-
 		//
 		if(this.pressedEntity) 
 		{
@@ -453,6 +450,8 @@ meta.class("meta.Renderer",
 			}
 			
 			this.chn.onUp.emit(this.pressedEntity, Entity.Event.INPUT_UP);	
+
+			this._checkHover(data);
 
 			// CLICK
 			if(this.pressedEntity === this.hoverEntity) 
