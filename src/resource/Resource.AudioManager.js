@@ -31,6 +31,8 @@ meta.class("Resource.AudioManager",
 		}
 		else 
 		{
+			this.audioAPI = false;
+			
 			audioProto._prepare = audioProto._prepare_Audio;
 			audioProto._loadFromPath = audioProto._loadFromPath_Audio;
 			audioProto._createInstance = audioProto._createInstance_Audio;
@@ -106,5 +108,7 @@ meta.class("Resource.AudioManager",
 	gainNode: null,
 
 	_volume: 0.5,
-	_mute: false
+	_mute: false,
+
+	audioAPI: true
 });

@@ -204,7 +204,7 @@ meta.class("Resource.Sound", "Resource.Basic",
 
 	play: function(looping, offset)
 	{
-		if(meta.device.audioAPI) {
+		if(meta.audio.audioAPI) {
 			this._gainNode.gain.value = this._volume;
 		}
 
@@ -214,7 +214,7 @@ meta.class("Resource.Sound", "Resource.Basic",
 
 	stop: function()
 	{
-		if(meta.device.audioAPI) {
+		if(meta.audio.audioAPI) {
 			this._gainNode.gain.value = 0;
 		}
 
@@ -225,7 +225,7 @@ meta.class("Resource.Sound", "Resource.Basic",
 
 	pause: function()
 	{
-		if(meta.device.audioAPI) {
+		if(meta.audio.audioAPI) {
 			this._gainNode.gain.value = 0;
 		}
 
@@ -236,7 +236,7 @@ meta.class("Resource.Sound", "Resource.Basic",
 
 	resume: function()
 	{
-		if(meta.device.audioAPI) {
+		if(meta.audio.audioAPI) {
 			this._gainNode.gain.value = this._volume;
 		}
 
@@ -284,7 +284,7 @@ meta.class("Resource.Sound", "Resource.Basic",
 		if(this._volume === value) { return; }
 		this._volume = value;
 
-		if(meta.device.audioAPI) {
+		if(meta.audio.audioAPI) {
 			this._gainNode.gain.value = value;
 		}
 		else
@@ -330,7 +330,7 @@ meta.class("Resource.Sound", "Resource.Basic",
 
 	get duration() 
 	{
-		if(meta.device.audioAPI) 
+		if(meta.audio.audioAPI) 
 		{
 			if(this._buffer) { 
 				return this._buffer.duration; 
