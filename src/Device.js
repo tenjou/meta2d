@@ -47,6 +47,7 @@ meta.Device.prototype =
 		this.mobile = this.isMobileAgent();
 
 		this.checkConsoleCSS();
+		this.checkFileAPI();
 
 		this.support.onloadedmetadata = (typeof window.onloadedmetadata === "object");
 		this.support.onkeyup = (typeof window.onkeyup === "object");
@@ -123,6 +124,16 @@ meta.Device.prototype =
 		else {
 			this.support.consoleCSS = false;
 		}		
+	},
+
+	checkFileAPI: function() 
+	{
+		if(window.File && window.FileReader && window.FileList && window.Blob) {
+			this.support.fileAPI = true;
+		}
+		else {
+			this.support.fileAPI = false;
+		}
 	},
 
 	/**
