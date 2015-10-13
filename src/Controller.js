@@ -23,6 +23,20 @@ meta.class("meta.Controller",
 	{
 		if(this.flags & this.Flag.LOADED) { return; }
 
+		if(this.onTryLoad) 
+		{
+			if(!this.onTryLoad()) {
+				return;
+			}
+		}
+
+		this.forceLoad();
+	},
+
+	forceLoad: function() 
+	{
+		if(this.flags & this.Flag.LOADED) { return; }
+
 		if((this.flags & this.Flag.FIRST_LOADED) === 0)
 		{
 			if(this.onFirstLoad) {
@@ -46,6 +60,20 @@ meta.class("meta.Controller",
 	{
 		if((this.flags & this.Flag.LOADED) === 0) { return; }
 
+		if(this.onTryUnload) 
+		{
+			if(!this.onTryUnload()) {
+				return;
+			}
+		}
+
+		this.forceUnload();
+	},
+
+	forceUnload: function()
+	{
+		if((this.flags & this.Flag.LOADED) === 0) { return; }
+		
 		if(this.onUnload) {
 			this.onUnload();
 		}
@@ -65,9 +93,13 @@ meta.class("meta.Controller",
 		this.flags &= ~(this.Flag.LOADED | this.Flag.READY);	
 	},
 
+	onTryLoad: null,
+
 	onFirstLoad: null,
 
 	onLoad: null,
+
+	onTryUnload: null,
 
 	onUnload: null,
 
