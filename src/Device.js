@@ -357,8 +357,12 @@ meta.Device.prototype =
 
 	supportFileSystemAPI: function() 
 	{
-		if(window.requestFileSystem) {
-			window.requestFileSystem = window.webkitRequestFileSystem;
+		if(window.requestFileSystem) 
+		{
+			window.requestFileSystem = window.webkitRequestFileSystem || 
+				window.mozRequestFileSystem ||
+				window.oRequestFileSystem ||
+				window.msRequestFileSystem;
 		}
 
 		if(window.requestFileSystem) {
