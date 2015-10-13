@@ -907,7 +907,7 @@ meta.class("Entity.Geometry",
 			return;			
 		}
 
-		if(entity.parent !== this.renderer.holder) {
+		if(entity._view) {
 			console.warn("(Entity.Geometry.attach) Trying to attach entity that has already been attached to other entity");
 			return;
 		}
