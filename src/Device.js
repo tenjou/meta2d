@@ -152,6 +152,7 @@ meta.Device.prototype =
 		this.supportPerformanceNow();
 		this.supportAudioFormats();
 		this.supportAudioAPI();
+		this.supportFileSystemAPI();
 	},
 
 
@@ -351,6 +352,17 @@ meta.Device.prototype =
 
 		if(window.AudioContext) {
 			this.audioAPI = true;
+		}
+	},
+
+	supportFileSystemAPI: function() 
+	{
+		if(window.requestFileSystem) {
+			window.requestFileSystem = window.webkitRequestFileSystem;
+		}
+
+		if(window.requestFileSystem) {
+			this.support.fileSystemAPI = true;
 		}
 	}
 };
