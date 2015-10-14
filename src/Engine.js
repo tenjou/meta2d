@@ -75,12 +75,16 @@ meta.engine =
 		var flags = window.location.hash.substr(1).split(",")
 		var num = flags.length;
 
-		for(var n = 0; n < num; n++) {
+		for(var n = 0; n < num; n++) 
+		{
 			flag = flags[n];
 			flagSepIndex = flag.indexOf("=");
-			flagName = flag.substr(0, flagSepIndex).replace(/ /g, "");
-			flagValue = eval(flag.substr(flagSepIndex + 1).replace(/ /g, ""));
-			meta.flags[flagName] = flagValue;
+			if(flagSepIndex > 0)
+			{
+				flagName = flag.substr(0, flagSepIndex).replace(/ /g, "");
+				flagValue = eval(flag.substr(flagSepIndex + 1).replace(/ /g, ""));
+				meta.flags[flagName] = flagValue;
+			}
 		}
 	},
 
