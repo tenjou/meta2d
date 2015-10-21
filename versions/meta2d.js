@@ -1934,7 +1934,7 @@ Resource.Event = {
         for (var o in n) s = n[o], s.unitRatio = i, s.load()
     },
     getUniqueID: function() {
-        returnthis._uniqueID += 1
+        return this._uniqueID += 1
     },
     _xhr: null,
     _xhrOnSuccess: null,
