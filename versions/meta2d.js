@@ -747,9 +747,7 @@ function(t) {
 }, "use strict", meta.Channel = function(t) {
     this.name = t, this.subs = [], this.numSubs = 0, this._emitting = !1, this._subsToRemove = null
 }, meta.Channel.prototype = {
-    remove: function() {
-        meta.channels[this.name] = null
-    },
+    
     emit: function(t, e) {
         this._emitting = !0;
         for (var i, s = 0; s < this.numSubs; s += 1) {
@@ -775,16 +773,20 @@ function(t) {
         this.subs.push(n), this.numSubs += 1, i ? (this._havePriority = !0, this.subs.sort(this._sortFunc)) : this._havePriority && this.subs.sort(this._sortFunc)
     },
     remove: function(t) {
-        if (this._emitting) {
-            return (this._subsToRemove || (this._subsToRemove = []), this._subsToRemove.push(t), void 0);
-        }
-        for (var e, i = 0; i < this.numSubs; i += 1) {
-            if (e = this.subs[i], e.owner === t) {
-                this.subs[i] = this.subs[this.numSubs - 1], this.subs.pop(), this.numSubs -= 1;
-                break
-            }
-        }
-        this._havePriority && this.subs.sort(this._sortFunc)
+		if(t == null || t == undefined){
+			meta.channels[this.name] = null
+		}else{
+			if (this._emitting) {
+				return (this._subsToRemove || (this._subsToRemove = []), this._subsToRemove.push(t), void 0);
+			}
+			for (var e, i = 0; i < this.numSubs; i += 1) {
+				if (e = this.subs[i], e.owner === t) {
+					this.subs[i] = this.subs[this.numSubs - 1], this.subs.pop(), this.numSubs -= 1;
+					break
+				}
+			}
+			this._havePriority && this.subs.sort(this._sortFunc)
+		}
     },
     removeAll: function() {
         this.subs = [], this.numSubs = 0
