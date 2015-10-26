@@ -88,9 +88,11 @@ meta.Channel.prototype =
 	 */
 	remove: function(owner)
 	{
-		if(owner == null || owner == undefined){
+		if(owner === null || owner === void(0)) {
 			meta.channels[this.name] = null;
-		}else{
+		}
+		else
+		{
 			if(this._emitting) 
 			{
 				if(!this._subsToRemove) {
