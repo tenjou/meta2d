@@ -839,8 +839,6 @@ meta.class("Input.Manager",
 	//
 	onKeyDown: null,
 	onKeyUp: null,
-	onDown: null,
-	onUp: null,
 	onMove: null,
 	onClick: null,
 	onDbClick: null,
