@@ -964,10 +964,17 @@ meta.class("Entity.Geometry",
 
 	detach: function(entity) 
 	{
-		this._detach(entity);
+		if(entity)
+		{
+			this._detach(entity);
 
-		if(this._view && (this._view.flags & this._view.Flag.VISIBLE)) {
-			this.renderer.removeEntity(entity);
+			if(this._view && (this._view.flags & this._view.Flag.VISIBLE)) {
+				this.renderer.removeEntity(entity);
+			}
+		}
+		else {
+			this._detach(this);
+			this.renderer.removeEntity(this);
 		}
 	},
 
@@ -1219,6 +1226,7 @@ meta.class("Entity.Geometry",
 		}
 		else {
 			this._tweenCache.stop();
+			this._tweenCache = new meta.Tween.Cache(this);
 		}
 
 		if(obj instanceof meta.Tween.Link) {
