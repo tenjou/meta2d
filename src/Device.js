@@ -324,16 +324,16 @@ meta.Device.prototype =
 	supportAudioFormats: function()
 	{
 		var audio = document.createElement("audio");
-		if(audio.canPlayType('audio/mp4; codecs="mp4a.40.2"').replace(/no/i, '') != '') {
+		if(audio.canPlayType("audio/mp4")) {
 			this.audioFormats.push("m4a");
 		}
-		if(audio.canPlayType('audio/ogg; codecs="vorbis"').replace(/no/, '')) {
+		if(audio.canPlayType("audio/ogg")) {
 			this.audioFormats.push("ogg");
 		}
-		if(audio.canPlayType('audio/mpeg;').replace(/no/, '')) {
+		if(audio.canPlayType("audio/mpeg")) {
 			this.audioFormats.push("mp3");
 		}
-		if(audio.canPlayType('audio/wav; codecs="1"').replace(/no/, '')) {
+		if(audio.canPlayType("audio/wav")) {
 			this.audioFormats.push("wav");
 		}		
 	},
