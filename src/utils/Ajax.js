@@ -2,6 +2,9 @@
 
 meta.ajax = function(params)
 {
+	var data = meta.serialize(params.data);
+	var xhr = new XMLHttpRequest();
+
 	if(params.dataType === "html") {
 		params.responseType = "document";
 	}
@@ -10,6 +13,7 @@ meta.ajax = function(params)
 	}
 	else if(params.dataType === void(0)) {
 		params.responseType = "GET";
+		xhr.overrideMimeType("text/plain");
 	}
 	else {
 		params.responseType = params.dataType;
@@ -19,12 +23,7 @@ meta.ajax = function(params)
 		params.type = "GET";
 	}	
 
-	var data = meta.serialize(params.data);
-
-	var xhr = new XMLHttpRequest();
 	xhr.open(params.type, params.url, true);
-	xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
 	xhr.onload = function()
 	{
 		if(xhr.readyState === 4 && xhr.status === 200)
