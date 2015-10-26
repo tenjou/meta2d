@@ -71,8 +71,8 @@ meta.math.AABBext.prototype =
 
 		this.pivotX = x;
 		this.pivotY = y;
-		this.initPivotPosX = this.initWidth * this.pivotX;
-		this.initPivotPosY = this.initHeight * this.pivotY;	
+		this.initPivotPosX = this.initWidth * this.pivotX | 0
+		this.initPivotPosY = this.initHeight * this.pivotY| 0;
 
 		this.updatePivotPos();	
 	},	

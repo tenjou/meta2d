@@ -43,7 +43,9 @@ meta.class("Resource.Font", "Resource.Basic",
 		var self = this;
 		meta.ajax({
 			url: this.path,
-			success: function(data) { parseFunc.call(self, data); },
+			success: function(data) { 
+				parseFunc.call(self, data); 
+			},
 			error: function() { self._onError(); }
 		});
 	},

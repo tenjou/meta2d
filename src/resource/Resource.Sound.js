@@ -134,7 +134,7 @@ meta.class("Resource.Sound", "Resource.Basic",
 				var self = this;
 				this._context.decodeAudioData(this._request.response, 
 					function(buffer) { self._onDecodeSuccess(buffer); },
-					function() { self._onDecodeError(); }
+					function(error) { self._onDecodeError(error); }
 				);
 				this._request = null;
 			}
@@ -172,8 +172,9 @@ meta.class("Resource.Sound", "Resource.Basic",
 		}
 	},
 
-	_onDecodeError: function() 
+	_onDecodeError: function(error) 
 	{
+		console.log(error)
 		if(!this.format) {
 			this.path += "." + meta.device.audioFormats[this._requestFormat - 1];
 		}
