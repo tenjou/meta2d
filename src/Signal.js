@@ -19,13 +19,6 @@ meta.Channel = function(name)
 meta.Channel.prototype =
 {
 	/**
-	 * Remove the channel.
-	 */
-	remove: function() {
-		meta.channels[this.name] = null;
-	},
-
-	/**
 	 * Emit an event to all subscribers.
 	 * @param data {*} Data that comes with event.
 	 * @param event {*} Type of event.
@@ -95,30 +88,34 @@ meta.Channel.prototype =
 	 */
 	remove: function(owner)
 	{
-		if(this._emitting) 
-		{
-			if(!this._subsToRemove) {
-				this._subsToRemove = [];
+		if(owner == null || owner == undefined){
+			meta.channels[this.name] = null;
+		}else{
+			if(this._emitting) 
+			{
+				if(!this._subsToRemove) {
+					this._subsToRemove = [];
+				}
+				this._subsToRemove.push(owner);
+				return;
 			}
-			this._subsToRemove.push(owner);
-			return;
-		}
-
-		var sub;
-		for(var i = 0; i < this.numSubs; i++)
-		{
-			sub = this.subs[i];
-			if(sub.owner === owner) {
-				this.subs[i] = this.subs[this.numSubs - 1];
-				this.subs.pop();
-				this.numSubs--;
-				break;
+	
+			var sub;
+			for(var i = 0; i < this.numSubs; i++)
+			{
+				sub = this.subs[i];
+				if(sub.owner === owner) {
+					this.subs[i] = this.subs[this.numSubs - 1];
+					this.subs.pop();
+					this.numSubs--;
+					break;
+				}
+			}
+	
+			if(this._havePriority) {
+				this.subs.sort(this._sortFunc);
 			}
 		}
-
-		if(this._havePriority) {
-			this.subs.sort(this._sortFunc);
-		}		
 	},
 
 	removeAll: function() {
