@@ -341,11 +341,8 @@ meta.engine =
 
 					if(timer.numTimes <= 0) 
 					{
-						numTimers--;
-						if(numTimers > 0) {
-							this.timersRemove.push(timer);
-							timer.__index = -1;
-						}
+						this.timersRemove.push(timer);
+						timer.__index = -1;
 						break;
 					}
 				}
