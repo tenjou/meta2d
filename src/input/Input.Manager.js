@@ -84,17 +84,19 @@ meta.class("Input.Manager",
 		var keyCode = event.keyCode;
 
 		// Skip default behaviour for some keys.
-		if(window.top && this._iframeKeys[keyCode]) {
-			event.preventDefault();
-		}
+		if(document.activeElement === document.body)
+		{
+			if(window.top && this._iframeKeys[keyCode]) {
+				event.preventDefault();
+			}
 
+			if(this._cmdKeys[keyCode] !== void(0)) {
+				this._numCmdKeys++;
+			}
 
-		if(this._cmdKeys[keyCode] !== void(0)) {
-			this._numCmdKeys++;
-		}
-
-		if(this._ignoreKeys[keyCode] !== void(0) && this._numCmdKeys <= 0) {
-			event.preventDefault();
+			if(this._ignoreKeys[keyCode] !== void(0) && this._numCmdKeys <= 0) {
+				event.preventDefault();
+			}
 		}
 
 		//
@@ -169,16 +171,19 @@ meta.class("Input.Manager",
 		var keyCode = event.keyCode;
 
 		// Skip default behaviour for some keys.
-		if(window.top && this._iframeKeys[keyCode]) {
-			event.preventDefault();
-		}
+		if(document.activeElement === document.body)
+		{		
+			if(window.top && this._iframeKeys[keyCode]) {
+				event.preventDefault();
+			}
 
-		if(this._cmdKeys[keyCode] !== void(0) && this.keys[keyCode]) {
-			this._numCmdKeys--;
-		}
+			if(this._cmdKeys[keyCode] !== void(0) && this.keys[keyCode]) {
+				this._numCmdKeys--;
+			}
 
-		if(this._ignoreKeys[keyCode] === void(0) && this._numCmdKeys <= 0) {
-			event.preventDefault();
+			if(this._ignoreKeys[keyCode] === void(0) && this._numCmdKeys <= 0) {
+				event.preventDefault();
+			}
 		}
 
 		//
@@ -331,7 +336,9 @@ meta.class("Input.Manager",
 	 */
 	handleMouseMove: function(event)
 	{
-		event.preventDefault();
+		if(document.activeElement === document.body) {
+			event.preventDefault();
+		}
 
 		if(this.blockInput) { return; }
 
@@ -412,7 +419,9 @@ meta.class("Input.Manager",
 	 */
 	handleTouchDown: function(event)
 	{
-		event.preventDefault();
+		if(document.activeElement === document.body) {		
+			event.preventDefault();
+		}
 
 		var scope = meta;
 		var camera = scope.camera;
@@ -486,7 +495,9 @@ meta.class("Input.Manager",
 	 */
 	handleTouchUp: function(event)
 	{
-		event.preventDefault();
+		if(document.activeElement === document.body) {		
+			event.preventDefault();
+		}
 
 		var scope = meta;
 		var camera = scope.camera;
@@ -566,7 +577,9 @@ meta.class("Input.Manager",
 	 */
 	handleTouchMove: function(event)
 	{
-		event.preventDefault();
+		if(document.activeElement === document.body) {		
+			event.preventDefault();
+		}
 
 		var scope = meta;
 		var camera = scope.camera;
