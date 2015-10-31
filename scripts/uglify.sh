@@ -63,4 +63,3 @@ cat meta.js \
 	Loading.js \
 	Loader.js \
 	| uglifyjs --output ../versions/meta.js --mangle -c dead_code=false,unused=false,side_effects=false --screw-ie8
-

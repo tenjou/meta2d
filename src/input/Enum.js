@@ -25,7 +25,9 @@ Input.Key =
 	LEFT: 37,
 	UP: 38,
 	RIGHT: 39,
-	DOWN: 40,	
+	DOWN: 40,
+
+	DELETE: 46,	
 
 	NUM_0: 48,
 	NUM_1: 49,
@@ -84,7 +86,6 @@ Input.Key =
 	F11: 122,
 	F12: 123,
 
-	DELETE: 127,
 	PLUS: 187,
 	MINUS: 189,
 
