@@ -129,7 +129,6 @@ meta.Channel.prototype =
 		return (a.priority > b.priority) ? -1 : 1
 	},
 
-
 	//
 	_havePriority: false
 };

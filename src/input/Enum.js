@@ -1,15 +1,15 @@
 "use strict";
 
-var Input = {};
+var Input = {
+	BUTTON_ENUM_OFFSET: 2000
+};
 
 Input.Event =
 {
-	KEY_DOWN: "keydown",
-	KEY_UP: "keyup",
 	DOWN: "inputDown",
 	UP: "inputUp",
 	MOVE: "inputMove",
-	CLICK: "inpucClick",
+	CLICK: "inputClick",
 	DBCLICK: "inputDbClick"
 };
 
@@ -92,7 +92,7 @@ Input.Key =
 	TILDE: 192,
 	APOSTROPHE: 222,
 
-	BUTTON_LEFT: 256 + 0,
-	BUTTON_MIDDLE: 256 + 1,
-	BUTTON_RIGHT: 256 + 2
+	BUTTON_LEFT: 0 + Input.BUTTON_ENUM_OFFSET,
+	BUTTON_MIDDLE: 1 + Input.BUTTON_ENUM_OFFSET,
+	BUTTON_RIGHT: 2 + Input.BUTTON_ENUM_OFFSET
 };

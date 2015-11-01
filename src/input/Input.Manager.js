@@ -47,9 +47,7 @@ meta.class("Input.Manager",
 	/** Add all DOM input event listeners. */
 	_addEventListeners: function()
 	{
-		this.onKeyDown = meta.createChannel(Input.Event.KEY_DOWN);
-		this.onKeyUp = meta.createChannel(Input.Event.KEY_UP);
-		this.onDown =  meta.createChannel(Input.Event.DOWN);
+		this.onDown = meta.createChannel(Input.Event.DOWN);
 		this.onUp = meta.createChannel(Input.Event.UP);
 		this.onMove = meta.createChannel(Input.Event.MOVE);
 		this.onClick = meta.createChannel(Input.Event.CLICK);
@@ -116,7 +114,8 @@ meta.class("Input.Manager",
 		this.keys[keyCode] = 1;
 		this.pressed[this.keyID[keyCode]] = 1;
 
-		if(this._keybindMap && this._keybindMap[keyCode]) {
+		if(this._keybindMap && this._keybindMap[keyCode]) 
+		{
 			var buffer = this._keybindMap[keyCode];
 			var num = buffer.length;
 			for(var n = 0; n < num; n++) {
@@ -133,27 +132,18 @@ meta.class("Input.Manager",
 		this._event.y = 0;
 		this._event.keyCode = keyCode;
 
-		this.onKeyDown.emit(this._event, Input.Event.KEY_DOWN);
-
-		// Callbacks:
-		if(this._onDownCBS && this._onDownCBS[keyCode]) 
-		{
-			var cbs = this._onDownCBS[keyCode]; 
-			var numCbs = cbs.length;
-			for(var i = 0; i < numCbs; i++) {
-				cbs[i](this._event, Input.Event.KEY_DOWN);
-			}
-		}
+		this.onDown.emit(this._event, Input.Event.DOWN);
 
 		if(this.keyRepeat)
 		{
 			if(!this._inputTimer)
 			{
 				var self = this;
-				this._inputTimer = meta.addTimer(this, function() {
-					self._event.keyCode = self._repeatKey;
-					self.onKeyDown.emit(self._event, Input.Event.KEY_DOWN);
-				}, this.keyRepeat);
+				this._inputTimer = meta.addTimer(this, 
+					function() {
+						self._event.keyCode = self._repeatKey;
+						self.onDown.emit(self._event, Input.Event.DOWN);
+					}, this.keyRepeat);
 			}
 
 			this._repeatKey = keyCode;
@@ -210,17 +200,7 @@ meta.class("Input.Manager",
 		this._event.y = 0;
 		this._event.keyCode = keyCode;
 
-		this.onKeyUp.emit(this._event, Input.Event.KEY_UP);
-
-		// Callbacks:
-		if(this._onUpCBS && this._onUpCBS[keyCode]) 
-		{
-			var cbs = this._onUpCBS[keyCode]; 
-			var numCbs = cbs.length;
-			for(var i = 0; i < numCbs; i++) {
-				cbs[i](this._event, Input.Event.KEY_UP);
-			}
-		}	
+		this.onUp.emit(this._event, Input.Event.UP);
 
 		if(this.keyRepeat && this._inputTimer) {
 			this._inputTimer.pause();
@@ -235,7 +215,7 @@ meta.class("Input.Manager",
 	{
 		if(this.blockInput) { return; }
 
-		var keyCode = event.button + 256;
+		var keyCode = event.button + Input.BUTTON_ENUM_OFFSET;
 		this.keys[keyCode] = 1;
 		this.pressed[this.keyID[keyCode]] = keyCode;
 
@@ -265,16 +245,6 @@ meta.class("Input.Manager",
 
 		this.onDown.emit(this._event, Input.Event.DOWN);
 
-		// Callbacks:
-		if(this._onDownCBS && this._onDownCBS[keyCode]) 
-		{
-			var cbs = this._onDownCBS[keyCode]; 
-			var numCbs = cbs.length;
-			for(var i = 0; i < numCbs; i++) {
-				cbs[i](this._event, Input.Event.KEY_DOWN);
-			}
-		}
-
 		this._event.entity = null;
 	},
 
@@ -286,7 +256,7 @@ meta.class("Input.Manager",
 	{
 		if(this.blockInput) { return; }
 
-		var keyCode = event.button + 256;
+		var keyCode = event.button + Input.BUTTON_ENUM_OFFSET;
 		this.keys[keyCode] = 0;
 		this.pressed[this.keyID[keyCode]] = 0;
 
@@ -316,16 +286,6 @@ meta.class("Input.Manager",
 
 		this.onUp.emit(this._event, Input.Event.UP);
 		this.onClick.emit(this._event, Input.Event.CLICK);
-
-		// Callbacks:
-		if(this._onUpCBS && this._onUpCBS[keyCode]) 
-		{
-			var cbs = this._onUpCBS[keyCode]; 
-			var numCbs = cbs.length;
-			for(var i = 0; i < numCbs; i++) {
-				cbs[i](this._event, Input.Event.UP);
-			}
-		}
 
 		this._event.entity = null;
 	},
@@ -441,7 +401,7 @@ meta.class("Input.Manager",
 			x = ((screenX * camera.zoomRatio) + camera.volume.x) | 0;
 			y = ((screenY * camera.zoomRatio) + camera.volume.y) | 0;
 
-			var keyCode = id + 256;
+			var keyCode = id + Input.BUTTON_ENUM_OFFSET;
 			this.keys[keyCode] = 1;
 
 			if(id < 3) 
@@ -474,16 +434,6 @@ meta.class("Input.Manager",
 			}
 
 			this.onDown.emit(this._event, Input.Event.DOWN);
-
-			// Callbacks:
-			if(this._onDownCBS && this._onDownCBS[keyCode]) 
-			{
-				var cbs = this._onDownCBS[keyCode]; 
-				var numCbs = cbs.length;
-				for(var i = 0; i < numCbs; i++) {
-					cbs[i](this._event, Input.Event.DOWN);
-				}
-			}
 
 			this._event.entity = null;
 		}
@@ -519,7 +469,7 @@ meta.class("Input.Manager",
 			x = ((screenX * camera.zoomRatio) + camera.volume.x) | 0;
 			y = ((screenY * camera.zoomRatio) + camera.volume.y) | 0;
 
-			var keyCode = id + 256;
+			var keyCode = id + Input.BUTTON_ENUM_OFFSET;
 			this.keys[keyCode] = 0;
 
 			if(id < 3) 
@@ -557,16 +507,6 @@ meta.class("Input.Manager",
 			this.onDown.emit(this._event, Input.Event.UP);
 			this.onClick.emit(this._event, Input.Event.CLICK);
 
-			// Callbacks:
-			if(this._onUpCBS && this._onUpCBS[keyCode]) 
-			{
-				var cbs = this._onUpCBS[keyCode]; 
-				var numCbs = cbs.length;
-				for(var i = 0; i < numCbs; i++) {
-					cbs[i](this._event, Input.Event.UP);
-				}
-			}
-
 			this._event.entity = null;
 		}
 	},
@@ -598,7 +538,7 @@ meta.class("Input.Manager",
 			x = ((screenX * camera.zoomRatio) + camera.volume.x) | 0;
 			y = ((screenY * camera.zoomRatio) + camera.volume.y) | 0;
 
-			var keyCode = id + 256;
+			var keyCode = id + Input.BUTTON_ENUM_OFFSET;
 
 			this._event.event = event;
 			if(id === 0) {
@@ -649,7 +589,7 @@ meta.class("Input.Manager",
 			if(this.keys[i]) {
 				this.keys[i] = 0;
 				this._event.keyCode = i;
-				this.onKeyUp.emit(this._event, Input.Event.KEY_UP);
+				this.onKeyUp.emit(this._event, Input.Event.UP);
 			}
 		}
 
@@ -750,85 +690,6 @@ meta.class("Input.Manager",
 		return -1;
 	},
 
-	onDown: function(keys, func) 
-	{
-		if(!keys) {
-			console.warn("(Input.Manager::onChange): Invalid keys passed");
-			return;
-		}
-
-		if(!this._onDownCBS) {
-			this._onDownCBS = {}
-		}
-
-		if(keys instanceof Array) {
-			var num = keys.length;
-			for(var n = 0; n < num; n++) 
-			{
-				if(!this._onDownCBS[keys[n]]) {
-					this._onDownCBS[keys[n]] = [ func ];
-				}
-				else {
-					this._onDownCBS[keys[n]].push(func);
-				}
-			}
-		}
-		else 
-		{
-			if(!this._onDownCBS[keys]) {
-				this._onDownCBS[keys] = [ func ];
-			}
-			else {
-				this._onDownCBS[keys].push(func);
-			}
-		}
-	},
-
-	onUp: function(keys, func) 
-	{
-		if(!keys) {
-			console.warn("(Input.Manager::onChange): Invalid keys passed");
-			return;
-		}
-
-		if(!this._onUpCBS) {
-			this._onUpCBS = {}
-		}
-
-		if(keys instanceof Array) {
-			var num = keys.length;
-			for(var n = 0; n < num; n++) 
-			{
-				if(!this._onUpCBS[keys[n]]) {
-					this._onUpCBS[keys[n]] = [ func ];
-				}
-				else {
-					this._onUpCBS[keys[n]].push(func);
-				}
-			}
-		}
-		else 
-		{
-			if(!this._onUpCBS[keys]) {
-				this._onUpCBS[keys] = [ func ];
-			}
-			else {
-				this._onUpCBS[keys].push(func);
-			}
-		}
-	},	
-
-	onChange: function(keys, func) 
-	{
-		if(!keys) {
-			console.warn("(Input.Manager::onChange): Invalid keys passed");
-			return;
-		}
-
-		this.onDown(keys, func);
-		this.onUp(keys, func);
-	},
-
 	addKeybind: function(keybind, keys)
 	{
 		if(!this._keybindMap) {
@@ -849,9 +710,17 @@ meta.class("Input.Manager",
 		}
 	},
 
+	isDown: function(key) {
+		return this.keys[key];
+	},
+
+	isUp: function(key) {
+		return !this.keys[key];
+	},
+
 	//
-	onKeyDown: null,
-	onKeyUp: null,
+	onDown: null,
+	onUp: null,
 	onMove: null,
 	onClick: null,
 	onDbClick: null,
@@ -887,8 +756,5 @@ meta.class("Input.Manager",
 	_ignoreKeys: null,
 	_cmdKeys: null,
 	_iframeKeys: null,
-	_numCmdKeys: 0,
-
-	_onDownCBS: null,
-	_onUpCBS: null
+	_numCmdKeys: 0
 });
