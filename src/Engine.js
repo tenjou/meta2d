@@ -701,7 +701,7 @@ meta.engine =
 	{
 		if(meta.device.support.consoleCSS)
 		{
-			console.log("%c META v" + meta.version + " ", 
+			console.log("%c META2D v" + meta.version + " ", 
 				"background: #000; color: white; font-size: 12px; padding: 2px 0 1px 0;",
 				"http://meta2d.com");
 
@@ -715,7 +715,7 @@ meta.engine =
 		}
 		else 
 		{
-			console.log("META v" + meta.version + " http://meta2d.com ");
+			console.log("META2D v" + meta.version + " http://meta2d.com ");
 			console.log("Browser: " + meta.device.name + " " + meta.device.version + "\t");
 			console.log("Renderer: Canvas ");				
 		}		

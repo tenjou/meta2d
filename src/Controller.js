@@ -218,3 +218,22 @@ meta.controller = function(name, extend, obj)
 meta.plugin = function(name, extend, obj) {
 	meta.class("meta.plugins." + name, extend, obj, _addClassInstance);
 };
+
+meta.component = function(name, extend, obj) 
+{
+	if(!obj) 
+	{
+		if(typeof(extend) === "object") {
+			obj = extend;
+			extend = "Component";
+		}
+		else {
+			obj = null;
+		}
+	}
+
+	if(!extend) {
+		extend = "Component";
+	}
+	meta.class("Component." + name, extend, obj);
+};

@@ -1,6 +1,6 @@
 "use strict";
 
-meta.class("Physics.Body",
+meta.component("Physics",
 {
 	init: function() {
 		this.velocity = new meta.math.Vector2(0, 0);

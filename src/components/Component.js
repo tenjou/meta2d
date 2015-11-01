@@ -1,3 +1,5 @@
 "use strict";
 
-var Component = {};
+meta.class("Component", {
+	owner: null
+});

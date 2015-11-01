@@ -34,14 +34,6 @@ meta.class("Entity.Geometry",
 
 	onCreate: null,
 
-	createBody: function(comp) 
-	{
-		if(!comp) {
-			comp = Physics.Body;
-		}
-		this.addComponent("body", comp);
-	},
-
 	remove: function()
 	{
 		if(this.removed) { return; }
@@ -1257,26 +1249,24 @@ meta.class("Entity.Geometry",
 		return this._tweenCache.tween;
 	},	
 
-	addComponent: function(name, obj, params) 
+	addComponent: function(component, params) 
 	{
-		if(name instanceof Object) {
-			params = obj;
-			obj = name;
-			name = null;
+		if(typeof component === "string") {
+			component = Component[component];
+		}
+		if(!component) {
+			console.warn("(Entity.Geometry.addComponent) Adding an invalid component");
+			return null;
 		}
 
-		var comp = new obj(this);
+		var name = component.prototype.__lastName__;
+		if(this.components && this.components[name]) {
+			console.warn("(Entity.Geometry.addComponent) Entity already has component: " + name);
+			return null;
+		}
+
+		var comp = new component(this);
 		comp.owner = this;
-
-		if(name) 
-		{
-			if(this[name]) {
-				console.warn("(Entity.Geometry.addComponent) Already in use: " + name);
-				return null;
-			}
-
-			this[name] = comp;
-		}		
 
 		if(params) 
 		{
