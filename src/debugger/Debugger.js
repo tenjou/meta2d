@@ -133,32 +133,27 @@ meta.Debugger.prototype =
 	load: function()
 	{
 		this.view.active = true;
+		this.timer = meta.addTimer(this.updateTxt, 1000, this);
 
-		var self = this;
-		this.timer = meta.addTimer(this, function() {
-			self.updateTxt();
-		}, 1000);
+		meta.input.onMove.add(this.handleInputMove, this);
+		meta.engine.onResize.add(this.handleResize, this);
+		meta.world.onResize.add(this.handleWorldResize, this);
+		meta.camera.onResize.add(this.handleCameraResize, this);
+		meta.camera.onMove.add(this.handleCameraMove, this);
 
-		meta.input.onMove.add(this.onInputMove, this);
-		meta.engine.onResize.add(this.onResize, this);
-		meta.world.onResize.add(this.onWorldResize, this);
-		meta.camera.onResize.add(this.onCameraResize, this);
-		meta.camera.onMove.add(this.onCameraMove, this);
-
-		this.updateTxt();
-
-		this.onCameraMove(meta.camera, 0);
-		this.onCameraResize(meta.camera, 0);
-		this.onResize(meta.engine);
-		this.onWorldResize(meta.world, 0);
-		this.onInputMove(meta.input, 0);	
+		this.handleInputMove(meta.input, 0);	
+		this.handleResize(meta.engine);
+		this.handleWorldResize(meta.world, 0);
+		this.handleCameraResize(meta.camera, 0);
+		this.handleCameraMove(meta.camera, 0);
+		this.updateStats();		
 	},
 
 	unload: function()
 	{
-		meta.input.onInputMove.remove(this);
+		meta.input.onMove.remove(this);
 		meta.engine.onResize.remove(this);
-		meta.world.onResize.remove(tthis);
+		meta.world.onResize.remove(this);
 		meta.camera.onResize.remove(this);
 		meta.camera.onMove.remove(this);
 
@@ -166,7 +161,7 @@ meta.Debugger.prototype =
 		this.view.active = false;
 	},
 
-	updateTxt: function()
+	updateStats: function()
 	{
 		var fps = meta.engine.fps;
 		if(fps !== this.fps) {
@@ -202,27 +197,27 @@ meta.Debugger.prototype =
 		}
 	},
 
-	onInputMove: function(data, event) {
+	handleInputMove: function(data, event) {
 		this.txt.world.text = "world: " + data.x + ", " + data.y;
 		this.txt.screen.text = "screen: " + data.screenX + ", " + data.screenY;
 	},
 
-	onCameraMove: function(data, event) {
+	handleCameraMove: function(data, event) {
 		var volume = data.volume;
 		this.txt.cameraBoundsMin.text = "boundsMin: " + Math.round(volume.minX) + ", " + Math.round(volume.minY);
 		this.txt.cameraBoundsMax.text = "boundsMax: " + Math.round(volume.maxX) + ", " + Math.round(volume.maxY);
 		this.txt.cameraResolution.text = "width: " + volume.width + ", height: " + volume.height;
 	},
 
-	onCameraResize: function(data, event) {
+	handleCameraResize: function(data, event) {
 		this.txt.cameraZoom.text = "zoom: " + data.zoom.toFixed(3);
 	},
 
-	onResize: function(data, event) {
+	handleResize: function(data, event) {
 		this.txt.resolution.text = "width: " + data.width + ", height: " + data.height;
 	},
 
-	onWorldResize: function(data, event) {
+	handleWorldResize: function(data, event) {
 		var volume = data.volume;
 		this.txt.worldBoundsMin.text = "boundsMin: " + Math.round(volume.minX) + ", " + Math.round(volume.minY);
 		this.txt.worldBoundsMax.text = "boundsMax: " + Math.round(volume.maxX) + ", " + Math.round(volume.maxY);

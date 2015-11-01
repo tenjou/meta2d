@@ -132,6 +132,7 @@ meta.engine =
 	_handlePreload: function()
 	{
 		this.meta.renderer.load();
+		this.meta.input.onDown.add(this.handleKeyDown, this);
 
 		var cache = meta.cache;
 		var numFuncs = cache.preloadFuncs.length;
@@ -414,9 +415,17 @@ meta.engine =
 		return true;
 	},	
 
-	onKeyTilde: function(data, event) {
-		meta.debug = !meta.cache.debug;
-		meta.renderer.needRender = true;
+	handleKeyDown: function(data, event) 
+	{
+		switch(data.keyCode)
+		{
+			case Input.Key.TILDE:
+			{
+				console.log("tilde")
+				meta.debug = !meta.cache.debug;
+				meta.renderer.needRender = true;
+			} break;
+		}
 	},
 
 	onLoadingStart: function(data, event) 
