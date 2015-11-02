@@ -441,8 +441,8 @@ meta.View.prototype =
 		STATIC: 8
 	},
 
-
 	//
+	debugger: false,
 	entitiesUI: null
 };
 

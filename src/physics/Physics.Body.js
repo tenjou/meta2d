@@ -1,6 +1,6 @@
 "use strict";
 
-meta.component("Physics",
+meta.component("Physics.Body",
 {
 	init: function() {
 		this.velocity = new meta.math.Vector2(0, 0);
@@ -10,14 +10,14 @@ meta.component("Physics",
 
 	load: function() {
 		this._volume = this.owner.volume;
-		Physics.bodies.push(this);		
+		meta.physics.bodies.push(this);		
 	},
 
 	unload: function() {
 
 	},
 
-	updateItem: function(tDelta)
+	step: function(tDelta)
 	{
 		this.colliding = false;
 		this.volume.position(this.owner.volume.x, this.owner.volume.y);

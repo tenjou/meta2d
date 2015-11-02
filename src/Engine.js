@@ -20,6 +20,7 @@ meta.engine =
 			this._addMetaTags();
 		}
 
+		this.onUpdate = meta.createChannel(meta.Event.UPDATE);
 		this.onResize = meta.createChannel(meta.Event.RESIZE);
 		this.onAdapt = meta.createChannel(meta.Event.ADAPT);
 		this.onBlur = meta.createChannel(meta.Event.BLUR);
@@ -57,7 +58,7 @@ meta.engine =
 		meta.world = new meta.World(0, 0);
 		meta.resources = new Resource.Manager();
 		meta.input = new Input.Manager();
-		meta.debugger = new meta.Debugger();
+		meta.physics = new Physics.Manager();
 
 		var resources = meta.resources;
 		resources.onLoadingStart.add(this.onLoadingStart, this);
@@ -238,6 +239,7 @@ meta.engine =
 			this.controllersUpdate[n].onUpdate(tDelta);
 		}
 
+		this.onUpdate.emit(tDelta);
 		this.meta.renderer.update(tDelta);
 		this.meta.camera.update(tDelta);
 	},
@@ -421,7 +423,6 @@ meta.engine =
 		{
 			case Input.Key.TILDE:
 			{
-				console.log("tilde")
 				meta.debug = !meta.cache.debug;
 				meta.renderer.needRender = true;
 			} break;
@@ -844,6 +845,7 @@ meta.engine =
 	},
 
 	//
+	onUpdate: null,
 	onResize: null,
 	onBlur: null,
 	onFocus: null,

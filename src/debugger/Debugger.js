@@ -1,42 +1,20 @@
 "use strict";
 
-meta.Debugger = function() 
+meta.controller("meta.debugger",
 {
-	this.holder = null;
-	this.txt = null;
-
-	this.fps = 0;
-	this.memory = 0;
-	this.numEntities = 0;
-
-	this.created = false;
-
-	this.init();
-};
-
-meta.Debugger.prototype =
-{
-	init: function() {
-		meta.engine.onDebug.add(this.onDebug, this);
-	},
-
-	create: function()
+	onFirstLoad: function()
 	{
-		this.view = meta.getView("debugger");
 		this.view.static = true;
+		this.view.debugger = true;
 		this.view.z = 1000000;
 
 		var texture = new Resource.SVG();
-		texture.fillStyle = "#000";
 		texture.fillRect(0, 0, 200, 290);
 
 		this.holder = new Entity.Geometry(texture);
-		this.holder.parent = meta.renderer.staticHolder;
+		//this.holder.parent = meta.renderer.staticHolder;
 		this.holder.anchor(0, 1);
-		this.holder.position(0, -290);
-		this.holder.alpha = 0.8;
-		this.holder.z = 10000;
-		this.holder.debugger = true;
+		this.holder.pivot(0, 1);
 		this.view.attach(this.holder);
 
 		var fps = new Entity.Text();
@@ -126,13 +104,10 @@ meta.Debugger.prototype =
 			world: world,
 			screen: screen
 		};	
-
-		this.created = true;		
 	},
 
-	load: function()
+	onLoad: function()
 	{
-		this.view.active = true;
 		this.timer = meta.addTimer(this.updateTxt, 1000, this);
 
 		meta.input.onMove.add(this.handleInputMove, this);
@@ -149,7 +124,7 @@ meta.Debugger.prototype =
 		this.updateStats();		
 	},
 
-	unload: function()
+	onUnload: function()
 	{
 		meta.input.onMove.remove(this);
 		meta.engine.onResize.remove(this);
@@ -158,7 +133,6 @@ meta.Debugger.prototype =
 		meta.camera.onMove.remove(this);
 
 		this.timer.stop();
-		this.view.active = false;
 	},
 
 	updateStats: function()
@@ -179,21 +153,6 @@ meta.Debugger.prototype =
 		if(numEntities !== this.numEntities) {
 			this.txt.entities.text = "entities: " + numEntities;
 			this.numEntities = numEntities;
-		}
-	},
-
-	onDebug: function(value, event) 
-	{
-		if(value) 
-		{
-			if(!this.created) {
-				this.create();
-			}
-
-			this.load();
-		}
-		else {
-			this.unload();
 		}
 	},
 
@@ -222,5 +181,8 @@ meta.Debugger.prototype =
 		this.txt.worldBoundsMin.text = "boundsMin: " + Math.round(volume.minX) + ", " + Math.round(volume.minY);
 		this.txt.worldBoundsMax.text = "boundsMax: " + Math.round(volume.maxX) + ", " + Math.round(volume.maxY);
 		this.txt.worldResolution.text = "width: " + volume.width + ", height: " + volume.height;
-	}
-};
+	},
+
+	//
+	txt: null
+});

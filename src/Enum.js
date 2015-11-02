@@ -1,6 +1,7 @@
 "use strict";
 
 meta.Event = {
+	UPDATE: "update",
 	RESIZE: "resize",
 	WORLD_RESIZE: "world-resize",
 	CAMERA_MOVE: "camera-move",

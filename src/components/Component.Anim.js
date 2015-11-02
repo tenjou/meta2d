@@ -1,10 +1,6 @@
 "use strict";
 
-Component.Anim = function(owner) {
-	this.owner = owner;
-};
-
-Component.Anim.prototype =
+meta.component("Component.Anim",
 {
 	set: function(texture) 
 	{
@@ -190,4 +186,4 @@ Component.Anim.prototype =
 	__index: -1,
 	__delay: 0,
 	__tAnim: 0
-};
+});

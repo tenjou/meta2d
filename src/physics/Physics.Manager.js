@@ -1,9 +1,12 @@
 "use strict";
 
-meta.plugin("Physics",
+meta.class("Physics.Manager",
 {
-	init: function() {
+	init: function() 
+	{
 		this.manifold = new this.Manifold();
+
+		meta.engine.onUpdate.add(this.update, this);
 		meta.engine.onDebug.add(this.onDebug, this);
 	},
 
@@ -13,7 +16,7 @@ meta.plugin("Physics",
 		var numBodies = this.bodies.length;
 		for(var i = 0; i < numBodies; i++) {
 			body1 = this.bodies[i];
-			body1.updateBody(tDelta);
+			body1.step(tDelta);
 			this.bodyVsWorld(body1);
 		}
 
@@ -29,7 +32,7 @@ meta.plugin("Physics",
 
 				if(body1._mass === 0 && body2._mass === 0) {
 					continue;
-				}				
+				}
 
 				if(this.bodyVsBody(body1, body2))
 				{
