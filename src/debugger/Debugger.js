@@ -108,7 +108,7 @@ meta.controller("meta.debugger",
 
 	onLoad: function()
 	{
-		this.timer = meta.addTimer(this.updateTxt, 1000, this);
+		this.timer = meta.addTimer(this, this.updateStats, 1000);
 
 		meta.input.onMove.add(this.handleInputMove, this);
 		meta.engine.onResize.add(this.handleResize, this);
