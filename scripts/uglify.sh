@@ -40,26 +40,25 @@ cat meta.js \
 	entity/Entity.Tiling.js \
 	entity/Entity.Tilemap.js \
 	entity/Entity.Particle.js \
-	components/Component.js \
 	components/Component.Anim.js \
 	renderer/Renderer.js \
 	renderer/CanvasRenderer.js \
 	debugger/Debugger.js \
-	plugins/svg/Entity.SVG.js \
-	plugins/svg/Entity.Line.js \
-	plugins/svg/Entity.Rect.js \
-	plugins/svg/Entity.Circle.js \
-	plugins/svg/Entity.Gradient.js \
-	plugins/Physics/Physics.js \
-	plugins/Physics/Physics.Body.js \
-	plugins/UI/UI.Controller.js \
-	plugins/UI/UI.Button.js \
-	plugins/UI/UI.Checkbox.js \
-	plugins/UI/UI.ProgressBar.js \
-	plugins/UI/UI.Group.js \
-	plugins/tween/Tween.js \
-	plugins/tween/Easing.js \
-	plugins/tween/Link.js \
+	svg/Entity.SVG.js \
+	svg/Entity.Line.js \
+	svg/Entity.Rect.js \
+	svg/Entity.Circle.js \
+	svg/Entity.Gradient.js \
+	physics/Physics.Manager.js \
+	physics/Physics.Body.js \
+	ui/UI.Controller.js \
+	ui/UI.Button.js \
+	ui/UI.Checkbox.js \
+	ui/UI.ProgressBar.js \
+	ui/UI.Group.js \
+	tween/Tween.js \
+	tween/Easing.js \
+	tween/Link.js \
 	Loading.js \
 	Loader.js \
 	| uglifyjs --output ../versions/meta.js --mangle -c dead_code=false,unused=false,side_effects=false --screw-ie8
