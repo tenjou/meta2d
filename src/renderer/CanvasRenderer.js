@@ -251,7 +251,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		var minX = Math.floor(volume.minX);
 		var minY = Math.floor(volume.minY);
 		var maxX = Math.ceil(volume.maxX);
-		var maxY = Math.ceil(volume.maxY - 1);		
+		var maxY = Math.ceil(volume.maxY);		
 
 		this.ctx.beginPath();
 		this.ctx.moveTo(minX, minY);
@@ -261,7 +261,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		this.ctx.lineTo(minX, minY - 1);
 		this.ctx.stroke();	
 
-		this.ctx.fillRect(volume.x - 3, volume.y - 3, 6, 6);
+		this.ctx.fillRect(Math.floor(volume.x) - 3, Math.floor(volume.y) - 3, 6, 6);
 	},
 
 	updateBgColor: function() {}

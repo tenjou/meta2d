@@ -5,6 +5,7 @@ meta.class("meta.World",
 	init: function(width, height) 
 	{
 		this.volume = new meta.math.AABB(0, 0, 0, 0);
+		this.volumes = [ this.volume ];
 
 		this.onResize = meta.createChannel(meta.Event.WORLD_RESIZE);
 		meta.camera.onResize.add(this._updateBounds, this);
@@ -28,23 +29,14 @@ meta.class("meta.World",
 		//this._chn.emit(this, meta.Event.WORLD_RESIZE);
 	},
 
-	addWorldShape: function(shape) 
+	removeVolume: function(volume) 
 	{
-		if(!this.shapes) {
-			this.shapes = [ shape ];
-		}
-		else {
-			this.shapes.push(shape);
-		}
-	},
-
-	removeWorldShape: function(shape) 
-	{
-		var num = this.shapes.length;
-		for(var i = 0; i < num; i++) {
-			if(this.shapes[i] === shape) {
-				this.shapes[i] = this.shapes[num - 1];
-				this.shapes.pop();
+		var num = this.volumes.length;
+		for(var i = 0; i < num; i++) 
+		{
+			if(this.volumes[i] === volumes) {
+				this.volumes[i] = this.volumes[num - 1];
+				this.volumes.pop();
 				break;
 			}
 		}
@@ -79,7 +71,7 @@ meta.class("meta.World",
 	centerX: 0,
 	centerY: 0,
 
-	shapes: null,
+	volumes: null,
 
 	_adapt: true,
 	_screenBounds: true

@@ -105,7 +105,6 @@ var meta =
 		if(this.cache.debug === value) { return; }
 		this.cache.debug = value;
 
-		console.log("here")
 		if(value) {
 			meta.emit(meta.Event.DEBUG, value, meta.Event.DEBUG);
 			meta.debugger.load();

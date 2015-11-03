@@ -14,10 +14,14 @@ meta.class("Physics.Manager",
 	{
 		var body1 = null, body2 = null;
 		var numBodies = this.bodies.length;
-		for(var i = 0; i < numBodies; i++) {
+		for(var i = 0; i < numBodies; i++) 
+		{
 			body1 = this.bodies[i];
 			body1.step(tDelta);
-			this.bodyVsWorld(body1);
+
+			if(body1.worldBounds) {
+				this.bodyVsWorld(body1);
+			}
 		}
 
 		var owner;
@@ -57,60 +61,36 @@ meta.class("Physics.Manager",
 
 	bodyVsWorld: function(body)
 	{
-		if(!body.worldBounds) { return; }
+		var volume;
+	 	var volumes = meta.world.volumes;
+	 	var num = volumes.length;
+ 		for(var n = 0; n < num; n++) 
+ 		{
+ 			volume = volumes[n];
 
+ 			if(volume.type === 0) {
+ 				this.bodyVsWorldBox(body, volume);
+ 			}
+ 			else {
+ 				this.bodyVsWorldCircle(body, volume);
+ 			}
+ 		}
+	},
+
+	bodyVsWorldBox: function(body, worldVolume)
+	{
 		var world = meta.world;
 		var volume = body.volume;
 		var newX = volume.x;
 		var newY = volume.y;
-		var collision = false;
-
-	 	var shapes = meta.world.shapes;
-	 	if(shapes) 
-	 	{
-	 		var shape;
-	 		var num = shapes.length;
-	 		for(var n = 0; n < num; n++) 
-	 		{
-	 			shape = shapes[n];
-
-				var dx = shape.x - volume.x;
-				var dy = shape.y - volume.y;
-				var r = shape.radius - volume.radius;
-
-				var lengthSquared = (dx * dx) + (dy * dy);
-
-				if(lengthSquared >= (r * r)) 
-				{
-					var length = Math.sqrt(lengthSquared);
-					if(length !== 0) {
-						this.manifold.penetration = r - length;
-						this.manifold.normal.x = -dx / length;
-						this.manifold.normal.y = -dy / length;
-					}
-					else {
-						this.manifold.penetration = volume1.radius;
-						this.manifold.normal.x = 1;
-						this.manifold.normal.y = 0;
-					}
-
-					volume.move(
-						this.manifold.penetration * this.manifold.normal.x,
-						this.manifold.penetration * this.manifold.normal.y);	
-
-					var value = body.velocity.dot(this.manifold.normal);
-					body.velocity.x -= 2 * value * this.manifold.normal.x;
-					body.velocity.y -= 2 * value * this.manifold.normal.y;										
-				}
-	 		}
-	 	}		
+		var colliding = false;
 
 		// X
-		if(volume.minX < 0) 
+		if(volume.minX < worldVolume.minX) 
 		{
 			newX = volume.x - volume.minX;
 			this.manifold.normal.x = 1;
-			collision = true;
+			colliding = true;
 			
 			if(body.bouncing) {
 				body.velocity.x *= -1;
@@ -119,11 +99,11 @@ meta.class("Physics.Manager",
 				body.velocity.x = 0;
 			}				
 		}
-		else if(volume.maxX > world.width) 
+		else if(volume.maxX > worldVolume.maxX) 
 		{
-			newX += world.width - volume.maxX;
+			newX += worldVolume.maxX - volume.maxX;
 			this.manifold.normal.x = -1;
-			collision = true;
+			colliding = true;
 
 			if(body.bouncing) {
 				body.velocity.x *= -1;
@@ -141,7 +121,7 @@ meta.class("Physics.Manager",
 		{
 			newY = volume.y - volume.minY;
 			this.manifold.normal.y = 1;
-			collision = true;
+			colliding = true;
 
 			if(body.bouncing) {
 				body.velocity.y *= -1;
@@ -154,7 +134,7 @@ meta.class("Physics.Manager",
 		{
 			newY += world.height - volume.maxY;
 			this.manifold.normal.y = -1;
-			collision = true;
+			colliding = true;
 
 			if(body.bouncing) {
 				body.velocity.y *= -1;
@@ -167,16 +147,57 @@ meta.class("Physics.Manager",
 			this.manifold.normal.y = 0;
 		}
 
-	 	if(collision) 
-	 	{
+		if(colliding) 
+		{
 	 		volume.position(newX, newY); 		
 
 	 		if(body.owner.onCollision) {
 		 		this.manifold.entity = null;
-		 		body.colliding = true;
 		 		body.owner.onCollision.call(body.owner, this.manifold);
 	 		}
-	 	}
+		}	
+	},
+
+	bodyVsWorldCircle: function(body)
+	{
+		var dx = shape.x - volume.x;
+		var dy = shape.y - volume.y;
+		var r = shape.radius - volume.radius;
+
+		var lengthSquared = (dx * dx) + (dy * dy);
+
+		if(lengthSquared >= (r * r)) 
+		{
+			var length = Math.sqrt(lengthSquared);
+			if(length !== 0) {
+				this.manifold.penetration = r - length;
+				this.manifold.normal.x = -dx / length;
+				this.manifold.normal.y = -dy / length;
+			}
+			else {
+				this.manifold.penetration = volume1.radius;
+				this.manifold.normal.x = 1;
+				this.manifold.normal.y = 0;
+			}
+
+			volume.move(
+				this.manifold.penetration * this.manifold.normal.x,
+				this.manifold.penetration * this.manifold.normal.y);	
+
+			var value = body.velocity.dot(this.manifold.normal);
+			body.velocity.x -= 2 * value * this.manifold.normal.x;
+			body.velocity.y -= 2 * value * this.manifold.normal.y;										
+		}
+	},
+
+	boxVsCircle_world: function(body)
+	{
+
+	},
+
+	circleVsCircle_world: function(body)
+	{
+
 	},
 
 	bodyVsBody: function(body1, body2)
@@ -399,7 +420,7 @@ meta.class("Physics.Manager",
 		ctx.save();
 
 		ctx.fillStyle = this.debugColor;
-		ctx.globalAlpha = 0.4;
+		ctx.globalAlpha = 0.8;
 
 		var numBodies = this.bodies.length;
 		for(var i = 0; i < numBodies; i++) {
@@ -413,7 +434,7 @@ meta.class("Physics.Manager",
 	{
 		// AABB
 		if(volume.type === 0) {
-			ctx.fillRect(Math.floor(volume.minX), Math.floor(volume.minY), volume.width, volume.height);	
+			ctx.fillRect(Math.floor(volume.minX), Math.floor(volume.minY), Math.ceil(volume.width), Math.ceil(volume.height));	
 		}
 		else if(volume.type === 1) {
 			ctx.beginPath();
