@@ -1153,17 +1153,18 @@ meta.class("Entity.Geometry",
 	{
 		if(this.flags & this.Flag.INSTANCE_HIDDEN) 
 		{ 
-			if((this.flags & this.Flag.HIDDEN) === 0 &&
-			   (this.parent.flags & this.Flag.INSTANCE_HIDDEN) === 0) 
-			{
-				this.flags &= ~this.Flag.INSTANCE_HIDDEN;
+			if(this.flags & this.Flag.HIDDEN) { return; }
+			if(this.parent.flags & this.Flag.INSTANCE_HIDDEN) {
+				if((this.flags & this.Flag.IGNORE_PARENT_HIDDEN) === 0) { return; }
 			}
+
+			this.flags &= ~this.Flag.INSTANCE_HIDDEN;
 		}
 		else
 		{
 			if((this.flags & this.Flag.HIDDEN) || 
-			   (this.parent.flags & this.Flag.INSTANCE_HIDDEN))
-			{
+			   ((this.parent.flags & this.Flag.INSTANCE_HIDDEN) && ((this.flags & this.Flag.IGNORE_PARENT_HIDDEN) === 0)))
+			{ 
 				this.flags |= this.Flag.INSTANCE_HIDDEN;
 			}
 			else {
@@ -1540,59 +1541,6 @@ meta.class("Entity.Geometry",
 
 	get loaded() {
 		return ((this.flags & this.Flag.LOADED) === this.Flag.LOADED);
-	},
-
-	set ignoreParentPos(value) 
-	{
-		if(value) {
-			this.flags |= this.Flag.IGNORE_PARENT_POS;
-			this._parentX = 0;
-			this._parentY = 0;
-			this.updatePos();
-		}
-		else {
-			this.flags &= ~this.Flag.IGNORE_PARENT_POS;
-			this.parent.updatePos();
-		}
-	},
-
-	get ignoreParentPos() { 
-		return ((this.flags & this.Flag.IGNORE_PARENT_POS) === this.Flag.IGNORE_PARENT_POS); 
-	},
-
-	set ignoreParentAngle(value) 
-	{
-		if(value) {
-			this.flags |= this.Flag.IGNORE_PARENT_ANGLE;
-			this._parentAngle = 0;
-			this.updateAngle();
-		}
-		else {
-			this.flags &= ~this.Flag.IGNORE_PARENT_ANGLE;
-			this.parent.updateAngle();
-		}
-	},
-
-	get ignoreParentAngle() { 
-		return ((this.flags & this.Flag.IGNORE_PARENT_ANGLE) === this.Flag.IGNORE_PARENT_ANGLE); 
-	},
-
-	set ignoreParentScale(value) 
-	{
-		if(value) {
-			this.flags |= this.Flag.IGNORE_PARENT_SCALE;
-			this._parentScaleX = 1;
-			this._parentScaleY = 1;
-			this._updateScale();
-		}
-		else {
-			this.flags &= ~this.Flag.IGNORE_PARENT_SCALE;
-			this.parent._updateScale();
-		}
-	},
-
-	get ignoreParentScale() { 
-		return ((this.flags & this.Flag.IGNORE_PARENT_SCALE) === this.Flag.IGNORE_PARENT_SCALE); 
 	},
 
 	/* Debug */
