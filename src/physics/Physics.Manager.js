@@ -6,8 +6,8 @@ meta.class("Physics.Manager",
 	{
 		this.manifold = new this.Manifold();
 
-		meta.engine.onUpdate.add(this.update, this);
 		meta.engine.onDebug.add(this.onDebug, this);
+		this.start();
 	},
 
 	update: function(tDelta)
@@ -43,13 +43,13 @@ meta.class("Physics.Manager",
 					body1.colliding = true;
 					body2.colliding = true;
 
-					if(body1.owner.onCollision) {
+					if(body1.onCollision) {
 						this.manifold.entity = body2.owner;
-						body1.owner.onCollision(this.manifold);
+						body1.onCollision(this.manifold);
 					}
-					if(body2.owner.onCollision) {
+					if(body2.onCollision) {
 						this.manifold.entity = body1.owner;
-						body2.owner.onCollision(this.manifold);
+						body2.onCollision(this.manifold);
 					}			
 				}
 			}
@@ -67,6 +67,7 @@ meta.class("Physics.Manager",
  		for(var n = 0; n < num; n++) 
  		{
  			volume = volumes[n];
+ 			if(volume === body.volume) { continue; }
 
  			if(volume.type === 0) {
  				this.bodyVsWorldBox(body, volume);
@@ -88,7 +89,7 @@ meta.class("Physics.Manager",
 		// X
 		if(volume.minX < worldVolume.minX) 
 		{
-			newX = volume.x - volume.minX;
+			newX = worldVolume.minX + (volume.x - volume.minX);
 			this.manifold.normal.x = 1;
 			colliding = true;
 			
@@ -117,9 +118,9 @@ meta.class("Physics.Manager",
 		}
 
 		// Y
-		if(volume.minY < 0) 
+		if(volume.minY < worldVolume.minY) 
 		{
-			newY = volume.y - volume.minY;
+			newY = worldVolume.minY + (volume.y - volume.minY);
 			this.manifold.normal.y = 1;
 			colliding = true;
 
@@ -130,9 +131,9 @@ meta.class("Physics.Manager",
 				body.velocity.y = 0;
 			}
 		}
-		else if(volume.maxY > world.height) 
+		else if(volume.maxY > worldVolume.maxY) 
 		{
-			newY += world.height - volume.maxY;
+			newY += worldVolume.maxY - volume.maxY;
 			this.manifold.normal.y = -1;
 			colliding = true;
 
@@ -151,9 +152,9 @@ meta.class("Physics.Manager",
 		{
 	 		volume.position(newX, newY); 		
 
-	 		if(body.owner.onCollision) {
+	 		if(body.onCollision) {
 		 		this.manifold.entity = null;
-		 		body.owner.onCollision.call(body.owner, this.manifold);
+		 		body.onCollision.call(body, this.manifold);
 	 		}
 		}	
 	},
@@ -316,19 +317,24 @@ meta.class("Physics.Manager",
 		}
 
 		var massUnit = 1.0 / (body1._mass + body2._mass);
-
 		var penetration = this.manifold.penetration * (body1._mass * massUnit);
+
+		// body1:
 		volume1.move(
 			penetration * this.manifold.normal.x,
 			penetration * this.manifold.normal.y);
+		body1.velocity.reflect(this.manifold.normal);
+
+		// body2:
+		this.manifold.normal.x = -this.manifold.normal.x;
+		this.manifold.normal.y = -this.manifold.normal.y;
 
 		penetration = this.manifold.penetration * (body2._mass * massUnit);
 		volume2.move(
-			penetration * -this.manifold.normal.x,
-			penetration * -this.manifold.normal.y);
+			penetration * this.manifold.normal.x,
+			penetration * this.manifold.normal.y);
 
-		body1.velocity.reflect(this.manifold.normal);
-		body2.velocity.reflect(this.manifold.normal);
+		body2.velocity.reflect(this.manifold.normal);	
 
 		return true;
 	},
@@ -483,6 +489,14 @@ meta.class("Physics.Manager",
 		else {
 			meta.renderer.removeRender(this);
 		}
+	},
+
+	start: function() {
+		meta.engine.onUpdate.add(this.update, this);
+	},
+
+	stop: function() {
+		meta.engine.onUpdate.remove(this);
 	},
 
 	Manifold: function() {

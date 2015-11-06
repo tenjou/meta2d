@@ -92,7 +92,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 
 	drawEntity: function(entity)
 	{
-		if(!entity._visible) { return; }
+		if(entity.flags & entity.Flag.INSTANCE_HIDDEN) { return; }
 
 		if(entity._static) 
 		{
@@ -224,7 +224,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 
 	drawVolume: function(entity)
 	{
-		if(!entity._visible) { return; }
+		if(entity.flags & entity.Flag.INSTANCE_HIDDEN) { return; }
 		if(entity._view.debugger) { return; }
 
 		var volume = entity.volume;

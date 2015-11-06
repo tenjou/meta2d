@@ -34,7 +34,7 @@ meta.class("meta.World",
 		var num = this.volumes.length;
 		for(var i = 0; i < num; i++) 
 		{
-			if(this.volumes[i] === volumes) {
+			if(this.volumes[i] === volume) {
 				this.volumes[i] = this.volumes[num - 1];
 				this.volumes.pop();
 				break;

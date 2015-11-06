@@ -2,19 +2,25 @@
 
 meta.component("Physics.Body",
 {
-	init: function() {
+	onAdd: function() 
+	{
+		console.log("add");
 		this.velocity = new meta.math.Vector2(0, 0);
 		this.acceleration = new meta.math.Vector2(0, 0);
 		this.speed = new meta.math.Vector2(0, 0);
-	},
-
-	load: function() {
 		this._volume = this.owner.volume;
-		meta.physics.bodies.push(this);		
+		meta.physics.add(this);
 	},
 
-	unload: function() {
+	onActive: function() 
+	{
+		console.log("active");
+		meta.physics.add(this);
+	},
 
+	onInactive: function() {
+		console.log("inactive");
+		meta.physics.remove(this);
 	},
 
 	step: function(tDelta)
@@ -140,5 +146,7 @@ meta.component("Physics.Body",
 	acceleration: null,
 	accelerationMod: 1,
 
-	_vec: new meta.math.Vector2(0, 0)
+	_vec: new meta.math.Vector2(0, 0),
+
+	__index: -1
 });

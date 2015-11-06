@@ -115,8 +115,12 @@ meta.class("Resource.SVG", "Resource.Texture",
 	{
 		var offset;
 
-		if(!this._strokeStyle) {
-			this._fillStyle = "#000";
+		if(!this._strokeStyle) 
+		{
+			if(!this._fillStyle) {
+				this._fillStyle = "#000";
+			}
+			
 			offset = 0;
 		}
 		else {
@@ -468,21 +472,18 @@ meta.class("Resource.SVG", "Resource.Texture",
 
 	set lineWidth(value) {
 		this._lineWidth = value;
-		this.ctx.lineWidth = value;
 	},
 
 	get lineWidth() { return this._lineWidth; },
 
 	set fillStyle(hex) {
 		this._fillStyle = hex;
-		this.ctx.fillStyle = hex;
 	},
 
 	get fillStyle() { return this._fillStyle; },
 
 	set strokeStyle(hex) {
 		this._strokeStyle = hex;
-		this.ctx.strokeStyle = hex;
 	},
 
 	get strokeStyle() { return this._strokeStyle; },

@@ -7,8 +7,9 @@ meta.class("meta.Renderer",
 		this.holder = new Entity.Geometry();
 		this.staticHolder = new Entity.Geometry();
 
-		this.entityFlags = Entity.Geometry.prototype.Flag;
+		this.entityFlags = this.holder.Flag;
 
+		Entity.Geometry.prototype.flags = (this.entityFlags.ENABLED | this.entityFlags.INSTANCE_ENABLED);
 		Entity.Geometry.prototype.renderer = this;
 		Entity.Geometry.prototype.parent = this.holder;
 	},
@@ -21,7 +22,6 @@ meta.class("meta.Renderer",
 		this.cameraVolume = this.camera.volume;
 		this.cameraDefault = this.camera;
 		//this.cameraUI = new meta.Camera();
-
 
 		this.chn = {
 			onDown: 		meta.createChannel(Entity.Event.INPUT_DOWN),
@@ -140,11 +140,11 @@ meta.class("meta.Renderer",
 				this._removeEntitiesGroup(entity.children);
 			}
 
-			if(entity.removed) {
+			if(entity.flags & entity.Flag.REMOVED) {
 				entity._remove();
 			}		
 
-			entity.flags &= ~entity.Flag.WILL_REMOVE;
+			entity.flags &= ~entity.Flag.RENDER_REMOVE;
 		}
 	},
 
@@ -318,8 +318,6 @@ meta.class("meta.Renderer",
 
 	addEntity: function(entity, reuse) 
 	{
-		entity.flags |= entity.Flag.ADDED;
-
 		if(!entity._z === 0) {
 			this.needSortDepth = true;
 		}
@@ -336,11 +334,11 @@ meta.class("meta.Renderer",
 
 		entity._updateAnchor();
 
-		if(reuse || entity.flags & entity.Flag.WILL_REMOVE) 
+		if(reuse || entity.flags & entity.Flag.RENDER_REMOVE) 
 		{
 			var index = this.entitiesRemove.indexOf(entity);
 			this.entitiesRemove[index] = null;
-			entity.flags &= ~entity.Flag.WILL_REMOVE;
+			entity.flags &= ~entity.Flag.RENDER_REMOVE;
 
 			reuse = true;
 		}
@@ -353,6 +351,9 @@ meta.class("meta.Renderer",
 			this.entities.push(entity);
 		}
 
+		entity.flags |= (entity.Flag.ACTIVE | entity.Flag.RENDER);
+		entity._updateActive();
+
 		if(entity.children) 
 		{
 			var entities = entity.children
@@ -361,7 +362,7 @@ meta.class("meta.Renderer",
 				this.addEntity(entities[i], reuse);
 			}
 		}
-	},	
+	},
 
 	addEntities: function(entities)
 	{
@@ -373,11 +374,11 @@ meta.class("meta.Renderer",
 
 	removeEntity: function(entity)
 	{
-		if(entity.flags & entity.Flag.WILL_REMOVE) { return; }
+		if(entity.flags & entity.Flag.RENDER_REMOVE) { return; }
 
-		entity.flags |= entity.Flag.WILL_REMOVE;
-		entity.flags &= ~entity.Flag.ADDED;
-		
+		entity.flags |= entity.Flag.RENDER_REMOVE;
+		entity.flags &= ~entity.Flag.RENDER;
+	
 		this.entitiesRemove.push(entity);
 	},
 
@@ -421,9 +422,6 @@ meta.class("meta.Renderer",
 		this.pressedEntity = this.hoverEntity;
 		this.pressedEntity.pressed = true;
 
-		if(this.pressedEntity._style) {
-			this.pressedEntity._onDown.call(this.pressedEntity, data);
-		}
 		if(this.pressedEntity.onDown) {
 			this.pressedEntity.onDown.call(this.pressedEntity, data);
 		}
@@ -442,9 +440,6 @@ meta.class("meta.Renderer",
 
 			// INPUT UP
 			this.pressedEntity.pressed = false;
-			if(this.pressedEntity._style) {
-				this.pressedEntity._onUp.call(this.pressedEntity, event);
-			}
 			if(this.pressedEntity.onUp) {
 				this.pressedEntity.onUp.call(this.pressedEntity, event);
 			}
@@ -456,9 +451,6 @@ meta.class("meta.Renderer",
 			// CLICK
 			if(this.pressedEntity === this.hoverEntity) 
 			{
-				if(this.pressedEntity._style) {
-					this.pressedEntity._onClick.call(this.pressedEntity, data);
-				}
 				if(this.pressedEntity.onClick) {
 					this.pressedEntity.onClick.call(this.pressedEntity, data);
 				}
@@ -472,9 +464,6 @@ meta.class("meta.Renderer",
 				data.entity = this.pressedEntity;
 				this.pressedEntity.dragged = false;
 
-				if(this.pressedEntity._style) {
-					this.pressedEntity._onDragEnd.call(this.pressedEntity, data);
-				}
 				if(this.pressedEntity.onDragEnd) {
 					this.pressedEntity.onDragEnd.call(this.pressedEntity, data);
 				}
@@ -516,9 +505,6 @@ meta.class("meta.Renderer",
 		{
 			data.entity = this.hoverEntity;	
 
-			if(this.hoverEntity._style) {
-				this.hoverEntity._onDbClick.call(this.hoverEntity, data);
-			}
 			if(this.hoverEntity.onDbClick) {
 				this.hoverEntity.onDbClick.call(this.hoverEntity, data);
 			}
@@ -537,7 +523,7 @@ meta.class("meta.Renderer",
 		for(var i = numEntities - 1; i >= 0; i--)
 		{
 			entity = this.entitiesPicking[i];
-			if(!entity.visible) { continue; }
+			if(entity.flags & entity.Flag.INSTANCE_HIDDEN) { continue; }
 
 			if(this.enablePixelPicking) 
 			{
@@ -578,9 +564,6 @@ meta.class("meta.Renderer",
 					data.entity = this.hoverEntity;
 					
 					this.hoverEntity.hover = false;
-					if(this.hoverEntity._style) {
-						this.hoverEntity._onHoverExit.call(this.hoverEntity, data);
-					}
 					if(this.hoverEntity.onHoverExit) {
 						this.hoverEntity.onHoverExit.call(this.hoverEntity, data);
 					}
@@ -592,9 +575,6 @@ meta.class("meta.Renderer",
 				data.entity = entity;
 				entity.hover = true;
 
-				if(entity._style) {
-					entity._onHoverEnter.call(entity, data);
-				}
 				if(entity.onHoverEnter) {
 					entity.onHoverEnter.call(entity, data);
 				}
@@ -624,9 +604,6 @@ meta.class("meta.Renderer",
 			data.entity = this.hoverEntity;
 			this.hoverEntity.hover = false;
 
-			if(this.hoverEntity._style) {
-				this.hoverEntity._onHoverExit.call(this.hoverEntity, data);
-			}
 			if(this.hoverEntity.onHoverExit) {
 				this.hoverEntity.onHoverExit.call(this.hoverEntity, data);
 			}
@@ -648,9 +625,6 @@ meta.class("meta.Renderer",
 			{
 				this.pressedEntity.dragged = true;
 
-				if(this.pressedEntity._style) {
-					this.pressedEntity._onDragStart.call(this.pressedEntity, data);
-				}
 				if(this.pressedEntity.onDragStart) {
 					this.pressedEntity.onDragStart.call(this.pressedEntity, data);
 				}
