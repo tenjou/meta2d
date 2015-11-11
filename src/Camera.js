@@ -213,13 +213,17 @@ meta.Camera.prototype =
 		}
 		else if(event === inputEvent.DOWN)
 		{
-			if(data.keyCode !== 256) { return; }
-			this._startDrag(data);
+			if(data.keyCode === Input.Key.BUTTON_LEFT) {
+				console.log("start")
+				this._startDrag(data);
+			}
 		}
 		else if(event === inputEvent.UP)
 		{
-			if(data.keyCode !== 256) { return; }
-			this._endDrag(data);
+			if(data.keyCode === Input.Key.BUTTON_LEFT) {
+				console.log("end")
+				this._endDrag(data);
+			}
 		}
 	},
 
@@ -255,6 +259,7 @@ meta.Camera.prototype =
 		var scope = meta;
 		var diffX = (data.screenX - data.prevScreenX) * this.zoomRatio;
 		var diffY = (data.screenY - data.prevScreenY) * this.zoomRatio;
+
 		this._moved = true;
 
 		if(this._worldBounds) 
@@ -281,7 +286,6 @@ meta.Camera.prototype =
 		this.volume.move(-diffX, -diffY);
 
 		this.onMove.emit(this, scope.Event.CAMERA_MOVE);
-		scope.renderer.needRender = true;
 	},
 
 	position: function(x, y)

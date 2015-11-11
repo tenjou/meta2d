@@ -229,14 +229,17 @@ meta.class("Input.Manager",
 
 		var scope = meta;
 		var camera = scope.camera;
+
+		this.prevScreenX = this.screenX;
+		this.prevScreenY = this.screenX;
 		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * this.engine.ratio;
 		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * this.engine.ratio;
 		this.x = (this.screenX * camera.zoomRatio) + camera.volume.x | 0;
 		this.y = (this.screenY * camera.zoomRatio) + camera.volume.y | 0;
 
 		this._event.event = event;
-		this._event.prevScreenX = this._event.screenX;
-		this._event.prevScreenY = this._event.screenY;
+		this._event.prevScreenX = this.prevScreenX;
+		this._event.prevScreenY = this.prevScreenY;
 		this._event.screenX = this.screenX;
 		this._event.screenY = this.screenY;
 		this._event.x = this.x;
@@ -270,14 +273,16 @@ meta.class("Input.Manager",
 
 		var scope = meta;
 		var camera = scope.camera;
+		this.prevScreenX = this.screenX;
+		this.prevScreenY = this.screenY;		
 		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * this.engine.ratio;
 		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * this.engine.ratio;
 		this.x = (this.screenX * camera.zoomRatio) + camera.volume.x | 0;
 		this.y = (this.screenY * camera.zoomRatio) + camera.volume.y | 0;
 
 		this._event.event = event;
-		this._event.prevScreenX = this._event.screenX;
-		this._event.prevScreenY = this._event.screenY;
+		this._event.prevScreenX = this.prevScreenX;
+		this._event.prevScreenY = this.prevScreenY;
 		this._event.screenX = this.screenX;
 		this._event.screenY = this.screenY;
 		this._event.x = this.x;
@@ -304,14 +309,16 @@ meta.class("Input.Manager",
 
 		var scope = meta;
 		var camera = scope.camera;
+		this.prevScreenX = this.screenX;
+		this.prevScreenY = this.screenY;
 		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * this.engine.ratio;
 		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * this.engine.ratio;
 		this.x = (this.screenX * camera.zoomRatio) + camera.volume.x | 0;
 		this.y = (this.screenY * camera.zoomRatio) + camera.volume.y | 0;
 
 		this._event.event = event;
-		this._event.prevScreenX = this._event.screenX;
-		this._event.prevScreenY = this._event.screenY;
+		this._event.prevScreenX = this.prevScreenX;
+		this._event.prevScreenY = this.prevScreenY;
 		this._event.screenX = this.screenX;
 		this._event.screenY = this.screenY;
 		this._event.x = this.x;
@@ -344,14 +351,16 @@ meta.class("Input.Manager",
 
 		var scope = meta;
 		var camera = scope.camera;
+		this.prevScreenX = this.screenX;
+		this.prevScreenY = this.screenY;		
 		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * this.engine.ratio;
 		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * this.engine.ratio;
 		this.x = (this.screenX * camera.zoomRatio) + camera.volume.x | 0;
 		this.y = (this.screenY * camera.zoomRatio) + camera.volume.y | 0;
 
 		this._event.event = event;
-		this._event.prevScreenX = this._event.screenX;
-		this._event.prevScreenY = this._event.screenY;
+		this._event.prevScreenX = this.prevScreenX;
+		this._event.prevScreenY = this.prevScreenY;
 		this._event.screenX = this.screenX;
 		this._event.screenY = this.screenY;
 		this._event.x = this.x;
@@ -486,17 +495,21 @@ meta.class("Input.Manager",
 			}			
 
 			this._event.event = event;
-			if(id === 0) {
-				this._event.prevScreenX = this._event.screenX;
-				this._event.prevScreenY = this._event.screenY;
+			if(id === 0) 
+			{
+				this.prevScreenX = this.screenX;
+				this.prevScreenY = this.screenY;
 				this.screenX = screenX;
 				this.screenY = screenY;
 				this.x = x;
-				this.y = y;				
+				this.y = y;	
+
+				this._event.prevScreenX = this.prevScreenX;
+				this._event.prevScreenY = this.prevScreenY;							
 			}
 			else {
-				this._event.prevScreenX = screenX;
-				this._event.prevScreenY = screenY;
+				this._event.prevScreenX = 0;
+				this._event.prevScreenY = 0;
 			}
 			this._event.screenX = screenX;
 			this._event.screenY = screenY;
@@ -541,22 +554,24 @@ meta.class("Input.Manager",
 			var keyCode = id + Input.BUTTON_ENUM_OFFSET;
 
 			this._event.event = event;
-			if(id === 0) {
-				this._event.prevScreenX = this._event.screenX;
-				this._event.prevScreenY = this._event.screenY;
-				this.inputX = x;
-				this.inputY = y;
+			if(id === 0) 
+			{
+				this.prevScreenX = this.screenX;
+				this.prevScreenY = this.screenY;
 				this.screenX = screenX;
 				this.screenY = screenY;
 				this.x = x;
-				this.y = y;				
+				this.y = y;	
+
+				this._event.prevScreenX = this.prevScreenX;
+				this._event.prevScreenY = this.prevScreenY;					
 			}
 			else {
 				this._event.prevScreenX = screenX;
 				this._event.prevScreenY = screenY;
 			}
-			this._event.screenX = screenX;
-			this._event.screenY = screenY;
+			this._event.screenX = 0;
+			this._event.screenY = 0;
 			this._event.x = x;
 			this._event.y = y;
 			this._event.keyCode = keyCode;
@@ -614,8 +629,8 @@ meta.class("Input.Manager",
 	getEvent: function()
 	{
 		this._event.event = null;
-		this._event.prevScreenX = this._event.screenX;
-		this._event.prevScreenY = this._event.screenY;
+		this._event.prevScreenX = this.prevScreenX;
+		this._event.prevScreenY = this.prevScreenY;
 		this._event.screenX = this.screenX;
 		this._event.screenY = this.screenY;
 		this._event.x = this.inputX;
@@ -750,6 +765,7 @@ meta.class("Input.Manager",
 
 	x: 0, y: 0,
 	screenX: 0, screenY: 0,
+	prevScreenX: 0, prevScreenY: 0,
 
 	_event: null,
 
