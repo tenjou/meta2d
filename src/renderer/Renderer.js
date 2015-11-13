@@ -5,13 +5,22 @@ meta.class("meta.Renderer",
 	init: function() 
 	{
 		this.holder = new Entity.Geometry();
+		this.holder.flags |= this.holder.Flag.RENDER_HOLDER;
+
 		this.staticHolder = new Entity.Geometry();
+		this.staticHolder.flags |= this.holder.Flag.RENDER_HOLDER;
 
-		this.entityFlags = this.holder.Flag;
-
-		Entity.Geometry.prototype.flags = (this.entityFlags.ENABLED | this.entityFlags.INSTANCE_ENABLED);
+		Entity.Geometry.prototype.flags = (this.holder.Flag.ENABLED | this.holder.Flag.INSTANCE_ENABLED);
 		Entity.Geometry.prototype.renderer = this;
 		Entity.Geometry.prototype.parent = this.holder;
+
+		this.entities = [];
+		this.entitiesHidden = [];
+		this.entitiesRemove = [];
+
+		if(meta.flags.visibility) {
+			this.visibility = new meta.SparseGrid();
+		}
 	},
 
 	load: function() 
@@ -46,6 +55,10 @@ meta.class("meta.Renderer",
 		meta.camera.onMove.add(this.onCameraMove, this);
 
 		this.holder.resize(this.camera.volume.width, this.camera.volume.height);
+
+		if(this.visibility) {
+			this.visibility.calc();
+		}
 	},
 
 	update: function(tDelta)
@@ -53,6 +66,7 @@ meta.class("meta.Renderer",
 		// Removal.	
 		if(this.entitiesRemove.length > 0) {
 			this._removeEntities(this.entitiesRemove);
+			console.log("ENTITIES", this.entities.length)
 			this.entitiesRemove.length = 0;
 		}
 
@@ -286,10 +300,11 @@ meta.class("meta.Renderer",
 	sort: function()
 	{
 		var i, j, tmp1, tmp2;
-		var num = this.entities.length;
+		var num = this.numEntities;
 		for(i = 0; i < num; i++) 
 		{
-			for(j = i; j > 0; j--) {
+			for(j = i; j > 0; j--) 
+			{
 				tmp1 = this.entities[j];
 				tmp2 = this.entities[j - 1];
 				if(tmp1.totalZ < tmp2.totalZ) {
@@ -302,7 +317,8 @@ meta.class("meta.Renderer",
 		num = this.entitiesPicking.length;
 		for(i = 0; i < num; i++) 
 		{
-			for(j = i; j > 0; j--) {
+			for(j = i; j > 0; j--) 
+			{
 				tmp1 = this.entitiesPicking[j];
 				tmp2 = this.entitiesPicking[j - 1];
 				if(tmp1.totalZ < tmp2.totalZ) {
@@ -316,50 +332,58 @@ meta.class("meta.Renderer",
 		this.needRender = true;			
 	},
 
-	addEntity: function(entity, reuse) 
+	makeEntityVisible: function(entity)
 	{
-		if(!entity._z === 0) {
-			this.needSortDepth = true;
-		}
+		if(entity.flags & entity.Flag.RENDER) { return; }
 
-		if(entity.flags & entity.Flag.UPDATING) {
-			entity.updating = true;
-		}
-		if(entity.flags & entity.Flag.PICKING) {
-			entity.picking = true;
-		}
-		if(entity.__debug) {
-			this.numDebug++;
-		}
+		console.log("VISIBLE",entity);
 
-		entity._updateAnchor();
+		entity.flags |= entity.Flag.RENDER;
+		this.entities.push(entity);
+		this.numEntities++;
 
-		if(reuse || entity.flags & entity.Flag.RENDER_REMOVE) 
+		if(entity.flags & entity.Flag.RENDER_REMOVE) 
 		{
 			var index = this.entitiesRemove.indexOf(entity);
 			this.entitiesRemove[index] = null;
 			entity.flags &= ~entity.Flag.RENDER_REMOVE;
-
-			reuse = true;
-		}
-		else 
-		{
-			if(!entity._debugger) {
-				this.numEntities++;
-			}
-
-			this.entities.push(entity);
 		}
 
-		entity.flags |= (entity.Flag.ACTIVE | entity.Flag.RENDER);
-		entity._updateActive();
+		this.needSortDepth = true;
+		this.needRender = true;
+	},
+
+	makeEntityInvisible: function(entity)
+	{
+		if((entity.flags & entity.Flag.RENDER) === 0) { return; }
+
+		console.log("INVISIBLE",entity);
+
+		entity.flags &= ~entity.Flag.RENDER;
+		entity.flags |= entity.Flag.RENDER_REMOVE;
+
+		this.entitiesRemove.push(entity);
+	},	
+
+	addEntity: function(entity, reuse)
+	{
+		if((entity.flags & entity.Flag.INSTANCE_ENABLED) === 0) { return; }
+
+		entity._activate();
+
+		if(this.visibility) {
+			this.visibility.add(entity);
+		}
+		else {
+			this.makeEntityVisible(entity);
+		}
 
 		if(entity.children) 
 		{
-			var entities = entity.children
-			var numEntities = entities.length;
-			for(var i = 0; i < numEntities; i++) {
-				this.addEntity(entities[i], reuse);
+			var children = entity.children;
+			var num = children.length;
+			for(var n = 0; n < num; n++) {
+				this.addEntity(children[n], reuse);
 			}
 		}
 	},
@@ -367,10 +391,10 @@ meta.class("meta.Renderer",
 	addEntities: function(entities)
 	{
 		var numEntities = entities.length;
-		for(var i = 0; i < numEntities; i++) {
-			this.addEntity(entities[i], false);
+		for(var n = 0; n < numEntities; n++) {
+			this.addEntity(entities[n], false);
 		}
-	},	
+	},
 
 	removeEntity: function(entity)
 	{
@@ -403,6 +427,11 @@ meta.class("meta.Renderer",
 
 		this.entitiesAnimRemove.push(anim);
 		anim.__index = -1;
+	},
+
+	checkVisibility: function(entity)
+	{
+		//if(entity.flags & (this.Flag.ENABLED | this.Flag.))
 	},
 
 	/** 
@@ -652,13 +681,17 @@ meta.class("meta.Renderer",
 		this.holder.resize(data.width, data.height);
 		this.staticHolder.resize(this.engine.width, this.engine.height);
 
-		var numEntities = this.entities.length;
-		for(var i = 0; i < numEntities; i++) {
-			this.entities[i]._updateResize();
-		}	
+		if(this.visibility) {
+			this.visibility.calc();
+		}
 	},
 
-	onCameraMove: function(data, event) {
+	onCameraMove: function(data, event) 
+	{
+		if(this.visibility) {
+			this.visibility.calc();
+		}
+
 		this.needRender = true;
 	},
 
@@ -690,11 +723,6 @@ meta.class("meta.Renderer",
 
 	get transparent() { return this._transparent; },	
 
-	set needRender(value) {
-		this._needRender = value;
-	},
-	get needRender() { return this._needRender; },
-
 	addRender: function(owner) {
 		this._renderFuncs.push(owner);
 	},
@@ -716,21 +744,23 @@ meta.class("meta.Renderer",
 	engine: null,
 	chn: null,
 
+	visibility: null,
+
 	holder: null,
 	staticHolder: null,
-
-	entityFlags: null,
 
 	camera: null,
 	cameraVolume: null,
 	cameraDefault: null,
 	cameraUI: null,
 
-	entities: [],
-	entitiesRemove: [],
-	numEntities: 0,
 	_numRemove: 0,
 	_removeStartID: 0,
+
+	entities: null,
+	entitiesHidden: null,
+	entitiesRemove: null,
+	numEntities: 0,
 
 	entitiesUpdate: [],
 	entitiesUpdateRemove: [],
@@ -748,8 +778,9 @@ meta.class("meta.Renderer",
 	tweens: [],
 	tweensRemove: [],
 
-	_needRender: true,
+	needRender: true,
 	needSortDepth: false,
+	useSparseGrid: false,
 
 	_renderFuncs: [],
 

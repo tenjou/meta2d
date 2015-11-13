@@ -142,7 +142,10 @@ meta.engine =
 			cache.preloadFuncs[i]();
 		}
 
-		meta.cache.view._parentVisible(true);
+		var masterView = meta.cache.view;
+		masterView.flags |= masterView.Flag.ACTIVE;
+		masterView._activate();
+		
 		this._startMainLoop();
 
 		if(!meta.resources.loading) {

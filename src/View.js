@@ -17,21 +17,14 @@ meta.View = function(name)
 {
 	this.name = name;
 	this.entities = [];
-	this.views = null;
-	this.parentView = null;
-
-	this._x = 0;
-	this._y = 0;
-	this._z = 0;
-	this._tween = null;
-	this.flags |= (this.Flag.CHILD_VISIBLE);
+	this.children = null;
+	this.parent = null;
+	this.flags = 0;
 };
 
 meta.View.prototype =
 {
-	/**
-	 * Destroy view and all entities added.
-	 */
+	/** Destroy the view and all entities attached to it. */
 	remove: function()
 	{
 		if(this.name === "master") {
@@ -39,30 +32,24 @@ meta.View.prototype =
 			return;
 		}
 
-		if(this.parentView) {
-			this.parentView.detachView(this);
+		if(this.parent) {
+			this.parent.detachView(this);
 		}
 
-		if(this.views)
-		{
-			var numViews = this.views.length;
-			for(var i = 0; i < numViews; i++) {
-				this.views[i].remove();
-			}
-		}
-
-		this.visible = false;
-		this._unregisterFromEngine();
-
-		var entity;
-		var numEntities = this.entities.length;
-		for(var n = 0; n < numEntities; n++) {
-			entity = this.entities[n];
-			entity._view = null;
-			entity.remove();
+		var num = this.entities.length;
+		for(var n = 0; n < num; n++) {
+			this.entities[n].remove()
 		}
 
 		this.entities.length = 0;
+
+		if(this.children)
+		{
+			num = this.children.length;
+			for(n = 0; n < num; n++) {
+				this.children[n].remove();
+			}
+		}
 	},
 
 	/**
@@ -76,24 +63,28 @@ meta.View.prototype =
 			return;
 		}
 
-		if(entity.removed) {
-			console.warn("(meta.View.add) Removed entity can not be added to the view.");
+		if(entity.flags & this.Flag.REMOVED) {
+			console.warn("(meta.View.add) Trying to add entity that has been marked as removed");
+			return;
+		}
+
+		if(!(entity.parent.flags & entity.Flag.RENDER_HOLDER)) {
+			console.warn("(meta.View.add) Trying to add entity that has attached to parent entity");
 			return;
 		}
 
 		if(entity._view)
 		{
 			if(entity._view === this) {
-				console.warn("(meta.View.attach) Entity is already added to this view.");
+				console.warn("(meta.View.attach) Entity is already added to this view");
 			}
 			else {
-				console.warn("(meta.View.attach) Entity is already added to some other view.");
+				console.warn("(meta.View.attach) Entity is already added to some other view");
 			}
 			return;
 		}
 
 		entity._view = this;
-		entity._viewNodeID = this.entities.length;
 
 		if(this._x !== 0 || this._y !== 0) {
 			entity.updatePos();
@@ -105,11 +96,11 @@ meta.View.prototype =
 			entity.static = true;
 		}
 
-		this._attachChildren(entity.children);
-
 		this.entities.push(entity);
 
-		if(this.flags & this.Flag.VISIBLE) {
+		this._attachChildren(entity.children);
+
+		if((this.flags & this.Flag.ACTIVE) && !(this.flags & this.Flag.INSTANCE_HIDDEN)) {
 			meta.renderer.addEntity(entity, false);
 		}
 	},
@@ -137,7 +128,9 @@ meta.View.prototype =
 	 */
 	detach: function(entity)
 	{
-		if(entity.isRemoved) { return; }
+		if(entity.flags & this.Flag.REMOVED) {
+			return;
+		}
 
 		if(!entity._view) {
 			console.warn("(meta.View.detach) Entity does not have view.");
@@ -145,26 +138,29 @@ meta.View.prototype =
 		}
 
 		if(entity._view !== this) {
-			console.warn("(meta.View.detach) Entity is part of other view: " + entity.view.name);
+			console.warn("(meta.View.detach) Entity is part of other view: " + entity._view.name);
 			return;
 		}
 
-		if(entity._parent !== entity._entityCtrl) {
-			console.warn("(meta.View.detach) Entity children are not part of view.");
+		if(!(entity.parent.flags & entity.Flag.RENDER_HOLDER)) {
+			console.warn("(meta.View.detach) Entity is part of other view: " + entity._view.name);
 			return;
 		}
 
-		entity.isRemoved = true;
-		entity.removeCore();
+		entity._view = null;
 
-		this.numEntities--;
-		var replaceEntity = this.entities[this.numEntities];
-		replaceEntity.core.viewIndex = this.numEntities;
-		this.entities[this.numEntities] = replaceEntity;
-		this.entities.pop();
+		var num = this.entities.length;
+		for(var n = 0; n < num; n++)
+		{
+			if(this.entities[n] === entity) {
+				this.entities[n] = this.entities[num - 1];
+				this.entities.pop();
+				break;
+			}
+		}
 
-		if(this.flags & this.Flag.VISIBLE) {
-			meta.renderer.removeEntities(entity);
+		if((this.flags & this.Flag.ACTIVE) && !(this.flags & this.Flag.INSTANCE_HIDDEN)) {
+			meta.renderer.removeEntity(entity);
 		}
 	},
 
@@ -176,7 +172,7 @@ meta.View.prototype =
 	{
 		if(!view) 
 		{
-			if(this.parentView) {
+			if(this.parent) {
 				console.warn("(meta.View.attach) No view was passed.");
 				return;
 			}
@@ -200,20 +196,22 @@ meta.View.prototype =
 			return;
 		}
 
-		if(view.parentView) {
+		if(view.parent) {
 			console.warn("(meta.View.attach) View is already part of other view.");
 			return;
 		}
 
-		if(!this.views) {
-			this.views = [];
-		}		
+		if(!this.children) {
+			this.children = [ view ];
+		}
+		else {
+			this.children.push(view);
+		}	
 
-		this.views.push(view);
-		view.parentView = this;
+		view.parent = this;
 
-		if(this.flags & this.Flag.VISIBLE) {
-			view._parentVisible(true);
+		if(this.flag & this.Flag.ACTIVE) {
+			view._activate();
 		}
 	},
 
@@ -223,14 +221,15 @@ meta.View.prototype =
 	 */
 	detachView: function(view)
 	{
+		// If no view has been passed - threat it as detaching self.
 		if(!view) 
 		{
-			if(!this.parentView) {
-				console.warn("(meta.View.detachView) No view was passed.");
+			if(!this.parent) {
+				console.warn("(meta.View.detachView) No view was been passed.");
 				return;
 			}
 
-			this.parentView.detachView(this);
+			this.parent.detachView(this);
 			return;
 		}
 
@@ -245,119 +244,130 @@ meta.View.prototype =
 			view = srcView;
 		}
 
-		if(!view.parentView) {
+		if(!view.parent) {
 			console.warn("(meta.View.detachView) View has not parents to detach from");
 			return;
 		}
 
-		if(view.parentView !== this) {
-			console.warn("(meta.View.detachView) Detaching from wrong parent");
-			return;
-		}
-
-		var numViews = this.views.length;
-		for(var i = 0; i < numViews; i++)
+		if(this.children)
 		{
-			if(this.views[i] === view) {
-				this.views[i] = this.views[numViews - 1];
-				this.views.pop();
-				break;
-			}
-		}
+			var numChildren = this.children.length;
+			for(var i = 0; i < numChildren; i++)
+			{
+				if(this.children[i] === view) {
+					this.children[i] = this.children[numChildren - 1];
+					this.children.pop();
+					break;
+				}
+			}	
+		}	
 
-		view.parentView = null;	
+		view.parent = null;
 
-		if(this.flags & this.Flag.CHILD_VISIBLE) {
-			view._parentVisible(false);
+		if(this.flag & this.Flag.ACTIVE) {
+			view._deactivate();
 		}
 	},
 
 	detachViews: function()
 	{
-		if(!this.views) { return; }
-
-		var view;
-		var numChildren = this.views.length;
-		for(var i = 0; i < numChildren; i++) 
-		{
-			view = this.views[i];
-			view.parentView = null;
-
-			if(view.flags & this.Flag.CHILD_VISIBLE) {
-				view._parentVisible(false);
-			}
+		var child;
+		var numChildren = this.children.length;
+		for(var n = 0; n < numChildren; n++) {
+			child = this.children[n];
+			child.detachView(child);
 		}
-
-		this.views.length = 0;
 	},
 
-	_updateVisible: function()
+	_activate: function()
 	{
-		var visible = false;
+		this.flags |= this.Flag.ACTIVE;
 
-		if((this.flags & this.Flag.CHILD_VISIBLE) && 
-		   (this.flags & this.Flag.PARENT_VISIBLE)) 
+		if((this.flags & this.Flag.INSTANCE_HIDDEN) === 0) {
+			return;
+		}
+
+		meta.renderer.addEntities(this.entities);
+
+		if(this.children) 
 		{
-			if(this.flags & this.Flag.VISIBLE) {
-				return;
+			var num = this.children.length;
+			for(var n = 0; n < num; n++) {
+				this.children[n]._activate();
 			}
+		}
+	},
 
-			this.flags |= this.Flag.VISIBLE;
-			visible = true;
+	_deactivate: function()
+	{
+		this.flags &= ~this.Flag.ACTIVE;
 
-			if(this.entities.length) {
-				meta.renderer.addEntities(this.entities);
+		if((this.flags & this.Flag.INSTANCE_HIDDEN) === 0) {
+			return;
+		}
+
+		meta.renderer.removeEntities(this.entities);
+
+		if(this.children) 
+		{
+			var num = this.children.length;
+			for(var n = 0; n < num; n++) {
+				this.children[n]._deactivate();
+			}
+		}
+	},
+
+	_updateHidden: function()
+	{
+		if(this.flags & this.Flag.INSTANCE_HIDDEN) 
+		{ 
+			if(this.flags & this.Flag.HIDDEN) { return; }
+			if(this.parent.flags & this.Flag.INSTANCE_HIDDEN) { return; }
+
+			this.flags &= ~this.Flag.INSTANCE_HIDDEN;
+
+			if(this.flags & this.Flag.ACTIVE) {
+				meta.renderer.removeEntities(this.entities);
 			}
 		}
 		else
 		{
-			if((this.flags & this.Flag.VISIBLE) === 0) {
-				return;
+			if((this.flags & this.Flag.HIDDEN) || (this.parent.flags & this.Flag.INSTANCE_HIDDEN)) 
+			{ 
+				this.flags |= this.Flag.INSTANCE_HIDDEN;
+
+				if(this.flags & this.Flag.ACTIVE) {
+					meta.renderer.addEntities(this.entities);
+				}				
 			}
-
-			this.flags &= ~this.Flag.VISIBLE;
-			visible = false;
-
-			if(this.entities.length) {
-				meta.renderer.removeEntities(this.entities);
+			else {
+				return;
 			}
 		}
 
-		if(this.views)
+		if(this.children)
 		{
-			var numViews = this.views.length;
-			for(var n = 0; n < numViews; n++) {
-				this.views[n]._parentVisible(visible); 
+			var num = this.children.length;
+			for(var n = 0; n < num; n++) {
+				this.children[n]._updateHidden();
 			}
 		}	
 	},
 
-	_parentVisible: function(value)
+	set hidden(value)
 	{
 		if(value) {
-			this.flags |= this.Flag.PARENT_VISIBLE;
+			this.flags |= this.Flag.HIDDEN;
 		}
 		else {
-			this.flags &= ~this.Flag.PARENT_VISIBLE;
+			this.flags &= ~this.Flag.HIDDEN;
 		}
 
-		this._updateVisible();
+		this._updateHidden();
 	},
 
-	set visible(value)
-	{
-		if(value) {
-			this.flags |= this.Flag.CHILD_VISIBLE;
-		}
-		else {
-			this.flags &= ~this.Flag.CHILD_VISIBLE;
-		}
-
-		this._updateVisible();
-	},
-
-	get visible() { 
-		return ((this.flags & this.Flag.CHILD_VISIBLE) === this.Flag.CHILD_VISIBLE);
+	get hidden() { 
+		return ((this.flags & this.Flag.HIDDEN) === this.Flag.HIDDEN);
 	},
 
 	set x(value)
@@ -434,14 +444,20 @@ meta.View.prototype =
 		return ((this.flags & this.Flag.STATIC) === this.Flag.STATIC); 
 	},
 
+
 	Flag: {
-		VISIBLE: 1,
-		CHILD_VISIBLE: 2,
-		PARENT_VISIBLE: 4,
-		STATIC: 8
+		HIDDEN: 1 << 0,
+		INSTANCE_HIDDEN: 1 << 1,
+		ACTIVE: 1 << 2,
+		STATIC: 1 << 3
 	},
 
 	//
+	_x: 0,
+	_y: 0,
+	_z: 0,
+	_tween: null,
+
 	debugger: false,
 	entitiesUI: null
 };

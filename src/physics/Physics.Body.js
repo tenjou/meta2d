@@ -12,13 +12,13 @@ meta.component("Physics.Body",
 		meta.physics.add(this);
 	},
 
-	onActive: function() 
+	onActiveEnter: function() 
 	{
 		console.log("active");
 		meta.physics.add(this);
 	},
 
-	onInactive: function() {
+	onActiveExit: function() {
 		console.log("inactive");
 		meta.physics.remove(this);
 	},

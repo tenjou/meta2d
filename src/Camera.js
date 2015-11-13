@@ -214,14 +214,12 @@ meta.Camera.prototype =
 		else if(event === inputEvent.DOWN)
 		{
 			if(data.keyCode === Input.Key.BUTTON_LEFT) {
-				console.log("start")
 				this._startDrag(data);
 			}
 		}
 		else if(event === inputEvent.UP)
 		{
 			if(data.keyCode === Input.Key.BUTTON_LEFT) {
-				console.log("end")
 				this._endDrag(data);
 			}
 		}

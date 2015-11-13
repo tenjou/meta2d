@@ -19,7 +19,8 @@ var meta =
 
 	flags: {
 		webGL: true,
-		audioAPI: true
+		audioAPI: true,
+		visibility: true
 	},
 
 	time: {

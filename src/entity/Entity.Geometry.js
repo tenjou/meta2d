@@ -90,77 +90,65 @@ meta.class("Entity.Geometry",
 		}
 	},
 
-	_updateActive: function()
+	_activate: function()
 	{
-		// var component, key, num, n;
+		this.flags |= this.Flag.ACTIVE;
 
-		// entity.hidden = true;
+		if(this.flags & this.Flag.UPDATING) {
+			this.updating = true;
+		}	
+		if(this.flags & this.Flag.PICKING) {
+			this.picking = true;
+		}			
 
-		// if(this.flags & this.Flag.INSTANCE_ACTIVE) 
-		// {
-		// 	this.flags &= ~this.Flag.INSTANCE_ACTIVE;
-		// }
-		// else
-		// {
-		// 	if(!(this.flags & (this.Flag.VISIBLE | this.Flag.))
-		// 	if(!(this.flags & this.Flag.ACTIVE)
-		// 	   !(this.flags & this.Flag.INSTANCE_ENABLED)
-		//    {
+		this._updateAnchor();
 
-		//    }
-		// 	this.flags |= this.Flag.INSTANCE_ACTIVE;
-		// }
+		if(this.renderer.visibility) {
+			this.node = new meta.SparseNode(this);
+		}		
 
-		// if((this.flags & this.Flag.ACTIVE) (this.flags & this.Flag.INSTANCE_ENABLED))
-		// {
+		if(this.components)
+		{
+			for(key in this.components) 
+			{
+				component = this.components[key];
+				if(component.onActiveEnter) {
+					component.onActiveEnter();
+				}
+			}
+		}
 
-		// }
-		// else
-		// {
-		// 	this.flags |= this.Flag.ACTIVE;
-		// }
-		
-		// {
-		// 	if(this.components)
-		// 	{
-		// 		for(key in this.components) 
-		// 		{
-		// 			component = this.components[key];
-		// 			if(component.onActive) {
-		// 				component.onActive();
-		// 			}
-		// 		}
-		// 	}
+		if(this.children) 
+		{
+			var num = this.children.length;
+			for(n = 0; n < num; n++) {
+				this.children[n]._active();
+			}
+		}		
+	},
 
-		// 	if(this.children) 
-		// 	{
-		// 		num = this.children.length;
-		// 		for(n = 0; n < num; n++) {
-		// 			this.children[n]._updateActive();
-		// 		}
-		// 	}
-		// }
-		// else
-		// {
-		// 	if(this.components)
-		// 	{
-		// 		for(key in this.components) 
-		// 		{
-		// 			component = this.components[key];
-		// 			if(component.onInactive) {
-		// 				component.onInactive();
-		// 			}
-		// 		}
-		// 	}
+	_deactivate: function()
+	{
+		this.flags &= ~this.Flag.ACTIVE;
 
-		// 	if(this.children) 
-		// 	{
-		// 		num = this.children.length;
-		// 		for(n = 0; n < num; n++) {
-		// 			this.children[n]._updateActive();
-		// 		}
-		// 	}
-		// }
+		if(this.components)
+		{
+			for(key in this.components) 
+			{
+				component = this.components[key];
+				if(component.onActiveExit) {
+					component.onActiveExit();
+				}
+			}
+		}
+
+		if(this.children) 
+		{
+			var num = this.children.length;
+			for(n = 0; n < num; n++) {
+				this.children[n]._deactivate();
+			}
+		}
 	},
 
 	remove: function()
@@ -218,6 +206,10 @@ meta.class("Entity.Geometry",
 		this.volume.x = this._x + this.totalOffsetX;
 		this.volume.y = this._y + this.totalOffsetY;
 		this.volume.updatePos();
+
+		if(this.node) {
+			this.renderer.visibility.update(this);
+		}
 
 		if(this.children) 
 		{
@@ -1018,6 +1010,11 @@ meta.class("Entity.Geometry",
 	_setView: function(view) 
 	{
 		this._view = view;
+
+		if((view.flags & view.Flag.ACTIVE) && !(view.flags & view.Flag.INSTANCE_HIDDEN)) {
+			this.renderer.addEntity(this);
+		}
+
 		if(this.children) 
 		{
 			var num = this.children.length;
@@ -1075,13 +1072,7 @@ meta.class("Entity.Geometry",
 
 		this._updateHidden();
 
-		entity._setView(this._view);
-
-		if(this._view && (this._view.flags & this._view.Flag.VISIBLE)) {
-			this.renderer.addEntity(entity);
-		}		
-
-		this.renderer.needRender = true;	
+		entity._setView(this._view);	
 	},
 
 	_detach: function(entity)
@@ -1125,30 +1116,6 @@ meta.class("Entity.Geometry",
 		this.children = null;
 	},
 
-	set hidden(value)
-	{
-		if(value)
-		{
-			if(this.flags & this.Flag.HIDDEN) { return; }
-
-			this.flags |= this.Flag.HIDDEN;
-			this.renderer.needRender = true;
-		}
-		else
-		{
-			if((this.flags & this.Flag.HIDDEN) === 0) { return; }
-
-			this.flags &= ~this.Flag.HIDDEN;
-			this.renderer.needRender = true;
-		}
-
-		this._updateHidden();
-	},
-
-	get hidden() {
-		return ((this.flags & this.Flag.HIDDEN) === this.Flag.HIDDEN);
-	},
-
 	_updateHidden: function()
 	{
 		if(this.flags & this.Flag.INSTANCE_HIDDEN) 
@@ -1158,14 +1125,14 @@ meta.class("Entity.Geometry",
 				if((this.flags & this.Flag.IGNORE_PARENT_HIDDEN) === 0) { return; }
 			}
 
-			this.flags &= ~this.Flag.INSTANCE_HIDDEN;
+			this.flags &= ~this.Flag.INSTANCE_HIDDEN;		
 		}
 		else
 		{
 			if((this.flags & this.Flag.HIDDEN) || 
 			   ((this.parent.flags & this.Flag.INSTANCE_HIDDEN) && ((this.flags & this.Flag.IGNORE_PARENT_HIDDEN) === 0)))
 			{ 
-				this.flags |= this.Flag.INSTANCE_HIDDEN;
+				this.flags |= this.Flag.INSTANCE_HIDDEN;			
 			}
 			else {
 				return;
@@ -1179,6 +1146,28 @@ meta.class("Entity.Geometry",
 				this.children[n]._updateHidden();
 			}
 		}
+	},	
+
+	set hidden(value)
+	{
+		if(value)
+		{
+			if(this.flags & this.Flag.HIDDEN) { return; }
+
+			this.flags |= this.Flag.HIDDEN;
+		}
+		else
+		{
+			if((this.flags & this.Flag.HIDDEN) === 0) { return; }
+
+			this.flags &= ~this.Flag.HIDDEN;
+		}
+
+		this._updateHidden();
+	},
+
+	get hidden() {
+		return ((this.flags & this.Flag.HIDDEN) === this.Flag.HIDDEN);
 	},
 
 	set static(value) 
@@ -1590,13 +1579,15 @@ meta.class("Entity.Geometry",
 		DYNAMIC_CLIP: 1 << 19,
 		FIT_IN: 1 << 20,
 		CLIP_BOUNDS: 1 << 21,
-		LOADED: 1 << 22
+		LOADED: 1 << 22,
+		RENDER_HOLDER: 1 << 23
 	},
 
 	//
 	renderer: null,
 	parent: null,
 	_view: null,
+	node: null,
 
 	_texture: null,
 
