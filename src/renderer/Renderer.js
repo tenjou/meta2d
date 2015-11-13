@@ -336,8 +336,6 @@ meta.class("meta.Renderer",
 	{
 		if(entity.flags & entity.Flag.RENDER) { return; }
 
-		console.log("VISIBLE",entity);
-
 		entity.flags |= entity.Flag.RENDER;
 		this.entities.push(entity);
 		this.numEntities++;
@@ -356,8 +354,6 @@ meta.class("meta.Renderer",
 	makeEntityInvisible: function(entity)
 	{
 		if((entity.flags & entity.Flag.RENDER) === 0) { return; }
-
-		console.log("INVISIBLE",entity);
 
 		entity.flags &= ~entity.Flag.RENDER;
 		entity.flags |= entity.Flag.RENDER_REMOVE;

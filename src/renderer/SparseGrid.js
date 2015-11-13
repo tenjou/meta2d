@@ -180,6 +180,11 @@ meta.SparseGrid.prototype =
 			}
 		}
 
+		node.minX = minCellX;
+		node.minY = minCellY;
+		node.maxX = maxCellX;
+		node.maxY = maxCellY;
+
 		if(node.numVisible > 0) {
 			meta.renderer.makeEntityVisible(entity);
 		}
@@ -229,6 +234,7 @@ meta.SparseGrid.prototype =
 		var startY = Math.floor(volume.minY / this.nodeHeight);
 		var endX = Math.floor(volume.maxX / this.nodeWidth);
 		var endY = Math.floor(volume.maxY / this.nodeHeight);
+		console.log("bounds", startX, startY, endX, endY)
 
 		if(node.minX === startX && node.minY === startY && 
 		   node.maxX === endX && node.maxY === endY) 
@@ -241,8 +247,9 @@ meta.SparseGrid.prototype =
 		var cell, data, uid, index, y, x;
 		var prevNumVisible = node.numVisible;
 
-		if(node.minX > this.endX || node.maxX < this.startX || node.minY > this.endY || node.maxY < this.startY)
+		if(node.minX > endX || node.maxX < startX || node.minY > endY || node.maxY < startY)
 		{
+			console.log("TOTAL_REBUILD")
 			// remove from cells:
 			for(y = node.minY; y <= node.maxY; y++)
 			{
@@ -259,9 +266,9 @@ meta.SparseGrid.prototype =
 			node.numVisible = 0;
 
 			// add to new cells:
-			for(y = minX; y <= maxY; y++)
+			for(y = startY; y <= endY; y++)
 			{
-				for(x = minX; x <= maxX; x++)
+				for(x = startX; x <= endY; x++)
 				{
 					uid = (x << 16) | (y & 0xffff);
 					cell = this.cells[uid];
@@ -370,6 +377,8 @@ meta.SparseGrid.prototype =
 				meta.renderer.makeEntityVisible(entity);
 			}		
 		}
+
+		console.log("bounds", startX, startY, endX, endY)
 
 		node.minX = startX;
 		node.minY = startY;
