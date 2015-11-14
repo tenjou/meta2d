@@ -43,6 +43,7 @@ cat meta.js \
 	components/Component.Anim.js \
 	renderer/Renderer.js \
 	renderer/CanvasRenderer.js \
+	renderer/SparseGrid.js \
 	debugger/Debugger.js \
 	svg/Entity.SVG.js \
 	svg/Entity.Line.js \
