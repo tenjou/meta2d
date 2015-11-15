@@ -48,8 +48,8 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		{
 			this.ctx.save();
 
-			if(this.visibility) {
-				this.visibility.drawDebug(this.ctx);
+			if(this.culling) {
+				this.culling.drawDebug(this.ctx);
 			}
 
 			if(this.numDebug > 0)

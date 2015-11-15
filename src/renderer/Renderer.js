@@ -18,8 +18,8 @@ meta.class("meta.Renderer",
 		this.entitiesHidden = [];
 		this.entitiesRemove = [];
 
-		if(meta.flags.visibility) {
-			this.visibility = new meta.SparseGrid();
+		if(meta.flags.culling) {
+			this.culling = new meta.SparseGrid();
 		}
 	},
 
@@ -56,18 +56,24 @@ meta.class("meta.Renderer",
 
 		this.holder.resize(this.camera.volume.width, this.camera.volume.height);
 
-		if(this.visibility) {
-			this.visibility.calc();
+		if(this.culling) {
+			this.culling.calc();
 		}
 	},
+
+	prevNum: 0,
 
 	update: function(tDelta)
 	{
 		// Removal.	
 		if(this.entitiesRemove.length > 0) {
 			this._removeEntities(this.entitiesRemove);
-			console.log("ENTITIES", this.entities.length)
 			this.entitiesRemove.length = 0;
+		}
+
+		if(this.entities.length !== this.prevNum) {
+			this.prevNum = this.entities.length;
+			console.log("ENTITIES", this.entities.length)
 		}
 
 		this._removeUpdateEntities();
@@ -141,10 +147,11 @@ meta.class("meta.Renderer",
 				}
 			}
 
-			if(entity.__updateIndex !== -1) {
-				this.entitiesUpdateRemove.push(entity);
-				entity.__updateIndex = -1;
-			}
+			// if(entity.__updateIndex !== -1) {
+			// 	this.entitiesUpdateRemove.push(entity);
+			// 	console.log("SDSDSDS")
+			// 	entity.__updateIndex = -1;
+			// }
 			if(entity.__pickIndex !== -1) {
 				this.entitiesPickingRemove.push(entity);
 				entity.__pickIndex = -1;
@@ -337,14 +344,17 @@ meta.class("meta.Renderer",
 		if(entity.flags & entity.Flag.RENDER) { return; }
 
 		entity.flags |= entity.Flag.RENDER;
-		this.entities.push(entity);
-		this.numEntities++;
 
 		if(entity.flags & entity.Flag.RENDER_REMOVE) 
 		{
 			var index = this.entitiesRemove.indexOf(entity);
 			this.entitiesRemove[index] = null;
 			entity.flags &= ~entity.Flag.RENDER_REMOVE;
+		}
+		else
+		{
+			this.entities.push(entity);
+			this.numEntities++;
 		}
 
 		this.needSortDepth = true;
@@ -367,8 +377,8 @@ meta.class("meta.Renderer",
 
 		entity._activate();
 
-		if(this.visibility) {
-			this.visibility.add(entity);
+		if(this.culling) {
+			this.culling.add(entity);
 		}
 		else {
 			this.makeEntityVisible(entity);
@@ -423,11 +433,6 @@ meta.class("meta.Renderer",
 
 		this.entitiesAnimRemove.push(anim);
 		anim.__index = -1;
-	},
-
-	checkVisibility: function(entity)
-	{
-		//if(entity.flags & (this.Flag.ENABLED | this.Flag.))
 	},
 
 	/** 
@@ -677,15 +682,15 @@ meta.class("meta.Renderer",
 		this.holder.resize(data.width, data.height);
 		this.staticHolder.resize(this.engine.width, this.engine.height);
 
-		if(this.visibility) {
-			this.visibility.calc();
+		if(this.culling) {
+			this.culling.calc();
 		}
 	},
 
 	onCameraMove: function(data, event) 
 	{
-		if(this.visibility) {
-			this.visibility.calc();
+		if(this.culling) {
+			this.culling.calc();
 		}
 
 		this.needRender = true;
@@ -740,7 +745,7 @@ meta.class("meta.Renderer",
 	engine: null,
 	chn: null,
 
-	visibility: null,
+	culling: null,
 
 	holder: null,
 	staticHolder: null,

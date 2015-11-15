@@ -3,8 +3,8 @@
 meta.SparseGrid = function()
 {
 	this.cells = [];
-	this.nodeWidth = meta.flags.visibilityCellWidth || 512;
-	this.nodeHeight = meta.flags.visibilityCellHeight || 512;
+	this.cellWidth = meta.flags.cullingCellWidth || 512;
+	this.cellHeight = meta.flags.cullingCellHeight || 512;
 
 	this.startX = 0;
 	this.startY = 0;
@@ -21,10 +21,10 @@ meta.SparseGrid.prototype =
 	calc: function()
 	{
 		var cameraVolume = meta.camera.volume;
-		var startX = Math.floor(cameraVolume.minX / this.nodeWidth);
-		var startY = Math.floor(cameraVolume.minY / this.nodeHeight);
-		var endX = Math.floor(cameraVolume.maxX / this.nodeWidth);
-		var endY = Math.floor(cameraVolume.maxY / this.nodeHeight);
+		var startX = Math.floor(cameraVolume.minX / this.cellWidth);
+		var startY = Math.floor(cameraVolume.minY / this.cellHeight);
+		var endX = Math.floor(cameraVolume.maxX / this.cellWidth);
+		var endY = Math.floor(cameraVolume.maxY / this.cellHeight);
 
 		if(startX === this.startX && startY === this.startY && 
 		   endX === this.endX && endY === this.endY)
@@ -96,8 +96,10 @@ meta.SparseGrid.prototype =
 						cell = this.cells[uid];
 						if(!cell) { continue; }
 
-						cell.visible = 0;
-						this.makeInvisible(cell.data);
+						if(cell.visible) {
+							cell.visible = 0;
+							this.makeInvisible(cell.data);
+						}
 					}
 				}
 			}
@@ -150,7 +152,7 @@ meta.SparseGrid.prototype =
 		var node = entity.node;
 		var volume = entity.volume;
 
-		this.calcBounds(volume, entity._angle);
+		this.calcBounds(volume);
 
 		var cell, uid;
 		for(var y = this.newMinY; y <= this.newMaxY; y++)
@@ -232,10 +234,12 @@ meta.SparseGrid.prototype =
 	{
 		if((entity.flags & entity.Flag.ACTIVE) === 0) { return; }
 
+
+
 		var node = entity.node;
 		var volume = entity.volume;
 
-		this.calcBounds(volume, entity._angle);
+		this.calcBounds(volume);
 
 		if(node.minX === this.newMinX && node.minY === this.newMinY && 
 		   node.maxX === this.newMaxX && node.maxY === this.newMaxY) 
@@ -371,9 +375,9 @@ meta.SparseGrid.prototype =
 		node.maxY = this.newMaxY;			
 	},
 
-	calcBounds: function(volume, angle)
+	calcBounds: function(volume)
 	{
-		if(angle !== 0)
+		if(volume.angle !== 0)
 		{	
 			var sin = volume.sin;
 			var cos = volume.cos;
@@ -384,87 +388,85 @@ meta.SparseGrid.prototype =
 			var widthSin = volume.width * sin;
 			var heightSin = volume.height * sin;
 
-			var minX, minY, maxX, maxY;
-
-			if(angle > 0)
+			if(volume.angle < Math.PI)
 			{
-				// 0 < theta < 90
-				if(angle < 1.5707963267948966)
+				// < 90
+				if(volume.angle < 1.5707963267948966)
 				{
+					minX = px - heightSin;
+					maxX = px + widthCos;				
 					minY = py;
 					maxY = py + heightCos + widthSin;
-					minX = px - heightSin;
-					maxX = px + widthCos;
 				}
-				// 90 <= theta <= 180
+				// < 180
 				else
 				{
+					minX = px - heightSin + widthCos;
+					maxX = px;				
 					minY = py + heightCos;
 					maxY = py + widthSin;
-					minX = px - heightSin + widthCos;
-					maxX = px;
 				}
 			}
 			else
 			{
-				// -90 < theta <= 0
-				if(angle > -1.5707963267948966)
+				// < 270
+				if(volume.angle < 4.71238898038469)
 				{
-					minY = py + widthSin;
-					maxY = py + heightCos;
-					minX = px;
-					maxX = px + widthCos - heightSin;
+					minX = px + widthCos;
+					maxX = px - heightSin;				
+					minY = py + widthSin + heightCos;
+					maxY = py;				
 				}
-				// -180 <= theta <= -90
+				// < 360
 				else
 				{
-					minY = py + widthSin + heightCos;
-					maxY = py;
-					minX = px + widthCos;
-					maxX = px - heightSin;
+					minX = px;
+					maxX = px + widthCos - heightSin;				
+					minY = py + widthSin;
+					maxY = py + heightCos;
 				}
 			}	
 
-			this.newMinX = Math.floor(minX / this.nodeWidth);
-			this.newMinY = Math.floor(minY / this.nodeHeight);
-			this.newMaxX = Math.floor(maxX / this.nodeWidth);
-			this.newMaxY = Math.floor(maxY / this.nodeHeight);
+			this.newMinX = Math.floor(minX / this.cellWidth);
+			this.newMinY = Math.floor(minY / this.cellHeight);
+			this.newMaxX = Math.floor(maxX / this.cellWidth);
+			this.newMaxY = Math.floor(maxY / this.cellHeight);
 		}
 		else
 		{
-			this.newMinX = Math.floor(volume.minX / this.nodeWidth);
-			this.newMinY = Math.floor(volume.minY / this.nodeHeight);
-			this.newMaxX = Math.floor(volume.maxX / this.nodeWidth);
-			this.newMaxY = Math.floor(volume.maxY / this.nodeHeight);			
+			this.newMinX = Math.floor(volume.minX / this.cellWidth);
+			this.newMinY = Math.floor(volume.minY / this.cellHeight);
+			this.newMaxX = Math.floor(volume.maxX / this.cellWidth);
+			this.newMaxY = Math.floor(volume.maxY / this.cellHeight);			
 		}
 	},
 
 	drawDebug: function(ctx)
 	{
-		var width = (this.endX - this.startX + 1) * this.nodeWidth;
-		var height = (this.endY - this.startY + 1) * this.nodeHeight;
+		var width = (this.endX - this.startX + 1) * this.cellWidth;
+		var height = (this.endY - this.startY + 1) * this.cellHeight;
 
 		ctx.lineWidth = 2.5;
 		ctx.strokeStyle = "#e74c3c";
 		ctx.beginPath();
 
-		var posX = this.startX * this.nodeWidth;
-		var posY = this.startY * this.nodeHeight;
+		var posX = this.startX * this.cellWidth;
+		var posY = this.startY * this.cellHeight;
 		for(var x = this.startX; x <= this.endX; x++)
 		{
 			ctx.moveTo(posX, posY);
 			ctx.lineTo(posX, posY + height);
 
-			posX += this.nodeWidth;
+			posX += this.cellWidth;
 		}
 
-		posX = this.startX * this.nodeWidth;
+		posX = this.startX * this.cellWidth;
 		for(var y = this.startY; y <= this.endY; y++)
 		{
 			ctx.moveTo(posX, posY);
 			ctx.lineTo(posX + width, posY);
 
-			posY += this.nodeHeight;
+			posY += this.cellHeight;
 		}
 
 		ctx.stroke();
