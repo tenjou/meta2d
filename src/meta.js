@@ -20,7 +20,7 @@ var meta =
 	flags: {
 		webGL: true,
 		audioAPI: true,
-		visibility: true
+		culling: true
 	},
 
 	time: {
