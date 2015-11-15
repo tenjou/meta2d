@@ -143,10 +143,13 @@ meta.controller("meta.debugger",
 			this.fps = fps;
 		}
 
-		var memory = (window.performance.memory.usedJSHeapSize / 1048576).toFixed(2);
-		if(memory !== this.memory) {
-			this.txt.memory.text = "memory: " + memory + "mb";	
-			this.memory = memory;		
+		if(window.performance.memory)
+		{
+			var memory = (window.performance.memory.usedJSHeapSize / 1048576).toFixed(2);
+			if(memory !== this.memory) {
+				this.txt.memory.text = "memory: " + memory + "mb";	
+				this.memory = memory;		
+			}	
 		}
 
 		var numEntities = meta.renderer.numEntities;
