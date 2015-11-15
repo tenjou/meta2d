@@ -103,7 +103,7 @@ meta.class("Entity.Geometry",
 
 		this._updateAnchor();
 
-		if(this.renderer.visibility) {
+		if(this.renderer.culling) {
 			this.node = new meta.SparseNode(this);
 		}		
 
@@ -156,7 +156,7 @@ meta.class("Entity.Geometry",
 		if(this.flags & this.Flag.REMOVED) { return; }
 		this.flags |= this.Flag.REMOVED;
 
-		if(this.flags & this.Flag.RENDER) {
+		if(this.flags & this.Flag.ACTIVE) {
 			this.renderer.removeEntity(this);
 		}
 		else {
@@ -208,7 +208,7 @@ meta.class("Entity.Geometry",
 		this.volume.updatePos();
 
 		if(this.node) {
-			this.renderer.visibility.update(this);
+			this.renderer.culling.update(this);
 		}
 
 		if(this.children) 
@@ -560,25 +560,28 @@ meta.class("Entity.Geometry",
 		if(this._angle === value) { return; }
 
 		this._angle = value;
-		this.updateAngle();
+		this.updateAngle(value);
 	},	
 
-	/** 
-	 * angle
-	 * @return {number}
-	 */		
-	get angle() { return (this.volume.angle * 180) / Math.PI; },
+	/** angle */		
+	get angle() { return (this._angle * 180) / Math.PI; },
 
-	/** 
-	 * angleRad
-	 * @return {number}
-	 */			
-	get angleRad() { return this.volume.angle; },
+	/** angleRad */			
+	get angleRad() { return this._angle; },
 
 	/** updateAngle */
 	updateAngle: function()
 	{
-		this.volume.rotate(this._angle + this._parentAngle);
+		if(this.flags & this.Flag.IGNORE_PARENT_ANGLE) {
+			this.volume.rotate(this._angle);
+		}
+		else {
+			this.volume.rotate(this._angle + this.parent.volume.angle);
+		}
+
+		if(this.node) {
+			this.renderer.culling.update(this);
+		}
 
 		if(this.children) 
 		{
@@ -589,7 +592,6 @@ meta.class("Entity.Geometry",
 				child = this.children[i];
 				if(child.flags & this.Flag.IGNORE_PARENT_ANGLE) { continue; }
 
-				child._parentAngle = this.volume.angle;
 				child.updateAngle();
 			}
 		}
@@ -986,7 +988,7 @@ meta.class("Entity.Geometry",
 
 			this.flags |= this.Flag.UPDATING;
 
-			if(this.flags & this.Flag.RENDER) {
+			if(this.flags & this.Flag.ACTIVE) {
 				this.__updateIndex = this.renderer.entitiesUpdate.push(this) - 1;
 			}
 		}
@@ -996,7 +998,7 @@ meta.class("Entity.Geometry",
 
 			this.flags &= ~this.Flag.UPDATING;
 
-			if(this.flags & this.Flag.RENDER) {
+			if(this.flags & this.Flag.ACTIVE) {
 				this.renderer.entitiesUpdateRemove.push(this);
 				this.__updateIndex = -1;
 			}			
@@ -1593,7 +1595,7 @@ meta.class("Entity.Geometry",
 
 	_x: 0, _y: 0, _parentX: 0, _parentY: 0,
 	_z: 0, totalZ: 0, _parentZ: 0,
-	_angle: 0, _parentAngle: 0,
+	_angle: 0,
 	_alpha: 1, totalAlpha: 1,
 	_scaleX: 1, _scaleY: 1, _parentScaleX: 1, _parentScaleY: 1,
 	
