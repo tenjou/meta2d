@@ -160,6 +160,12 @@ meta.math.AABBext.prototype =
 	 */
 	rotate: function(angle)
 	{
+		var pi2 = Math.PI * 2;
+		var angle = (angle % pi2);
+		if(angle < 0) {
+			angle += pi2;
+		}
+
 		this.angle = angle;
 
 		this.sin = Math.sin(angle);
