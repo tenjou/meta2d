@@ -78,7 +78,8 @@ meta.class("meta.Controller",
 			this.onUnload();
 		}
 
-		if(this.onUpdate) {
+		if(this.onUpdate) 
+		{
 			var buffer = meta.engine.controllersUpdate;
 			var num = buffer.length;
 			for(var n = 0; n < num; n++) {

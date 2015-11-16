@@ -210,7 +210,7 @@ meta.View.prototype =
 
 		view.parent = this;
 
-		if(this.flag & this.Flag.ACTIVE) {
+		if(this.flags & this.Flag.ACTIVE) {
 			view._activate();
 		}
 	},
@@ -264,7 +264,7 @@ meta.View.prototype =
 
 		view.parent = null;
 
-		if(this.flag & this.Flag.ACTIVE) {
+		if(this.flags & this.Flag.ACTIVE) {
 			view._deactivate();
 		}
 	},
@@ -283,7 +283,7 @@ meta.View.prototype =
 	{
 		this.flags |= this.Flag.ACTIVE;
 
-		if((this.flags & this.Flag.INSTANCE_HIDDEN) === 0) {
+		if(this.flags & this.Flag.INSTANCE_HIDDEN) {
 			return;
 		}
 
@@ -302,7 +302,7 @@ meta.View.prototype =
 	{
 		this.flags &= ~this.Flag.ACTIVE;
 
-		if((this.flags & this.Flag.INSTANCE_HIDDEN) === 0) {
+		if(this.flags & this.Flag.INSTANCE_HIDDEN) {
 			return;
 		}
 
@@ -419,11 +419,10 @@ meta.View.prototype =
 	{
 		if(value) 
 		{
-			if(this.flags & this.Flag.STATIC) {
-				return;
-			}
+			if(this.flags & this.Flag.STATIC) { return; }
 
 			this.flags |= this.Flag.STATIC;
+			this._updateStatic(true);
 		}
 		else 
 		{
@@ -432,11 +431,7 @@ meta.View.prototype =
 			}
 
 			this.flags &= ~this.Flag.STATIC;
-		}
-
-		var numEntities = this.entities.length;
-		for(var i = 0; i < numEntities; i++) {
-			this.entities[i].static = value;
+			this._updateStatic(false);
 		}
 	},
 
@@ -444,6 +439,17 @@ meta.View.prototype =
 		return ((this.flags & this.Flag.STATIC) === this.Flag.STATIC); 
 	},
 
+	_updateStatic: function(value)
+	{
+		var entity;
+		var numEntities = this.entities.length;
+		for(var n = 0; n < numEntities; n++) 
+		{
+			entity = this.entities[n];
+			entity.flags |= entity.Flag.STATIC;
+			//this.entities[i].static = value;
+		}
+	},
 
 	Flag: {
 		HIDDEN: 1 << 0,
