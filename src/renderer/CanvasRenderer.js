@@ -30,7 +30,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		for(i = 0; i < this.numEntities; i++) 
 		{
 			entity = this.entities[i];
-			if(entity.flags & entityFlag.INSTANCE_HIDDEN) { return; }
+			if(entity.flags & entityFlag.INSTANCE_HIDDEN) { continue; }
 
 			this.drawEntity(entity);
 		}
@@ -47,20 +47,19 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 			this.culling.drawDebug(this.ctx);
 		}
 
-		if(this.numDebug > 0)
+		this.ctx.lineWidth = 2;
+		this.ctx.strokeStyle = "red";
+		this.ctx.fillStyle = "red";
+		
+		var entity;
+		var entityFlag = this.holder.Flag;
+		for(var n = 0; n < this.numEntities; n++) 
 		{
-			this.ctx.lineWidth = 2;
-			this.ctx.strokeStyle = "red";
-			this.ctx.fillStyle = "red";
-			
-			var entity;
-			var entityFlag = this.holder.Flag;
-			for(var n = 0; n < this.numEntities; n++) 
-			{
-				entity = this.entities[n];
-				if(entity.flags & entityFlag.DEBUG || this.meta.cache.debug) {
-					this.drawVolume(entity);
-				}
+			entity = this.entities[n];
+			if(entity.flags & entityFlag.INSTANCE_HIDDEN) { continue; }
+
+			if(entity.flags & entityFlag.DEBUG || this.meta.cache.debug) {
+				this.drawVolume(entity);
 			}
 		}
 	},

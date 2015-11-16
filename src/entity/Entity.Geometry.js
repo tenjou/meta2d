@@ -1157,15 +1157,15 @@ meta.class("Entity.Geometry",
 	{
 		if(value)
 		{
-			if((this.flags & this.Flag.HIDDEN) === 0) { return; }
-
-			this.flags &= ~ this.Flag.HIDDEN;
-		}
-		else
-		{
 			if(this.flags & this.Flag.HIDDEN) { return; }
 
 			this.flags |= this.Flag.HIDDEN;
+		}
+		else
+		{
+			if((this.flags & this.Flag.HIDDEN) === 0) { return; }
+
+			this.flags &= ~this.Flag.HIDDEN;
 		}
 
 		this._updateHidden();

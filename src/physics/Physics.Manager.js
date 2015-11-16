@@ -431,12 +431,15 @@ meta.class("Physics.Manager",
 		ctx.fillStyle = this.debugColor;
 		ctx.globalAlpha = 0.8;
 
-		var body;
+		var entity, body;
 		var entities = renderer.entities;
 		var num = entities.length;
 
 		for(var n = 0; n < num; n++) 
 		{
+			entity = entities[n];
+			if(entity.flags & entity.Flag.INSTANCE_HIDDEN) { continue; }
+
 			body = entities[n].components.Body;
 			if(!body) { continue; }
 
