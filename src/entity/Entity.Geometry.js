@@ -123,7 +123,7 @@ meta.class("Entity.Geometry",
 		{
 			var num = this.children.length;
 			for(var n = 0; n < num; n++) {
-				this.children[n]._active();
+				this.children[n]._activate();
 			}
 		}		
 	},
@@ -1075,7 +1075,9 @@ meta.class("Entity.Geometry",
 
 		this._updateHidden();
 
-		entity._setView(this._view);	
+		if(this._view) {
+			entity._setView(this._view);
+		}
 	},
 
 	_detach: function(entity)
@@ -1155,15 +1157,15 @@ meta.class("Entity.Geometry",
 	{
 		if(value)
 		{
-			if(this.flags & this.Flag.HIDDEN) { return; }
+			if((this.flags & this.Flag.HIDDEN) === 0) { return; }
 
-			this.flags |= this.Flag.HIDDEN;
+			this.flags &= ~ this.Flag.HIDDEN;
 		}
 		else
 		{
-			if((this.flags & this.Flag.HIDDEN) === 0) { return; }
+			if(this.flags & this.Flag.HIDDEN) { return; }
 
-			this.flags &= ~this.Flag.HIDDEN;
+			this.flags |= this.Flag.HIDDEN;
 		}
 
 		this._updateHidden();
@@ -1516,6 +1518,26 @@ meta.class("Entity.Geometry",
 
 	get loaded() {
 		return ((this.flags & this.Flag.LOADED) === this.Flag.LOADED);
+	},
+
+	set static(value)
+	{
+		if(value) 
+		{
+			if(this.flags & this.Flag.STATIC) { return; }
+
+			this.flags |= this.Flag.STATIC;
+		}
+		else
+		{
+			if((this.flags & this.Flag.STATIC) === 0) { return; }
+
+			this.flags &= ~this.Flag.STATIC;
+		}
+	},
+
+	get static() {
+		return ((this.flags & this.Flag.STATIC) === this.Flag.STATIC);
 	},
 
 	/* Debug */
