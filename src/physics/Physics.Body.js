@@ -4,16 +4,13 @@ meta.component("Physics.Body",
 {
 	onAdd: function() 
 	{
-		console.log("add");
 		this.velocity = new meta.math.Vector2(0, 0);
 		this.acceleration = new meta.math.Vector2(0, 0);
 		this.speed = new meta.math.Vector2(0, 0);
 		this._volume = this.owner.volume;
-		meta.physics.add(this);
 	},
 
-	onActiveEnter: function() 
-	{
+	onActiveEnter: function() {
 		console.log("active");
 		meta.physics.add(this);
 	},

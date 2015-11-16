@@ -10,7 +10,8 @@ meta.Event = {
 	FOCUS: "focus",
 	FULLSCREEN: "fullscreen",
 	ADAPT: "adapt",
-	DEBUG: "debug"
+	DEBUG: "debug",
+	RENDER_DEBUG: "debug-draw"
 };
 
 meta.Priority = {

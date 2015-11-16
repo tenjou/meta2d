@@ -5,9 +5,9 @@ meta.class("Physics.Manager",
 	init: function() 
 	{
 		this.manifold = new this.Manifold();
-
-		meta.engine.onDebug.add(this.onDebug, this);
 		this.start();
+
+		meta.renderer.onRenderDebug.add(this.renderDebug, this);
 	},
 
 	update: function(tDelta)
@@ -420,17 +420,27 @@ meta.class("Physics.Manager",
 		return true;
 	},	
 
-	render: function(tDelta)
+	renderDebug: function(renderer)
 	{
-		var ctx = meta.renderer.ctx;
+		if(this.bodies.length === 0) { return; }
+		
+		var ctx = renderer.ctx;
+
 		ctx.save();
 
 		ctx.fillStyle = this.debugColor;
 		ctx.globalAlpha = 0.8;
 
-		var numBodies = this.bodies.length;
-		for(var i = 0; i < numBodies; i++) {
-			this.drawVolume(ctx, this.bodies[i].volume);
+		var body;
+		var entities = renderer.entities;
+		var num = entities.length;
+
+		for(var n = 0; n < num; n++) 
+		{
+			body = entities[n].components.Body;
+			if(!body) { continue; }
+
+			this.drawVolume(ctx, body.volume);
 		}
 
 		ctx.restore();
@@ -479,16 +489,6 @@ meta.class("Physics.Manager",
 		tmpBody.__index = body.__index;
 		this.bodies[body.__index] = tmpBody;
 		this.bodies.pop();
-	},
-
-	onDebug: function(value, event) 
-	{
-		if(value) {
-			meta.renderer.addRender(this);
-		}
-		else {
-			meta.renderer.removeRender(this);
-		}
 	},
 
 	start: function() {

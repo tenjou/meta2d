@@ -10,7 +10,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		meta.engine.ctx = this.ctx;
 	},
 
-	render: function(tDelta, alpha)
+	renderMain: function(tDelta)
 	{
 		var numEntities = this.entitiesAnim.length;
 		for(var i = 0; i < numEntities; i++) {
@@ -20,18 +20,17 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		if(!this.needRender) { return; }
 
 		this.clear();
-
 		this.ctx.save();
 
 		var zoom = this.camera._zoom;
 		this.ctx.setTransform(zoom, 0, 0, zoom, -Math.floor(this.cameraVolume.x * zoom), -Math.floor(this.cameraVolume.y * zoom));
 
 		var entity;
-		numEntities = this.entities.length;
-		for(i = 0; i < numEntities; i++) 
+		var entityFlag = this.holder.Flag;
+		for(i = 0; i < this.numEntities; i++) 
 		{
 			entity = this.entities[i];
-			if(entity.flags & entity.Flag.INSTANCE_HIDDEN) { return; }
+			if(entity.flags & entityFlag.INSTANCE_HIDDEN) { return; }
 
 			this.drawEntity(entity);
 		}
@@ -39,56 +38,35 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		var numFuncs = this._renderFuncs.length;
 		for(i = 0; i < numFuncs; i++) {
 			this._renderFuncs[i].render(tDelta);
+		}		
+	},
+
+	renderDebug: function()
+	{
+		if(this.culling) {
+			this.culling.drawDebug(this.ctx);
 		}
 
-		var entity = null;
-
-		/* Debug */
-		if(this.meta.cache.debug)
+		if(this.numDebug > 0)
 		{
-			this.ctx.save();
-
-			if(this.culling) {
-				this.culling.drawDebug(this.ctx);
-			}
-
-			if(this.numDebug > 0)
+			this.ctx.lineWidth = 2;
+			this.ctx.strokeStyle = "red";
+			this.ctx.fillStyle = "red";
+			
+			var entity;
+			var entityFlag = this.holder.Flag;
+			for(var n = 0; n < this.numEntities; n++) 
 			{
-				this.ctx.lineWidth = 2;
-				this.ctx.strokeStyle = "red";
-				this.ctx.fillStyle = "red";
-				
-				for(i = 0; i < numEntities; i++) 
-				{
-					entity = this.entities[i];
-					if(entity.flags & entity.Flag.DEBUG || this.meta.cache.debug) 
-					{
-						if(entity._static) 
-						{
-							var zoom = this.camera._zoom;
-
-							if(entity._debugger) {
-								this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-							}
-							else {
-								this.ctx.setTransform(zoom, 0, 0, zoom, 0, 0);
-							}
-							
-							this.drawVolume(entity);
-							this.ctx.setTransform(zoom, 0, 0, zoom, -Math.floor(this.cameraVolume.x * zoom), -Math.floor(this.cameraVolume.y * zoom));
-						}
-						else {				
-							this.drawVolume(entity);
-						}
-					}
+				entity = this.entities[n];
+				if(entity.flags & entityFlag.DEBUG || this.meta.cache.debug) {
+					this.drawVolume(entity);
 				}
 			}
-
-			this.ctx.restore();
 		}
+	},
 
-		this.needRender = false;
-
+	renderStatic: function()
+	{
 		this.ctx.restore();
 	},
 
@@ -123,7 +101,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 			}
 			else {
 				this._drawEntity(entity);
-			}			
+			}
 			
 			this.ctx.setTransform(zoom, 0, 0, zoom, -Math.floor(this.cameraVolume.x * zoom), -Math.floor(this.cameraVolume.y * zoom));
 		}

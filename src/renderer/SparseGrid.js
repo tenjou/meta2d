@@ -443,40 +443,37 @@ meta.SparseGrid.prototype =
 
 	drawDebug: function(ctx)
 	{
-		var width = (this.endX - this.startX + 1) * this.cellWidth;
-		var height = (this.endY - this.startY + 1) * this.cellHeight;
-
-		ctx.lineWidth = 2.5;
-		ctx.strokeStyle = "#e74c3c";
-		ctx.beginPath();
-
-		var posX = this.startX * this.cellWidth;
-		var posY = this.startY * this.cellHeight;
-		for(var x = this.startX; x <= this.endX; x++)
-		{
-			ctx.moveTo(posX, posY);
-			ctx.lineTo(posX, posY + height);
-
-			posX += this.cellWidth;
-		}
-
-		posX = this.startX * this.cellWidth;
+		if(!this.debug) { return; }
+		
+		ctx.save();
+		ctx.lineWidth = 1.5;
+		ctx.strokeStyle = "#43a6e2";	
+		ctx.fillStyle = "#c9e3f3";
+		
+		var posX, posY, uid, cell;
 		for(var y = this.startY; y <= this.endY; y++)
 		{
-			ctx.moveTo(posX, posY);
-			ctx.lineTo(posX + width, posY);
+			for(var x = this.startX; x <= this.endX; x++)
+			{
+				posX = x * this.cellWidth + 0.5;
+				posY = y * this.cellHeight + 0.5;
 
-			posY += this.cellHeight;
-		}
+				ctx.beginPath();
+				ctx.rect(posX, posY, this.cellWidth, this.cellHeight);
+				ctx.stroke();
+			}
+		}	
 
-		ctx.stroke();
+		ctx.restore();
 	},
 
-	//
 	Cell: function() {
 		this.data = [];
 		this.visible = 0;
-	}
+	},
+
+	//
+	debug: true
 };
 
 meta.SparseNode = function(owner) {

@@ -107,9 +107,10 @@ meta.class("Entity.Geometry",
 			this.node = new meta.SparseNode(this);
 		}		
 
-		if(this.components)
+		if(this.components !== this.parent.components)
 		{
-			for(key in this.components) 
+			var component;
+			for(var key in this.components) 
 			{
 				component = this.components[key];
 				if(component.onActiveEnter) {
@@ -121,7 +122,7 @@ meta.class("Entity.Geometry",
 		if(this.children) 
 		{
 			var num = this.children.length;
-			for(n = 0; n < num; n++) {
+			for(var n = 0; n < num; n++) {
 				this.children[n]._active();
 			}
 		}		
@@ -1172,24 +1173,6 @@ meta.class("Entity.Geometry",
 		return ((this.flags & this.Flag.HIDDEN) === this.Flag.HIDDEN);
 	},
 
-	set static(value) 
-	{
-		if(this._static === value) { return; }
-		this._static = value;
-
-		if(this.children) 
-		{
-			var numChildren = this.children.length;
-			for(var i = 0; i < numChildren; i++) {
-				this.children[i].static = value;
-			}
-		}
-
-		this.renderer.needRender = true;
-	},
-
-	get static() { return this._static; },
-
 	set state(name)
 	{
 		if(this._state === name) { return; }
@@ -1443,7 +1426,8 @@ meta.class("Entity.Geometry",
 			}			
 		}
 
-		if(!this.components) {
+		// If no unique component object:
+		if(this.parent.components === this.components) {
 			this.components = {};
 		}
 
@@ -1541,15 +1525,16 @@ meta.class("Entity.Geometry",
 		{
 			if(this.flags & this.Flag.DEBUG) { return; }
 
-			this.renderer.numDebug++;
 			this.flags |= this.Flag.DEBUG;
+			this.renderer.numDebug++;
+			
 		}
 		else 
 		{
 			if((this.flags & this.Flag.DEBUG) === 0) { return; }
 
-			this.renderer.numDebug--;
 			this.flags &= ~this.Flag.DEBUG;
+			this.renderer.numDebug--;
 		}
 		
 		this.renderer.needRender = true;
@@ -1582,7 +1567,8 @@ meta.class("Entity.Geometry",
 		FIT_IN: 1 << 20,
 		CLIP_BOUNDS: 1 << 21,
 		LOADED: 1 << 22,
-		RENDER_HOLDER: 1 << 23
+		RENDER_HOLDER: 1 << 23,
+		STATIC: 1 << 24
 	},
 
 	//
@@ -1612,9 +1598,6 @@ meta.class("Entity.Geometry",
 	volume: null,
 	clipVolume: null,
 
-	_static: false,
-	_debugger: false,
-
 	children: null,
 	anim: null,
 
@@ -1622,7 +1605,7 @@ meta.class("Entity.Geometry",
 
 	timers: null,
 	_tweenCache: null,
-	components: null,
+	components: {},
 
 	hover: false,
 	pressed: false,

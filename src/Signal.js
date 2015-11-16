@@ -57,7 +57,7 @@ meta.Channel.prototype =
 		priority = priority || 0;
 
 		if(!func) {
-			console.warn("(meta.Channel.subscribe) No callback function passed.");
+			console.warn("(meta.Channel.subscribe) No valid callback function passed.");
 			return;			
 		}
 

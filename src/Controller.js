@@ -219,21 +219,6 @@ meta.class("meta.Component", {
 	owner: null
 });
 
-meta.component = function(name, extend, obj) 
-{
-	// if(!obj) 
-	// {
-	// 	if(typeof(extend) === "object") {
-	// 		obj = extend;
-	// 		extend = "meta.Component";
-	// 	}
-	// 	else {
-	// 		obj = null;
-	// 	}
-	// }
-
-	// if(!extend) {
-	// 	extend = "meta.Component";
-	// }
+meta.component = function(name, extend, obj) {
 	meta.class(name, extend, obj);
 };
