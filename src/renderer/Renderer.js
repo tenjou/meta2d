@@ -5,14 +5,16 @@ meta.class("meta.Renderer",
 	init: function() 
 	{
 		this.holder = new Entity.Geometry();
-		this.holder.flags |= this.holder.Flag.RENDER_HOLDER;
-
 		this.staticHolder = new Entity.Geometry();
-		this.staticHolder.flags |= this.holder.Flag.RENDER_HOLDER;
+		
+		var entityProto = Entity.Geometry.prototype;
+		var flags = (this.holder.Flag.ENABLED | this.holder.Flag.INSTANCE_ENABLED);
+		entityProto.flags = flags;
+		entityProto.renderer = this;
+		entityProto.parent = this.holder;
 
-		Entity.Geometry.prototype.flags = (this.holder.Flag.ENABLED | this.holder.Flag.INSTANCE_ENABLED);
-		Entity.Geometry.prototype.renderer = this;
-		Entity.Geometry.prototype.parent = this.holder;
+		this.holder.flags = flags | this.holder.Flag.RENDER_HOLDER;
+		this.staticHolder.flags = flags | this.holder.Flag.RENDER_HOLDER;
 
 		this.entities = [];
 		this.entitiesHidden = [];
@@ -46,8 +48,6 @@ meta.class("meta.Renderer",
 			onHoverEnter: 	meta.createChannel(Entity.Event.HOVER_ENTER),
 			onHoverExit: 	meta.createChannel(Entity.Event.HOVER_EXIT)
 		};
-
-		
 
 		meta.input.onDown.add(this.onInputDown, this, meta.Priority.HIGH);
 		meta.input.onUp.add(this.onInputUp, this, meta.Priority.HIGH);
@@ -163,11 +163,16 @@ meta.class("meta.Renderer",
 				}
 			}
 
-			// if(entity.__updateIndex !== -1) {
-			// 	this.entitiesUpdateRemove.push(entity);
-			// 	console.log("SDSDSDS")
-			// 	entity.__updateIndex = -1;
-			// }
+			if((entity.flags & entity.Flag.ACTIVE) === 0) 
+			{
+				if(entity.__updateIndex !== -1) {
+					this.entitiesUpdateRemove.push(entity);
+					entity.__updateIndex = -1;
+				}
+
+				entity._deactivate();
+			}
+
 			if(entity.__pickIndex !== -1) {
 				this.entitiesPickingRemove.push(entity);
 				entity.__pickIndex = -1;
@@ -420,11 +425,12 @@ meta.class("meta.Renderer",
 
 	removeEntity: function(entity)
 	{
+		if((entity.flags & entity.Flag.ACTIVE) === 0) { return; }
 		if(entity.flags & entity.Flag.RENDER_REMOVE) { return; }
 
+		entity.flags &= ~(entity.Flag.ACTIVE | entity.Flag.RENDER);
 		entity.flags |= entity.Flag.RENDER_REMOVE;
-		entity.flags &= ~entity.Flag.RENDER;
-	
+
 		this.entitiesRemove.push(entity);
 	},
 
@@ -434,6 +440,17 @@ meta.class("meta.Renderer",
 		for(var i = 0; i < numRemove; i++) {
 			this.removeEntity(entities[i]);
 		}
+	},
+
+	removeEntityRender: function(entity)
+	{
+		if((entity.flags & entity.Flag.ACTIVE) === 0) { return; }
+		if(entity.flags & entity.Flag.RENDER_REMOVE) { return; }
+
+		entity.flags |= entity.Flag.RENDER_REMOVE;
+		entity.flags &= ~entity.Flag.RENDER;
+	
+		this.entitiesRemove.push(entity);
 	},
 
 	addAnim: function(anim)

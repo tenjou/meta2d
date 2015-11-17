@@ -370,6 +370,19 @@ meta.View.prototype =
 		return ((this.flags & this.Flag.HIDDEN) === this.Flag.HIDDEN);
 	},
 
+	updateEntity: function(entity)
+	{
+		if((this.flags & this.Flag.ACTIVE) === 0) { return; }
+		if((this.flags & this.Flag.INSTANCE_HIDDEN)) { return; }
+
+		if(entity.flags & entity.Flag.INSTANCE_ENABLED) {
+			meta.renderer.addEntity(entity);
+		}
+		else {
+			meta.renderer.removeEntity(entity);
+		}
+	},
+
 	set x(value)
 	{
 		if(this._x === value) { return; }

@@ -49,18 +49,18 @@ meta.class("Entity.Geometry",
 			this.flags &= ~this.Flag.ENABLED;
 		}
 
-		this._updateEnabled();
+		this._updateEnabled(true);
 	},
 
 	get enabled() {
 		return ((this.flags & this.Flag.ENABLED) === this.Flag.ENABLED);
 	},
 
-	_updateEnabled: function()
+	_updateEnabled: function(parent)
 	{
 		if(this.flags & this.Flag.INSTANCE_ENABLED) 
 		{ 
-			if(!(this.flags & this.Flag.ENABLED) || !(this.parent.flags & this.Flag.INSTANCE_ENABLED)) {
+			if((this.flags & this.Flag.ENABLED) && (this.parent.flags & this.Flag.INSTANCE_ENABLED)) {
 				return;
 			}
 
@@ -68,8 +68,7 @@ meta.class("Entity.Geometry",
 		}
 		else
 		{
-			if((this.flags & this.Flag.ENABLED) && (this.parents.flags & this.Flag.INSTANCE_ENABLED))
-			{
+			if((this.flags & this.Flag.ENABLED) && (this.parent.flags & this.Flag.INSTANCE_ENABLED)) {
 				this.flags |= this.Flag.INSTANCE_ENABLED;
 			}
 			else {
@@ -81,12 +80,12 @@ meta.class("Entity.Geometry",
 		{
 			var num = this.children.length;
 			for(var n = 0; n < num; n++) {
-				this.children[n]._updateEnabled();
+				this.children[n]._updateEnabled(false);
 			}
 		}
 
-		if(this.flags & this.Flag.ACTIVE) {
-			this._updateActive();
+		if(this._view && parent) {
+			this._view.updateEntity(this);
 		}
 	},
 
@@ -132,9 +131,10 @@ meta.class("Entity.Geometry",
 	{
 		this.flags &= ~this.Flag.ACTIVE;
 
-		if(this.components)
+		if(this.components !== this.parent.components)
 		{
-			for(key in this.components) 
+			var component;
+			for(var key in this.components) 
 			{
 				component = this.components[key];
 				if(component.onActiveExit) {
@@ -146,7 +146,7 @@ meta.class("Entity.Geometry",
 		if(this.children) 
 		{
 			var num = this.children.length;
-			for(n = 0; n < num; n++) {
+			for(var n = 0; n < num; n++) {
 				this.children[n]._deactivate();
 			}
 		}
