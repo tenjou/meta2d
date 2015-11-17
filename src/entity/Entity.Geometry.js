@@ -998,8 +998,17 @@ meta.class("Entity.Geometry",
 	{
 		this._view = view;
 
-		if((view.flags & view.Flag.ACTIVE) && !(view.flags & view.Flag.INSTANCE_HIDDEN)) {
-			this.renderer.addEntity(this);
+		if(view)
+		{
+			if((view.flags & view.Flag.ACTIVE) && !(view.flags & view.Flag.INSTANCE_HIDDEN)) {
+				this.renderer.addEntity(this);
+			}
+			else {
+				this.renderer.removeEntity(this);
+			}
+		}
+		else {
+			this.renderer.removeEntity(this);
 		}
 
 		if(this.children) 
@@ -1068,9 +1077,17 @@ meta.class("Entity.Geometry",
 	{
 		entity.parent = this.renderer.holder;
 
+		entity.updateZ();
+		entity._setView(null);
+		
+		if(this.volume.angle !== 0) {
+			entity.updateAngle();
+		}
 		if(this.totalAlpha !== 1) {
 			entity.updateAlpha();
 		}
+
+		entity._updateHidden();
 	},
 
 	detach: function(entity) 
@@ -1090,15 +1107,6 @@ meta.class("Entity.Geometry",
 		this.children.pop();
 
 		this._detach(entity);
-
-		if(this._view) 
-		{
-			var viewFlags = this._view.Flag;
-			if((this._view.flags & viewFlags.ACTIVE) && !(this._view.flags & viewFlags.INSTANCE_HIDDEN)) 
-			{
-				this.renderer.removeEntity(entity);
-			}
-		}
 	},
 
 	detachAll: function()
@@ -1108,15 +1116,6 @@ meta.class("Entity.Geometry",
 		var num = this.children.length;
 		for(var n = 0; n < num; n++) {
 			this._detach(this.children[n]);
-		}
-
-		if(this._view) 
-		{
-			var viewFlags = this._view.Flag;
-			if((this._view.flags & viewFlags.ACTIVE) && !(this._view.flags & viewFlags.INSTANCE_HIDDEN)) 
-			{
-				this.renderer.removeEntities(this.children);
-			}
 		}
 
 		this.children.length = 0;
