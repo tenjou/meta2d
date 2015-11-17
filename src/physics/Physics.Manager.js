@@ -4,6 +4,8 @@ meta.class("Physics.Manager",
 {
 	init: function() 
 	{
+		this.bodies = [];
+		this.bodiesRemove = [];
 		this.manifold = new this.Manifold();
 		this.start();
 
@@ -12,6 +14,10 @@ meta.class("Physics.Manager",
 
 	update: function(tDelta)
 	{
+		if(this.bodiesRemove.length > 0) {
+			this.removeBodies();
+		}
+
 		var body1 = null, body2 = null;
 		var numBodies = this.bodies.length;
 		for(var i = 0; i < numBodies; i++) 
@@ -431,15 +437,12 @@ meta.class("Physics.Manager",
 		ctx.fillStyle = this.debugColor;
 		ctx.globalAlpha = 0.8;
 
-		var entity, body;
+		var body;
 		var entities = renderer.entities;
 		var num = entities.length;
 
 		for(var n = 0; n < num; n++) 
 		{
-			entity = entities[n];
-			if(entity.flags & entity.Flag.INSTANCE_HIDDEN) { continue; }
-
 			body = entities[n].components.Body;
 			if(!body) { continue; }
 
@@ -488,10 +491,27 @@ meta.class("Physics.Manager",
 			return;
 		}
 
-		var tmpBody = this.bodies[this.bodies.length - 1];
-		tmpBody.__index = body.__index;
-		this.bodies[body.__index] = tmpBody;
-		this.bodies.pop();
+		this.bodiesRemove.push(body);
+	},
+
+	removeBodies: function()
+	{
+		var body, tmpBody;
+		var num = this.bodiesRemove.length;
+		for(var n = 0; n < num; n++) 
+		{
+			body = this.bodiesRemove[n];
+			tmpBody = this.bodies[num - 1];
+			tmpBody.__index = body.__index;
+			body.__index = -1;
+			this.bodies[body.__index] = tmpBody;	
+
+			num--;
+		}
+
+		this.bodies.length = num;
+		this.bodiesRemove.length = 0;
+		console.log(num);
 	},
 
 	start: function() {
@@ -509,7 +529,8 @@ meta.class("Physics.Manager",
 	},	
 
 	//
-	bodies: [],
+	bodies: null,
+	bodiesRemove: null,
 
 	gravity: new meta.math.Vector2(0, 0),
 	wind: new meta.math.Vector2(0, 0),
