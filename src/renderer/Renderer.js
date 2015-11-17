@@ -4,8 +4,11 @@ meta.class("meta.Renderer",
 {
 	init: function() 
 	{
+		var view = meta.cache.view;
 		this.holder = new Entity.Geometry();
+		this.holder._view = view;
 		this.staticHolder = new Entity.Geometry();
+		this.staticHolder._view = view;
 		
 		var entityProto = Entity.Geometry.prototype;
 		var flags = (this.holder.Flag.ENABLED | this.holder.Flag.INSTANCE_ENABLED);
@@ -13,8 +16,8 @@ meta.class("meta.Renderer",
 		entityProto.renderer = this;
 		entityProto.parent = this.holder;
 
-		this.holder.flags = flags | this.holder.Flag.RENDER_HOLDER;
-		this.staticHolder.flags = flags | this.holder.Flag.RENDER_HOLDER;
+		this.holder.flags = flags;
+		this.staticHolder.flags = flags;
 
 		this.entities = [];
 		this.entitiesHidden = [];
@@ -374,6 +377,10 @@ meta.class("meta.Renderer",
 		}
 		else
 		{
+			if(entity.flags & entity.Flag.PICKING) {
+				this.entitiesPicking.push(entity);
+			}
+
 			this.entities.push(entity);
 			this.numEntities++;
 		}
@@ -440,17 +447,6 @@ meta.class("meta.Renderer",
 		for(var i = 0; i < numRemove; i++) {
 			this.removeEntity(entities[i]);
 		}
-	},
-
-	removeEntityRender: function(entity)
-	{
-		if((entity.flags & entity.Flag.ACTIVE) === 0) { return; }
-		if(entity.flags & entity.Flag.RENDER_REMOVE) { return; }
-
-		entity.flags |= entity.Flag.RENDER_REMOVE;
-		entity.flags &= ~entity.Flag.RENDER;
-	
-		this.entitiesRemove.push(entity);
 	},
 
 	addAnim: function(anim)

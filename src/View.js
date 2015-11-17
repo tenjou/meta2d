@@ -64,12 +64,7 @@ meta.View.prototype =
 		}
 
 		if(entity.flags & this.Flag.REMOVED) {
-			console.warn("(meta.View.add) Trying to add entity that has been marked as removed");
-			return;
-		}
-
-		if(!(entity.parent.flags & entity.Flag.RENDER_HOLDER)) {
-			console.warn("(meta.View.add) Trying to add entity that has attached to parent entity");
+			console.warn("(meta.View.attach) Trying to add entity that has been marked as removed");
 			return;
 		}
 
@@ -84,6 +79,7 @@ meta.View.prototype =
 			return;
 		}
 
+		entity.flags |= entity.Flag.ROOT;
 		entity._view = this;
 
 		if(this._x !== 0 || this._y !== 0) {
@@ -147,6 +143,7 @@ meta.View.prototype =
 			return;
 		}
 
+		entity &= ~entity.Flag.ROOT;
 		entity._view = null;
 
 		var num = this.entities.length;

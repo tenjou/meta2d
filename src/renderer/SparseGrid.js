@@ -3,8 +3,8 @@
 meta.SparseGrid = function()
 {
 	this.cells = [];
-	this.cellWidth = meta.flags.cullingCellWidth || 512;
-	this.cellHeight = meta.flags.cullingCellHeight || 512;
+	this.cellWidth = meta.flags.cullingWidth || 512;
+	this.cellHeight = meta.flags.cullingHeight || 512;
 
 	this.startX = 0;
 	this.startY = 0;

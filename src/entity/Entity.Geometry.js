@@ -116,15 +116,7 @@ meta.class("Entity.Geometry",
 					component.onActiveEnter();
 				}
 			}
-		}
-
-		if(this.children) 
-		{
-			var num = this.children.length;
-			for(var n = 0; n < num; n++) {
-				this.children[n]._activate();
-			}
-		}		
+		}	
 	},
 
 	_deactivate: function()
@@ -140,14 +132,6 @@ meta.class("Entity.Geometry",
 				if(component.onActiveExit) {
 					component.onActiveExit();
 				}
-			}
-		}
-
-		if(this.children) 
-		{
-			var num = this.children.length;
-			for(var n = 0; n < num; n++) {
-				this.children[n]._deactivate();
 			}
 		}
 	},
@@ -1091,17 +1075,29 @@ meta.class("Entity.Geometry",
 
 	detach: function(entity) 
 	{
-		if(entity)
-		{
-			this._detach(entity);
+		if(!entity) {
+			console.warn("(Entity.Geometry.detach) Invalid entity has been passed");
+			return;
+		}
 
-			if(this._view && (this._view.flags & this._view.Flag.VISIBLE)) {
+		if(entity.parent !== this) {
+			console.warn("(Entity.Geometry.detach) Entity has different parent from this");
+			return;
+		}
+
+		var index = this.children.indexOf(entity);
+		this.children[index] = this.children[this.children.length - 1];
+		this.children.pop();
+
+		this._detach(entity);
+
+		if(this._view) 
+		{
+			var viewFlags = this._view.Flag;
+			if((this._view.flags & viewFlags.ACTIVE) && !(this._view.flags & viewFlags.INSTANCE_HIDDEN)) 
+			{
 				this.renderer.removeEntity(entity);
 			}
-		}
-		else {
-			this._detach(this);
-			this.renderer.removeEntity(this);
 		}
 	},
 
@@ -1109,16 +1105,21 @@ meta.class("Entity.Geometry",
 	{
 		if(!this.children) { return; }
 
-		var numChildren = this.children.length;
-		for(var i = 0; i < numChildren; i++) {
-			this._detach(this.children[i]);
+		var num = this.children.length;
+		for(var n = 0; n < num; n++) {
+			this._detach(this.children[n]);
 		}
 
-		if(this._view && (this._view.flags & this._view.Flag.VISIBLE)) {
-			this.renderer.removeEntities(this.children);
+		if(this._view) 
+		{
+			var viewFlags = this._view.Flag;
+			if((this._view.flags & viewFlags.ACTIVE) && !(this._view.flags & viewFlags.INSTANCE_HIDDEN)) 
+			{
+				this.renderer.removeEntities(this.children);
+			}
 		}
 
-		this.children = null;
+		this.children.length = 0;
 	},
 
 	_updateHidden: function()
@@ -1574,6 +1575,7 @@ meta.class("Entity.Geometry",
 		ACTIVE: 1 << 4,
 		INSTANCE_ACTIVE: 1 << 5,
 		VISIBILE: 1 << 6,
+		// 1 << 7
 		UPDATING: 1 << 8,
 		REMOVED: 1 << 9,
 		IGNORE_PARENT_POS: 1 << 10,
@@ -1589,8 +1591,9 @@ meta.class("Entity.Geometry",
 		FIT_IN: 1 << 20,
 		CLIP_BOUNDS: 1 << 21,
 		LOADED: 1 << 22,
-		RENDER_HOLDER: 1 << 23,
-		STATIC: 1 << 24
+		STATIC: 1 << 24,
+		PICKING: 1 << 25,
+		ROOT: 1 << 26
 	},
 
 	//

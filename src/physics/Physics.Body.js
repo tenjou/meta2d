@@ -11,12 +11,10 @@ meta.component("Physics.Body",
 	},
 
 	onActiveEnter: function() {
-		console.log("active");
 		meta.physics.add(this);
 	},
 
 	onActiveExit: function() {
-		console.log("inactive");
 		meta.physics.remove(this);
 	},
 
