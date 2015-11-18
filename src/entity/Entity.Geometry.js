@@ -5,7 +5,8 @@ meta.class("Entity.Geometry",
 	init: function(arg) 
 	{
 		this.volume = new meta.math.AABBext();
-		this.anim = new Component.Anim(this);
+		this.anim = new Component.Anim();
+		this.anim.owner = this;
 		this.initArg(arg);
 
 		if(this.onCreate) {
@@ -95,10 +96,7 @@ meta.class("Entity.Geometry",
 
 		if(this.flags & this.Flag.UPDATING) {
 			this.updating = true;
-		}	
-		if(this.flags & this.Flag.PICKING) {
-			this.picking = true;
-		}			
+		}		
 
 		this._updateAnchor();
 
@@ -654,6 +652,13 @@ meta.class("Entity.Geometry",
 			height / this.volume.initHeight);
 	},
 
+	resetFitIn: function()
+	{
+		this.flags &= ~this.Flag.FIT_IN;
+		this.scale(1, 1);
+		this.updateFromTexture();
+	},
+
 	/** 
 	 * scaleX
 	 * @param x {number}
@@ -1199,24 +1204,23 @@ meta.class("Entity.Geometry",
 	{
 		if(value) 
 		{
-			if(this.__pickIndex !== -1) { return; }
+			if(this.flags & this.Flag.PICKING) { return; }
 
 			this.flags |= this.Flag.PICKING;
 
 			if(this.flags & this.Flag.RENDER) {
-				this.__pickIndex = this.renderer.entitiesPicking.push(this) - 1;
+				this.renderer.entitiesPicking.push(this);
 			}
 		}
 		else 
 		{
-			if(this.__pickIndex === -1) { return; }
+			if((this.flags & this.Flag.PICKING) === 0) { return; }
 
 			this.flags &= ~this.Flag.PICKING;
 
 			if(this.flags & this.Flag.RENDER) {
 				this.renderer.entitiesPickingRemove.push(this);
-				this.__pickIndex = -1;
-			}		
+			}
 		}
 	},
 
