@@ -314,6 +314,17 @@ meta.shuffleArrayRange = function(array, endRange, startRange)
 	return array;
 };
 
+meta.mapArray = function(array)
+{
+	var obj = {};
+	var num = array.length;
+	for(var n = 0; n < num; n++) {
+		obj[array[n]] = n;
+	}
+
+	return obj;
+};
+
 meta.rotateArray = function(array)
 {
 	var tmp = array[0];
