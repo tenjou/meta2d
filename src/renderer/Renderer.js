@@ -78,10 +78,10 @@ meta.class("meta.Renderer",
 			this.entitiesRemove.length = 0;
 		}
 
-		this._removeUpdateEntities();
-		this._removeAnimEntities();
-		this._removePickingEntities();
-		this._removeTweens();		
+		this._removeFromBuffer(this.entitiesUpdate, this.entitiesUpdateRemove);
+		this._removeFromBuffer(this.entitiesAnim, this.entitiesAnimRemove);
+		this._removeFromBuffer(this.entitiesPicking, this.entitiesPickingRemove);
+		this._removeFromBuffer(this.tweens, this.tweensRemove);	
 
 		// Updating.
 		this.__updating = true;	
@@ -166,17 +166,16 @@ meta.class("meta.Renderer",
 				}
 			}
 
-			if((entity.flags & entity.Flag.ACTIVE) === 0) 
-			{
-				if(entity.__updateIndex !== -1) {
-					this.entitiesUpdateRemove.push(entity);
-					entity.__updateIndex = -1;
-				}
+			//
+			entity._deactivate();
 
-				entity._deactivate();
+			if(entity.__updateIndex !== -1) {
+				this.entitiesUpdateRemove.push(entity);
+				entity.__updateIndex = -1;
 			}
 
 			if(entity.flags & entity.Flag.PICKING) {
+				console.log(entity.texture.name)
 				this.entitiesPickingRemove.push(entity);
 			}
 
@@ -186,126 +185,33 @@ meta.class("meta.Renderer",
 
 			if(entity.flags & entity.Flag.REMOVED) {
 				entity._remove();
-			}		
+			}	
 
 			entity.flags &= ~entity.Flag.RENDER_REMOVE;
 		}
 	},
 
-	_removeUpdateEntities: function()
+	_removeFromBuffer: function(buffer, removeBuffer)
 	{
-		var numRemove = this.entitiesUpdateRemove.length;		
+		var numRemove = removeBuffer.length;		
 		if(numRemove > 0)
 		{
-			var numEntities = this.entitiesUpdate.length;
-			var itemsLeft = numEntities - numRemove;
+			var num = buffer.length;
+			var itemsLeft = num - numRemove;
 			if(itemsLeft > 0)
 			{
 				var index;
-				for(var i = 0; i < numRemove; i++) 
-				{
-					index = this.entitiesUpdate.indexOf(this.entitiesUpdateRemove[i]);
-					if(index < itemsLeft) {
-						this.entitiesUpdate.splice(index, 1);
-					}
-					else {
-						this.entitiesUpdate.pop();
-					}
+				for(var n = 0; n < numRemove; n++) {
+					index = buffer.indexOf(removeBuffer[n]);
+					buffer.splice(index, 1);
 				}
 			}
 			else {
-				this.entitiesUpdate.length = 0;
+				buffer.length = 0;
 			}
 
-			this.entitiesUpdateRemove.length = 0;
+			removeBuffer.length = 0;
 		}
-	},
-
-	_removeAnimEntities: function()
-	{
-		var numRemove = this.entitiesAnimRemove.length;		
-		if(numRemove > 0)
-		{
-			var numEntities = this.entitiesAnim.length;
-			var itemsLeft = numEntities - numRemove;
-			if(itemsLeft > 0)
-			{
-				var index;
-				for(var i = 0; i < numRemove; i++) 
-				{
-					index = this.entitiesAnim.indexOf(this.entitiesAnimRemove[i]);
-					if(index < itemsLeft) {
-						this.entitiesAnim.splice(index, 1);
-					}
-					else {
-						this.entitiesAnim.pop();
-					}
-				}
-			}
-			else {
-				this.entitiesAnim.length = 0;
-			}
-
-			this.entitiesAnimRemove.length = 0;
-		}
-	},
-
-	_removePickingEntities: function()
-	{
-		var numRemove = this.entitiesPickingRemove.length;
-		if(numRemove > 0) 
-		{
-			var numEntities = this.entitiesPicking.length;
-			var itemsLeft = numEntities - numRemove;
-			if(itemsLeft > 0)
-			{
-				var index;
-				for(var i = 0; i < numRemove; i++) 
-				{
-					index = this.entitiesPicking.indexOf(this.entitiesPickingRemove[i]);
-					if(index < itemsLeft) {
-						this.entitiesPicking.splice(index, 1);
-					}
-					else {
-						this.entitiesPicking.pop();
-					}
-				}
-			}
-			else {
-				this.entitiesPicking.length = 0;
-			}
-
-			this.entitiesPickingRemove.length = 0;
-		}
-	},
-
-	_removeTweens: function()
-	{
-		var numRemove = this.tweensRemove.length;
-		if(numRemove > 0) 
-		{
-			var numTweens = this.tweens.length;
-			var itemsLeft = numTweens - numRemove;
-			if(itemsLeft > 0)
-			{
-				var index;
-				for(var i = 0; i < numRemove; i++) 
-				{
-					index = this.tweens.indexOf(this.tweensRemove[i]);
-					if(index < itemsLeft) {
-						this.tweens.splice(index, 1);
-					}
-					else {
-						this.tweens.pop();
-					}
-				}
-			}
-			else {
-				this.tweens.length = 0;
-			}
-
-			this.tweensRemove.length = 0;
-		}		
 	},
 
 	sort: function()
@@ -418,16 +324,7 @@ meta.class("meta.Renderer",
 		entity.flags &= ~(entity.Flag.ACTIVE | entity.Flag.RENDER);
 		entity.flags |= entity.Flag.RENDER_REMOVE;
 
-		this.entitiesRemove.push(entity);
-
-		if(entity.children) 
-		{
-			var children = entity.children;
-			var num = children.length;
-			for(var n = 0; n < num; n++) {
-				this.removeEntity(children[n]);
-			}
-		}		
+		this.entitiesRemove.push(entity);		
 	},
 
 	removeEntities: function(entities)
