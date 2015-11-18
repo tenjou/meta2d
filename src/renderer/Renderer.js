@@ -439,6 +439,15 @@ meta.class("meta.Renderer",
 		entity.flags |= entity.Flag.RENDER_REMOVE;
 
 		this.entitiesRemove.push(entity);
+
+		if(entity.children) 
+		{
+			var children = entity.children;
+			var num = children.length;
+			for(var n = 0; n < num; n++) {
+				this.removeEntity(children[n]);
+			}
+		}		
 	},
 
 	removeEntities: function(entities)
