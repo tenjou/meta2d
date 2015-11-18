@@ -48,8 +48,6 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		}
 
 		this.ctx.lineWidth = 2;
-		this.ctx.strokeStyle = "red";
-		this.ctx.fillStyle = "red";
 		
 		var entity;
 		var entityFlag = this.holder.Flag;
@@ -58,7 +56,17 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 			entity = this.entities[n];
 			if(entity.flags & entityFlag.INSTANCE_HIDDEN) { continue; }
 
-			if(entity.flags & entityFlag.DEBUG || this.meta.cache.debug) {
+			if(entity.flags & entityFlag.DEBUG || this.meta.cache.debug) 
+			{
+				if(entity.flags & entityFlag.PICKING) {
+					this.ctx.strokeStyle = "green";
+					this.ctx.fillStyle = "green";
+				}
+				else {
+					this.ctx.strokeStyle = "red";
+					this.ctx.fillStyle = "red";
+				}
+
 				this.drawVolume(entity);
 			}
 		}
