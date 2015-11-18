@@ -176,9 +176,8 @@ meta.class("meta.Renderer",
 				entity._deactivate();
 			}
 
-			if(entity.__pickIndex !== -1) {
+			if(entity.flags & entity.Flag.PICKING) {
 				this.entitiesPickingRemove.push(entity);
-				entity.__pickIndex = -1;
 			}
 
 			if(entity.children) {
@@ -254,49 +253,30 @@ meta.class("meta.Renderer",
 	_removePickingEntities: function()
 	{
 		var numRemove = this.entitiesPickingRemove.length;
-		if(numRemove === 0) { return; }
-		
-		var numEntities = this.entitiesPicking.length;
-		var itemsLeft = numEntities - numRemove;
-		if(itemsLeft > 0)
+		if(numRemove > 0) 
 		{
-			var n, entity;
-			var startID = Number.MAX_SAFE_INTEGER;
-
-			for(var i = 0; i < numRemove; i++) 
+			var numEntities = this.entitiesPicking.length;
+			var itemsLeft = numEntities - numRemove;
+			if(itemsLeft > 0)
 			{
-				entity = this.entitiesPickingRemove[i];
-
-				for(n = 0; n < numEntities; n++) 
+				var index;
+				for(var i = 0; i < numRemove; i++) 
 				{
-					if(this.entitiesPicking[n] === entity) 
-					{
-						this.entitiesPicking[n] = null;
-
-						if(n < startID) {
-							startID = n;
-						}
-						break;
+					index = this.entitiesPicking.indexOf(this.entitiesPickingRemove[i]);
+					if(index < itemsLeft) {
+						this.entitiesPicking.splice(index, 1);
+					}
+					else {
+						this.entitiesPicking.pop();
 					}
 				}
 			}
-
-			var value;
-			for(n = startID + 1; n < numEntities; n++)
-			{
-				value = this.entitiesPicking[n];
-				if(value) {
-					this.entitiesPicking[startID++] = value;
-				}
+			else {
+				this.entitiesPicking.length = 0;
 			}
 
-			this.entitiesPicking.length = itemsLeft;
+			this.entitiesPickingRemove.length = 0;
 		}
-		else {
-			this.entitiesPicking.length = 0;
-		}
-
-		this.entitiesPickingRemove.length = 0;
 	},
 
 	_removeTweens: function()
