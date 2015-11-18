@@ -314,6 +314,10 @@ meta.View.prototype =
 		}
 	},
 
+	get active() {
+		return ((this.flags & this.Flag.ACTIVE) === this.Flag.ACTIVE);
+	},
+
 	_updateHidden: function()
 	{
 		if(this.flags & this.Flag.INSTANCE_HIDDEN) 
