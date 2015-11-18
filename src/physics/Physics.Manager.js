@@ -491,21 +491,38 @@ meta.class("Physics.Manager",
 			return;
 		}
 
-		this.bodiesRemove.push(body);
+		if(this.stopped) 
+		{
+			var num = this.bodies.length - 1;
+			var tmpBody = this.bodies[num];
+			if(body !== tmpBody) {
+				tmpBody.__index = body.__index;
+				this.bodies[body.__index] = tmpBody;
+			}
+
+			body.__index = -1;
+			this.bodies.length = num;
+		}
+		else {
+			this.bodiesRemove.push(body);
+		}
 	},
 
 	removeBodies: function()
 	{
 		var body, tmpBody;
-		var num = this.bodiesRemove.length;
-		for(var n = 0; n < num; n++) 
+		var numRemove = this.bodiesRemove.length;
+		var num = this.bodies.length;
+		for(var n = 0; n < numRemove; n++) 
 		{
 			body = this.bodiesRemove[n];
 			tmpBody = this.bodies[num - 1];
-			tmpBody.__index = body.__index;
-			body.__index = -1;
-			this.bodies[body.__index] = tmpBody;	
+			if(body !== tmpBody) {
+				tmpBody.__index = body.__index;
+				this.bodies[body.__index] = tmpBody;
+			}
 
+			body.__index = -1;	
 			num--;
 		}
 
@@ -515,10 +532,15 @@ meta.class("Physics.Manager",
 	},
 
 	start: function() {
+		this.stopped = false;
 		meta.engine.onUpdate.add(this.update, this);
 	},
 
-	stop: function() {
+	stop: function() 
+	{
+		this.stopped = true;
+
+		this.removeBodies();
 		meta.engine.onUpdate.remove(this);
 	},
 
@@ -541,5 +563,6 @@ meta.class("Physics.Manager",
 	_impulseX: 0, _impulseY: 0,
 	_percent: 0.8, _slop: 0.01,
 
-	debugColor: "#00ff00"
+	debugColor: "#00ff00",
+	stopped: false
 });

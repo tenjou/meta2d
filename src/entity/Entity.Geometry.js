@@ -84,7 +84,7 @@ meta.class("Entity.Geometry",
 			}
 		}
 
-		if(this._view && parent) {
+		if(parent && this._view) {
 			this._view.updateEntity(this);
 		}
 	},
