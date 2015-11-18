@@ -119,7 +119,7 @@ meta.class("Entity.Geometry",
 
 	_deactivate: function()
 	{
-		this.flags &= ~this.Flag.ACTIVE;
+		this.flags &= ~(this.Flag.ACTIVE | this.Flag.RENDER);
 
 		if(this.components !== this.parent.components)
 		{

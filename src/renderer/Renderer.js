@@ -175,7 +175,6 @@ meta.class("meta.Renderer",
 			}
 
 			if(entity.flags & entity.Flag.PICKING) {
-				console.log(entity.texture.name)
 				this.entitiesPickingRemove.push(entity);
 			}
 
@@ -321,7 +320,6 @@ meta.class("meta.Renderer",
 		if((entity.flags & entity.Flag.ACTIVE) === 0) { return; }
 		if(entity.flags & entity.Flag.RENDER_REMOVE) { return; }
 
-		entity.flags &= ~(entity.Flag.ACTIVE | entity.Flag.RENDER);
 		entity.flags |= entity.Flag.RENDER_REMOVE;
 
 		this.entitiesRemove.push(entity);		
