@@ -999,28 +999,31 @@ meta.class("Entity.Geometry",
 		return ((this.flags & this.Flag.UPDATING) === this.Flag.UPDATING); 
 	},
 
-	_setView: function(view) 
+	_setView: function(view, parent) 
 	{
 		this._view = view;
-
-		if(view)
-		{
-			if((view.flags & view.Flag.ACTIVE) && !(view.flags & view.Flag.INSTANCE_HIDDEN)) {
-				this.renderer.addEntity(this);
-			}
-			else {
-				this.renderer.removeEntity(this);
-			}
-		}
-		else {
-			this.renderer.removeEntity(this);
-		}
 
 		if(this.children) 
 		{
 			var num = this.children.length;
 			for(var n = 0; n < num; n++) {
-				this.children[n]._setView(view);
+				this.children[n]._setView(view, false);
+			}
+		}
+
+		if(parent)
+		{
+			if(view)
+			{
+				if((view.flags & view.Flag.ACTIVE) && !(view.flags & view.Flag.INSTANCE_HIDDEN)) {
+					this.renderer.addEntity(this);
+				}
+				else {
+					this.renderer.removeEntity(this);
+				}
+			}
+			else {
+				this.renderer.removeEntity(this);
 			}
 		}
 	},
@@ -1074,7 +1077,7 @@ meta.class("Entity.Geometry",
 		this._updateHidden();
 
 		if(this._view) {
-			entity._setView(this._view);
+			entity._setView(this._view, true);
 		}
 	},
 
@@ -1082,8 +1085,9 @@ meta.class("Entity.Geometry",
 	{
 		entity.parent = this.renderer.holder;
 
+		entity.updatePos();
 		entity.updateZ();
-		entity._setView(null);
+		entity._setView(null, true);
 		
 		if(this.volume.angle !== 0) {
 			entity.updateAngle();
@@ -1641,7 +1645,6 @@ meta.class("Entity.Geometry",
 
 	__debug: false,
 	__updateIndex: -1,
-	__pickIndex: -1,
 
 	flags: 0
 });

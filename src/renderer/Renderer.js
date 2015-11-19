@@ -174,8 +174,8 @@ meta.class("meta.Renderer",
 				entity.__updateIndex = -1;
 			}
 
-			if(entity.flags & entity.Flag.PICKING) {
-				this.entitiesPickingRemove.push(entity);
+			if(entity.flags & entity.Flag.PICKING) {				
+				this.entitiesPickingRemove.push(entity); 
 			}
 
 			if(entity.children) {
