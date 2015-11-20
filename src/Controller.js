@@ -10,7 +10,7 @@ meta.class("meta.Controller",
 {
 	init: function() 
 	{
-		this.view = meta.createView("__ctrl__" + meta.cache.ctrlUniqueID++);
+		this.view = meta.createView("__ctrl__" + this.__lastName__);
 
 		if(this.onInit) {
 			this.onInit();
