@@ -2,7 +2,7 @@
 
 var meta = 
 {
-	version: "0.82 nightly",
+	version: "0.82 stable",
 	importUrl: "http://meta2d.com/store/",
 
 	device: null,
@@ -58,7 +58,9 @@ var meta =
 		
 		resolutions: null,
 		currResolution: null,
-		imageSmoothing: true
+		imageSmoothing: true,
+
+		infoView: null
 	},
 
 	set onInit(func) 

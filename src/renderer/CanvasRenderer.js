@@ -69,7 +69,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 	{
 		this.ctx.save();
 
-		if(this.culling) {
+		if(this.culling && meta.debug) {
 			this.culling.drawDebug(this.ctx);
 		}
 
@@ -77,12 +77,12 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		
 		// normal
 		this.setProjection(this.perspectiveProjection);
-		this.renderEntities(this.entities);
+		this._renderVolumes(this.entities);
 
 		// static
 		if(this.entitiesStatic.length > 0) {
 			this.setProjection(this.orthoProjection);
-			this.renderEntities(this.entitiesStatic);	
+			this._renderVolumes(this.entitiesStatic);	
 		}
 
 		this.ctx.restore();
