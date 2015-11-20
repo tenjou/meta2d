@@ -26,8 +26,8 @@ meta.controller("meta.debugger",
 
 		var entities = new Entity.Text();
 		entities.position(10, 40);
-		entities.text = "entities: 0";
-		this.holder.attach(entities);					
+		entities.text = "entities: 0, static: 0";
+		this.holder.attach(entities);							
 
 		var resolution = new Entity.Text();
 		resolution.position(10, 65);
@@ -151,9 +151,11 @@ meta.controller("meta.debugger",
 		}
 
 		var numEntities = meta.renderer.entities.length;
-		if(numEntities !== this.numEntities) {
-			this.txt.entities.text = "entities: " + numEntities;
-			this.numEntities = numEntities;
+		var numStaticEntities = meta.renderer.entities.length;
+		var numTotalEntities = numEntities + numStaticEntities;
+		if(numTotalEntities !== this.numEntities) {
+			this.txt.entities.text = "entities: " + numEntities + ", static: " + numStaticEntities;
+			this.numEntities = numTotalEntities;
 		}
 	},
 
