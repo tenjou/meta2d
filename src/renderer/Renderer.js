@@ -155,7 +155,7 @@ meta.class("meta.Renderer",
 	{		
 		this._num = entities.length;
 		this._removeStartID = Number.MAX_SAFE_INTEGER;
-		this._removeEntitiesGroup(entities);
+		this._removeEntitiesGroup(entities, entititesRemove);
 
 		var value;
 		for(var n = this._removeStartID + 1; n < this._num; n++)
