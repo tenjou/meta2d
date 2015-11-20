@@ -439,10 +439,12 @@ meta.View.prototype =
 		if(value) {
 			this.flags |= this.Flag.STATIC;
 			this.entityBuffer = meta.renderer.entitiesStatic;
+			this.entityBufferRemove = meta.renderer.entitiesStaticRemove;
 		}
 		else {
 			this.flags &= ~this.Flag.STATIC;
-			this.entityBufferRemove = meta.renderer.entitiesStaticRemove;
+			this.entityBuffer = meta.renderer.entities;
+			this.entityBufferRemove = meta.renderer.entitiesRemove;
 		}
 	},
 
@@ -460,10 +462,12 @@ meta.View.prototype =
 		if(value) {
 			this.flags |= this.Flag.DEBUGGER;
 			this.entityBuffer = meta.renderer.entitiesDebug;
+			this.entityBufferRemove = meta.renderer.entitiesDebugRemove;
 		}
 		else {
 			this.flags &= ~this.Flag.DEBUGGER;
-			this.entityBufferRemove = meta.renderer.entitiesDebugRemove;
+			this.entityBuffer = meta.renderer.entities;
+			this.entityBufferRemove = meta.renderer.entitiesRemove;
 		}
 	},
 
