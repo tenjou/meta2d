@@ -220,21 +220,41 @@ meta.serialize = function(obj)
  */
 meta.info = function(text)
 {
-	var msg = new Entity.Text(text);
-	msg.anchor(0.5);
-	msg.pivot(0.5);	
+	var holder, texture, msg;
 
-	var texture = new Resource.SVG();
-	texture.fillStyle = "black";
-	texture.fillRect(0, 0, msg.width + 10, msg.height + 10);
-	var holder = new Entity.Geometry(texture);
-	holder.z = 999999;
-	holder.pivot(0.5);
-	holder.anchor(0.5, 0);
-	holder.position(0, 20);
-	holder.attach(msg);
-	holder.static = true;
-	meta.view.attach(holder);
+	if(!meta.cache.infoView) 
+	{
+		meta.cache.infoView = new meta.View("meta.info");
+		meta.cache.infoView.static = true;
+		meta.view.attachView(meta.cache.infoView);
+
+		msg = new Entity.Text(text);
+		msg.anchor(0.5);
+		msg.pivot(0.5);	
+
+		texture = new Resource.SVG();
+		texture.fillStyle = "black";
+		texture.fillRect(0, 0, msg.width + 10, msg.height + 10);
+		holder = new Entity.Geometry(texture);
+		holder.z = 999999;
+		holder.pivot(0.5, 0);
+		holder.anchor(0.5, 0);
+		holder.position(0, 10);
+		holder.attach(msg);
+		meta.cache.infoView.attach(holder);
+	}
+	else
+	{
+		holder = meta.cache.infoView.entities[0];
+		texture = holder.texture;
+		msg = holder.children[0];
+
+		msg.text = text;
+		var width = msg.width;
+		var height = msg.height + 10;
+		texture.resize(width, height);
+		texture.fillRect(0, 0, width, height);
+	}
 };
 
 meta.adaptTo = function(width, height, path)
