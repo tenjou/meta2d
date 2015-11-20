@@ -100,7 +100,7 @@ meta.class("Entity.Geometry",
 
 		this._updateAnchor();
 
-		if(this.renderer.culling) {
+		if(this.renderer.culling && this._view.entityBuffer === this.renderer.entities) {
 			this.node = new meta.SparseNode(this);
 		}		
 
