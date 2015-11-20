@@ -4,24 +4,33 @@ meta.class("meta.Renderer",
 {
 	init: function() 
 	{
+		var entityProto = Entity.Geometry.prototype;
+		var viewProto = meta.View.prototype;
+
+		this.entityFlag = entityProto.Flag;
+		this.viewFlag = viewProto.Flag;
+
 		var view = meta.cache.view;
 		this.holder = new Entity.Geometry();
 		this.holder._view = view;
-		this.staticHolder = new Entity.Geometry();
-		this.staticHolder._view = view;
 		
-		var entityProto = Entity.Geometry.prototype;
 		var flags = (this.holder.Flag.ENABLED | this.holder.Flag.INSTANCE_ENABLED);
 		entityProto.flags = flags;
 		entityProto.renderer = this;
 		entityProto.parent = this.holder;
 
 		this.holder.flags = flags;
-		this.staticHolder.flags = flags;
 
 		this.entities = [];
-		this.entitiesHidden = [];
 		this.entitiesRemove = [];
+		this.entitiesStatic = [];
+		this.entitiesStaticRemove = [];
+		this.entitiesDebug = [];
+		this.entitiesDebugRemove = [];
+
+		// default view buffers that entities will be added to:
+		viewProto.entityBuffer = this.entities;
+		viewProto.entityBufferRemove = this.entitiesRemove;
 
 		if(meta.flags.culling) {
 			this.culling = new meta.SparseGrid();
@@ -36,8 +45,6 @@ meta.class("meta.Renderer",
 
 		this.camera = meta.camera;
 		this.cameraVolume = this.camera.volume;
-		this.cameraDefault = this.camera;
-		//this.cameraUI = new meta.Camera();
 
 		this.chn = {
 			onDown: 		meta.createChannel(Entity.Event.INPUT_DOWN),
@@ -68,14 +75,20 @@ meta.class("meta.Renderer",
 		}
 	},
 
-	prevNum: 0,
-
 	update: function(tDelta)
 	{
-		// Removal.	
+		// removal:
 		if(this.entitiesRemove.length > 0) {
-			this._removeEntities(this.entitiesRemove);
+			this._removeEntities(this.entities, this.entitiesRemove);
 			this.entitiesRemove.length = 0;
+		}
+		if(this.entitiesStaticRemove.length > 0) {
+			this._removeEntities(this.entitiesStatic, this.entitiesStaticRemove);
+			this.entitiesStaticRemove.length = 0;
+		}		
+		if(this.entitiesDebugRemove.length > 0) {
+			this._removeEntities(this.entitiesDebug, this.entitiesDebugRemove);
+			this.entitiesDebugRemove.length = 0;
 		}
 
 		this._removeFromBuffer(this.entitiesUpdate, this.entitiesUpdateRemove);
@@ -83,7 +96,7 @@ meta.class("meta.Renderer",
 		this._removeFromBuffer(this.entitiesPicking, this.entitiesPickingRemove);
 		this._removeFromBuffer(this.tweens, this.tweensRemove);	
 
-		// Updating.
+		// updating:
 		this.__updating = true;	
 
 		var num = this.entitiesUpdate.length;
@@ -98,65 +111,82 @@ meta.class("meta.Renderer",
 
 		this.__updating = false;
 
-		if(this.needSortDepth) {
-			this.sort();
+		if(this.needSort) 
+		{
+			this.sort(this.entities);
+			this.sort(this.entitiesStatic);
+			this.sort(this.entitiesPicking);
+			this.sort(this.entitiesDebug);
+
+			this.needSort = false;
+			this.needRender = true;				
 		}		
 	},
 
 	render: function(tDelta)
 	{
-		this.renderMain(tDelta);
-		
-		if(this.needRender) 
-		{
-			var debug = (this.meta.cache.debug || this.numDebug > 0);
-			if(debug) {
-				this.renderDebug();
-				this.onRenderDebug.emit(this);	
-			}
-
-			this.renderStatic();
-			this.needRender = false;
+		var numEntities = this.entitiesAnim.length;
+		for(var n = 0; n < numEntities; n++) {
+			this.entitiesAnim[n].update(tDelta);
 		}
+
+		if(!this.needRender) { return; }
+
+		// default rendering
+		this.renderFrame();
+
+		var numFuncs = this._renderFuncs.length;
+		for(n = 0; n < numFuncs; n++) {
+			this._renderFuncs[n].render(tDelta);
+		}
+
+		this.needRender = false;
+
+		// debug rendering
+		var debug = (this.meta.cache.debug || this.numDebug > 0);
+		if(!debug) { return; }
+
+		this.renderDebugVolumes();
+		this.onRenderDebug.emit(this);
+		this.renderDebugDrame();
 	},
 
-	_removeEntities: function(entities)
+	_removeEntities: function(entities, entititesRemove)
 	{		
+		this._num = entities.length;
 		this._removeStartID = Number.MAX_SAFE_INTEGER;
-
 		this._removeEntitiesGroup(entities);
 
 		var value;
-		for(var n = this._removeStartID + 1; n < this.numEntities; n++)
+		for(var n = this._removeStartID + 1; n < this._num; n++)
 		{
-			value = this.entities[n];
+			value = entities[n];
 			if(value) {
-				this.entities[this._removeStartID++] = value;
+				entities[this._removeStartID++] = value;
 			}
 		}
 
-		this.numEntities -= this._numRemove;
-		this.entities.length = this.numEntities;
+		entities.length = this._num - this._numRemove;
 		this._numRemove = 0;
 
 		this.needRender = true;
 	},
 
-	_removeEntitiesGroup: function(entities)
+	_removeEntitiesGroup: function(entities, entititesRemove)
 	{
 		var entity, n;
-		var numRemove = entities.length;
+		var numRemove = entititesRemove.length;
 		
 		for(var i = 0; i < numRemove; i++) 
 		{
-			entity = entities[i];
+			entity = entititesRemove[i];
 			if(!entity) { continue; }
 			
-			for(n = 0; n < this.numEntities; n++) 
+			for(n = 0; n < this._num; n++) 
 			{
-				if(this.entities[n] === entity) 
+				if(entities[n] === entity) 
 				{
-					this.entities[n] = null;
+					entities[n] = null;
 					this._numRemove++;
 
 					if(n < this._removeStartID) {
@@ -179,7 +209,7 @@ meta.class("meta.Renderer",
 			}
 
 			if(entity.children) {
-				this._removeEntitiesGroup(entity.children);
+				this._removeEntitiesGroup(entities, entity.children);
 			}
 
 			if(entity.flags & entity.Flag.REMOVED) {
@@ -213,39 +243,22 @@ meta.class("meta.Renderer",
 		}
 	},
 
-	sort: function()
+	sort: function(buffer)
 	{
 		var i, j, tmp1, tmp2;
-		var num = this.numEntities;
+		var num = buffer.length;
 		for(i = 0; i < num; i++) 
 		{
 			for(j = i; j > 0; j--) 
 			{
-				tmp1 = this.entities[j];
-				tmp2 = this.entities[j - 1];
+				tmp1 = buffer[j];
+				tmp2 = buffer[j - 1];
 				if(tmp1.totalZ < tmp2.totalZ) {
-					this.entities[j] = tmp2;
-					this.entities[j - 1] = tmp1;
+					buffer[j] = tmp2;
+					buffer[j - 1] = tmp1;
 				}
 			}
 		}
-
-		num = this.entitiesPicking.length;
-		for(i = 0; i < num; i++) 
-		{
-			for(j = i; j > 0; j--) 
-			{
-				tmp1 = this.entitiesPicking[j];
-				tmp2 = this.entitiesPicking[j - 1];
-				if(tmp1.totalZ < tmp2.totalZ) {
-					this.entitiesPicking[j] = tmp2;
-					this.entitiesPicking[j - 1] = tmp1;
-				}
-			}
-		}	
-
-		this.needSortDepth = false;
-		this.needRender = true;			
 	},
 
 	makeEntityVisible: function(entity)
@@ -253,11 +266,13 @@ meta.class("meta.Renderer",
 		if(entity.flags & entity.Flag.RENDER) { return; }
 
 		entity.flags |= entity.Flag.RENDER;
+		
+		var view = entity._view;
 
 		if(entity.flags & entity.Flag.RENDER_REMOVE) 
 		{
-			var index = this.entitiesRemove.indexOf(entity);
-			this.entitiesRemove[index] = null;
+			var index = view.entityBuffer.indexOf(entity);
+			view.entityBuffer[index] = null;
 			entity.flags &= ~entity.Flag.RENDER_REMOVE;
 		}
 		else
@@ -266,11 +281,10 @@ meta.class("meta.Renderer",
 				this.entitiesPicking.push(entity);
 			}
 
-			this.entities.push(entity);
-			this.numEntities++;
+			view.entityBuffer.push(entity);
 		}
 
-		this.needSortDepth = true;
+		this.needSort = true;
 		this.needRender = true;
 	},
 
@@ -281,7 +295,7 @@ meta.class("meta.Renderer",
 		entity.flags &= ~entity.Flag.RENDER;
 		entity.flags |= entity.Flag.RENDER_REMOVE;
 
-		this.entitiesRemove.push(entity);
+		entity._view.entityBufferRemove.push(entity);
 	},	
 
 	addEntity: function(entity, reuse)
@@ -290,11 +304,18 @@ meta.class("meta.Renderer",
 
 		entity._activate();
 
-		if(this.culling) {
-			this.culling.add(entity);
-		}
-		else {
+		// If view has different buffer than default one - treat it as static or debugger.
+		if(entity._view.entityBuffer !== this.entities) {
 			this.makeEntityVisible(entity);
+		}
+		else
+		{
+			if(this.culling) {
+				this.culling.add(entity);
+			}
+			else {
+				this.makeEntityVisible(entity);
+			}
 		}
 
 		if(entity.children) 
@@ -322,7 +343,7 @@ meta.class("meta.Renderer",
 
 		entity.flags |= entity.Flag.RENDER_REMOVE;
 
-		this.entitiesRemove.push(entity);		
+		entity._view.entityBufferRemove.push(entity);
 	},
 
 	removeEntities: function(entities)
@@ -588,12 +609,23 @@ meta.class("meta.Renderer",
 		}
 
 		return true;
-	},	
+	},
+
+	_updateResize: function(entities)
+	{
+		var num = entities.length;
+		for(var n = 0; n < num; n++) {
+			entities[n]._updateResize();
+		}
+	},
 
 	onCameraResize: function(data, event) 
 	{
 		this.holder.resize(data.width, data.height);
-		this.staticHolder.resize(this.engine.width, this.engine.height);
+
+		this._updateResize(this.entities);
+		this._updateResize(this.entitiesStatic);
+		this._updateResize(this.entitiesDebug);
 
 		if(this.culling) {
 			this.culling.calc();
@@ -664,18 +696,17 @@ meta.class("meta.Renderer",
 	culling: null,
 
 	holder: null,
-	staticHolder: null,
 
 	camera: null,
 	cameraVolume: null,
 	cameraDefault: null,
 	cameraUI: null,
 
+	_num: 0,
 	_numRemove: 0,
 	_removeStartID: 0,
 
 	entities: null,
-	entitiesHidden: null,
 	entitiesRemove: null,
 	numEntities: 0,
 
@@ -692,11 +723,17 @@ meta.class("meta.Renderer",
 	enablePicking: true,
 	enablePixelPicking: false,	
 
+	entitiesStatic: null,
+	entitiesStaticRemove: null,
+	entitiesDebug: null,
+	entitiesDebugRemove: null,
+
 	tweens: [],
 	tweensRemove: [],
 
 	needRender: true,
-	needSortDepth: false,
+	needSort: false,
+	needSortDebg: false,
 	useSparseGrid: false,
 
 	_renderFuncs: [],

@@ -4,7 +4,6 @@ meta.controller("meta.debugger",
 {
 	onFirstLoad: function()
 	{
-		this.view.static = true;
 		this.view.debugger = true;
 		this.view.z = 1000000;
 
@@ -12,7 +11,6 @@ meta.controller("meta.debugger",
 		texture.fillRect(0, 0, 200, 290);
 
 		this.holder = new Entity.Geometry(texture);
-		//this.holder.parent = meta.renderer.staticHolder;
 		this.holder.anchor(0, 1);
 		this.holder.pivot(0, 1);
 		this.view.attach(this.holder);
@@ -152,7 +150,7 @@ meta.controller("meta.debugger",
 			}	
 		}
 
-		var numEntities = meta.renderer.numEntities;
+		var numEntities = meta.renderer.entities.length;
 		if(numEntities !== this.numEntities) {
 			this.txt.entities.text = "entities: " + numEntities;
 			this.numEntities = numEntities;

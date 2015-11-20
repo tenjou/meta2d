@@ -431,18 +431,24 @@ meta.class("Physics.Manager",
 		if(this.bodies.length === 0) { return; }
 		
 		var ctx = renderer.ctx;
+		var zoom = meta.camera._zoom;
+		var cameraVolume = meta.camera.volume;
 
 		ctx.save();
+		ctx.setTransform(zoom, 0, 0, zoom, -Math.floor(cameraVolume.x * zoom), -Math.floor(cameraVolume.y * zoom));
 
 		ctx.fillStyle = this.debugColor;
 		ctx.globalAlpha = 0.8;
 
-		var body;
+		var body, entity;
 		var entities = renderer.entities;
 		var num = entities.length;
 
 		for(var n = 0; n < num; n++) 
 		{
+			entity = entities[n];
+			if((entity.flags & entity.Flag.RENDER) === 0) { continue; }
+
 			body = entities[n].components.Body;
 			if(!body) { continue; }
 

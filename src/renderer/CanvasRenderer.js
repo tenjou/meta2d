@@ -10,55 +10,96 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		meta.engine.ctx = this.ctx;
 	},
 
-	renderMain: function(tDelta)
+	clear: function() 
 	{
-		var numEntities = this.entitiesAnim.length;
-		for(var i = 0; i < numEntities; i++) {
-			this.entitiesAnim[i].update(tDelta);
+		if(this._transparent) {
+			this.ctx.clearRect(0, 0, this.engine.width, this.engine.height);
 		}
-		
-		if(!this.needRender) { return; }
-
-		this.clear();
-		this.ctx.save();
-
-		var zoom = this.camera._zoom;
-		this.ctx.setTransform(zoom, 0, 0, zoom, -Math.floor(this.cameraVolume.x * zoom), -Math.floor(this.cameraVolume.y * zoom));
-
-		var entity;
-		var entityFlag = this.holder.Flag;
-		for(i = 0; i < this.numEntities; i++) 
-		{
-			entity = this.entities[i];
-			if(entity.flags & entityFlag.INSTANCE_HIDDEN) { continue; }
-
-			this.drawEntity(entity);
+		else {
+			this.ctx.fillStyle = this._bgColor;
+			this.ctx.fillRect(0, 0, this.engine.width, this.engine.height);
 		}
-
-		var numFuncs = this._renderFuncs.length;
-		for(i = 0; i < numFuncs; i++) {
-			this._renderFuncs[i].render(tDelta);
-		}		
 	},
 
-	renderDebug: function()
+	renderFrame: function()
 	{
+		this.clear();
+
+		var zoom = this.camera._zoom;
+
+		// normal
+		this.setProjection(this.perspectiveProjection);
+		this.renderEntities(this.entities);
+
+		// static
+		if(this.entitiesStatic.length > 0) {
+			this.setProjection(this.orthoProjection);
+			this.renderEntities(this.entitiesStatic);	
+		}
+	},
+
+	renderDebugDrame: function() 
+	{
+		this.ctx.save();
+		this.renderEntities(this.entitiesDebug);	
+		this.ctx.restore()
+	},
+
+	renderEntities: function(entities)
+	{
+		var entity;
+		var num = entities.length;
+		for(var n = 0; n < num; n++) 
+		{
+			entity = entities[n];
+			if(entity.flags & this.entityFlag.INSTANCE_HIDDEN) { continue; }
+
+			if(entity.draw) {
+				this.ctx.save();
+				entity.draw(this.ctx);
+				this.ctx.restore();
+			}
+			else {
+				this.drawEntity(entity);
+			}
+		}
+	},
+
+	renderDebugVolumes: function()
+	{
+		this.ctx.save();
+
 		if(this.culling) {
 			this.culling.drawDebug(this.ctx);
 		}
 
 		this.ctx.lineWidth = 2;
 		
-		var entity;
-		var entityFlag = this.holder.Flag;
-		for(var n = 0; n < this.numEntities; n++) 
-		{
-			entity = this.entities[n];
-			if(entity.flags & entityFlag.INSTANCE_HIDDEN) { continue; }
+		// normal
+		this.setProjection(this.perspectiveProjection);
+		this.renderEntities(this.entities);
 
-			if(entity.flags & entityFlag.DEBUG || this.meta.cache.debug) 
+		// static
+		if(this.entitiesStatic.length > 0) {
+			this.setProjection(this.orthoProjection);
+			this.renderEntities(this.entitiesStatic);	
+		}
+
+		this.ctx.restore();
+	},
+
+	_renderVolumes: function(entities)
+	{
+		var entity;
+		var num = entities.length;
+		for(var n = 0; n < num; n++) 
+		{
+			entity = entities[n];
+			if(entity.flags & this.entityFlag.INSTANCE_HIDDEN) { continue; }
+
+			if(entity.flags & this.entityFlag.DEBUG || this.meta.cache.debug) 
 			{
-				if(entity.flags & entityFlag.PICKING) {
+				if(entity.flags & this.entityFlag.PICKING) {
 					this.ctx.strokeStyle = "green";
 					this.ctx.fillStyle = "green";
 				}
@@ -72,60 +113,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		}
 	},
 
-	renderStatic: function()
-	{
-		this.ctx.restore();
-	},
-
-	clear: function() 
-	{
-		if(this._transparent) {
-			this.ctx.clearRect(0, 0, this.engine.width, this.engine.height);
-		}
-		else {
-			this.ctx.fillStyle = this._bgColor;
-			this.ctx.fillRect(0, 0, this.engine.width, this.engine.height);
-		}
-	},
-
 	drawEntity: function(entity)
-	{
-		if(entity._static) 
-		{
-			var zoom = this.camera._zoom;
-
-			if(entity._debugger) {
-				this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-			}
-			else {
-				this.ctx.setTransform(zoom, 0, 0, zoom, 0, 0);
-			}
-			
-			if(entity.draw) {
-				this.ctx.save();
-				entity.draw(this.ctx);
-				this.ctx.restore();
-			}
-			else {
-				this._drawEntity(entity);
-			}
-			
-			this.ctx.setTransform(zoom, 0, 0, zoom, -Math.floor(this.cameraVolume.x * zoom), -Math.floor(this.cameraVolume.y * zoom));
-		}
-		else 
-		{
-			if(entity.draw) {
-				this.ctx.save();
-				entity.draw(this.ctx);
-				this.ctx.restore();
-			}
-			else {
-				this._drawEntity(entity);
-			}
-		}
-	},
-
-	_drawEntity: function(entity)
 	{
 		var texture = entity._texture;
 		if(!texture || !entity._texture._loaded) { return; }
@@ -209,8 +197,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		
 			this.ctx.globalAlpha = 1.0;
 			
-			var zoom = this.camera._zoom;
-			this.ctx.setTransform(zoom, 0, 0, zoom, -Math.floor(this.camera.volume.x * zoom), -Math.floor(this.camera.volume.y * zoom));
+			this.resetProjection();
 		}
 
 		if(entity.clipVolume) {
@@ -220,8 +207,6 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 
 	drawVolume: function(entity)
 	{
-		if(entity._view.debugger) { return; }
-
 		var volume = entity.volume;
 
 		if(volume.__type === 0) {
@@ -235,29 +220,46 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 			this.ctx.rotate(entity.volume.angle);
 			this.ctx.translate(-Math.floor(volume.x), -Math.floor(volume.y));
 
-			this._drawVolume(volume);
+			var minX = Math.floor(volume.minX);
+			var minY = Math.floor(volume.minY);
+			var maxX = Math.ceil(volume.maxX);
+			var maxY = Math.ceil(volume.maxY);		
+
+			this.ctx.beginPath();
+			this.ctx.moveTo(minX, minY);
+			this.ctx.lineTo(maxX, minY);
+			this.ctx.lineTo(maxX, maxY);
+			this.ctx.lineTo(minX, maxY);
+			this.ctx.lineTo(minX, minY - 1);
+			this.ctx.stroke();	
+
+			this.ctx.fillRect(Math.floor(volume.x) - 3, Math.floor(volume.y) - 3, 6, 6);
 
 			this.ctx.restore();
 		}
 	},
 
-	_drawVolume: function(volume) 
-	{
-		var minX = Math.floor(volume.minX);
-		var minY = Math.floor(volume.minY);
-		var maxX = Math.ceil(volume.maxX);
-		var maxY = Math.ceil(volume.maxY);		
+	updateBgColor: function() {},
 
-		this.ctx.beginPath();
-		this.ctx.moveTo(minX, minY);
-		this.ctx.lineTo(maxX, minY);
-		this.ctx.lineTo(maxX, maxY);
-		this.ctx.lineTo(minX, maxY);
-		this.ctx.lineTo(minX, minY - 1);
-		this.ctx.stroke();	
-
-		this.ctx.fillRect(Math.floor(volume.x) - 3, Math.floor(volume.y) - 3, 6, 6);
+	// projection:
+	perspectiveProjection: function() {
+		var zoom = this.camera._zoom;
+		this.ctx.setTransform(zoom, 0, 0, zoom, -Math.floor(this.cameraVolume.x * zoom), -Math.floor(this.cameraVolume.y * zoom));
 	},
 
-	updateBgColor: function() {}
+	orthoProjection: function() {
+		var zoom = this.camera._zoom;
+		this.ctx.setTransform(zoom, 0, 0, zoom, 0, 0);
+	},
+
+	resetProjection: null,	
+
+	setProjection: function(projFunc) {
+		this.resetProjection = projFunc;
+		projFunc.call(this);
+	},
+
+	//
+	entityFlag: null,
+	viewFlag: null
 });

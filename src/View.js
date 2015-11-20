@@ -431,21 +431,18 @@ meta.View.prototype =
 
 	set static(value) 
 	{
-		if(value) 
-		{
-			if(this.flags & this.Flag.STATIC) { return; }
-
-			this.flags |= this.Flag.STATIC;
-			this._updateStatic(true);
+		if(this.flags & this.Flag.ACTIVE) {
+			console.error("(meta.View.set::static) Can`t change static mode if view is already active");
+			return;
 		}
-		else 
-		{
-			if((this.flags & this.Flag.STATIC) === 0) {
-				return; 
-			}
 
+		if(value) {
+			this.flags |= this.Flag.STATIC;
+			this.entityBuffer = meta.renderer.entitiesStatic;
+		}
+		else {
 			this.flags &= ~this.Flag.STATIC;
-			this._updateStatic(false);
+			this.entityBufferRemove = meta.renderer.entitiesStaticRemove;
 		}
 	},
 
@@ -453,23 +450,33 @@ meta.View.prototype =
 		return ((this.flags & this.Flag.STATIC) === this.Flag.STATIC); 
 	},
 
-	_updateStatic: function(value)
+	set debugger(value) 
 	{
-		var entity;
-		var numEntities = this.entities.length;
-		for(var n = 0; n < numEntities; n++) 
-		{
-			entity = this.entities[n];
-			entity.flags |= entity.Flag.STATIC;
-			//this.entities[i].static = value;
+		if(this.flags & this.Flag.ACTIVE) {
+			console.error("(meta.View.set::debugger) Can`t change debugger mode if view is already active");
+			return;
 		}
+
+		if(value) {
+			this.flags |= this.Flag.DEBUGGER;
+			this.entityBuffer = meta.renderer.entitiesDebug;
+		}
+		else {
+			this.flags &= ~this.Flag.DEBUGGER;
+			this.entityBufferRemove = meta.renderer.entitiesDebugRemove;
+		}
+	},
+
+	get debugger() { 
+		return ((this.flags & this.Flag.DEBUGGER) === this.Flag.DEBUGGER); 
 	},
 
 	Flag: {
 		HIDDEN: 1 << 0,
 		INSTANCE_HIDDEN: 1 << 1,
 		ACTIVE: 1 << 2,
-		STATIC: 1 << 3
+		STATIC: 1 << 3,
+		DEBUGGER: 1 << 4
 	},
 
 	//
@@ -478,8 +485,8 @@ meta.View.prototype =
 	_z: 0,
 	_tween: null,
 
-	debugger: false,
-	entitiesUI: null
+	entityBuffer: null,
+	entityBufferRemove: null
 };
 
 /**

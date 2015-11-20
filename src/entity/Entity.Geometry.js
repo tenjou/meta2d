@@ -367,7 +367,7 @@ meta.class("Entity.Geometry",
 			}
 		}
 
-		this.renderer.needSortDepth = true;	
+		this.renderer.needSort = true;	
 	},
 
 	offset: function(x, y) 
@@ -1528,26 +1528,6 @@ meta.class("Entity.Geometry",
 		return ((this.flags & this.Flag.LOADED) === this.Flag.LOADED);
 	},
 
-	set static(value)
-	{
-		if(value) 
-		{
-			if(this.flags & this.Flag.STATIC) { return; }
-
-			this.flags |= this.Flag.STATIC;
-		}
-		else
-		{
-			if((this.flags & this.Flag.STATIC) === 0) { return; }
-
-			this.flags &= ~this.Flag.STATIC;
-		}
-	},
-
-	get static() {
-		return ((this.flags & this.Flag.STATIC) === this.Flag.STATIC);
-	},
-
 	/* Debug */
 	set debug(value) 
 	{
@@ -1582,7 +1562,7 @@ meta.class("Entity.Geometry",
 		ACTIVE: 1 << 4,
 		INSTANCE_ACTIVE: 1 << 5,
 		VISIBILE: 1 << 6,
-		// 1 << 7
+		// 7
 		UPDATING: 1 << 8,
 		REMOVED: 1 << 9,
 		IGNORE_PARENT_POS: 1 << 10,
@@ -1598,7 +1578,8 @@ meta.class("Entity.Geometry",
 		FIT_IN: 1 << 20,
 		CLIP_BOUNDS: 1 << 21,
 		LOADED: 1 << 22,
-		STATIC: 1 << 24,
+		// 23
+		// 24
 		PICKING: 1 << 25,
 		ROOT: 1 << 26
 	},
