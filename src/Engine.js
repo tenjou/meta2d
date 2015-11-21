@@ -277,7 +277,9 @@ meta.engine =
 			this._fpsCounter = 0;
 		}
 
-		this.update(this.time.deltaF);
+		if(this.flags & this.Flag.LOADED) {
+			this.update(this.time.deltaF);
+		}
 
 		// Process all render functions:
 		meta.renderer.render(this.time.deltaF);
