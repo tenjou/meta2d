@@ -79,6 +79,10 @@ meta.View.prototype =
 			return;
 		}
 
+		if(entity.parent !== this.entityParent) {
+			entity.parent = this.entityParent;
+		}
+
 		entity.flags |= entity.Flag.ROOT;
 		entity._view = this;
 
@@ -87,9 +91,6 @@ meta.View.prototype =
 		}
 		if(this._z !== 0) {
 			entity.updateZ();
-		}
-		if(this.flags & this.Flag.STATIC) {
-			entity.static = true;
 		}
 
 		this.entities.push(entity);
@@ -438,14 +439,21 @@ meta.View.prototype =
 
 		if(value) {
 			this.flags |= this.Flag.STATIC;
+			this.entityParent = meta.renderer.staticHolder;
 			this.entityBuffer = meta.renderer.entitiesStatic;
 			this.entityBufferRemove = meta.renderer.entitiesStaticRemove;
 		}
 		else {
 			this.flags &= ~this.Flag.STATIC;
+			this.entityParent = meta.renderer.holder;
 			this.entityBuffer = meta.renderer.entities;
 			this.entityBufferRemove = meta.renderer.entitiesRemove;
 		}
+
+		var num = this.entities.length;
+		for(var n = 0; n < num; n++) {
+			this.entities[n].parent = this.entityParent;
+		}		
 	},
 
 	get static() { 
@@ -461,13 +469,20 @@ meta.View.prototype =
 
 		if(value) {
 			this.flags |= this.Flag.DEBUGGER;
+			this.entityParent = meta.renderer.staticHolder;
 			this.entityBuffer = meta.renderer.entitiesDebug;
 			this.entityBufferRemove = meta.renderer.entitiesDebugRemove;
 		}
 		else {
 			this.flags &= ~this.Flag.DEBUGGER;
+			this.entityParent = meta.renderer.holder;
 			this.entityBuffer = meta.renderer.entities;
 			this.entityBufferRemove = meta.renderer.entitiesRemove;
+		}
+
+		var num = this.entities.length;
+		for(var n = 0; n < num; n++) {
+			this.entities[n].parent = this.entityParent;
 		}
 	},
 
@@ -489,6 +504,7 @@ meta.View.prototype =
 	_z: 0,
 	_tween: null,
 
+	entityParent: null,
 	entityBuffer: null,
 	entityBufferRemove: null
 };

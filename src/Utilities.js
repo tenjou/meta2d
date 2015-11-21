@@ -226,8 +226,7 @@ meta.info = function(text)
 	{
 		meta.cache.infoView = new meta.View("meta.info");
 		meta.cache.infoView.static = true;
-		meta.view.attachView(meta.cache.infoView);
-
+		
 		msg = new Entity.Text(text);
 		msg.anchor(0.5);
 		msg.pivot(0.5);	
@@ -242,6 +241,8 @@ meta.info = function(text)
 		holder.position(0, 10);
 		holder.attach(msg);
 		meta.cache.infoView.attach(holder);
+
+		meta.view.attachView(meta.cache.infoView);
 	}
 	else
 	{

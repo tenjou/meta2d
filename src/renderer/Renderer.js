@@ -13,6 +13,8 @@ meta.class("meta.Renderer",
 		var view = meta.cache.view;
 		this.holder = new Entity.Geometry();
 		this.holder._view = view;
+		this.staticHolder = new Entity.Geometry();
+		this.staticHolder._view = view;		
 		
 		var flags = (this.holder.Flag.ENABLED | this.holder.Flag.INSTANCE_ENABLED | this.holder.Flag.LOADED);
 		entityProto.flags = flags;
@@ -20,6 +22,7 @@ meta.class("meta.Renderer",
 		entityProto.parent = this.holder;
 
 		this.holder.flags = flags;
+		this.staticHolder.flags = flags;
 
 		this.entities = [];
 		this.entitiesRemove = [];
@@ -29,6 +32,7 @@ meta.class("meta.Renderer",
 		this.entitiesDebugRemove = [];
 
 		// default view buffers that entities will be added to:
+		viewProto.entityParent = this.holder;
 		viewProto.entityBuffer = this.entities;
 		viewProto.entityBufferRemove = this.entitiesRemove;
 
@@ -69,6 +73,7 @@ meta.class("meta.Renderer",
 		meta.camera.onMove.add(this.onCameraMove, this);
 
 		this.holder.resize(this.camera.volume.width, this.camera.volume.height);
+		this.staticHolder.resize(meta.engine.width, meta.engine.height);
 
 		if(this.culling) {
 			this.culling.calc();
@@ -622,6 +627,7 @@ meta.class("meta.Renderer",
 	onCameraResize: function(data, event) 
 	{
 		this.holder.resize(data.width, data.height);
+		this.staticHolder.resize(meta.engine.width, meta.engine.height);
 
 		this._updateResize(this.entities);
 		this._updateResize(this.entitiesStatic);
@@ -696,6 +702,7 @@ meta.class("meta.Renderer",
 	culling: null,
 
 	holder: null,
+	staticHolder: null,
 
 	camera: null,
 	cameraVolume: null,

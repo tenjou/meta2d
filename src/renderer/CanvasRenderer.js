@@ -23,7 +23,6 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 
 	renderFrame: function()
 	{
-
 		this.clear();
 		this.ctx.save();
 
@@ -74,6 +73,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		if(meta.engine.flags & meta.engine.Flag.LOADING) { return; }
 
 		this.ctx.save();
+		this.setProjection(this.perspectiveProjection);
 
 		if(this.culling && meta.debug) {
 			this.culling.drawDebug(this.ctx);
@@ -82,7 +82,6 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		this.ctx.lineWidth = 2;
 		
 		// normal
-		this.setProjection(this.perspectiveProjection);
 		this._renderVolumes(this.entities);
 
 		// static
@@ -254,8 +253,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 	},
 
 	orthoProjection: function() {
-		var zoom = this.camera._zoom;
-		this.ctx.setTransform(zoom, 0, 0, zoom, 0, 0);
+		this.ctx.setTransform(1, 0, 0, 1, 0, 0);
 	},
 
 	resetProjection: null,	
