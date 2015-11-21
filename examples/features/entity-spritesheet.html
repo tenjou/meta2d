@@ -1,31 +1,36 @@
 <!DOCTYPE html>
 
 <html>
-    <head>
-        <title>Entity Spritesheet // META</title>
+	<head>
+		<title>Entity Spritesheet // META</title>
 
-        <script src="http://meta2d.com/meta.js"></script>
-    </head>
+		<script src="http://meta2d.com/meta.js"></script>
+	</head>
 
-    <body>
-        <!-- Example on how to use spritesheets. -->
+	<body>
+		<!-- Example on how to use spritesheets. -->
 
-        <script>
-            meta.onLoad = function()
-            {
-                // Can load .xml, .json (hash and indexed) and .plist spritesheet formats. 
-                // Loader will assume that spritesheet texture is with the same name.
-                meta.loadSpriteSheet(
-                    "https://dl.dropboxusercontent.com/u/145051233/meta/blocks.json");
+		<script>
+			meta.onLoad = function()
+			{
+				// Can load .xml, .json (hash and indexed) and .plist spritesheet formats. 
+				// Loader will assume that spritesheet texture is with the same name.
+				meta.loadSpriteSheet(
+					"https://dl.dropboxusercontent.com/u/145051233/meta/blocks.json");
 
-                // Create with texture id specified in spritesheet format:
-                var entity = new Entity.Geometry("block_green");
-                entity.anchor(0.5);
-                entity.pivot(0.5);
-                meta.view.attach(entity);
-                
-                meta.info("Entity spritesheet example");                
-            };
-        </script>
-    </body>
+				var texturePrefix = [ "blue", "green", "purple", "red", "yellow" ];
+
+				// Create entities with random texture from tilemap:
+				for(var n = 0; n < 20; n++) {
+					var randPrefix = texturePrefix[meta.random.number(0, texturePrefix.length - 1)];
+					var entity = new Entity.Geometry("block_" + randPrefix);
+					entity.pivot(0.5);
+					entity.position(meta.world.randX, meta.world.randY);
+					meta.view.attach(entity);	
+				}				
+				
+				meta.info("Entity spritesheet example");                
+			};
+		</script>
+	</body>
 </html>

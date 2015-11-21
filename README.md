@@ -19,7 +19,7 @@ Features
 	* Fast bug fixing
 	* Request features you need that makes sense to be part of the engine
 5. **Model View Controller (MVC)** - Engine architecture follows MVC principles but optimized for game and application development.
-5. **Entity** - Powerfull way to make any object that is part of screen topology:
+6. **Entity** - Powerfull way to make any object that is part of screen topology:
 	* Pivots
 	* Anchor points
 	* Rotating
@@ -33,24 +33,24 @@ Features
 	* Children/parenting system
 	* Clipping
 	* LookAt
-5. **Culling** - Supports optional object culling.
-6. **Input** - Multiple ways to handle keyboard/mouse and touch events. Keybind system.
-7. **Audio** - Supports automatic loading for supported audio formats and handles multiple simultaneous playing instances. Uses AudioAPI or fallback to legacy Audio element.
-8. **Text** - Canvas and bitmap fonts
-9. **Tweening**
-10. **SVG** - Helper texture resoruce that helps to generate SVG textures for prototyping or other needs: 
+7. **Culling** - Supports optional object culling.
+8. **Input** - Multiple ways to handle keyboard/mouse and touch events. Keybind system.
+9. **Audio** - Supports automatic loading for supported audio formats and handles multiple simultaneous playing instances. Uses AudioAPI or fallback to legacy Audio element.
+10. **Text** - Canvas and bitmap fonts
+11. **Tweening**
+12. **SVG** - Helper texture resoruce that helps to generate SVG textures for prototyping or other needs: 
 	* Supports: FillRect, Rect, Lines, Shape, RoundRect, Circle, Arc, Tiling, Gradient, Grid.
-11. **Camera** - Comes with utilities to handle different resolutions, scaling, fitting, zooming.
-12. **Tilemaps** - Additionally supporting Tiled editor .tmx and .json formats.
-13. **Arcade physics**
+13. **Camera** - Comes with utilities to handle different resolutions, scaling, fitting, zooming.
+14. **Tilemaps** - Additionally supporting Tiled editor .tmx and .json formats.
+15. **Arcade physics**
 	* Supports collisions for: AABB, Circle, Line and Point.
-14. **Particles**
-15. **Channel event system**
-16. **Timer**
-17. **Fullscreen**
-18. **Store import** - Import plugins from store with just one code line.
-19. **UI elements** - button, checkbox, progress bar.
-20. **Optional libraries**:
+16. **Particles**
+17. **Channel event system**
+18. **Timer**
+19. **Fullscreen**
+20. **Store import** - Import plugins from store with just one code line.
+21. **UI elements** - button, checkbox, progress bar.
+22. **Optional libraries**:
 	* AStar pathfinding - [GitHub](https://github.com/InfiniteFoundation/metaAstar)
 	* Procedural generation - [GitHub](https://github.com/InfiniteFoundation/metaProcedural)
 
