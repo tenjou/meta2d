@@ -1,4 +1,4 @@
-META v0.8.2 pre-release
+META v0.82
 ====
 
 Meta is free and fast open source HTML5 game engine for making cross platform games, supports Canvas and WebGL rendering and Dopple for native compilation.
@@ -17,7 +17,7 @@ Features
 4. **Fast development & support**
 	* Regular update schedule
 	* Fast bug fixing
-	* Request features you need that makes sense to be part of engine
+	* Request features you need that makes sense to be part of the engine
 5. **Model View Controller (MVC)** - Engine architecture follows MVC principles but optimized for game and application development.
 5. **Entity** - Powerfull way to make any object that is part of screen topology:
 	* Pivots
@@ -33,6 +33,7 @@ Features
 	* Children/parenting system
 	* Clipping
 	* LookAt
+5. **Culling** - Supports optional object culling.
 6. **Input** - Multiple ways to handle keyboard/mouse and touch events. Keybind system.
 7. **Audio** - Supports automatic loading for supported audio formats and handles multiple simultaneous playing instances. Uses AudioAPI or fallback to legacy Audio element.
 8. **Text** - Canvas and bitmap fonts
@@ -64,14 +65,3 @@ Nightly build (development build):
 ```html
 <script src="http://meta2d.com/meta.dev.js"></script>
 ```
-
-Roadmap
-====
-
-Features that can be expecteded in next releases:
-
-1. Tilemap supporting auto tiling
-2. Multiple character controllers
-3. Tilemap collision/physics system
-4. Tilemap editor in browser
-5. Tilemap texture caching
