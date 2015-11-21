@@ -44,6 +44,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 	renderDebugDrame: function() 
 	{
 		this.ctx.save();
+		this.setProjection(this.orthoProjection);
 		this.renderEntities(this.entitiesDebug);	
 		this.ctx.restore()
 	},

@@ -15,14 +15,23 @@
 
             meta.onLoad = function()
             {
-                meta.loadTexture("http://i.imgur.com/85w15oW.png");
+                meta.loadSpriteSheet(
+                    "https://dl.dropboxusercontent.com/u/145051233/meta/blocks.json");
 
-                player = new Entity.Geometry("85w15oW");
+                player = new Entity.Geometry("block_green");
                 player.position(meta.world.centerX, meta.world.centerY);
                 player.pivot(0.5);
                 meta.view.attach(player);
 
                 meta.camera.follow(player);
+
+                var num = 20;
+                for(var n = 0; n < num; n++) {
+                    var entity = new Entity.Geometry("block_blue");
+                    entity.pivot(0.5);
+                    entity.position(meta.world.randX, meta.world.randY);
+                    meta.view.attach(entity);
+                }
 
                 meta.info("Use WASD or arrows to move the entity"); 
             };
