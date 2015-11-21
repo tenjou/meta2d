@@ -4,7 +4,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 {
 	draw: function(ctx) 
 	{
-		if(!this.parent.loaded) { return; }
+		if((this.parent.flags & this.Flag.LOADED) === 0) { return; }
 
 		var cameraVolume = meta.camera.volume;
 
@@ -294,7 +294,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 	{
 		this._data = data;
 
-		if(this.parent.loaded) {
+		if(this.parent.flags & this.Flag.LOADED) {
 			this.updateFromData();
 		}
 	},

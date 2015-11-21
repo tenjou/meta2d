@@ -234,8 +234,6 @@ meta.SparseGrid.prototype =
 	{
 		if((entity.flags & entity.Flag.ACTIVE) === 0) { return; }
 
-
-
 		var node = entity.node;
 		var volume = entity.volume;
 
@@ -388,6 +386,7 @@ meta.SparseGrid.prototype =
 			var widthSin = volume.width * sin;
 			var heightSin = volume.height * sin;
 
+			var minX, minY, maxX, maxY;
 			if(volume.angle < Math.PI)
 			{
 				// < 90

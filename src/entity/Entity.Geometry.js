@@ -951,12 +951,12 @@ meta.class("Entity.Geometry",
 
 			if(this._texture._loaded) {
 				this.updateFromTexture();
-				this.loaded = true;
+				this.flags |= this.Flag.LOADED;
 			}
 		}
 		else {
 			this._texture = texture;
-			this.loaded = false;
+			this.flags &= ~this.Flag.LOADED;
 		}
 
 		this.anim.set(this._texture);

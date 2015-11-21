@@ -23,7 +23,9 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 
 	renderFrame: function()
 	{
+
 		this.clear();
+		this.ctx.save();
 
 		var zoom = this.camera._zoom;
 
@@ -36,6 +38,8 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 			this.setProjection(this.orthoProjection);
 			this.renderEntities(this.entitiesStatic);	
 		}
+
+		this.ctx.restore();
 	},
 
 	renderDebugDrame: function() 
@@ -67,6 +71,8 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 
 	renderDebugVolumes: function()
 	{
+		if(meta.engine.flags & meta.engine.Flag.LOADING) { return; }
+
 		this.ctx.save();
 
 		if(this.culling && meta.debug) {

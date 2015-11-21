@@ -14,7 +14,7 @@ meta.class("meta.Renderer",
 		this.holder = new Entity.Geometry();
 		this.holder._view = view;
 		
-		var flags = (this.holder.Flag.ENABLED | this.holder.Flag.INSTANCE_ENABLED);
+		var flags = (this.holder.Flag.ENABLED | this.holder.Flag.INSTANCE_ENABLED | this.holder.Flag.LOADED);
 		entityProto.flags = flags;
 		entityProto.renderer = this;
 		entityProto.parent = this.holder;
