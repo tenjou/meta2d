@@ -104,6 +104,7 @@ meta.class("meta.Renderer",
 		// updating:
 		this.__updating = true;	
 
+		var entity;
 		var num = this.entitiesUpdate.length;
 		for(var i = 0; i < num; i++) {
 			this.entitiesUpdate[i].update(tDelta);

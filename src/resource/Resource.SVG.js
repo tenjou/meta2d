@@ -113,20 +113,7 @@ meta.class("Resource.SVG", "Resource.Texture",
 	 */	
 	circle: function(radius)
 	{
-		var offset;
-
-		if(!this._strokeStyle) 
-		{
-			if(!this._fillStyle) {
-				this._fillStyle = "#000";
-			}
-			
-			offset = 0;
-		}
-		else {
-			offset = this._lineWidth;
-		}
-
+		var offset = this._lineWidth;
 		var size = (radius + offset) * 2;
 
 		if((this.flags & this.TextureFlag.RESIZED) === 0) {
