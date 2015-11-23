@@ -39,9 +39,19 @@ meta.math.Vector2.prototype =
 	 * @param value {Number} Value to add.
 	 * @function
 	 */
-	add: function(value) {
-		this.x += value;
-		this.y += value;
+	add: function(x, y) {
+		this.x += x;
+		this.y += y;
+	},
+
+	addValue: function(value) {
+		this.x += x;
+		this.y += y;
+	},
+
+	addVec: function(vec) {
+		this.x += vec.x;
+		this.y += vec.y;
 	},
 
 	/**
@@ -49,72 +59,60 @@ meta.math.Vector2.prototype =
 	 * @param value {Number} Value of subtract.
 	 * @function
 	 */
-	sub: function(value) {
+	sub: function(x, y) {
+		this.x -= x;
+		this.y -= y;
+	},
+
+	subValue: function(value) {
 		this.x -= value;
 		this.y -= value;
 	},
+
+	subVec: function(vec) {
+		this.x -= vec.x;
+		this.y -= vec.y;
+	},	
 
 	/**
 	 * Multiply by value the vector.
 	 * @param value {Number} Value of multiplication.
 	 * @function
 	 */
-	mul: function(value) {
+	mul: function(x, y) {
+		this.x *= x;
+		this.y *= y;
+	},
+
+	mulValue: function(value) {
 		this.x *= value;
 		this.y *= value;
 	},
+
+	mulVec: function(vec) {
+		this.x *= vec.x;
+		this.y *= vec.y;
+	},		
 
 	/**
 	 * Divide by value the vector.
 	 * @param value {Number} Value of divison.
 	 * @function
 	 */
-	div: function(value) {
+	div: function(x, y) {
+		this.x /= x;
+		this.y /= y;
+	},
+
+	divValue: function(value) {
 		this.x /= value;
 		this.y /= value;
 	},
 
-
-	/**
-	 * Add Vector2.
-	 * @param value {meta.math.Vector2} Vector to add.
-	 * @function
-	 */
-	addVec2: function(vec) {
-		this.x += vec.x;
-		this.y += vec.y;
-	},
-
-	/**
-	 * Subtract Vector2.
-	 * @param value {meta.math.Vector2} Vector to subtract.
-	 * @function
-	 */
-	subVec2: function(vec) {
-		this.x -= vec.x;
-		this.y -= vec.y;
-	},
-
-	/**
-	 * Multiply Vector2.
-	 * @param value {meta.math.Vector2} Vector to multiply.
-	 * @function
-	 */
-	mulVec2: function(vec) {
-		this.x *= vec.x;
-		this.y *= vec.y;
-	},
-
-	/**
-	 * Divide Vector2.
-	 * @param value {meta.math.Vector2} Vector to divide.
-	 * @function
-	 */
-	divVec2: function(vec) {
+	divVec: function(vec) {
 		this.x /= vec.x;
 		this.y /= vec.y;
-	},
-
+	},	
 
 	/**
 	 * Get distance to 
