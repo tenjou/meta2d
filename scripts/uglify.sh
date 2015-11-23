@@ -52,6 +52,8 @@ cat meta.js \
 	svg/Entity.Gradient.js \
 	physics/Physics.Manager.js \
 	physics/Physics.Body.js \
+	steering/Steering.Manager.js \
+	steering/Steering.Component.js \
 	ui/UI.Controller.js \
 	ui/UI.Button.js \
 	ui/UI.Checkbox.js \
