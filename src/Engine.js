@@ -59,6 +59,7 @@ meta.engine =
 		meta.resources = new Resource.Manager();
 		meta.input = new Input.Manager();
 		meta.physics = new Physics.Manager();
+		meta.steering = new Steering.Manager();
 
 		var resources = meta.resources;
 		resources.onLoadingStart.add(this.onLoadingStart, this);
@@ -232,17 +233,21 @@ meta.engine =
 			} 
 		}
 
-		num = this.updateFuncs.length;
-		for(n = 0; n < num; n++) {
-			this.updateFuncs[n](tDelta);
-		}
+		if(this.flags & this.Flag.LOADED) 
+		{
+			num = this.updateFuncs.length;
+			for(n = 0; n < num; n++) {
+				this.updateFuncs[n](tDelta);
+			}
 
-		num = this.controllersUpdate.length;
-		for(n = 0; n < num; n++) {
-			this.controllersUpdate[n].onUpdate(tDelta);
-		}
+			num = this.controllersUpdate.length;
+			for(n = 0; n < num; n++) {
+				this.controllersUpdate[n].onUpdate(tDelta);
+			}
 
-		this.onUpdate.emit(tDelta);
+			this.onUpdate.emit(tDelta);
+		}
+		
 		this.meta.renderer.update(tDelta);
 		this.meta.camera.update(tDelta);
 	},
@@ -277,9 +282,7 @@ meta.engine =
 			this._fpsCounter = 0;
 		}
 
-		if(this.flags & this.Flag.LOADED) {
-			this.update(this.time.deltaF);
-		}
+		this.update(this.time.deltaF);
 
 		// Process all render functions:
 		meta.renderer.render(this.time.deltaF);
