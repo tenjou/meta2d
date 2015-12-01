@@ -517,7 +517,7 @@ meta.class("Input.Manager",
 			this._event.y = y;
 			this._event.keyCode = id;
 
-			this.onDown.emit(this._event, Input.Event.UP);
+			this.onUp.emit(this._event, Input.Event.UP);
 			this.onClick.emit(this._event, Input.Event.CLICK);
 
 			this._event.entity = null;
