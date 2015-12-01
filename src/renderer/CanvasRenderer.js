@@ -125,6 +125,8 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		if(!texture || !entity._texture._loaded) { return; }
 
 		var volume = entity.volume;
+		if(volume.width === 0 || volume.height === 0) { return; }
+
 		var anim = entity.anim;
 
 		if(entity.clipVolume) 
