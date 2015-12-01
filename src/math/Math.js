@@ -1,7 +1,5 @@
 "use strict";
 
-meta.math = {};
-
 meta.math =
 {
 	degToRad: function(degree) {

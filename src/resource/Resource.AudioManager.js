@@ -58,7 +58,7 @@ meta.class("Resource.AudioManager",
 			return;
 		}
 		
-		if(meta.device.audioAPI) {		
+		if(this.audioAPI) {		
 			this.gainNode.gain.value = this._volume;
 		}
 		else 
@@ -87,7 +87,7 @@ meta.class("Resource.AudioManager",
 			volume = this._volume;
 		}
 
-		if(meta.device.audioAPI) {
+		if(this.audioAPI) {	
 			this.gainNode.gain.value = volume;
 		}
 		else 
