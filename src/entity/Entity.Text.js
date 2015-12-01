@@ -62,7 +62,11 @@ meta.class("Entity.Text", "Entity.Geometry",
 				for(i = 0; i < numChars; i++)
 				{
 					charRect = chars[currText.charCodeAt(i)];
+					
 					if(!charRect) { continue; }
+					if(charRect.width < 1 || charRect.height < 1) {
+						continue;
+					}
 
 					ctx.drawImage(canvas, charRect.x, charRect.y, charRect.width, charRect.height, 
 						posX, posY + charRect.offsetY, charRect.width, charRect.height);
