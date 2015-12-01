@@ -11,6 +11,7 @@ var meta =
 	camera: null,
 	input: null,
 	physics: null,
+	steering: null,
 	channels: [],
 	modules: {},
 
