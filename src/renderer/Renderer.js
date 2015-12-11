@@ -277,8 +277,8 @@ meta.class("meta.Renderer",
 
 		if(entity.flags & entity.Flag.RENDER_REMOVE) 
 		{
-			var index = view.entityBuffer.indexOf(entity);
-			view.entityBuffer[index] = null;
+			var index = entity._view.entityBufferRemove.indexOf(entity);
+			entity._view.entityBufferRemove[index] = null;
 			entity.flags &= ~entity.Flag.RENDER_REMOVE;
 		}
 		else
@@ -348,6 +348,7 @@ meta.class("meta.Renderer",
 		if(entity.flags & entity.Flag.RENDER_REMOVE) { return; }
 
 		entity.flags |= entity.Flag.RENDER_REMOVE;
+		entity.flags &= ~entity.Flag.RENDER;
 
 		entity._view.entityBufferRemove.push(entity);
 	},
