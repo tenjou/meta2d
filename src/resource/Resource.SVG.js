@@ -296,6 +296,7 @@ meta.class("Resource.SVG", "Resource.Texture",
 			ctx.setLineDash(this._lineDash);
 		}
 
+		ctx.translate(0.5, 0.5);
 		ctx.beginPath();
 		ctx.moveTo(buffer[0] + offsetX, buffer[1] + offsetY);
 		for(i = 2; i < numItems; i += 2) {
