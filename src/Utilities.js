@@ -427,4 +427,19 @@ function getClsFromPath(path)
 	return cls;
 };
 
+meta.decodeBinaryBase64 = function(content)
+{
+	var decodedData = atob(content);
+	var size = decodedData.length;
+	var data = new Array(size / 4);
 
+	for(var n = 0, i = 0; n < size; n += 4, i++)
+	{
+		data[i] = decodedData.charCodeAt(n) | 
+				  decodedData.charCodeAt(n + 1) << 8 |
+				  decodedData.charCodeAt(n + 2) << 16 |
+				  decodedData.charCodeAt(n + 3) << 24;
+	}
+
+	return data;
+}
