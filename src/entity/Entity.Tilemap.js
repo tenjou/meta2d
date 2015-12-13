@@ -2,6 +2,207 @@
 
 meta.class("Entity.TilemapLayer", "Entity.Geometry",
 {
+	updateFromData: function()
+	{
+		this.totalTiles = this.tilesX * this.tilesY;
+		this.resize(this.tilesX * this.tileWidth, this.tilesY * this.tileHeight);
+
+		var num = this._data.length;
+
+		if(!this._dataInfo) {
+			this._dataInfo = new Array(num);
+		}
+		else if(this._dataInfo.length !== num) {
+			this._dataInfo.length = num;
+		}
+
+		this._tilesets = this.parent.tilesets;
+		this._numTilesets = this._tilesets.length;
+
+		for(var n = 0; n < num; n++) {
+			this._updateDataInfoCell(n);
+		}
+
+		this.renderer.needRender = true;
+	},
+
+	_updateDataInfoCell: function(id) 
+	{
+		var gid = this._data[id];
+
+		if(!gid) {
+			this._dataInfo[id] = null;
+		}
+		else 
+		{
+			if(gid & 0x20000000 || gid & 0x40000000 || gid & 0x80000000) 
+			{
+				if(!this._dataFlags) {
+					this._dataFlags = new Uint32Array(this._data.length);
+				}
+
+				var flag = 0;
+				flag |= (gid & 0x20000000);
+				flag |= (gid & 0x40000000);
+				flag |= (gid & 0x80000000);
+				this._dataFlags[id] = flag;
+
+				gid &= 536870911;
+			}
+
+			// Find the correct tileset/texture:
+			var tileset = this._tilesets[0];
+			for(var i = 1; i < this._numTilesets; i++) 
+			{
+				if(gid < this._tilesets[i].gid) {
+					break;
+				}
+
+				tileset = this._tilesets[i];
+			}
+
+			this._dataInfo[id] = tileset.getCell(gid);
+		}
+	},
+
+	setGid: function(x, y, gid)
+	{
+		var id = x + (y * this.tilesX);
+		this._data[id] = gid;
+
+		if(this.parent.loaded) {
+			this._updateDataInfoCell(id);
+			this.renderer.needRender = true;
+		}
+	},
+
+	getGid: function(x, y) 
+	{
+		var id = x + (y * this.tilesX);
+
+		if(id < 0) {
+			return 0;
+		}
+		if(id >= this.totalTiles) {
+			return 0;
+		}
+
+		return this.data[id];
+	},
+
+	getInfo: function(x, y)
+	{
+		var id = x + (y * this.tilesX);
+
+		if(id < 0) {
+			return null;
+		}
+		if(id >= this.totalTiles) {
+			return null;
+		}
+
+		return this._dataInfo[id];
+	},
+
+	getFlags: function(x, y)
+	{
+		var id = x + (y * this.tilesX);
+
+		if(id < 0) {
+			return null;
+		}
+		if(id >= this.totalTiles) {
+			return null;
+		}
+
+		return this._dataFlags[id];
+	},
+
+	gridFromWorldPos: function(worldX, worldY) 
+	{
+		var gridX = Math.floor((worldX - this.volume.minX) / this.tileWidth);
+		var gridY = Math.floor((worldY - this.volume.minY) / this.tileHeight);
+		var id = gridX + (gridY * this.tilesX);
+		
+		if(id < 0) { 
+			return null;
+		}
+		if(id >= this.totalTiles) {
+			return null;
+		}
+
+		return [ gridX, gridY ];
+	},
+
+	saveData: function()
+	{
+		if(!this.data) {
+			console.warn("(Entity.Tilemap.saveData): No data available for saving");
+			return;
+		}
+
+		if(!this.savedData) {
+			this.savedData = new Uint32Array(this.totalTiles);
+		}
+		else if(this.savedData.length !== this.totalTiles) {
+			this.savedData.length = this.totalTiles;
+		}
+
+		for(var n = 0; n < this.totalTiles; n++) {
+			this.savedData[n] = this.data[n];
+		}
+	},
+
+	restoreData: function()
+	{
+		if(!this.savedData) { 
+			console.warn("(Entity.Tilemap.restoreData): No saved data available");
+			return; 
+		}
+
+		if(this.savedData.length !== this.totalTiles) {
+			console.warn("(Entity.Tilemap.restoreData): Incompatible data saved");
+			this.savedData = null;
+			return; 
+		}
+
+		for(var n = 0; n < this.totalTiles; n++) {
+			this.data[n] = this.savedData[n];
+		}
+
+		this.updateFromData();
+	},
+
+	set data(data) 
+	{
+		this._data = data;
+
+		if(this.parent.flags & this.Flag.LOADED) {
+			this.updateFromData();
+		}
+	},
+
+	get data() {
+		return this._data;
+	},
+
+	//
+	name: "Undefined",
+	tilesX: 0,
+	tilesY: 0,
+	totalTiles: 0,
+	tileWidth: 0,
+	tileHeight: 0,
+	_data: null,
+	_dataInfo: null,
+	_dataFlags: null,
+
+	_tilesets: null,
+	_numTilesets: 0
+});
+
+meta.class("Entity.TilemapOrthoLayer", "Entity.TilemapLayer",
+{
 	draw: function(ctx) 
 	{
 		if((this.parent.flags & this.Flag.LOADED) === 0) { return; }
@@ -109,8 +310,8 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 						else
 						{
 							ctx.drawImage(info.canvas, 
-								info.posX, info.posY, this.tileWidth, this.tileHeight, 
-								posX, posY, this.tileWidth, this.tileHeight);
+								info.posX, info.posY, info.width, info.height, 
+								posX, posY, info.width, info.height);
 						}
 					}
 
@@ -134,8 +335,8 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 					if(info) 
 					{
 						ctx.drawImage(info.canvas, 
-							info.posX, info.posY, this.tileWidth, this.tileHeight, 
-							Math.floor(posX), Math.floor(posY), this.tileWidth, this.tileHeight);
+							info.posX, info.posY, info.width, info.height, 
+							posX, posY, info.width, info.height);
 					}
 
 					posX += this.tileWidth;
@@ -146,176 +347,114 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 			}
 		}
 	},
+});
 
-	updateFromData: function()
+meta.class("Entity.TilemapIsoLayer", "Entity.TilemapLayer",
+{
+	draw: function(ctx) 
 	{
-		this.totalTiles = this.tilesX * this.tilesY;
-		this.resize(this.tilesX * this.tileWidth, this.tilesY * this.tileHeight);
+		if((this.parent.flags & this.Flag.LOADED) === 0) { return; }
 
-		var num = this._data.length;
+		var cameraVolume = meta.camera.volume;
 
-		if(!this._dataInfo) {
-			this._dataInfo = new Array(num);
-		}
-		else if(this._dataInfo.length !== num) {
-			this._dataInfo.length = num;
-		}
+		var startTileX = 0;
+		var endTileX = this.tilesX;
+		var startTileY = 0;
+		var endTileY = this.tilesY;
 
-		this._tilesets = this.parent.tilesets;
-		this._numTilesets = this._tilesets.length;
+		var minX = Math.floor(this.volume.minX + (startTileX * this.tileWidth));
+		var minY = Math.floor(this.volume.minY + (startTileY * this.tileHeight));
+		// minX = 0;
+		// minY = 0;
 
-		for(var n = 0; n < num; n++) {
-			this._updateDataInfoCell(n);
-		}
+		var id = 0, info;
+		var posX = minX | 0;
+		var posY = minY | 0;
 
-		this.renderer.needRender = true;
-	},
+		var halfWidth = this.tileWidth * 0.5;
+		var halfHeight = this.tileHeight * 0.5;
 
-	_updateDataInfoCell: function(id) 
-	{
-		var gid = this._data[id];
+		startTileX = 0;
+		startTileY = 0;
+		endTileX = this.tilesX;
+		endTileY = this.tilesY;
 
-		if(!gid) {
-			this._dataInfo[id] = null;
-		}
-		else 
-		{
-			if(gid & 0x20000000 || gid & 0x40000000 || gid & 0x80000000) 
-			{
-				if(!this._dataFlags) {
-					this._dataFlags = new Uint32Array(this._data.length);
-				}
+		//this.tilesY = 2;
 
-				var flag = 0;
-				flag |= (gid & 0x20000000);
-				flag |= (gid & 0x40000000);
-				flag |= (gid & 0x80000000);
-				this._dataFlags[id] = flag;
-
-				gid &= 536870911;
-			}
-
-			// Find the correct tileset/texture:
-			var tileset = this._tilesets[0];
-			for(var i = 1; i < this._numTilesets; i++) 
-			{
-				if(gid < this._tilesets[i].gid) {
-					break;
-				}
-
-				tileset = this._tilesets[i];
-			}
-
-			this._dataInfo[id] = tileset.getCell(gid);
-		}
-	},
-
-	setGid: function(x, y, gid)
-	{
-		var id = x + (y * this.tilesX);
-		this._data[id] = gid;
-
-		if(this.parent.loaded) {
-			this._updateDataInfoCell(id);
-			this.renderer.needRender = true;
-		}
-	},
-
-	getGid: function(x, y) 
-	{
-		var id = x + (y * this.tilesX);
-
-		if(id < 0) {
-			return 0;
-		}
-		if(id >= this.totalTiles) {
-			return 0;
-		}
-
-		return this.data[id];
-	},
-
-	gridFromWorldPos: function(worldX, worldY) 
-	{
-		var gridX = Math.floor((worldX - this.volume.minX) / this.tileWidth);
-		var gridY = Math.floor((worldY - this.volume.minY) / this.tileHeight);
-		var id = gridX + (gridY * this.tilesX);
+		// var centerX = this.tilesX * halfWidth;
+		// var centerY = this.tilesY * halfHeight;
+		// var startPosX = cameraVolume.minX - centerX;
+		// var startPosY = cameraVolume.minY - centerY;
+		// var endPosX = cameraVolume.maxX - centerX + halfWidth;
+		// var endPosY = cameraVolume.maxY - centerY + halfHeight;
 		
-		if(id < 0) { 
-			return null;
+		// var minTileX = Math.floor(startPosX / halfWidth);
+		// var minTileY = Math.floor(startPosY / halfHeight);
+		// var maxTileX = Math.ceil(endPosX / halfWidth);
+		// var maxTileY = Math.ceil(endPosY / halfHeight);
+		// console.log(minTileX, minTileY, maxTileX, maxTileY);
+
+		// if(minTileX < 0) {
+
+		// }
+
+		if(this._dataFlags)
+		{		
+			for(var y = startTileY; y < this.tilesY; y++)
+			{
+				posX = -(y * halfWidth) + ((this.tilesX - 1) * halfWidth) + minX;
+				posY = (y * halfHeight) - halfHeight + minY;		
+				// posX = -(y * halfWidth);
+				// posY = y * halfHeight;
+
+				for(var x = startTileX; x < endTileX; x++)
+				{
+					info = this._dataInfo[id++];
+					if(info) 
+					{
+						ctx.drawImage(info.canvas, 
+							info.posX, info.posY, info.width, info.height, 
+							posX, posY, info.width, info.height);
+					}
+
+					posX += halfWidth;
+					posY += halfHeight;
+				}
+			}	
 		}
-		if(id >= this.totalTiles) {
-			return null;
+		else
+		{
+			//this.tilesY = 1;
+
+			for(var y = startTileY; y < this.tilesY; y++)
+			{
+				posX = -(y * halfWidth) + ((this.tilesX - 1) * halfWidth) +minX;
+				posY = (y * halfHeight) + minY;
+
+				// //posX = -(y * halfWidth);
+				// //posY = y * halfHeight;		
+
+				// posX = 0;
+				// posY = 0;		
+
+				for(var x = startTileX; x < endTileX; x++)
+				{
+					info = this._dataInfo[id++];
+					if(info) 
+					{
+						ctx.drawImage(info.canvas, 
+							info.posX, info.posY, info.width, info.height, 
+							posX, posY, info.width, info.height);
+					}
+
+					posX += halfWidth;
+					posY += halfHeight;
+				}
+			}			
 		}
 
-		return [ gridX, gridY ];
-	},
-
-	saveData: function()
-	{
-		if(!this.data) {
-			console.warn("(Entity.Tilemap.saveData): No data available for saving");
-			return;
-		}
-
-		if(!this.savedData) {
-			this.savedData = new Uint32Array(this.totalTiles);
-		}
-		else if(this.savedData.length !== this.totalTiles) {
-			this.savedData.length = this.totalTiles;
-		}
-
-		for(var n = 0; n < this.totalTiles; n++) {
-			this.savedData[n] = this.data[n];
-		}
-	},
-
-	restoreData: function()
-	{
-		if(!this.savedData) { 
-			console.warn("(Entity.Tilemap.restoreData): No saved data available");
-			return; 
-		}
-
-		if(this.savedData.length !== this.totalTiles) {
-			console.warn("(Entity.Tilemap.restoreData): Incompatible data saved");
-			this.savedData = null;
-			return; 
-		}
-
-		for(var n = 0; n < this.totalTiles; n++) {
-			this.data[n] = this.savedData[n];
-		}
-
-		this.updateFromData();
-	},
-
-	set data(data) 
-	{
-		this._data = data;
-
-		if(this.parent.flags & this.Flag.LOADED) {
-			this.updateFromData();
-		}
-	},
-
-	get data() {
-		return this._data;
-	},
-
-	//
-	name: "Undefined",
-	tilesX: 0,
-	tilesY: 0,
-	totalTiles: 0,
-	tileWidth: 0,
-	tileHeight: 0,
-	_data: null,
-	_dataInfo: null,
-	_dataFlags: null,
-
-	_tilesets: null,
-	_numTilesets: 0
+		//console.log(numDraw);
+	}
 });
 
 meta.class("Entity.Tilemap", "Entity.Geometry",
@@ -354,12 +493,13 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		});
 	},
 
-	create: function(tilesX, tilesY, tileWidth, tileHeight)
+	create: function(tilesX, tilesY, tileWidth, tileHeight, type)
 	{
 		this.tilesX = tilesX;
 		this.tilesY = tilesY;
 		this.tileWidth = tileWidth;
 		this.tileHeight = tileHeight;
+		this.type = type ? type : "orthogonal";
 
 		this.resize(tilesX * tileWidth, tilesY * tileHeight);
 
@@ -367,20 +507,32 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		this.detachAll();
 	},
 
-	createTileset: function(gid, texture, tileWidth, tileHeight)
+	createTileset: function(gid, texture, tileWidth, tileHeight, margin, spacing)
 	{
 		if(gid < 1) {
 			console.warn("(Entity.Tilemap.createTileset): gid argument should be 1 or larger number");
 			return;
 		}
 
-		var tileset = new meta.Tileset(this, gid, texture, tileWidth || 0, tileHeight || 0);
+		var tileset = new meta.Tileset(this, gid, texture, tileWidth || 0, tileHeight || 0, margin, spacing);
 		this.tilesets.push(tileset);
 	},
 
 	createLayer: function(tilesX, tilesY, data, name)
 	{
-		var layer = new Entity.TilemapLayer();
+		var layer;
+
+		switch(this.type)
+		{
+			case this.Type.ORTHOGONAL:
+				layer = new Entity.TilemapOrthoLayer();
+				break;
+
+			case this.Type.ISOMETRIC:
+				layer = new Entity.TilemapIsoLayer();
+				break;
+		}
+
 		layer.tilesX = tilesX;
 		layer.tilesY = tilesY;
 		layer.tileWidth = this.tileWidth;
@@ -399,9 +551,12 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 
 	finishLoading: function()
 	{
-		var num = this.children.length;
-		for(var n = 0; n < num; n++) {
-			this.children[n].updateFromData();
+		if(this.children)
+		{
+			var num = this.children.length;
+			for(var n = 0; n < num; n++) {
+				this.children[n].updateFromData();
+			}	
 		}
 
 		this.loaded = true;
@@ -449,7 +604,8 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 			parseInt(node.getAttribute("width")),
 			parseInt(node.getAttribute("height")),
 			parseInt(node.getAttribute("tilewidth")),
-			parseInt(node.getAttribute("tilewidth")));
+			parseInt(node.getAttribute("tileheight")),
+			node.getAttribute("orientation"));
 
 		var childNodes = node.childNodes;
 		var numNodes = childNodes.length;
@@ -458,13 +614,8 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 			node = childNodes[i];
 			if(node.nodeType !== 1) { continue; }
 
-			if(node.nodeName === "tileset") 
-			{
-				this.createTileset(
-					parseInt(node.getAttribute("firstgid")),
-					this.folderPath + node.childNodes[1].getAttribute("source"),
-					parseInt(node.getAttribute("tilewidth")),
-					parseInt(node.getAttribute("tileheight")));
+			if(node.nodeName === "tileset") {
+				this._parse_tmx_tileset(node);
 			}
 			else if(node.nodeName === "layer") {
 				this._parse_tmx_layer(node);
@@ -477,6 +628,37 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		if(this.numToLoad === 0) {
 			this.loaded = true;
 		}
+	},
+
+	_parse_tmx_tileset: function(node)
+	{
+		var imgPath = "";
+
+		var childNode;
+		var childNodes = node.childNodes;
+		var numNodes = childNodes.length;
+		for(var n = 0; n < numNodes; n++)
+		{
+			childNode = childNodes[n];
+			if(childNode.nodeType !== 1) { continue; }
+
+			if(childNode.nodeName === "image") {
+				imgPath = this.folderPath + childNode.getAttribute("source");
+			}
+		}
+
+		var spacingStr = node.getAttribute("spacing");
+		var spacing = spacingStr ? parseInt(spacingStr) : 0;
+
+		var marginStr = node.getAttribute("margin");
+		var margin = marginStr ? parseInt(marginStr) : 0;		
+
+		this.createTileset(
+			parseInt(node.getAttribute("firstgid")),
+			imgPath,
+			parseInt(node.getAttribute("tilewidth")),
+			parseInt(node.getAttribute("tileheight")),
+			margin, spacing);
 	},
 
 	_parse_tmx_layer: function(node)
@@ -493,10 +675,9 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 
 		var dataNode = node.firstElementChild;
 		var encoding = dataNode.getAttribute("encoding");
+		var data;
 
-		var n;
-		var num = tilesX * tilesY;
-		var data = new Uint32Array(num);
+		var num = this.tilesX * tilesY;
 
 		if(encoding)
 		{
@@ -509,21 +690,36 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 					console.warn("(Entity.Tilemap._parse_tmx): Layer resolution does not match with data size");
 					return;
 				}
+
+				data = new Uint32Array(num);
+				var num = tilesX * tilesY;
+				for(var n = 0; n < num; n++) {
+					data[n] = parseInt(strData[n]);
+				}				
+			}
+			else if(encoding === "base64")
+			{
+				var compression = dataNode.getAttribute("compression");
+				if(compression) {
+					console.warn("(Entity.Tilemap._parse_tmx): Unsupported compression - " + compression);
+					return;
+				}
+
+				data = meta.decodeBinaryBase64(dataNode.textContent);
 			}
 			else {
 				console.warn("(Entity.Tilemap._parse_tmx): Unsupported layer encoding used: " + encoding);
 				return;
-			}
-
-			for(n = 0; n < num; n++) {
-				data[n] = parseInt(strData[n]);
 			}
 		}
 		else
 		{
 			var id = 0;
 			var dataNodes = dataNode.childNodes;
+
 			num = dataNodes.length;
+			data = new Uint32Array(num);
+
 			for(n = 0; n < num; n++) 
 			{
 				node = dataNodes[n];
@@ -534,7 +730,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		}
 
 		var layer = this.createLayer(tilesX, tilesY, data, name);
-		layer.visible = visible;
+		layer.hidden = !visible;
 	},
 
 	getLayer: function(name)
@@ -556,11 +752,18 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		return null;
 	},
 
+	Type: {
+		UNKNOWN: "",
+		ORTHOGONAL: "orthogonal",
+		ISOMETRIC: "isometric",
+		HEXAGONAL: "hexagonal"
+	},
+
 	LayerFlag: {
 		FLIP_HORIZONTALLY: 0x80000000,
 		FLIP_VERTICALLY: 0x40000000,
 		FLIP_DIAGONALLY: 0x20000000
-	},
+	},	
 
 	//
 	tilesets: null,
@@ -572,15 +775,18 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 	tilesX: 0,
 	tilesY: 0,
 	tileWidth: 0,
-	tileHeight: 0
+	tileHeight: 0,
+	type: "orthogonal"
 });
 
-meta.Tileset = function(parent, gid, texture, tileWidth, tileHeight) 
+meta.Tileset = function(parent, gid, texture, tileWidth, tileHeight, margin, spacing) 
 {
 	this.parent = parent;
 	this.gid = gid;
 	this.tileWidth = tileWidth;
 	this.tileHeight = tileHeight;
+	this.margin = margin || 0;
+	this.spacing = spacing || 0;
 	this.tilesX = 0;
 	this.tilesY = 0;
 	this._texture = null;
@@ -635,9 +841,25 @@ meta.Tileset.prototype =
 			return cell;
 		}
 
-		var posX = (gid % this.tilesX) * this.tileWidth;
-		var posY = ((gid / this.tilesX) | 0) * this.tileHeight;
-		cell = new this.Cell(this._texture.canvas, posX, posY);
+		var x = (gid % this.tilesX);
+		var y = ((gid / this.tilesX) | 0);
+
+		var posX = x * this.tileWidth + (x * (this.margin * 2)) + this.margin;
+		var posY = y * this.tileHeight + (y * (this.margin * 2)) + this.margin;
+
+		var texWidth = this._texture.canvas.width;
+		var texHeight = this._texture.canvas.height;
+
+
+
+		// var posY = (texHeight - this.margin * 2 + this.spacing) / (this.tileHeight + this.spacing);
+		// var posX = (texWidth - this.margin * 2 + this.spacing) / (this.tileWidth + this.spacing);
+
+		//console.log(posX, posY)
+
+
+
+		cell = new this.Cell(this._texture.canvas, posX, posY, this.tileWidth, this.tileHeight);
 		this.cells[gid] = cell;
 
 		return cell;
@@ -678,9 +900,11 @@ meta.Tileset.prototype =
 		return this._texture;
 	},
 
-	Cell: function(canvas, posX, posY) {
+	Cell: function(canvas, posX, posY, width, height) {
 		this.canvas = canvas;
 		this.posX = posX;
 		this.posY = posY;
+		this.width = width;
+		this.height = height;
 	}
 };
