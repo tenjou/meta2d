@@ -109,6 +109,41 @@ meta._addResource = function(strType, data, folderPath, tag)
 	return resource;
 };
 
+meta.createAnim = function(name, frameTextures, path, fps)
+{
+	var resources = meta.resources.resources[Resource.Type.TEXTURE];
+
+	var checkTexture = resources[name];
+	if(checkTexture) {
+		console.warn("(meta.createAnim): There is already texture with a name - " + name);
+		return null;
+	}
+
+	var texture = new Resource.Texture();
+	texture.name = name; 
+	texture.createAnim(frameTextures, path);
+	texture.fps = fps || 9;
+
+	meta.resources.add(texture);
+
+	return texture;
+};
+
+meta.createAnimNames = function(baseName, min, max)
+{
+	var names = new Array(max - min);
+
+	for(var n = min; n <= max; n++) {
+		names[n] = baseName + n;
+	}
+
+	return names;
+};
+
+meta.randomItem = function(array) {
+	return array[meta.random.number(0, array.length - 1)];
+};
+
 meta.loadFile = function(file, tag)
 {
 	if(!(file instanceof File)) {
