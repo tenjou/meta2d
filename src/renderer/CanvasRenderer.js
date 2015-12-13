@@ -127,8 +127,6 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		var volume = entity.volume;
 		if(volume.width === 0 || volume.height === 0) { return; }
 
-		var anim = entity.anim;
-
 		if(entity.clipVolume) 
 		{
 			this.ctx.save();
@@ -163,7 +161,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		if(!volume.__transformed) 
 		{
 			if(texture.frames > 1) {
-				texture.drawFrame(this.ctx, Math.floor(volume.minX), Math.floor(volume.minY), anim._frame);
+				texture.drawFrame(this.ctx, Math.floor(volume.minX), Math.floor(volume.minY), entity.anim._frame);
 			}
 			else 
 			{
@@ -188,7 +186,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 				Math.floor(volume.x), Math.floor(volume.y));
 				
 			if(texture.frames > 1) {
-				texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, anim._frame);
+				texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, entity.anim._frame);
 			}
 			else 
 			{

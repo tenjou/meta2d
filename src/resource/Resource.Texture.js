@@ -211,6 +211,14 @@ meta.class("Resource.Texture", "Resource.Basic",
 		this.loaded = true;
 	},
 
+	onLoaded: function()
+	{
+		// calculate framesX and framesY if needed:
+		if(frames > 1 && (framesX === 1 || framesY === 1)) {
+			framesX = this.fullWidth 
+		}
+	},
+
 	_createCachedImg: function()
 	{
 		if(this._cachedImg) { return; }
@@ -221,6 +229,83 @@ meta.class("Resource.Texture", "Resource.Basic",
 		this._cachedCtx = this._cachedImg.getContext("2d");
 	},
 
+	convertToAnim: function(frameWidth, frameHeight, fps)
+	{
+		this.frameWidth = frameWidth;
+		this.frameHeight = frameHeight;	
+		this.fps = fps || 9;
+
+		if(!this._loaded) {
+			
+		}
+	},
+
+	createAnim: function(textures, path)
+	{
+		this._numToLoad = 0;
+
+		var texture, 
+			textureName, 
+			wildCard,
+			wildCardIndex;
+		var resources = meta.resources.resources[Resource.Type.TEXTURE];
+
+		var num = textures.length;
+		this.frameData = new Array(num);
+		this.frames = num;
+
+		for(var n = 0; n < num; n++) 
+		{
+			textureName = textures[n];
+
+			wildCardIndex = textureName.lastIndexOf(".");
+			if(wildCardIndex !== -1) {
+				wildCard = textureName.substr(wildCard + 1);
+				textureName = textureName.substr(0, wildCardIndex);
+			}
+			else {
+				wildCard = "";
+			}
+
+			texture = resources[textureName];
+			if(!texture) {
+			    texture = new Resource.Texture(path + textureName + wildCard);
+			}
+
+			if(!texture._loaded) {
+				this._numToLoad++;
+				texture.subscribe(this._handleTextureFrameEvent, this);
+			}
+
+			this.frameData[n] = new this.Frame(texture, 0, 0);
+		}
+
+		if(this._numToLoad === 0) {
+			this._prepareFromFrameData();
+		}
+	},
+
+	_prepareFromFrameData: function()
+	{
+		var frameTexture = this.frameData[0].texture;
+		this.width = frameTexture.width;
+		this.height = frameTexture.height;
+
+		this.loaded = true;
+	},
+
+	_handleTextureFrameEvent: function(data, eventType)
+	{
+		if(eventType === Resource.Event.LOADED) {
+			this._numToLoad--;
+			data.unsubscribe(this);
+		}
+
+		if(this._numToLoad === 0) {
+			this._prepareFromFrameData();
+		}
+	},	
+
 	/**
 	 * Resize texture.
 	 * @param width {Number} Width of texture.
@@ -230,7 +315,7 @@ meta.class("Resource.Texture", "Resource.Basic",
 	resize: function(width, height)
 	{
 		if(this.trueFullWidth === width && 
-			this.trueFullHeight === height) { return; }
+		   this.trueFullHeight === height) { return; }
 
 		this.resizeSilently(width, height);
 
@@ -249,17 +334,17 @@ meta.class("Resource.Texture", "Resource.Basic",
 		this.trueFullHeight = height;
 
 		if(this.animated) {
-			this.trueWidth = width / this.framesX;
-			this.trueHeight = height / this.framesY;
+			this.frameWidth = width / this.framesX;
+			this.frameHeight = height / this.framesY;
 		}
 		else {
-			this.trueWidth = width;
-			this.trueHeight = height;
+			this.frameWidth = width;
+			this.frameHeight = height;
 		}
 
 		var unitRatio = meta.engine.unitRatio;
-		this.width = (this.trueWidth * unitRatio) + 0.5 | 0;
-		this.height = (this.trueHeight * unitRatio) + 0.5 | 0;
+		this.width = (this.frameWidth * unitRatio) + 0.5 | 0;
+		this.height = (this.frameHeight * unitRatio) + 0.5 | 0;
 		this.fullWidth = (this.trueFullWidth * unitRatio) + 0.5 | 0;
 		this.fullHeight = (this.trueFullHeight * unitRatio) + 0.5 | 0;	
 		this.halfWidth = this.width * 0.5;
@@ -314,7 +399,7 @@ meta.class("Resource.Texture", "Resource.Basic",
 			ctx.drawImage(this.canvas, x, y);
 		}
 		else {
-			ctx.drawImage(this.ptr.canvas, this._x, this._y, this.trueWidth, this.trueHeight, x, y, this.trueWidth, this.trueHeight);
+			ctx.drawImage(this.ptr.canvas, this._x, this._y, this.frameWidth, this.frameHeight, x, y, this.frameWidth, this.frameHeight);
 		}
 	},
 
@@ -328,10 +413,16 @@ meta.class("Resource.Texture", "Resource.Basic",
 	 */
 	drawFrame: function(ctx, x, y, frame)
 	{
-		ctx.drawImage(this.canvas,
-			(this.trueWidth * (frame % this.framesX)),
-			(this.trueHeight * Math.floor(frame / this.framesX)),
-			this.trueWidth, this.trueHeight, x, y, this.trueWidth, this.trueHeight);
+		if(this.frameData) {
+			this.frameData[frame].texture.draw(ctx, x, y);
+		}
+		else
+		{
+			ctx.drawImage(this.canvas,
+				(this.frameWidth * (frame % this.framesX)),
+				(this.frameHeight * Math.floor(frame / this.framesX)),
+				this.frameWidth, this.frameHeight, x, y, this.frameWidth, this.frameHeight);
+		}
 	},
 
 	/**
@@ -377,7 +468,7 @@ meta.class("Resource.Texture", "Resource.Basic",
 				texture = texture._canvasCache;
 
 				this._loadCache = { name: "drawOver", texture: texture, x: x, y: y };
-				this.isLoaded = false;
+				this.loaded = false;
 				texture.subscribe(this.onTextureCacheEvent, this);
 				return;	
 			}		
@@ -397,7 +488,7 @@ meta.class("Resource.Texture", "Resource.Basic",
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._cachedImg);
 		}
 
-		this.isLoaded = true;		
+		this.loaded = true;		
 	},
 
 
@@ -407,13 +498,13 @@ meta.class("Resource.Texture", "Resource.Basic",
 	 */
 	generateAlphaMask: function()
 	{
-		if(!this._isLoaded) {
-			console.warn("[Resource.Texture.generateMask]:", "Texture is not loaded yet.");
+		if(!this._loaded) {
+			console.warn("(Resource.Texture.generateMask): Texture is not loaded yet.");
 			return;
 		}
 
 		if(this.textureType !== 0) {
-			console.warn("[Resource.Texture.generateMask]:", "Only canvas textures are supported currently.");
+			console.warn("([)Resource.Texture.generateMask): Only canvas textures are supported currently.");
 			return;
 		}
 
@@ -431,7 +522,7 @@ meta.class("Resource.Texture", "Resource.Basic",
 		}
 
 		alphaMask.ctx.putImageData(imgData, 0, 0);
-		alphaMask.isLoaded = true;
+		alphaMask.loaded = true;
 
 		return alphaMask;
 	},
@@ -461,7 +552,7 @@ meta.class("Resource.Texture", "Resource.Basic",
 	},
 
 	getData: function() {
-		return this.ctx.getImageData(0, 0, this.trueWidth, this.trueHeight).data;
+		return this.ctx.getImageData(0, 0, this.frameWidth, this.frameHeight).data;
 	},
 
 	getPixelAt: function(x, y) {
@@ -474,8 +565,16 @@ meta.class("Resource.Texture", "Resource.Basic",
 		this.resize(canvas.width, canvas.height);
 	},
 
+	//
 	TextureFlag: {
 		RESIZED: 1
+	},
+
+	Frame: function(texture, x, y)
+	{
+		this.texture = texture;
+		this.x = x;
+		this.y = y;
 	},
 
 	//
@@ -499,6 +598,7 @@ meta.class("Resource.Texture", "Resource.Basic",
 	frames: 1,
 	framesX: 1,
 	framesY: 1,
+	frameData: null,
 	
 	fromAtlas: false,
 
@@ -508,9 +608,7 @@ meta.class("Resource.Texture", "Resource.Basic",
 	_tmpCtx: null,
 	_cachedImg: null,
 	_cachedCtx: null,
-
-	_anim: null,
-	_frames: null,
+	_numToLoad: 0,
 
 	_loadCache: null,
 	_canvasCache: null
