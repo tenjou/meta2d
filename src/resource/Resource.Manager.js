@@ -11,9 +11,16 @@ meta.class("Resource.Manager",
 	{
 		this.onAdded = meta.createChannel(Resource.Event.ADDED);
 		this.onLoaded = meta.createChannel(Resource.Event.LOADED);
-		this.onLoadingStart = meta.createChannel(Resource.Event.LOADING_START)
+		this.onLoadingStart = meta.createChannel(Resource.Event.LOADING_START);
 		this.onLoadingEnd = meta.createChannel(Resource.Event.LOADING_END);
-		this.onLoadingUpdate = meta.createChannel(Resource.Event.LOADING_UPDATE)
+		this.onLoadingUpdate = meta.createChannel(Resource.Event.LOADING_UPDATE);
+
+		this.resources = {
+			1: [],
+			2: [],
+			3: [],
+			4: []
+		};
 
 		meta.audio = new Resource.AudioManager();
 
@@ -164,20 +171,12 @@ meta.class("Resource.Manager",
 	 * @param resource {Resource.Basic}
 	 */
 	loadSuccess: function(resource)
-	{
-		var subBuffer = this.resourcesInUse[resource.type];
-		if(!subBuffer) {
-			subBuffer = [];
-			this.resourcesInUse[resource.type] = subBuffer;
-		}
-		
+	{		
 		resource.currStep++;
 		this.numLoaded++;
 
 		resource.loading = false;
-		resource.inUse = true;
-		subBuffer.push(resource);
-
+		
 		this.onLoaded.emit(resource, Resource.Event.LOADED);
 		this._updateLoading();
 	},
@@ -324,8 +323,7 @@ meta.class("Resource.Manager",
 	_xhr: null,
 	_xhrOnSuccess: null,
 
-	resources: {},
-	resourcesInUse: {},
+	resources: null,
 	rootPath: "",
 
 	numLoaded: 0,

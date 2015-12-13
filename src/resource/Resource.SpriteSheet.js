@@ -301,7 +301,6 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 		}		
 	},
 
-
 	loadAtlas: function()
 	{
 		if(typeof(this.atlas) !== "object") {

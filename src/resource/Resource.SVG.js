@@ -190,10 +190,10 @@ meta.class("Resource.SVG", "Resource.Texture",
 		{
 			for(var y = 0; y < numY; y++) {
 				this.ctx.drawImage(texture.canvas, posX, posY);
-				posY += texture.trueHeight + offsetY;
+				posY += texture.frameHeight + offsetY;
 			}
 
-			posX += texture.trueWidth + offsetX;
+			posX += texture.frameWidth + offsetX;
 			posY = textureOffsetY;
 		}
 
@@ -240,10 +240,10 @@ meta.class("Resource.SVG", "Resource.Texture",
 		{
 			for(var y = 0; y < numY; y++) {
 				this.ctx.drawImage(texture.canvas, posX, posY);
-				posY += texture.trueHeight + offsetY;
+				posY += texture.frameHeight + offsetY;
 			}
 
-			posX += texture.trueWidth + offsetX;
+			posX += texture.frameWidth + offsetX;
 			posY = textureOffsetY;
 		}
 
