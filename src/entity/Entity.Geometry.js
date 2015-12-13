@@ -162,8 +162,6 @@ meta.class("Entity.Geometry",
 			this.view.detach(this);
 		}
 
-		this.onInactive();
-
 		if(this.onRemove) {
 			this.onRemove();
 		}		
