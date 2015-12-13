@@ -39,9 +39,10 @@ meta.component("Component.Anim",
 		}
 	},
 
-	play: function(loop) 
+	play: function(loop, fps) 
 	{
 		this.loop = loop || false;
+		this.fps = fps || this.texture.fps;
 
 		meta.renderer.addAnim(this);
 	},
