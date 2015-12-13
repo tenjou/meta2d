@@ -1,15 +1,5 @@
 "use strict";
 
-/**
- * @property id {number} Unique id.
- * @property type {Resource.Type} Resource type.
- * @property name {string} Name of resource.
- * @property path {string} Path to the resource.
- * @property chn {meta.Channel} Unique channel for passing events to users.
- * @property isLoaded {boolean} Setter/Getter. Flag if resource is loaded.
- * @property isLoading {boolean} Flag if resource is loading.
- * @property inUse {boolean} Flag if resource is in use.
- */
 meta.class("Resource.Basic", 
 {
 	init: function(data, tag) 
@@ -68,14 +58,20 @@ meta.class("Resource.Basic",
 		}
 	},
 
+	onLoaded: null,
 
 	set loaded(value)
 	{
 		if(value)
 		{
-			if(!this._loaded) {
+			if(!this._loaded) 
+			{
 				this._loaded = value;
 				this.emit(this, Resource.Event.LOADED);
+
+				if(this.onLoaded) {
+					this.onLoaded();
+				}
 			}
 			else {
 				this._loaded = value;
