@@ -127,34 +127,30 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 
 	_loadXML_Starling: function(node)
 	{
-		var texture = new Resource.Texture();
+		var texture = meta.resources.createTexture(node.getAttribute("name"));
 		texture.fromAtlas = true;
-		texture.ptr = this.texture;			
-		texture.name = node.getAttribute("name");
+		texture.ptr = this.texture;
 		texture.x = node.getAttribute("x");
 		texture.y = node.getAttribute("y");
 		texture.resize(node.getAttribute("width"), node.getAttribute("height"));
 		texture.loaded = true;
-		meta.resources.add(texture);	
 	},
 
 	_loadXML_genericXML: function(node)
 	{
-		var texture = new Resource.Texture();
+		var texture = meta.resources.createTexture(node.getAttribute("n"));
 		texture.fromAtlas = true;
 		texture.ptr = this.texture;			
-		texture.name = node.getAttribute("n");
 		texture.x = node.getAttribute("x");
 		texture.y = node.getAttribute("y");
 		texture.resize(node.getAttribute("w"), node.getAttribute("h"));
-		texture.loaded = true;
-		meta.resources.add(texture);	
+		texture.loaded = true;	
 	},
 
 	loadPlist: function(plist)
 	{
 		if(!plist) {
-			console.warn("[Resource.SpriteSheet.loadPlist]:", "Invalid Plist file.");
+			console.warn("(Resource.SpriteSheet.loadPlist) Invalid Plist file.");
 			return false;
 		}
 
@@ -212,7 +208,7 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 
 	_loadPlist_frame: function(node, name)
 	{
-		var texture = new Resource.Texture();
+		var texture = meta.resources.createTexture(name);
 		texture.fromAtlas = true;
 		texture.ptr = this.texture;
 		texture.name = name;
@@ -234,8 +230,7 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 					texture.x = parseInt(data[0]);
 					texture.y = parseInt(data[1]);
 					texture.resize(parseInt(data[2]), parseInt(data[3]))
-					texture.loaded = true;
-					meta.resources.add(texture);						
+					texture.loaded = true;					
 					return;
 				}
 			}
@@ -245,7 +240,7 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 	loadJSON: function(json)
 	{
 		if(!json) {
-			console.warn("[Resource.SpriteSheet.loadFromJSON]:", "Invalid JSON file.");
+			console.warn("(Resource.SpriteSheet.loadFromJSON) Invalid JSON file.");
 			return false;
 		}
 
@@ -267,17 +262,15 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 		for(var i = 0; i < numFrames; i++) 
 		{
 			frame = frames[i];
-			texture = new Resource.Texture();
+			texture = meta.resources.createTexture(frame.filename);
 			texture.fromAtlas = true;
 			texture.ptr = this.texture;			
-			texture.name = frame.filename;
 
 			frame = frame.frame;
 			texture.x = frame.x;
 			texture.y = frame.y
 			texture.resize(frame.w, frame.h);
-			texture.loaded = true;
-			meta.resources.add(texture);	
+			texture.loaded = true;	
 		}		
 	},
 
@@ -289,15 +282,13 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 		{
 			frame = frames[key].frame;
 
-			texture = new Resource.Texture();
+			texture = meta.resources.createTexture(key);
 			texture.fromAtlas = true;
-			texture.ptr = this.texture;			
-			texture.name = key;
+			texture.ptr = this.texture;
 			texture.x = frame.x;
 			texture.y = frame.y
 			texture.resize(frame.w, frame.h);
-			texture.loaded = true;
-			meta.resources.add(texture);	
+			texture.loaded = true;	
 		}		
 	},
 
@@ -327,16 +318,14 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 			item.height = item.height || this.params.height || 1;	
 			frames.push(item);			
 
-			texture = new Resource.Texture();
+			texture = meta.resources.createTexture(name);
 			texture.fromAtlas = true;
 			texture.ptr = this.texture;			
-			texture.name = name;
 			texture.x = item.x;
 			texture.y = item.y;
 			texture.resize(item.width, item.height);
 			texture.numFrames = item.numFrames || this.params.numFrames || 1;
 			texture.loaded = true;
-			meta.resources.add(texture);
 		}
 
 		this.texture._frames = frames;

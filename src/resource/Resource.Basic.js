@@ -58,8 +58,6 @@ meta.class("Resource.Basic",
 		}
 	},
 
-	onLoaded: null,
-
 	set loaded(value)
 	{
 		if(value)
@@ -68,10 +66,6 @@ meta.class("Resource.Basic",
 			{
 				this._loaded = value;
 				this.emit(this, Resource.Event.LOADED);
-
-				if(this.onLoaded) {
-					this.onLoaded();
-				}
 			}
 			else {
 				this._loaded = value;

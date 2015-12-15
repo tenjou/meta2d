@@ -144,7 +144,7 @@ meta.class("Resource.SVG", "Resource.Texture",
 	tileAuto: function(texture, center, offsetX, offsetY)
 	{
 		if(typeof(texture) === "string") {
-			var newTexture = meta.resources.getTexture(texture);
+			var newTexture = meta.resources.textures[texture];
 			if(!newTexture) {
 				console.warn("(Resource.Texture.tileAuto): Could not get texture with name: " + texture);
 				return;							
@@ -203,7 +203,7 @@ meta.class("Resource.SVG", "Resource.Texture",
 	tile: function(texture, numX, numY, offsetX, offsetY)
 	{
 		if(typeof(texture) === "string") {
-			var newTexture = meta.resources.getTexture(texture);
+			var newTexture = meta.resources.textures[texture];
 			if(!newTexture) {
 				console.warn("(Resource.Texture.tile): Could not get texture with name: " + texture);
 				return;							
