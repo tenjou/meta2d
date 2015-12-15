@@ -3,9 +3,10 @@
 meta.class("Entity.TilemapLayer", "Entity.Geometry",
 {
 	updateFromData: function()
-	{
-		this.totalTiles = this.tilesX * this.tilesY;
-		this.resize(this.tilesX * this.tileWidth, this.tilesY * this.tileHeight);
+	{		
+		this.resize(
+			this.tilesX * this.tileWidth + this.tileOffsetX, 
+			this.tilesY * this.tileHeight + this.tileOffsetY);
 
 		var num = this._data.length;
 
@@ -118,22 +119,6 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 		return this._dataFlags[id];
 	},
 
-	gridFromWorldPos: function(worldX, worldY) 
-	{
-		var gridX = Math.floor((worldX - this.volume.minX) / this.tileWidth);
-		var gridY = Math.floor((worldY - this.volume.minY) / this.tileHeight);
-		var id = gridX + (gridY * this.tilesX);
-		
-		if(id < 0) { 
-			return null;
-		}
-		if(id >= this.totalTiles) {
-			return null;
-		}
-
-		return [ gridX, gridY ];
-	},
-
 	saveData: function()
 	{
 		if(!this.data) {
@@ -173,9 +158,17 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 		this.updateFromData();
 	},
 
+	tileOffset: function(x, y)
+	{
+		this.tileOffsetX = x;
+		this.tileOffsetY = y;
+		this.offset(x, -y);
+	},
+
 	set data(data) 
 	{
 		this._data = data;
+		this.totalTiles = this.tilesX * this.tilesY;		
 
 		if(this.parent.flags & this.Flag.LOADED) {
 			this.updateFromData();
@@ -188,11 +181,12 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 
 	//
 	name: "Undefined",
-	tilesX: 0,
-	tilesY: 0,
+	tilesX: 0, tilesY: 0,
 	totalTiles: 0,
-	tileWidth: 0,
-	tileHeight: 0,
+	tileWidth: 0, tileHeight: 0,
+	tileHalfWidth: 0, tileHalfHeight: 0,
+	tileOffsetX: 0, tileOffsetY: 0,
+
 	_data: null,
 	_dataInfo: null,
 	_dataFlags: null,
@@ -203,6 +197,14 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 
 meta.class("Entity.TilemapOrthoLayer", "Entity.TilemapLayer",
 {
+	gridFromPos: function(worldX, worldY) 
+	{
+		var gridX = Math.floor((worldX - this.volume.minX) / this.tileWidth);
+		var gridY = Math.floor((worldY - this.volume.minY) / this.tileHeight);
+
+		return [ gridX, gridY ];
+	},
+
 	draw: function(ctx) 
 	{
 		if((this.parent.flags & this.Flag.LOADED) === 0) { return; }
@@ -351,6 +353,17 @@ meta.class("Entity.TilemapOrthoLayer", "Entity.TilemapLayer",
 
 meta.class("Entity.TilemapIsoLayer", "Entity.TilemapLayer",
 {
+	gridFromPos: function(worldX, worldY) 
+	{
+		var adjScreenX = worldX - (this.tilesX * this.tileHalfWidth) - (this.volume.x + this.offsetX);
+		var adjScreenY = worldY - (this.volume.y - this.offsetY);
+
+		var gridX = Math.floor(((adjScreenY / this.tileHalfHeight) + (adjScreenX / this.tileHalfWidth)) / 2);
+		var gridY = Math.floor(((adjScreenY / this.tileHalfHeight) - (adjScreenX / this.tileHalfWidth)) / 2);
+
+		return [ gridX, gridY ];
+	},
+
 	draw: function(ctx) 
 	{
 		if((this.parent.flags & this.Flag.LOADED) === 0) { return; }
@@ -362,10 +375,10 @@ meta.class("Entity.TilemapIsoLayer", "Entity.TilemapLayer",
 		var startTileY = 0;
 		var endTileY = this.tilesY;
 
-		var minX = Math.floor(this.volume.minX + (startTileX * this.tileWidth));
-		var minY = Math.floor(this.volume.minY + (startTileY * this.tileHeight));
-		// minX = 0;
-		// minY = 0;
+		// var minX = Math.floor(this.volume.minX + (startTileX * this.tileWidth));
+		// var minY = Math.floor(this.volume.minY + (startTileY * this.tileHeight));
+		var minX = 0;
+		var minY = this.offsetY;
 
 		var id = 0, info;
 		var posX = minX | 0;
@@ -398,6 +411,12 @@ meta.class("Entity.TilemapIsoLayer", "Entity.TilemapLayer",
 
 		// }
 
+		var offsetX = -1;
+		var offsetY = 1;
+
+		offsetX = 0;
+		offsetY = 0;
+
 		if(this._dataFlags)
 		{		
 			for(var y = startTileY; y < this.tilesY; y++)
@@ -425,11 +444,12 @@ meta.class("Entity.TilemapIsoLayer", "Entity.TilemapLayer",
 		else
 		{
 			//this.tilesY = 1;
+			//console.log(this._dataInfo[2]);
 
 			for(var y = startTileY; y < this.tilesY; y++)
 			{
-				posX = -(y * halfWidth) + ((this.tilesX - 1) * halfWidth) +minX;
-				posY = (y * halfHeight) + minY;
+				posX = (this.tilesX * halfWidth) - (y * halfWidth) - halfWidth;
+				posY = (y * halfHeight) + this.tileOffsetY;
 
 				// //posX = -(y * halfWidth);
 				// //posY = y * halfHeight;		
@@ -437,18 +457,18 @@ meta.class("Entity.TilemapIsoLayer", "Entity.TilemapLayer",
 				// posX = 0;
 				// posY = 0;		
 
-				for(var x = startTileX; x < endTileX; x++)
+				for(var x = startTileX; x < this.tilesX; x++)
 				{
 					info = this._dataInfo[id++];
 					if(info) 
 					{
 						ctx.drawImage(info.canvas, 
 							info.posX, info.posY, info.width, info.height, 
-							posX, posY, info.width, info.height);
+							posX, posY - info.height + this.tileHeight, info.width, info.height);
 					}
 
-					posX += halfWidth;
-					posY += halfHeight;
+					posX += halfWidth + offsetX;
+					posY += halfHeight + offsetY;
 				}
 			}			
 		}
@@ -537,7 +557,8 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		layer.tilesY = tilesY;
 		layer.tileWidth = this.tileWidth;
 		layer.tileHeight = this.tileHeight;
-		layer.resize(tilesX * this.tileWidth, tilesY * this.tileHeight);
+		layer.tileHalfWidth = this.tileWidth * 0.5;
+		layer.tileHalfHeight = this.tileHeight * 0.5;
 		this.attach(layer);
 
 		layer.data = data;
@@ -551,11 +572,30 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 
 	finishLoading: function()
 	{
+		var tileOffsetY = 0;
+
+		var tileset, tilesetOffsetY;
+		var num = this.tilesets.length;
+		for(var n = 0; n < num; n++)
+		{
+			tileset = this.tilesets[n];
+			tilesetOffsetY = tileset.tileHeight - this.tileHeight;
+			if(tilesetOffsetY > tileOffsetY) {
+				tileOffsetY = tilesetOffsetY;
+			}
+		}
+
 		if(this.children)
 		{
-			var num = this.children.length;
-			for(var n = 0; n < num; n++) {
-				this.children[n].updateFromData();
+			num = this.children.length;
+			for(n = 0; n < num; n++) 
+			{
+				var child = this.children[n];
+				if(child instanceof Entity.TilemapLayer)
+				{
+					child.tileOffset(0, tileOffsetY);
+					child.updateFromData();
+				}
 			}	
 		}
 
@@ -843,21 +883,8 @@ meta.Tileset.prototype =
 
 		var x = (gid % this.tilesX);
 		var y = ((gid / this.tilesX) | 0);
-
 		var posX = x * this.tileWidth + (x * (this.margin * 2)) + this.margin;
 		var posY = y * this.tileHeight + (y * (this.margin * 2)) + this.margin;
-
-		var texWidth = this._texture.canvas.width;
-		var texHeight = this._texture.canvas.height;
-
-
-
-		// var posY = (texHeight - this.margin * 2 + this.spacing) / (this.tileHeight + this.spacing);
-		// var posX = (texWidth - this.margin * 2 + this.spacing) / (this.tileWidth + this.spacing);
-
-		//console.log(posX, posY)
-
-
 
 		cell = new this.Cell(this._texture.canvas, posX, posY, this.tileWidth, this.tileHeight);
 		this.cells[gid] = cell;
@@ -879,7 +906,7 @@ meta.Tileset.prototype =
 			}
 			var imgName = src.substr(slashIndex + 1, wildcardIndex - slashIndex - 1);
 
-			var texture = meta.resources.getTexture(imgName);
+			var texture = meta.resources.textures[imgName];
 			if(!texture) {
 				texture = new Resource.Texture(src);
 			}
@@ -887,8 +914,9 @@ meta.Tileset.prototype =
 			this._texture = texture;
 		}
 
-		if(!this._texture.loaded) {
+		if(!this._texture._loaded) {
 			this.parent.numToLoad++;
+			this.parent.flags &= ~this.parent.Flag.LOADED;
 			this._texture.subscribe(this._onTextureEvent, this);
 		}
 		else {
