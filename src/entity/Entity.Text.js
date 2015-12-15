@@ -164,7 +164,7 @@ meta.class("Entity.Text", "Entity.Geometry",
 
 	set font(font) 
 	{
-		var fontResource = meta.resources.getResource(font, Resource.Type.FONT);
+		var fontResource = meta.resources.fonts[font];
 		if(!fontResource) {
 			this._font = font;
 			this._bitmapFont = null;
