@@ -13,128 +13,16 @@ meta.emptyFunc = function() {};
  */
 meta.emptyFuncParam = function(param) {};
 
-/**
- * Load textures.
- * @param buffer {Array|String} Buffer with texture sources.
- * @param folderPath {String=} Path applied to texture sources.
- */
-meta.loadTexture = function(buffer, folderPath, tag)
-{
-	if(!meta._preloadResource("Texture", buffer, folderPath, tag)) {
-		console.warn("(meta.preloadTexture) Unsupported parameter was passed.");
-	}
-};
-
-/**
- * Load sounds.
- * @param buffer {Array|String} Buffer with sound sources.
- * @param folderPath {String=} Path applied to sound sources.
- */
-meta.loadSound = function(buffer, folderPath, tag)
-{
-	if(!meta._preloadResource("Sound", buffer, folderPath, tag)) {
-		console.warn("(meta.loadSound) Unsupported parameter was passed.");
-	}
-};
-
-/**
- * Load spritesheets. 
- * @param buffer {Array|String} Buffer with sound sources.
- * @param folderPath {String=} Path applied to sound sources.
- */
-meta.loadSpriteSheet = function(buffer, folderPath, tag)
-{
-	if(!meta._preloadResource("SpriteSheet", buffer, folderPath, tag)) {
-		console.warn("(meta.loadSpriteSheet) Unsupported parameter was passed.");
-	}
-};
-
-/**
- * Load bitmap fonts.
- * @param buffer {Array|String} Buffer with sound sources.
- * @param folderPath {String=} Path applied to sound sources.
- */
-meta.loadFont = function(buffer, folderPath, tag)
-{
-	if(!meta._preloadResource("Font", buffer, folderPath, tag)) {
-		console.warn("(meta.loadFont) Unsupported parameter was passed.");
-	}
-};
-
-meta._preloadResource = function(strType, buffer, folderPath, tag)
-{
-	if(folderPath)
-	{
-		var slashIndex = folderPath.lastIndexOf("/");
-		if(slashIndex !== folderPath.length - 1) {
-			folderPath += "/";
-		}
-	}
-	else {
-		folderPath = "";
-	}
-
-	if(buffer instanceof Array)
-	{
-		var numResources = buffer.length;
-		for(var i = 0; i < numResources; i++) {
-			meta._addResource(strType, buffer[i], folderPath, tag);
-		}
-	}
-	else if(typeof(buffer) === "object" || typeof(buffer) === "string") {
-		meta._addResource(strType, buffer, folderPath, tag);
-	}
-	else {
-		return false;
-	}
-
-	return true;
-};
-
-meta._addResource = function(strType, data, folderPath, tag)
-{
-	var resource;
-
-	if(typeof(data) === "object") 
-	{
-		if(data.path) {
-			data.path = folderPath + data.path;
-		}
-		resource = new Resource[strType](data, tag);
-	}
-	else {
-		resource = new Resource[strType](folderPath + data, tag);
-	};
-
-	return resource;
-};
-
-meta.createAnim = function(name, frameTextures, path, fps)
-{
-	var resources = meta.resources.resources[Resource.Type.TEXTURE];
-
-	var checkTexture = resources[name];
-	if(checkTexture) {
-		console.warn("(meta.createAnim): There is already texture with a name - " + name);
-		return null;
-	}
-
-	var texture = new Resource.Texture();
-	texture.name = name; 
-	texture.createAnim(frameTextures, path);
-	texture.fps = fps || 9;
-
-	meta.resources.add(texture);
-
-	return texture;
-};
-
-meta.createAnimNames = function(baseName, min, max)
+meta.enumNames = function(baseName, mask, min, max)
 {
 	var names = new Array(max - min);
 
+	var maskLength = mask.length;
+	var numbers;
+
 	for(var n = min; n <= max; n++) {
-		names[n] = baseName + n;
+		numbers = Math.floor(n / 10);
+		names[n] = baseName + mask.substr(0, maskLength - numbers - 1) + n;
 	}
 
 	return names;
