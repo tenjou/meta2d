@@ -855,13 +855,16 @@ meta.class("Entity.Geometry",
 		else if(event === resEvent.UNLOADED) {
 			this.loaded = false;
 		}
+		else if(event === resEvent.REMOVED) {
+			this.texture = null;
+		}
 
 		this.updateFromTexture();
 	},
 
 	_onLoadingEnd: function(data, event)
 	{
-		var texture = meta.resources.getTexture(this._textureName);
+		var texture = meta.resources.textures[this._textureName];
 		if(!texture) {
 			console.warn("(Entity.Geometry) Unavailable texture - " + this._textureName);
 		}
@@ -929,7 +932,7 @@ meta.class("Entity.Geometry",
 		{
 			if(typeof(texture) === "string") 
 			{
-				this._texture = meta.resources.getTexture(texture);
+				this._texture = meta.resources.textures[texture];
 				if(!this._texture) 
 				{
 					if(meta.resources.loading) {
@@ -1058,19 +1061,22 @@ meta.class("Entity.Geometry",
 
 		entity.parent = this;
 
-		if(!this.children) {
-			this.children = [ entity ];
-			this._updateScale();
-		}
-		else 
+		if(!this.children) 
 		{
-			this.children.push(entity);	
+			this.children = [ entity ];
 
-			if((entity.flags & this.Flag.IGNORE_PARENT_POS) === 0) {
-				entity._parentX = this.volume.x - this.volume.pivotPosX - this.offsetPosX;
-				entity._parentY = this.volume.y - this.volume.pivotPosY - this.offsetPosY;
-				entity.updateTotalOffset();
+			if(this.scaleX !== 1 || this.scaleY !== 1) {
+				this.updateScale();
 			}
+		}
+		else {
+			this.children.push(entity);	
+		}
+
+		if((entity.flags & this.Flag.IGNORE_PARENT_POS) === 0) {
+			entity._parentX = this.volume.x - this.volume.pivotPosX - this.offsetPosX;
+			entity._parentY = this.volume.y - this.volume.pivotPosY - this.offsetPosY;
+			entity.updateTotalOffset();
 		}
 		
 		this.updateZ();
@@ -1570,7 +1576,7 @@ meta.class("Entity.Geometry",
 		ACTIVE: 1 << 4,
 		INSTANCE_ACTIVE: 1 << 5,
 		VISIBILE: 1 << 6,
-		// 7
+		ROOT_HOLDER: 1 << 7,
 		UPDATING: 1 << 8,
 		REMOVED: 1 << 9,
 		IGNORE_PARENT_POS: 1 << 10,
