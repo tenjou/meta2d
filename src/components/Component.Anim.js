@@ -41,6 +41,11 @@ meta.component("Component.Anim",
 
 	play: function(loop, fps) 
 	{
+		if(!this.texture) {
+			console.warn("(Component.Anim.play) Invalid texture");
+			return;
+		}
+
 		this.loop = loop || false;
 		this.fps = fps || this.texture.fps;
 
