@@ -31,6 +31,8 @@ Resource.Event =
 	 */	
 	ADDED: "res-added",
 
+	REMOVED: "res-removed",
+
 	/** */
 	LOADING_START: "res-loading-started",
 
@@ -50,23 +52,23 @@ Resource.Type =
 	/**
 	 * Basic resource: JSON and undefined resources loaded through Ajax.
 	 */
-	BASIC: 0,
+	BASIC: 1,
 	/**
 	 * Texture resource.
 	 */
-	TEXTURE: 1,
+	TEXTURE: 2,
 	/**
 	 * Sound resource.
 	 */
-	SOUND: 2,
+	SOUND: 3,
 	/**
 	 * Sprite sheet.
 	 */
-	SPRITE_SHEET: 3,
+	SPRITE_SHEET: 4,
 	/**
 	 * Font.
 	 */
-	FONT: 4	
+	FONT: 5
 };
 
 /**

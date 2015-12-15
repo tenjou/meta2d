@@ -63,9 +63,8 @@ meta.class("Resource.Texture", "Resource.Basic",
 		}
 	},
 
-	remove: function()
-	{
-
+	remove: function() {
+		meta.resources.remove(this);
 	},
 
 	/**
@@ -211,11 +210,22 @@ meta.class("Resource.Texture", "Resource.Basic",
 		this.loaded = true;
 	},
 
-	onLoaded: function()
+	calcFrame: function()
 	{
-		// calculate framesX and framesY if needed:
-		if(frames > 1 && (framesX === 1 || framesY === 1)) {
-			framesX = this.fullWidth 
+		if(this.animated) 
+		{
+			if(this.frames > 1 && (this.framesX === 1 && this.framesY === 1)) {
+				this.framesX = this.trueFullWidth / this.frameWidth;
+				this.framesY = this.trueFullHeight / this.frameHeight;
+			}
+			else {
+				this.frameWidth = this.trueFullWidth / this.framesX;
+				this.frameHeight = this.trueFullHeight / this.framesY;
+			}
+		}
+		else {
+			this.frameWidth = this.trueFullWidth;
+			this.frameHeight = this.trueFullHeight;
 		}
 	},
 
@@ -229,18 +239,20 @@ meta.class("Resource.Texture", "Resource.Basic",
 		this._cachedCtx = this._cachedImg.getContext("2d");
 	},
 
-	convertToAnim: function(frameWidth, frameHeight, fps)
+	convertToAnim: function(frameWidth, frameHeight, frames, fps)
 	{
 		this.frameWidth = frameWidth;
 		this.frameHeight = frameHeight;	
+		this.frames = frames;
 		this.fps = fps || 9;
+		this.animated = true;
 
-		if(!this._loaded) {
-			
+		if(this._loaded) {
+			this.calcFrame();
 		}
 	},
 
-	createAnim: function(textures, path)
+	createAnim: function(frameNames)
 	{
 		this._numToLoad = 0;
 
@@ -248,15 +260,15 @@ meta.class("Resource.Texture", "Resource.Basic",
 			textureName, 
 			wildCard,
 			wildCardIndex;
-		var resources = meta.resources.resources[Resource.Type.TEXTURE];
+		var textures = meta.resources.textures;
 
-		var num = textures.length;
+		var num = frameNames.length;
 		this.frameData = new Array(num);
 		this.frames = num;
 
 		for(var n = 0; n < num; n++) 
 		{
-			textureName = textures[n];
+			textureName = frameNames[n];
 
 			wildCardIndex = textureName.lastIndexOf(".");
 			if(wildCardIndex !== -1) {
@@ -267,7 +279,52 @@ meta.class("Resource.Texture", "Resource.Basic",
 				wildCard = "";
 			}
 
-			texture = resources[textureName];
+			texture = textures[textureName];
+			if(!texture) {
+			    texture = meta.resources.createTexture(textureName);
+			}
+
+			if(!texture._loaded) {
+				texture.subscribe(this._handleTextureFrameEvent, this);
+				this._numToLoad++;
+			}
+
+			this.frameData[n] = new this.Frame(texture, 0, 0);
+		}
+
+		if(this._numToLoad === 0) {
+			this._prepareFromFrameData();
+		}
+	},
+
+	createAnimEx: function(frameNames, path)
+	{
+		this._numToLoad = 0;
+
+		var texture, 
+			textureName, 
+			wildCard,
+			wildCardIndex;
+		var textures = meta.resources.textures;
+
+		var num = frameNames.length;
+		this.frameData = new Array(num);
+		this.frames = num;
+
+		for(var n = 0; n < num; n++) 
+		{
+			textureName = frameNames[n];
+
+			wildCardIndex = textureName.lastIndexOf(".");
+			if(wildCardIndex !== -1) {
+				wildCard = textureName.substr(wildCard + 1);
+				textureName = textureName.substr(0, wildCardIndex);
+			}
+			else {
+				wildCard = "";
+			}
+
+			texture = textures[textureName];
 			if(!texture) {
 			    texture = new Resource.Texture(path + textureName + wildCard);
 			}
@@ -333,14 +390,7 @@ meta.class("Resource.Texture", "Resource.Basic",
 		this.trueFullWidth = width;
 		this.trueFullHeight = height;
 
-		if(this.animated) {
-			this.frameWidth = width / this.framesX;
-			this.frameHeight = height / this.framesY;
-		}
-		else {
-			this.frameWidth = width;
-			this.frameHeight = height;
-		}
+		this.calcFrame();
 
 		var unitRatio = meta.engine.unitRatio;
 		this.width = (this.frameWidth * unitRatio) + 0.5 | 0;
@@ -398,8 +448,11 @@ meta.class("Resource.Texture", "Resource.Basic",
 		if(!this.fromAtlas) {
 			ctx.drawImage(this.canvas, x, y);
 		}
-		else {
-			ctx.drawImage(this.ptr.canvas, this._x, this._y, this.frameWidth, this.frameHeight, x, y, this.frameWidth, this.frameHeight);
+		else 
+		{
+			ctx.drawImage(this.ptr.canvas, 
+				this.x, this.y, this.fullWidth, this.fullHeight, 
+				x, y, this.fullWidth, this.fullHeight);
 		}
 	},
 
@@ -448,7 +501,7 @@ meta.class("Resource.Texture", "Resource.Basic",
 
 		if(typeof(texture) === "string") 
 		{
-			var obj = meta.getTexture(texture);
+			var obj = meta.resources.textures[texture];
 			if(!obj) {
 				console.warn("(Resource.Texture.drawOver) No such texture with name - " + texture);
 				return;
@@ -590,6 +643,7 @@ meta.class("Resource.Texture", "Resource.Basic",
 	width: 0, height: 0,
 	_width: 0, _height: 0,
 	fullWidth: 0, fullHeight: 0,
+	trueFullWidth: 0, trueFullHeight: 0,
 	_widthRatio: 0, _heightRatio: 0,
 	offsetX: 0, offsetY: 0,
 	unitRatio: 1,

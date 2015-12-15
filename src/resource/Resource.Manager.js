@@ -10,17 +10,21 @@ meta.class("Resource.Manager",
 	init: function()
 	{
 		this.onAdded = meta.createChannel(Resource.Event.ADDED);
+		this.onRemoved = meta.createChannel(Resource.Event.REMOVED);
 		this.onLoaded = meta.createChannel(Resource.Event.LOADED);
 		this.onLoadingStart = meta.createChannel(Resource.Event.LOADING_START);
 		this.onLoadingEnd = meta.createChannel(Resource.Event.LOADING_END);
 		this.onLoadingUpdate = meta.createChannel(Resource.Event.LOADING_UPDATE);
 
-		this.resources = {
-			1: [],
-			2: [],
-			3: [],
-			4: []
-		};
+		this.textures = {};
+		this.spriteSheets = {};
+		this.fonts = {};
+		this.sounds = {};
+		this.data = [];
+		this.data[Resource.Type.TEXTURE] = this.textures;
+		this.data[Resource.Type.SPRITE_SHEET] = this.spriteSheets;
+		this.data[Resource.Type.FONT] = this.fonts;
+		this.data[Resource.Type.SOUND] = this.sounds;		
 
 		meta.audio = new Resource.AudioManager();
 
@@ -45,12 +49,6 @@ meta.class("Resource.Manager",
 		}
 		resource.flags |= resource.Flag.ADDED;
 
-		var subBuffer = this.resources[resource.type];
-		if(!subBuffer) {
-			subBuffer = {};
-			this.resources[resource.type] = subBuffer;
-		}
-
 		// If no name is specified take it from the source.
 		var path = resource.path;
 		if(resource.name === "unknown" && path)
@@ -67,14 +65,16 @@ meta.class("Resource.Manager",
 			}
 		}
 
-		if(subBuffer[resource.name])
+		var buffer = this.data[resource.type];
+
+		if(buffer[resource.name])
 		{
 			console.warn("(Resource.Manager.add) There is already a resource(" + 
 				meta.enumToString(Resource.Type, resource.type) + ") added with a name: " + resource.name);
 			return null;
 		}
 
-		subBuffer[resource.name] = resource;
+		buffer[resource.name] = resource;
 
 		this.onAdded.emit(resource, Resource.Event.ADDED);
 
@@ -87,22 +87,77 @@ meta.class("Resource.Manager",
 	 */
 	remove: function(resource)
 	{
-		var subBuffer = this.resources[resource.type];
-		if(!subBuffer)
+		var buffer = this.data[resource.type];
+
+		if(!buffer[resource.name])
 		{
 			console.warn("(Resource.Manager.remove) Resource(" + 
 				meta.enumToString(Resource.Type, resource.type) + ")(" + resource.name + ") is not added to the manager.");
 			return;
 		}
 
-		if(!subBuffer[resource.name])
+		delete buffer[resource.name];
+
+		resource.emit(this, Resource.Event.REMOVED);
+		this.onRemoved.emit(resource, Resource.Event.REMOVED);
+	},
+
+	createTexture: function(name)
+	{
+		var texture;
+
+		if(name) 
 		{
-			console.warn("(Resource.Manager.remove) Resource(" + 
-				meta.enumToString(Resource.Type, resource.type) + ")(" + resource.name + ") is not added to the manager.");
-			return;
+			texture = this.textures[name];
+			if(!texture) {
+				texture = new Resource.Texture();
+				texture.name = name;
+			}
+		}
+		else {
+			texture = new Resource.Texture();
 		}
 
-		subBuffer[resource.name] = null;
+		texture._loaded = false;
+		this.add(texture);
+
+		return texture;
+	},
+
+	createAnim: function(name, frameNames, fps)
+	{
+		var textures = meta.resources.textures;
+
+		if(textures[name]) {
+			console.warn("(meta.createAnim) There is already texture with a name - " + name);
+			return null;
+		}
+
+		var texture = new Resource.Texture();
+		texture.name = name; 
+		texture.createAnim(frameNames);
+		texture.fps = fps || 9;
+		meta.resources.add(texture);
+
+		return texture;
+	},
+
+	createAnimEx: function(name, frameNames, path, fps)
+	{
+		var textures = meta.resources.textures;
+
+		if(textures[name]) {
+			console.warn("(meta.createAnimEx) There is already texture with a name - " + name);
+			return null;
+		}
+
+		var texture = new Resource.Texture();
+		texture.name = name; 
+		texture.createAnimEx(frameNames, path);
+		texture.fps = fps || 9;
+		meta.resources.add(texture);
+
+		return texture;
 	},
 
 	_updateLoading: function()
@@ -110,7 +165,17 @@ meta.class("Resource.Manager",
 		this.numToLoad--;
 		this.onLoadingUpdate.emit(this, Resource.Event.LOADING_UPDATE);
 
-		if(this.numToLoad === 0) {
+		if(this.numToLoad === 0) 
+		{
+			var texture;
+			for(var key in this.textures) {
+				texture = this.textures[key];
+				if(!texture._loaded) {
+					console.log("(Resource.Manager.loadSuccess) Texture requested but not loaded: " + texture.name);
+					this.remove(texture);
+				}
+			}
+
 			this.numTotalToLoad = 0;
 			this.loading = false;
 			this.onLoadingEnd.emit(this, Resource.Event.LOADING_END);
@@ -202,68 +267,6 @@ meta.class("Resource.Manager",
 		}
 	},
 
-	getResource: function(name, type)
-	{
-		var subBuffer = this.resources[type];
-		if(!subBuffer) {
-			return null;
-		}
-
-		var texture = subBuffer[name];
-		if(!texture) {
-			return null;
-		}
-
-		return texture;
-	},
-
-
-	/**
-	 * Get texture by name.
-	 * @param name {String} Name of the texture resource.
-	 * @returns {Resource.Texture|null} Texture from the manager.
-	 */
-	getTexture: function(name)
-	{
-		var subBuffer = this.resources[Resource.Type.TEXTURE];
-		if(!subBuffer) {
-			return null;
-		}
-
-		var texture = subBuffer[name];
-		if(!texture) {
-			return null;
-		}
-
-		return texture;
-	},
-
-	/**
-	 * Get sound by name.
-	 * @param name {String} Name of the sound resource.
-	 * @returns {Resource.Sound|null} Sound from the manager.
-	 */
-	getSound: function(name)
-	{
-		if(!name) {
-			console.warn("[Resource.Manager.getSound]:", "No name specified.");
-			return null;
-		}
-
-		var subBuffer = this.resources[Resource.Type.SOUND];
-		if(!subBuffer) {
-			return null;
-		}
-
-		var sound = subBuffer[name];
-		if(!sound) {
-			return null;
-		}
-
-		return sound;
-	},	
-
-
 	/**
 	 * Add resource loading into queue to guarantee synchronous loading.
 	 * @param resource {Resource.Basic} Resource to queue.
@@ -302,14 +305,96 @@ meta.class("Resource.Manager",
 		var unitRatio = meta.unitRatio;
 
 		var texture;
-		var textures = this.resources[Resource.Type.TEXTURE];
 		for(var key in textures) {
-			texture = textures[key];
+			texture = this.textures[key];
 			texture.unitRatio = unitRatio;
 			texture.load();
 		}
 	},
 
+	preloadResource: function(cls, buffer, folderPath, tag)
+	{
+		if(folderPath)
+		{
+			var slashIndex = folderPath.lastIndexOf("/");
+			if(slashIndex !== folderPath.length - 1) {
+				folderPath += "/";
+			}
+		}
+		else {
+			folderPath = "";
+		}
+
+		if(buffer instanceof Array)
+		{
+			var numResources = buffer.length;
+			for(var i = 0; i < numResources; i++) {
+				this._addResource(cls, buffer[i], folderPath, tag);
+			}
+		}
+		else if(typeof(buffer) === "object" || typeof(buffer) === "string") {
+			this._addResource(cls, buffer, folderPath, tag);
+		}
+		else {
+			return false;
+		}
+
+		return true;
+	},
+
+	_addResource: function(cls, data, folderPath, tag)
+	{
+		var resource;
+
+		if(typeof(data) === "object") 
+		{
+			if(data.path) {
+				data.path = folderPath + data.path;
+			}
+			resource = new cls(data, tag);
+		}
+		else {
+			resource = new cls(folderPath + data, tag);
+		};
+
+		return resource;
+	},
+
+	/**
+	 * Load textures.
+	 * @param buffer {Array|String} Buffer with texture sources.
+	 * @param folderPath {String=} Path applied to texture sources.
+	 */
+	loadTexture: function(buffer, folderPath, tag) {
+		this.preloadResource(Resource.Texture, buffer, folderPath, tag);
+	},
+
+	/**
+	 * Load spritesheets. 
+	 * @param buffer {Array|String} Buffer with sound sources.
+	 * @param folderPath {String=} Path applied to sound sources.
+	 */
+	loadSpriteSheet: function(buffer, folderPath, tag) {
+		this.preloadResource(Resource.SpriteSheet, buffer, folderPath, tag);
+	},	
+
+	/**
+	 * Load bitmap fonts.
+	 * @param buffer {Array|String} Buffer with sound sources.
+	 * @param folderPath {String=} Path applied to sound sources.
+	 */
+	loadFont: function(buffer, folderPath, tag) {
+		this.preloadResource(Resource.Font, buffer, folderPath, tag);
+	},	
+
+	/**
+	 * Load sounds.
+	 * @param buffer {Array|String} Buffer with sound sources.
+	 * @param folderPath {String=} Path applied to sound sources.
+	 */
+	loadSound: function(buffer, folderPath, tag) {
+		this.preloadResource(Resource.Sound, buffer, folderPath, tag);
+	},
 
 	/**
 	 * Get unique id.
@@ -323,7 +408,12 @@ meta.class("Resource.Manager",
 	_xhr: null,
 	_xhrOnSuccess: null,
 
-	resources: null,
+	data: null,
+	textures: null,
+	spriteSheets: null,
+	fonts: null,
+	sounds: null,
+
 	rootPath: "",
 
 	numLoaded: 0,
@@ -338,6 +428,7 @@ meta.class("Resource.Manager",
 	loading: false,
 
 	onAdded: null,
+	onRemoved: null,
 	onLoaded: null,
 	onLoadingStart: null,
 	onLoadingEnd: null,
