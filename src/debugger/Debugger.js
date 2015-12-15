@@ -151,7 +151,7 @@ meta.controller("meta.debugger",
 		}
 
 		var numEntities = meta.renderer.entities.length;
-		var numStaticEntities = meta.renderer.entities.length;
+		var numStaticEntities = meta.renderer.entitiesStatic.length;
 		var numTotalEntities = numEntities + numStaticEntities;
 		if(numTotalEntities !== this.numEntities) {
 			this.txt.entities.text = "entities: " + numEntities + ", static: " + numStaticEntities;
