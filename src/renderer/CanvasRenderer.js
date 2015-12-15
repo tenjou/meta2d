@@ -59,9 +59,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 			if(entity.flags & this.entityFlag.INSTANCE_HIDDEN) { continue; }
 
 			if(entity.draw) {
-				this.ctx.save();
-				entity.draw(this.ctx);
-				this.ctx.restore();
+				this.drawEntityCustom(entity);
 			}
 			else {
 				this.drawEntity(entity);
@@ -125,7 +123,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		if(!texture || !entity._texture._loaded) { return; }
 
 		var volume = entity.volume;
-		if(volume.width === 0 || volume.height === 0) { return; }
+		if((volume.width === 0 || volume.height === 0)) { return; }
 
 		if(entity.clipVolume) 
 		{
@@ -163,17 +161,8 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 			if(texture.frames > 1) {
 				texture.drawFrame(this.ctx, Math.floor(volume.minX), Math.floor(volume.minY), entity.anim._frame);
 			}
-			else 
-			{
-				if(texture.fromAtlas) 
-				{
-					this.ctx.drawImage(texture.ptr.canvas, 
-						texture.x, texture.y, texture.fullWidth, texture.fullHeight, 
-						Math.floor(volume.minX), Math.floor(volume.minY), texture.fullWidth, texture.fullHeight);
-				}
-				else {
-					this.ctx.drawImage(texture.canvas, Math.floor(volume.minX), Math.floor(volume.minY));
-				}
+			else {
+				texture.draw(this.ctx, Math.floor(volume.minX), Math.floor(volume.minY));
 			}
 		}
 		else
@@ -188,17 +177,8 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 			if(texture.frames > 1) {
 				texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, entity.anim._frame);
 			}
-			else 
-			{
-				if(texture.fromAtlas) 
-				{
-					this.ctx.drawImage(texture.ptr.canvas, 
-						texture.x, texture.y, texture.fullWidth, texture.fullHeight, 
-						-volume.initPivotPosX, -volume.initPivotPosY, texture.fullWidth, texture.fullHeight);
-				}
-				else {
-					this.ctx.drawImage(texture.canvas, -volume.initPivotPosX, -volume.initPivotPosY);
-				}
+			else {
+				texture.draw(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY);
 			}
 		
 			this.ctx.globalAlpha = 1.0;
@@ -209,6 +189,41 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		if(entity.clipVolume) {
 			this.ctx.restore();
 		}
+	},
+
+	drawEntityCustom: function(entity)
+	{
+		var volume = entity.volume;
+
+		this.ctx.save();
+
+		if(entity.clipVolume) 
+		{
+			this.ctx.beginPath();
+
+			if(entity.flags & entity.Flag.CLIP_BOUNDS) {
+				this.ctx.rect(Math.floor(entity.volume.minX), Math.floor(entity.volume.minY), 
+					entity.clipVolume.width, entity.clipVolume.height);
+			}
+			else {
+				this.ctx.rect(Math.floor(entity.clipVolume.minX), Math.floor(entity.clipVolume.minY), 
+					entity.clipVolume.width, entity.clipVolume.height);
+			}
+
+			this.ctx.closePath();
+			this.ctx.clip();
+		}
+
+		this.ctx.globalAlpha = entity.totalAlpha;
+
+		this.ctx.transform(
+			volume.m11, volume.m12, 
+			volume.m21, volume.m22,
+			Math.floor(volume.x), Math.floor(volume.y));
+		
+		entity.draw(this.ctx);
+
+		this.ctx.restore();		
 	},
 
 	drawVolume: function(entity)

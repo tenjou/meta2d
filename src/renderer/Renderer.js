@@ -21,8 +21,8 @@ meta.class("meta.Renderer",
 		entityProto.renderer = this;
 		entityProto.parent = this.holder;
 
-		this.holder.flags = flags;
-		this.staticHolder.flags = flags;
+		this.holder.flags = flags | this.holder.Flag.ROOT_HOLDER;
+		this.staticHolder.flags = flags | this.holder.Flag.ROOT_HOLDER;
 
 		this.entities = [];
 		this.entitiesRemove = [];
@@ -407,6 +407,7 @@ meta.class("meta.Renderer",
 		//
 		if(this.pressedEntity) 
 		{
+			this._checkHover(data);
 			data.entity = this.hoverEntity;
 
 			// INPUT UP
@@ -416,8 +417,6 @@ meta.class("meta.Renderer",
 			}
 			
 			this.chn.onUp.emit(this.pressedEntity, Entity.Event.INPUT_UP);	
-
-			this._checkHover(data);
 
 			// CLICK
 			if(this.pressedEntity === this.hoverEntity) 
@@ -620,9 +619,14 @@ meta.class("meta.Renderer",
 
 	_updateResize: function(entities)
 	{
+		var entity;
 		var num = entities.length;
-		for(var n = 0; n < num; n++) {
-			entities[n]._updateResize();
+		for(var n = 0; n < num; n++) 
+		{
+			entity = entities[n];
+			if(entity.parent.flags & entity.Flag.ROOT_HOLDER) {
+				entity._updateResize();
+			}
 		}
 	},
 
