@@ -85,15 +85,12 @@ meta.class("meta.Renderer",
 		// removal:
 		if(this.entitiesRemove.length > 0) {
 			this._removeEntities(this.entities, this.entitiesRemove);
-			this.entitiesRemove.length = 0;
 		}
 		if(this.entitiesStaticRemove.length > 0) {
 			this._removeEntities(this.entitiesStatic, this.entitiesStaticRemove);
-			this.entitiesStaticRemove.length = 0;
 		}		
 		if(this.entitiesDebugRemove.length > 0) {
 			this._removeEntities(this.entitiesDebug, this.entitiesDebugRemove);
-			this.entitiesDebugRemove.length = 0;
 		}
 
 		this._removeFromBuffer(this.entitiesUpdate, this.entitiesUpdateRemove);
@@ -157,72 +154,78 @@ meta.class("meta.Renderer",
 		this.renderDebugDrame();
 	},
 
-	_removeEntities: function(entities, entititesRemove)
+	_removeEntities: function(entities, entitiesRemove)
 	{		
-		this._num = entities.length;
-		this._removeStartID = Number.MAX_SAFE_INTEGER;
-		this._removeEntitiesGroup(entities, entititesRemove);
-
-		var value;
-		for(var n = this._removeStartID + 1; n < this._num; n++)
-		{
-			value = entities[n];
-			if(value) {
-				entities[this._removeStartID++] = value;
-			}
-		}
-
-		entities.length = this._num - this._numRemove;
+		var num = entities.length;
 		this._numRemove = 0;
+		this._removeStartID = Number.MAX_SAFE_INTEGER;
+		this._removeEntitiesGroup(entities, entitiesRemove, false);
 
-		this.needRender = true;
+        var entity;
+        for(var n = this._removeStartID + 1; n < num; n++)
+        {
+            entity = entities[n];
+            if(entity) {
+            	if(this._removeStartID === -1) {
+            		console.log("ERROR");
+            	}
+
+                entities[this._removeStartID++] = entity;
+            }
+        }
+
+        if(entities[-1]) {
+        	console.log("ERROR REMOVE");
+        }
+
+		entities.length -= this._numRemove;
+		entitiesRemove.length = 0;
+
+		this.needRender = true;			
 	},
 
-	_removeEntitiesGroup: function(entities, entititesRemove)
+	_removeEntitiesGroup: function(entities, entitiesRemove, forceRemove)
 	{
-		var entity, n;
-		var numRemove = entititesRemove.length;
-		
+		var flagRenderRemove = Entity.Geometry.prototype.Flag.RENDER_REMOVE;
+
+		var entity, index;
+		var numRemove = entitiesRemove.length;
 		for(var i = 0; i < numRemove; i++) 
 		{
-			entity = entititesRemove[i];
-			if(!entity) { continue; }
-			
-			for(n = 0; n < this._num; n++) 
-			{
-				if(entities[n] === entity) 
-				{
-					entities[n] = null;
-					this._numRemove++;
+			entity = entitiesRemove[i];
+			if(forceRemove || entity.flags & flagRenderRemove) 
+			{				
+				this._numRemove++;
 
-					if(n < this._removeStartID) {
-						this._removeStartID = n;
-					}
-					break;
+				index = entities.indexOf(entity);
+				entities[index] = null;
+
+				if(index < this._removeStartID) {
+					this._removeStartID = index;
 				}
+
+				entity._deactivate();
+
+				if(entity.__updateIndex !== -1) {
+					this.entitiesUpdateRemove.push(entity);
+					entity.__updateIndex = -1;
+				}
+
+				if(entity.flags & entity.Flag.PICKING) {
+					this.entitiesPickingRemove.push(entity); 
+				}
+
+				if(entity.flags & entity.Flag.REMOVED) 
+				{
+					entity._remove();
+
+					if(entity.children) {
+						this._removeEntitiesGroup(entities, entity.children, true);
+					}					
+				}	
+
+				entity.flags &= ~entity.Flag.RENDER_REMOVE;
 			}
-
-			//
-			entity._deactivate();
-
-			if(entity.__updateIndex !== -1) {
-				this.entitiesUpdateRemove.push(entity);
-				entity.__updateIndex = -1;
-			}
-
-			if(entity.flags & entity.Flag.PICKING) {				
-				this.entitiesPickingRemove.push(entity); 
-			}
-
-			if(entity.children) {
-				this._removeEntitiesGroup(entities, entity.children);
-			}
-
-			if(entity.flags & entity.Flag.REMOVED) {
-				entity._remove();
-			}	
-
-			entity.flags &= ~entity.Flag.RENDER_REMOVE;
 		}
 	},
 
@@ -251,20 +254,13 @@ meta.class("meta.Renderer",
 
 	sort: function(buffer)
 	{
-		var i, j, tmp1, tmp2;
-		var num = buffer.length;
-		for(i = 0; i < num; i++) 
-		{
-			for(j = i; j > 0; j--) 
-			{
-				tmp1 = buffer[j];
-				tmp2 = buffer[j - 1];
-				if(tmp1.totalZ < tmp2.totalZ) {
-					buffer[j] = tmp2;
-					buffer[j - 1] = tmp1;
-				}
-			}
-		}
+	    buffer.sort(function(a, b) {
+	        return a.totalZ - b.totalZ;
+	    });
+
+        if(buffer[-1]) {
+        	console.log("ERROR SORT");
+        }	   
 	},
 
 	makeEntityVisible: function(entity)
@@ -273,12 +269,7 @@ meta.class("meta.Renderer",
 
 		entity.flags |= entity.Flag.RENDER;
 		
-		var view = entity._view;
-
-		if(entity.flags & entity.Flag.RENDER_REMOVE) 
-		{
-			var index = entity._view.entityBufferRemove.indexOf(entity);
-			entity._view.entityBufferRemove[index] = null;
+		if(entity.flags & entity.Flag.RENDER_REMOVE) {
 			entity.flags &= ~entity.Flag.RENDER_REMOVE;
 		}
 		else
@@ -287,7 +278,7 @@ meta.class("meta.Renderer",
 				this.entitiesPicking.push(entity);
 			}
 
-			view.entityBuffer.push(entity);
+			entity._view.entityBuffer.push(entity);
 		}
 
 		this.needSort = true;
@@ -342,6 +333,15 @@ meta.class("meta.Renderer",
 		}
 	},
 
+	_removeEntity: function(entity)
+	{
+		if((entity.flags & entity.Flag.ACTIVE) === 0) { return; }
+		if(entity.flags & entity.Flag.RENDER_REMOVE) { return; }
+
+		entity.flags |= entity.Flag.RENDER_REMOVE;
+		entity.flags &= ~entity.Flag.RENDER;
+	},
+
 	removeEntity: function(entity)
 	{
 		if((entity.flags & entity.Flag.ACTIVE) === 0) { return; }
@@ -355,9 +355,12 @@ meta.class("meta.Renderer",
 
 	removeEntities: function(entities)
 	{
+		var removeBuffer = entities[0]._view.entityBufferRemove;
+		removeBuffer.push.apply(removeBuffer, entities);
+
 		var numRemove = entities.length;
 		for(var i = 0; i < numRemove; i++) {
-			this.removeEntity(entities[i]);
+			this._removeEntity(entities[i]);
 		}
 	},
 
@@ -715,9 +718,8 @@ meta.class("meta.Renderer",
 	cameraDefault: null,
 	cameraUI: null,
 
-	_num: 0,
-	_numRemove: 0,
 	_removeStartID: 0,
+	_numRemove: 0,
 
 	entities: null,
 	entitiesRemove: null,

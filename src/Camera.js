@@ -280,7 +280,7 @@ meta.Camera.prototype =
 				diffY = this.volume.maxY - worldVolume.maxY;
 			}
 		}
-
+		
 		this.volume.move(-diffX, -diffY);
 
 		this.onMove.emit(this, scope.Event.CAMERA_MOVE);
