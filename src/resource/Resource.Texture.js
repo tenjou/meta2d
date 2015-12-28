@@ -445,14 +445,14 @@ meta.class("Resource.Texture", "Resource.Basic",
 	 */
 	draw: function(ctx, x, y)
 	{
-		if(!this.fromAtlas) {
+		if(!this.ptr) {
 			ctx.drawImage(this.canvas, x, y);
 		}
 		else 
 		{
 			ctx.drawImage(this.ptr.canvas, 
-				this.x, this.y, this.fullWidth, this.fullHeight, 
-				x, y, this.fullWidth, this.fullHeight);
+				this.x, this.y, this.width, this.height, 
+				x, y, this.width, this.height);
 		}
 	},
 
@@ -639,7 +639,7 @@ meta.class("Resource.Texture", "Resource.Basic",
 
 	flags: 0,
 
-	_x: 0, _y: 0,
+	x: 0, y: 0,
 	width: 0, height: 0,
 	_width: 0, _height: 0,
 	fullWidth: 0, fullHeight: 0,
@@ -653,8 +653,6 @@ meta.class("Resource.Texture", "Resource.Basic",
 	framesX: 1,
 	framesY: 1,
 	frameData: null,
-	
-	fromAtlas: false,
 
 	reloading: false,
 

@@ -39,7 +39,7 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 
 		this.loading = true;
 		this.loaded = false;	
-		this._isAtlasLoaded = false;	
+		this._atlasLoaded = false;	
 
 		if(!this.texture) {
 			this.texture = new Resource.Texture(this.path);
@@ -94,6 +94,100 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 		return result;
 	},
 
+	_createTexture: function(name, x, y, width, height)
+	{
+		var texture = meta.resources.createTexture(name);
+		texture.ptr = this.texture;
+		texture.canvas = this.texture.canvas;
+		texture.x = x;
+		texture.y = y;
+		texture.width = width;
+		texture.height = height;
+		texture.loaded = true;
+
+		return texture;
+	},
+
+	loadFromImg: function(path, frameWidth, frameHeight, margin, spacing)
+	{
+		var self = this;
+
+		this.texture = new Resource.Texture(path);
+		this.texture.subscribe(function() {
+			self._generateFromImg(frameWidth, frameHeight, margin, spacing);
+		});
+	},
+
+	_generateFromImg: function(frameWidth, frameHeight, margin, spacing)
+	{
+		var rawFramesX = (this.texture.trueFullWidth / frameWidth);
+		var rawFramesY = (this.texture.trueFullHeight / frameHeight);
+		var framesX = Math.ceil(rawFramesX);
+		var framesY = Math.ceil(rawFramesY);
+
+		var numFrames = framesX * framesY;
+		this.frames = new Array(numFrames);
+
+		var offset = margin + spacing;
+		var id = 0;
+		var posX, posY;		
+
+		// uneven?
+		if(rawFramesX !== framesX || rawFramesY !== framesY)
+		{
+			var maxWidth = this.texture.trueFullWidth;
+			var maxHeight = this.texture.trueFullHeight;
+			var width, height;
+			var offsetX, offsetY;
+
+			for(var y = 0; y < framesY; y++)
+			{
+				width = 0;
+				height += frameHeight;
+				if(height > maxHeight) {
+					offsetY = maxHeight - height;
+				}
+				else {
+					offsetY = 0;
+				}
+
+				for(var x = 0; x < framesX; x++)
+				{
+					width += frameWidth;
+					if(width > maxWidth) {
+						offsetX = maxWidth - width;
+					}
+					else {
+						offsetX = 0;
+					}
+
+					posX = x * frameWidth + (x * (margin * 2)) + offset;
+					posY = y * frameHeight + (y * (margin * 2)) + offset;
+					this.frames[id] = this._createTexture(this.texture.name + id, 
+										posX, posY, frameWidth + offsetX, frameHeight + offsetY);
+
+					id++;
+				}
+			}
+		}
+		else
+		{
+			for(var y = 0; y < framesY; y++)
+			{
+				for(var x = 0; x < framesX; x++)
+				{
+					posX = x * frameWidth + (x * (margin * 2)) + offset;
+					posY = y * frameHeight + (y * (margin * 2)) + offset;
+					this.frames[id] = this._createTexture(this.texture.name + id, posX, posY, frameWidth, frameHeight);
+
+					id++;
+				}
+			}
+		}
+
+		this.loaded = true;
+	},	
+
 	loadXML: function(xml)
 	{
 		if(!xml) {
@@ -109,12 +203,24 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 			node = childNodes[i];
 
 			// Starling
-			if(node.nodeName === "SubTexture") {
-				this._loadXML_Starling(node);
+			if(node.nodeName === "SubTexture") 
+			{
+				this._createTexture(
+					node.getAttribute("name"),
+					node.getAttribute("x"),
+					node.getAttribute("y"),
+					node.getAttribute("width"),
+					node.getAttribute("height"));
 			}
 			// Generic XML
-			else if(node.nodeName === "sprite") {
-				this._loadXML_genericXML(node);
+			else if(node.nodeName === "sprite") 
+			{
+				this._createTexture(
+					node.getAttribute("n"),
+					node.getAttribute("x"),
+					node.getAttribute("y"),
+					node.getAttribute("w"),
+					node.getAttribute("h"));
 			}
 			// Plist
 			else if(node.nodeName === "dict") {
@@ -125,32 +231,10 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 		return true;
 	},
 
-	_loadXML_Starling: function(node)
-	{
-		var texture = meta.resources.createTexture(node.getAttribute("name"));
-		texture.fromAtlas = true;
-		texture.ptr = this.texture;
-		texture.x = node.getAttribute("x");
-		texture.y = node.getAttribute("y");
-		texture.resize(node.getAttribute("width"), node.getAttribute("height"));
-		texture.loaded = true;
-	},
-
-	_loadXML_genericXML: function(node)
-	{
-		var texture = meta.resources.createTexture(node.getAttribute("n"));
-		texture.fromAtlas = true;
-		texture.ptr = this.texture;			
-		texture.x = node.getAttribute("x");
-		texture.y = node.getAttribute("y");
-		texture.resize(node.getAttribute("w"), node.getAttribute("h"));
-		texture.loaded = true;	
-	},
-
 	loadPlist: function(plist)
 	{
 		if(!plist) {
-			console.warn("(Resource.SpriteSheet.loadPlist) Invalid Plist file.");
+			console.warn("(Resource.SpriteSheet.loadPlist) Invalid Plist file");
 			return false;
 		}
 
@@ -208,11 +292,6 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 
 	_loadPlist_frame: function(node, name)
 	{
-		var texture = meta.resources.createTexture(name);
-		texture.fromAtlas = true;
-		texture.ptr = this.texture;
-		texture.name = name;
-
 		var nodes = node.childNodes;
 		var numNodes = nodes.length;
 		var command = "", data;
@@ -227,10 +306,13 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 				if(command === "frame") 
 				{
 					data = node.textContent.match(/[0-9]+/g);
-					texture.x = parseInt(data[0]);
-					texture.y = parseInt(data[1]);
-					texture.resize(parseInt(data[2]), parseInt(data[3]))
-					texture.loaded = true;					
+
+					this._createTexture(
+						name,
+						parseInt(data[0]),
+						parseInt(data[1]),
+						parseInt(data[2]),
+						parseInt(data[3]));				
 					return;
 				}
 			}
@@ -256,92 +338,36 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 
 	_loadJSON_array: function(json)
 	{
-		var frame, texture;
+		var frame, frameInfo;
 		var frames = json.frames;
 		var numFrames = frames.length;
 		for(var i = 0; i < numFrames; i++) 
 		{
 			frame = frames[i];
-			texture = meta.resources.createTexture(frame.filename);
-			texture.fromAtlas = true;
-			texture.ptr = this.texture;			
+			frameInfo = frame.frame;
 
-			frame = frame.frame;
-			texture.x = frame.x;
-			texture.y = frame.y
-			texture.resize(frame.w, frame.h);
-			texture.loaded = true;	
+			this._createTexture(frame.filename, frameInfo.x, frameInfo.y, frameInfo.w, frameInfo.h);
 		}		
 	},
 
 	_loadJSON_hash: function(json)
 	{
-		var frame, texture;
+		var frame;
 		var frames = json.frames;
 		for(var key in frames)
 		{
 			frame = frames[key].frame;
 
-			texture = meta.resources.createTexture(key);
-			texture.fromAtlas = true;
-			texture.ptr = this.texture;
-			texture.x = frame.x;
-			texture.y = frame.y
-			texture.resize(frame.w, frame.h);
-			texture.loaded = true;	
+			this._createTexture(key, frame.x, frame.y, frame.w, frame.h);
 		}		
 	},
-
-	loadAtlas: function()
-	{
-		if(typeof(this.atlas) !== "object") {
-			console.warn("[Resource.SpriteSheet.loadFromAtlas]:", "Incorrect atlas object, expected to be an Array.");
-			return false;
-		}
-
-		var frames = [];
-		var item, texture, name;
-		var numItems = this.atlas.length;
-		for(var i = 0; i < numItems; i++) 
-		{
-			item = this.atlas[i];
-			name = item.name || this.params;
-
-			if(!name) {
-				console.warn("[Resource.SpriteSheet.loadFromAtlas]:", "No name defined for atlas item in " + this.name + " spritesheet.");
-				continue;
-			}
-
-			item.x = item.x || this.params.x || 0;
-			item.y = item.y || this.params.y || 0;
-			item.width = item.width || this.params.width || 1;
-			item.height = item.height || this.params.height || 1;	
-			frames.push(item);			
-
-			texture = meta.resources.createTexture(name);
-			texture.fromAtlas = true;
-			texture.ptr = this.texture;			
-			texture.x = item.x;
-			texture.y = item.y;
-			texture.resize(item.width, item.height);
-			texture.numFrames = item.numFrames || this.params.numFrames || 1;
-			texture.loaded = true;
-		}
-
-		this.texture._frames = frames;
-		this.atlas = null;
-		this.loaded = true;
-
-		return true;
-	},
-
 
 	_onTextureEvent: function(data, event)
 	{
 		if(event === Resource.Event.LOADED) 
 		{
 			this.texture.unsubscribe(this);
-			if(this._isAtlasLoaded) {
+			if(this._atlasLoaded) {
 				this.loadData(this._response, this.format);
 				meta.resources.loadSuccess(this);
 				this._response = null;	
@@ -355,7 +381,7 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 		{
 			if(this._request.status === 200) 
 			{
-				this._isAtlasLoaded = true;
+				this._atlasLoaded = true;
 				this._response = this._request.response;
 				this._request = null;
 				if(this.texture._loaded) {
@@ -364,7 +390,8 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 					this._response = null;
 				}
 			}
-			else {
+			else 
+			{
 				this._loaded = false;
 				this._request.onreadystatechange = null;
 				this._request = null;
@@ -373,16 +400,14 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 		}		
 	},
 
-
 	//
 	type: Resource.Type.SPRITE_SHEET,
 	format: "",
-	atlas: null,
-	params: null,
 	texture: null,
+	frames: null,
 
 	_request: null,
 	_response: null,
 
-	_isAtlasLoaded: false
+	_atlasLoaded: false
 });

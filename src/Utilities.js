@@ -28,6 +28,19 @@ meta.enumNames = function(baseName, mask, min, max)
 	return names;
 };
 
+meta.getNameFromPath = function(path)
+{
+	var wildcardIndex = path.lastIndexOf(".");
+	var slashIndex = path.lastIndexOf("/");
+
+	// If path does not have a wildcard:
+	if(wildcardIndex < 0 || (path.length - wildcardIndex) > 5) { 
+		return path.slice(slashIndex + 1);
+	}
+
+	return path.slice(slashIndex + 1, wildcardIndex);
+};
+
 meta.randomItem = function(array) {
 	return array[meta.random.number(0, array.length - 1)];
 };

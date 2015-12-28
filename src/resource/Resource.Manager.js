@@ -50,19 +50,8 @@ meta.class("Resource.Manager",
 		resource.flags |= resource.Flag.ADDED;
 
 		// If no name is specified take it from the source.
-		var path = resource.path;
-		if(resource.name === "unknown" && path)
-		{
-			var wildcardIndex = path.lastIndexOf(".");
-			var slashIndex = path.lastIndexOf("/");
-
-			// If resource does not have a wildcard.
-			if(wildcardIndex < 0 || (path.length - wildcardIndex) > 5) { 
-				resource.name = resource.tag + path.slice(slashIndex + 1);
-			}
-			else {
-				resource.name = resource.tag + path.slice(slashIndex + 1, wildcardIndex);
-			}
+		if(resource.name === "unknown" && resource.path) {
+			resource.name = resource.tag + meta.getNameFromPath(resource.path);
 		}
 
 		var buffer = this.data[resource.type];
