@@ -1004,6 +1004,8 @@ meta.class("Entity.Geometry",
 
 	_setView: function(view, parent) 
 	{
+		if(this._view === view) { return; }
+
 		if(parent)
 		{
 			if(view)
@@ -1026,8 +1028,11 @@ meta.class("Entity.Geometry",
 					this.renderer.removeEntity(this);					
 				}
 			}
-			else {
-				this.renderer.removeEntity(this);
+			else 
+			{
+				if(this._view) {
+					this.renderer.removeEntity(this);
+				}
 			}
 		}
 
