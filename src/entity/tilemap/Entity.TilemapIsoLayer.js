@@ -5,7 +5,6 @@ meta.class("Entity.TilemapIsoLayer", "Entity.TilemapLayer",
 	draw: function(ctx) 
 	{
 		if((this.parent.flags & this.Flag.LOADED) === 0) { return; }
-		if(this.layerFlags & this.LayerFlag.CONVERTED_TO_ENTITIES) { return; }
 
 		var cameraVolume = meta.camera.volume;
 
@@ -105,6 +104,11 @@ meta.class("Entity.TilemapIsoLayer", "Entity.TilemapLayer",
 
 
 	},
+
+	calcEntityCell: function(entity)
+	{
+		
+	},	
 
 	getPos: function(cellX, cellY)
 	{

@@ -34,10 +34,10 @@ meta.class("Entity.TilemapOrthoLayer", "Entity.TilemapLayer",
 			endTileY = this.tilesY;
 		}
 
-		var minX = Math.floor(this.volume.minX + (startTileX * this.tileWidth));
-		var minY = Math.floor(this.volume.minY + (startTileY * this.tileHeight));
+		var minX = Math.floor((startTileX * this.tileWidth));
+		var minY = Math.floor((startTileY * this.tileHeight));
 
-		var id = 0, info;
+		var id = 0, texture;
 		var posX = minX | 0;
 		var posY = minY | 0;
 
@@ -138,15 +138,30 @@ meta.class("Entity.TilemapOrthoLayer", "Entity.TilemapLayer",
 
 				for(var x = startTileX; x < endTileX; x++)
 				{
-					info = this._dataInfo[id++];
+					texture = this._dataInfo[id];
 
-					if(info) 
+					if(texture) 
 					{
-						ctx.drawImage(info.canvas, 
-							info.posX, info.posY, info.width, info.height, 
-							posX, posY, info.width, info.height);
+						ctx.drawImage(texture.canvas, 
+							texture.x, texture.y, texture.width, texture.height, 
+							posX, posY - texture.height + this.tileHeight, texture.width, texture.height);
 					}
 
+					if(this._cells)
+					{
+						var cell = this._cells[id];
+						if(cell)
+						{
+							var num = cell.length;
+							for(var n = 0; n < num; n ++) {
+								var entity = cell[n];
+								entity._texture.draw(ctx, posX + this.tileHalfWidth - entity.volume.pivotPosX, posY + this.tileHalfHeight - entity.volume.pivotPosY);
+							}
+						}
+
+					}
+
+					id++;
 					posX += this.tileWidth;
 				}
 
@@ -155,4 +170,17 @@ meta.class("Entity.TilemapOrthoLayer", "Entity.TilemapLayer",
 			}
 		}
 	},
+
+	calcEntityCell: function(entity)
+	{
+		entity.cellX = Math.floor(entity.x / this.tileWidth);
+		entity.cellY = Math.floor(entity.y / this.tileHeight);
+	},
+
+	calcEntityPos: function(entity)
+	{
+		var x = Math.floor(entity.cellX * this.tileWidth);
+		var y = Math.floor(entity.cellY * this.tileHeight);
+		entity.position(x, y);
+	}
 });

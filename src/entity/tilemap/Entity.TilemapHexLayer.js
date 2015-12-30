@@ -108,6 +108,11 @@ meta.class("Entity.TilemapHexLayer", "Entity.TilemapLayer",
 
 	},
 
+	calcEntityCell: function(entity)
+	{
+
+	},	
+
 	getPos: function(cellX, cellY)
 	{
 		var x = ((this.tilesX * this.tileHalfWidth) - (cellY * this.tileHalfWidth) - this.tileHalfWidth) + 

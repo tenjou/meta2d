@@ -2,11 +2,22 @@
 
 meta.class("Entity.Tilemap", "Entity.Geometry",
 {
-	initArg: function(path) 
+	init: function(tilesX, tilesY, tileWidth, tileHeight)
 	{
-		if(!path) { return; }
-		this.load(path);
+		this._super();
+
+		if(tilesX)
+		{
+			if(typeof(tilesX) === "string") {
+				this.load(tilesX);
+			}
+			else {
+				this.create(tilesX, tilesY, tileWidth, tileHeight);
+			}
+		} 
 	},
+
+	initArg: function(arg) {},
 
 	load: function(path)
 	{
@@ -44,6 +55,25 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		this.tileHeight = tileHeight;
 		this.type = type ? type : "orthogonal";
 
+		// switch(this.type)
+		// {
+		// 	case this.Type.ORTHOGONAL:
+		// 		this.updateSizeOrtho();
+		// 		break;
+
+		// 	case this.Type.ISOMETRIC:
+		// 		this.updateSizeIso
+		// 		break;
+
+		// 	case this.Type.HEXAGONAL:
+		// 		layer = new Entity.TilemapHexLayer();
+		// 		break;
+
+		// 	default:
+		// 		console.warn("(Entity.Tilemap.createLayer) Trying to create unsupported layer type");
+		// 		break;
+		// }		
+
 		this.resize(tilesX * tileWidth, tilesY * tileHeight);
 
 		this.tilesets = [];
@@ -57,7 +87,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 			return;
 		}
 
-		var texture;
+		var texture = null;
 		var spriteSheet = null;
 
 		if(typeof(resource) === "string") 
@@ -87,10 +117,16 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 			texture = resource.texture;
 		}
 
+		if(!texture) {
+			console.warn("(Entity.Tilemap.createTileset) Invalid texture passed");
+			return;
+		}
+
 		var tileset = new meta.Tileset(gid, texture, spriteSheet, tileWidth, tileHeight);
 		this.tilesets.push(tileset);
 		
 		if(!texture._loaded) {
+			this.loaded = false;
 			this.numToLoad++;
 			texture.subscribe(this.handleTilesetEvent, this);
 		}
@@ -100,7 +136,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		}
 	},
 
-	createLayer: function(tilesX, tilesY, data, name)
+	createLayer: function(data, tilesX, tilesY, name)
 	{
 		var layer;
 
@@ -120,10 +156,11 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 
 			default:
 				console.warn("(Entity.Tilemap.createLayer) Trying to create unsupported layer type");
+				break;
 		}
 
-		layer.tilesX = tilesX;
-		layer.tilesY = tilesY;
+		layer.tilesX = (tilesX === void(0)) ? this.tilesX : tilesX;
+		layer.tilesY = (tilesY === void(0)) ? this.tilesY : tilesY;
 		layer.tileWidth = this.tileWidth;
 		layer.tileHeight = this.tileHeight;
 		layer.tileHalfWidth = this.tileWidth * 0.5;

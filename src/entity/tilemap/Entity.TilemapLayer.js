@@ -17,6 +17,20 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 			this._dataInfo.length = num;
 		}
 
+		// if has entities in unhandled cell:
+		if(this._unhandledCell)
+		{
+			this._cells = new Array(this.tilesX * this.tilesY);
+			this._outsideCell = [];
+			
+			var numUnhandled = this._unhandledCell.length;
+			for(var n = 0; n < numUnhandled; n++) {
+				this._attachToCell(this._unhandledCell[n]);
+			}
+
+			this._unhandledCell = null;
+		}
+
 		this._tilesets = this.parent.tilesets;
 		this._numTilesets = this._tilesets.length;
 
@@ -84,7 +98,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 		if(id < 0) {
 			return 0;
 		}
-		if(id >= this.totalTiles) {
+		if(id >= this.numTiles) {
 			return 0;
 		}
 
@@ -98,7 +112,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 		if(id < 0) {
 			return null;
 		}
-		if(id >= this.totalTiles) {
+		if(id >= this.numTiles) {
 			return null;
 		}
 
@@ -112,7 +126,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 		if(id < 0) {
 			return null;
 		}
-		if(id >= this.totalTiles) {
+		if(id >= this.numTiles) {
 			return null;
 		}
 
@@ -127,13 +141,13 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 		}
 
 		if(!this.savedData) {
-			this.savedData = new Uint32Array(this.totalTiles);
+			this.savedData = new Uint32Array(this.numTiles);
 		}
-		else if(this.savedData.length !== this.totalTiles) {
-			this.savedData.length = this.totalTiles;
+		else if(this.savedData.length !== this.numTiles) {
+			this.savedData.length = this.numTiles;
 		}
 
-		for(var n = 0; n < this.totalTiles; n++) {
+		for(var n = 0; n < this.numTiles; n++) {
 			this.savedData[n] = this.data[n];
 		}
 	},
@@ -145,13 +159,13 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 			return; 
 		}
 
-		if(this.savedData.length !== this.totalTiles) {
+		if(this.savedData.length !== this.numTiles) {
 			console.warn("(Entity.Tilemap.restoreData): Incompatible data saved");
 			this.savedData = null;
 			return; 
 		}
 
-		for(var n = 0; n < this.totalTiles; n++) {
+		for(var n = 0; n < this.numTiles; n++) {
 			this.data[n] = this.savedData[n];
 		}
 
@@ -165,6 +179,8 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 		if(this.parent.flags & this.Flag.LOADED) {
 			this._convertToEntities(zOffsetY);
 		}
+
+		this.enabled = false;
 	},
 
 	_convertToEntities: function(zOffsetY)
@@ -189,6 +205,68 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 		}
 	},
 
+	attach: function(entity)
+	{
+		if(!entity) { 
+			console.warn("(Entity.TilemapLayer) Invalid entity passed");
+			return;
+		}
+
+		if(!(entity instanceof Entity.TileGeometry)) {
+			console.warn("(Entity.TilemapLayer) Entity must have extended Entity.TileGeometry");
+			return;
+		}
+
+		if(this.parent.loaded) 
+		{
+			if(!this._cells) {
+				this._cells = new Array(this.tilesX * this.tilesY);
+			}
+
+			this._attachToCell(entity);
+		}
+		else 
+		{
+			if(!this._unhandledCell) {
+				this._unhandledCell = [ entity ];
+			}
+			else {
+				this._unhandledCell.push(entity);
+			}
+		}
+	},
+
+	_attachToCell: function(entity)
+	{
+		if(entity._x !== 0 || entity._y !== 0) {
+			this.calcEntityCell(entity);	
+		}
+		else {
+			this.calcEntityPos(entity);
+		}
+
+		var index = entity.cellX + (entity.cellY * this.tilesX);
+		if(index < 0 && index > this.numTiles) {
+			this._outsideCell.push(entity);
+		}
+		else 
+		{
+			var buffer = this._cells[index];
+			if(!buffer) {
+				buffer = [ entity ];
+				this._cells[index] = buffer;
+			}
+			else {
+				buffer.push(entity);
+			}
+		}
+	},
+
+	detach: function(entity)
+	{
+
+	},
+
 	tileOffset: function(x, y)
 	{
 		this.tileOffsetX = x;
@@ -199,7 +277,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 	set data(data) 
 	{
 		this._data = data;
-		this.totalTiles = this.tilesX * this.tilesY;		
+		this.numTiles = this.tilesX * this.tilesY;		
 
 		if(this.parent.flags & this.Flag.LOADED) {
 			this.updateFromData();
@@ -217,7 +295,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 	//
 	name: "Undefined",
 	tilesX: 0, tilesY: 0,
-	totalTiles: 0,
+	numTiles: 0,
 	tileWidth: 0, tileHeight: 0,
 	tileHalfWidth: 0, tileHalfHeight: 0,
 	tileOffsetX: 0, tileOffsetY: 0,
@@ -225,6 +303,9 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 	_data: null,
 	_dataInfo: null,
 	_dataFlags: null,
+	_cells: null,
+	_outsideCell: null,
+	_unhandledCell: null,
 
 	_tilesets: null,
 	_numTilesets: 0,
