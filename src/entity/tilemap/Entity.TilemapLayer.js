@@ -8,33 +8,30 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 			this.tilesX * this.tileWidth + this.tileOffsetX, 
 			this.tilesY * this.tileHeight + this.tileOffsetY);
 
-		var num = this._data.length;
-
 		if(!this._dataInfo) {
-			this._dataInfo = new Array(num);
+			this._dataInfo = new Array(this.numTiles);
 		}
-		else if(this._dataInfo.length !== num) {
-			this._dataInfo.length = num;
+		else if(this._dataInfo.length !== this.numTiles) {
+			this._dataInfo.length = this.numTiles;
 		}
 
-		// if has entities in unhandled cell:
-		if(this._unhandledCell)
+		// if there are attached children:
+		if(this._cellUnresolved)
 		{
-			this._cells = new Array(this.tilesX * this.tilesY);
-			this._outsideCell = [];
+			this._cells = new Array(this.numTiles + 1);
 			
-			var numUnhandled = this._unhandledCell.length;
-			for(var n = 0; n < numUnhandled; n++) {
-				this._attachToCell(this._unhandledCell[n]);
+			var numChildren = this._cellUnresolved.length;
+			for(var n = 0; n < numChildren; n++) {
+				this._attachToCell(this._cellUnresolved[n]);
 			}
 
-			this._unhandledCell = null;
+			this._cellUnresolved = null;
 		}
 
 		this._tilesets = this.parent.tilesets;
 		this._numTilesets = this._tilesets.length;
 
-		for(var n = 0; n < num; n++) {
+		for(var n = 0; n < this.numTiles; n++) {
 			this._updateDataInfoCell(n);
 		}
 
@@ -217,6 +214,8 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 			return;
 		}
 
+		entity.parent = this;
+
 		if(this.parent.loaded) 
 		{
 			if(!this._cells) {
@@ -227,38 +226,24 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 		}
 		else 
 		{
-			if(!this._unhandledCell) {
-				this._unhandledCell = [ entity ];
+			if(!this._cellUnresolved) {
+				this._cellUnresolved = [ entity ];
 			}
 			else {
-				this._unhandledCell.push(entity);
+				this._cellUnresolved.push(entity);
 			}
 		}
 	},
 
 	_attachToCell: function(entity)
 	{
+		entity.layerParent = this;
+
 		if(entity._x !== 0 || entity._y !== 0) {
-			this.calcEntityCell(entity);	
+			this._calcEntityCell(entity);	
 		}
 		else {
-			this.calcEntityPos(entity);
-		}
-
-		var index = entity.cellX + (entity.cellY * this.tilesX);
-		if(index < 0 && index > this.numTiles) {
-			this._outsideCell.push(entity);
-		}
-		else 
-		{
-			var buffer = this._cells[index];
-			if(!buffer) {
-				buffer = [ entity ];
-				this._cells[index] = buffer;
-			}
-			else {
-				buffer.push(entity);
-			}
+			this._calcEntityPos(entity);
 		}
 	},
 
@@ -304,8 +289,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 	_dataInfo: null,
 	_dataFlags: null,
 	_cells: null,
-	_outsideCell: null,
-	_unhandledCell: null,
+	_cellUnresolved: null,
 
 	_tilesets: null,
 	_numTilesets: 0,

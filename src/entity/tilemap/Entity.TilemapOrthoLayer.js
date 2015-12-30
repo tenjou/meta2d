@@ -155,7 +155,7 @@ meta.class("Entity.TilemapOrthoLayer", "Entity.TilemapLayer",
 							var num = cell.length;
 							for(var n = 0; n < num; n ++) {
 								var entity = cell[n];
-								entity._texture.draw(ctx, posX + this.tileHalfWidth - entity.volume.pivotPosX, posY + this.tileHalfHeight - entity.volume.pivotPosY);
+								entity._texture.draw(ctx, entity.volume.x - entity.volume.pivotPosX, entity.volume.y - entity.volume.pivotPosY);
 							}
 						}
 
@@ -171,16 +171,64 @@ meta.class("Entity.TilemapOrthoLayer", "Entity.TilemapLayer",
 		}
 	},
 
-	calcEntityCell: function(entity)
+	_calcEntityCell: function(entity)
 	{
-		entity.cellX = Math.floor(entity.x / this.tileWidth);
-		entity.cellY = Math.floor(entity.y / this.tileHeight);
+		var cell, cellId;
+
+		// calculate new cell coordinates:
+		entity.cellX = Math.floor((entity.volume.x) / this.tileWidth);
+		entity.cellY = Math.floor((entity.volume.y) / this.tileHeight);
+
+		if(entity.cellX < 0 || entity.cellX >= this.tilesX) {
+			cellId = this.numTiles + 1;
+		}
+		else
+		{
+			if(entity.cellY < 0 || entity.cellY >= this.tilesY) {
+				cellId = this.numTiles + 1;
+			}	
+			else {
+				cellId = entity.cellX + (entity.cellY * this.tilesX);
+			}		
+		}		
+
+		if(entity._cellId !== cellId) 
+		{
+			if(entity._cellId !== -1)
+			{
+				cell = this._cells[entity._cellId];
+				if(cell.length > 1)
+				{
+					var tmpEntity = cell.pop();
+					tmpEntity._cellIndex = entity._cellIndex;
+					cell[entity._cellIndex] = tmpEntity;
+				}
+				else {
+					cell.length = 0;
+				}
+			}
+
+			entity._cellId = cellId;
+
+			cell = this._cells[entity._cellId];
+			if(!cell) {
+				cell = [ entity ];
+				this._cells[entity._cellId] = cell;
+				entity._cellIndex = 0;
+			}
+			else {
+				entity._cellIndex = cell.length;
+				cell.push(entity);
+			}
+		}
 	},
 
-	calcEntityPos: function(entity)
+	_calcEntityPos: function(entity)
 	{
-		var x = Math.floor(entity.cellX * this.tileWidth);
-		var y = Math.floor(entity.cellY * this.tileHeight);
-		entity.position(x, y);
+		var x = Math.floor(entity.cellX * this.tileWidth) + this.tileHalfWidth;
+		var y = Math.floor(entity.cellY * this.tileHeight) + this.tileHalfHeight;
+		entity._x = x;
+		entity._y = y;
+		entity.updatePos();
 	}
 });
