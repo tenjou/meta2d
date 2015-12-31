@@ -228,9 +228,6 @@ meta.Camera.prototype =
 	_onResize: function(data, event)
 	{
 		this.volume.resize(data.width, data.height);
-
-		this._prevZoom = this._zoom;
-		this._zoom = meta.engine.zoom;
 		this._wasResized = true;
 		
 		this.updateView();
