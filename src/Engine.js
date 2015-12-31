@@ -574,12 +574,7 @@ meta.engine =
 			this.canvas.style.top = Math.floor((window.innerHeight - height) * 0.5) + "px";	
 		}
 
-		if(this.ctx.imageSmoothingEnabled) {
-			this.ctx.imageSmoothingEnabled = meta.cache.imageSmoothing;
-		}
-		else {
-			this.ctx[meta.device.vendor + "ImageSmoothingEnabled"] = meta.cache.imageSmoothing;
-		}
+		this.updateImageSmoothing();
 		
 		this._updateOffset();
 		this.onResize.emit(this, meta.Event.RESIZE);
@@ -789,11 +784,21 @@ meta.engine =
 	get container() { return this._container; },
 
 	/* Image smoothing */
+	updateImageSmoothing: function()
+	{
+		if(this.ctx.imageSmoothingEnabled) {
+			this.ctx.imageSmoothingEnabled = meta.cache.imageSmoothing;
+		}
+		else {
+			this.ctx[meta.device.vendor + "ImageSmoothingEnabled"] = meta.cache.imageSmoothing;
+		}		
+	},
+
     set imageSmoothing(value) 
     {
     	meta.cache.imageSmoothing = value;
 		if(this.inited) {
-			this.updateResolution();
+			this.updateImageSmoothing();
 		}
     },
 
