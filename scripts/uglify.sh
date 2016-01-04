@@ -38,7 +38,12 @@ cat meta.js \
 	entity/Entity.Geometry.js \
 	entity/Entity.Text.js \
 	entity/Entity.Tiling.js \
-	entity/Entity.Tilemap.js \
+	entity/tilemap/Entity.Tilemap.js \
+	entity/tilemap/Entity.TilemapLayer.js \
+	entity/tilemap/Entity.TilemapOrthoLayer.js \
+	entity/tilemap/Entity.TilemapIsoLayer.js \
+	entity/tilemap/Entity.TilemapHexLayer.js \
+	entity/tilemap/Entity.TileGeometry.js \
 	entity/Entity.Particle.js \
 	components/Component.Anim.js \
 	renderer/Renderer.js \
