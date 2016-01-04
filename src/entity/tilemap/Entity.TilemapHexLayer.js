@@ -22,11 +22,8 @@ meta.class("Entity.TilemapHexLayer", "Entity.TilemapLayer",
 		var minY = this.offsetY;
 
 		var id = 0, info;
-		var posX = minX | 0;
-		var posY = minY | 0;
-
-		var halfWidth = this.tileWidth * 0.5;
-		var halfHeight = this.tileHeight * 0.5;
+		var posX = 0;
+		var posY = 0;
 
 		startTileX = 0;
 		startTileY = 0;
@@ -78,30 +75,32 @@ meta.class("Entity.TilemapHexLayer", "Entity.TilemapLayer",
 		}
 		else
 		{
+			var posX = 0;
+			var posY = 0;
+
+		// 	var offsetX = this.tileHalfWidth;
+			var flipX = 0;
+
 			var texture;
 
 			for(var y = startTileY; y < this.tilesY; y++)
 			{
-				posX = (this.tilesX * halfWidth) - (y * halfWidth) - halfWidth;
-				posY = (y * halfHeight) + this.tileOffsetY;
-
 				for(var x = startTileX; x < this.tilesX; x++)
-				{
-					// console.log(posX, posY);
-					// console.log("here:",this.getPosX(0, 0), this.getPosY(0, 0))
-					// return;
-					
+				{	
 					texture = this._dataInfo[id++];
 					if(texture) 
 					{
 						ctx.drawImage(texture.canvas, 
 							texture.x, texture.y, texture.width, texture.height, 
-							posX, posY - texture.width + this.tileHeight, texture.width, texture.height);
+							posX, posY, texture.width, texture.height);
 					}
 
-					posX += halfWidth;
-					posY += halfHeight;
+					posX += this.tileWidth;
 				}
+
+				flipX ^= 1;
+				posX = this.tileHalfWidth * flipX;
+				posY += 3;
 			}			
 		}
 

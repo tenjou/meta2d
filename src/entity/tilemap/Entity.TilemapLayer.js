@@ -2,6 +2,21 @@
 
 meta.class("Entity.TilemapLayer", "Entity.Geometry",
 {
+	renderDebug: function()
+	{
+		if(!this._cells) { return; }
+
+		var renderer = meta.renderer;
+		var cell;
+		for(var n = 0; n < this.numTiles; n++)
+		{
+			cell = this._cells[n];
+			if(cell) {
+				renderer._renderVolumes(cell);
+			}
+		}
+	},
+
 	updateFromData: function()
 	{		
 		this.resize(
@@ -15,17 +30,19 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 			this._dataInfo.length = this.numTiles;
 		}
 
-		// if there are attached children:
-		if(this._cellUnresolved)
+		if(this._cells)
 		{
-			this._cells = new Array(this.numTiles + 1);
-			
-			var numChildren = this._cellUnresolved.length;
-			for(var n = 0; n < numChildren; n++) {
-				this._attachToCell(this._cellUnresolved[n]);
+			var entity;
+			var tileGeometryRef = Entity.TileGeometry;
+			var num = this.children.length;
+			for(var n = 0; n < num; n++)
+			{
+				entity = this.children[n];
+				if(entity instanceof tileGeometryRef)
+				{
+					console.log("add");
+				}
 			}
-
-			this._cellUnresolved = null;
 		}
 
 		this._tilesets = this.parent.tilesets;
@@ -75,6 +92,56 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 
 			this._dataInfo[id] = tileset.getCell(gid);
 		}
+	},
+
+	_updateEntityCell: function(entity)
+	{
+		if(!this._cells) { return; }
+
+		var cell, cellId;
+
+		if(entity.cellX < 0 || entity.cellX >= this.tilesX) {
+			cellId = this.numTiles + 1;
+		}
+		else
+		{
+			if(entity.cellY < 0 || entity.cellY >= this.tilesY) {
+				cellId = this.numTiles + 1;
+			}	
+			else {
+				cellId = entity.cellX + (entity.cellY * this.tilesX);
+			}		
+		}		
+
+		if(entity._cellId !== cellId) 
+		{
+			if(entity._cellId !== -1)
+			{
+				cell = this._cells[entity._cellId];
+				if(cell.length > 1)
+				{
+					var tmpEntity = cell.pop();
+					tmpEntity._cellIndex = entity._cellIndex;
+					cell[entity._cellIndex] = tmpEntity;
+				}
+				else {
+					cell.length = 0;
+				}
+			}
+
+			entity._cellId = cellId;
+
+			cell = this._cells[entity._cellId];
+			if(!cell) {
+				cell = [ entity ];
+				this._cells[entity._cellId] = cell;
+				entity._cellIndex = 0;
+			}
+			else {
+				entity._cellIndex = cell.length;
+				cell.push(entity);
+			}
+		}		
 	},
 
 	setGid: function(x, y, gid)
@@ -204,47 +271,39 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 
 	attach: function(entity)
 	{
-		if(!entity) { 
-			console.warn("(Entity.TilemapLayer) Invalid entity passed");
-			return;
-		}
-
-		if(!(entity instanceof Entity.TileGeometry)) {
-			console.warn("(Entity.TilemapLayer) Entity must have extended Entity.TileGeometry");
-			return;
-		}
-
-		entity.parent = this;
-
-		if(this.parent.loaded) 
+		if(entity instanceof Entity.TileGeometry)
 		{
 			if(!this._cells) {
-				this._cells = new Array(this.tilesX * this.tilesY);
+				this._cells = new Array(this.numTiles);
 			}
 
-			this._attachToCell(entity);
-		}
-		else 
-		{
-			if(!this._cellUnresolved) {
-				this._cellUnresolved = [ entity ];
+			entity.parent = this;
+
+			if(entity._x !== 0 || entity._y !== 0) {
+				this._calcEntityCell(entity);	
 			}
 			else {
-				this._cellUnresolved.push(entity);
+				this._calcEntityPos(entity);
 			}
 		}
+
+		this._super(entity);
+
+		entity._activate();
+		if(entity.flags & entity.Flag.PICKING) {
+			meta.renderer.entitiesPicking.push(entity);
+		}		
 	},
 
 	_attachToCell: function(entity)
 	{
 		entity.layerParent = this;
 
-		if(entity._x !== 0 || entity._y !== 0) {
-			this._calcEntityCell(entity);	
-		}
-		else {
-			this._calcEntityPos(entity);
-		}
+		if(entity.flags & entity.Flag.PICKING) {
+			meta.renderer.entitiesPicking.push(entity);
+		}		
+
+
 	},
 
 	detach: function(entity)
@@ -281,9 +340,11 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 	name: "Undefined",
 	tilesX: 0, tilesY: 0,
 	numTiles: 0,
-	tileWidth: 0, tileHeight: 0,
+	tileWidth: 1, tileHeight: 1,
 	tileHalfWidth: 0, tileHalfHeight: 0,
 	tileOffsetX: 0, tileOffsetY: 0,
+
+	cellPos: null,
 
 	_data: null,
 	_dataInfo: null,
@@ -297,9 +358,11 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 	layerFlags: 0
 });
 
-Entity.TilemapLayer.PosInfo = function(cellX, cellY) {
+Entity.TilemapLayer.CellPos = function(cellX, cellY) {
 	this.cellX = cellX;
 	this.cellY = cellY;
 	this.x = 0;
 	this.y = 0;
 };
+
+Entity.TilemapLayer.prototype.cellPos = new Entity.TilemapLayer.CellPos(0, 0);

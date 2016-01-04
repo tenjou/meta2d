@@ -153,12 +153,14 @@ meta.class("Entity.TilemapOrthoLayer", "Entity.TilemapLayer",
 						if(cell)
 						{
 							var num = cell.length;
-							for(var n = 0; n < num; n ++) {
+							for(var n = 0; n < num; n ++) 
+							{
 								var entity = cell[n];
+								if(!entity.texture) { continue; }
+								
 								entity._texture.draw(ctx, entity.volume.x - entity.volume.pivotPosX, entity.volume.y - entity.volume.pivotPosY);
 							}
 						}
-
 					}
 
 					id++;
@@ -173,62 +175,70 @@ meta.class("Entity.TilemapOrthoLayer", "Entity.TilemapLayer",
 
 	_calcEntityCell: function(entity)
 	{
-		var cell, cellId;
+		entity.cellX = Math.floor((entity.volume.x - entity.totalOffsetX) / this.tileWidth);
+		entity.cellY = Math.floor((entity.volume.y - entity.totalOffsetY) / this.tileHeight);
 
-		// calculate new cell coordinates:
-		entity.cellX = Math.floor((entity.volume.x) / this.tileWidth);
-		entity.cellY = Math.floor((entity.volume.y) / this.tileHeight);
-
-		if(entity.cellX < 0 || entity.cellX >= this.tilesX) {
-			cellId = this.numTiles + 1;
-		}
-		else
-		{
-			if(entity.cellY < 0 || entity.cellY >= this.tilesY) {
-				cellId = this.numTiles + 1;
-			}	
-			else {
-				cellId = entity.cellX + (entity.cellY * this.tilesX);
-			}		
-		}		
-
-		if(entity._cellId !== cellId) 
-		{
-			if(entity._cellId !== -1)
-			{
-				cell = this._cells[entity._cellId];
-				if(cell.length > 1)
-				{
-					var tmpEntity = cell.pop();
-					tmpEntity._cellIndex = entity._cellIndex;
-					cell[entity._cellIndex] = tmpEntity;
-				}
-				else {
-					cell.length = 0;
-				}
-			}
-
-			entity._cellId = cellId;
-
-			cell = this._cells[entity._cellId];
-			if(!cell) {
-				cell = [ entity ];
-				this._cells[entity._cellId] = cell;
-				entity._cellIndex = 0;
-			}
-			else {
-				entity._cellIndex = cell.length;
-				cell.push(entity);
-			}
-		}
+		this._updateEntityCell(entity);
 	},
 
 	_calcEntityPos: function(entity)
 	{
-		var x = Math.floor(entity.cellX * this.tileWidth) + this.tileHalfWidth;
-		var y = Math.floor(entity.cellY * this.tileHeight) + this.tileHalfHeight;
+		var x = (entity.cellX * this.tileWidth) + this.tileHalfWidth;
+		var y = (entity.cellY * this.tileHeight) + this.tileHalfHeight;
 		entity._x = x;
 		entity._y = y;
 		entity.updatePos();
-	}
+	},
+
+	getPos: function(cellX, cellY)
+	{
+		var x = ((this.tilesX * this.tileHalfWidth) - (cellY * this.tileHalfWidth) - this.tileHalfWidth) + 
+			(cellX * this.tileHalfWidth);
+		var y = y = ((cellY * this.tileHalfHeight) + this.tileOffsetY) +
+			(cellX * this.tileHalfHeight);
+
+		return [ x, y ];
+	},
+
+	getWorldPos: function(cellX, cellY)
+	{
+		var x = ((this.tilesX * this.tileHalfWidth) - (cellY * this.tileHalfWidth) - this.tileHalfWidth) + 
+			(cellX * this.tileHalfWidth) + this.volume.minX;
+		var y = y = ((cellY * this.tileHalfHeight) + this.tileOffsetY) +
+			(cellX * this.tileHalfHeight) + this.volume.minY;
+
+		return [ x, y ];
+	},	
+
+	getPosEx: function(cellPos)
+	{
+		cellPos.x = ((this.tilesX * this.tileHalfWidth) - (cellPos.cellY * this.tileHalfWidth) - this.tileHalfWidth) + 
+			(cellPos.cellX * this.tileHalfWidth);
+		cellPos.y = y = ((cellPos.cellY * this.tileHalfHeight) + this.tileOffsetY) +
+			(cellPos.cellX * this.tileHalfHeight);
+	},
+
+	getWorldPosEx: function(cellPos)
+	{
+		cellPos.x = ((this.tilesX * this.tileHalfWidth) - (cellPos.cellY * this.tileHalfWidth) - this.tileHalfWidth) + 
+			(cellPos.cellX * this.tileHalfWidth) + this.volume.minX;
+		cellPos.y = y = ((cellPos.cellY * this.tileHalfHeight) + this.tileOffsetY) +
+			(cellPos.cellX * this.tileHalfHeight) + this.volume.minY;
+	},	
+
+	getPosX: function(cellX, cellY)
+	{
+		var x = ((this.tilesX * this.tileHalfWidth) - (cellY * this.tileHalfWidth) - this.tileHalfWidth) + 
+			(cellX * this.tileHalfWidth);
+		
+		return x;
+	},
+
+	getPosY: function(cellX, cellY)
+	{
+		var y = ((cellY * this.tileHalfHeight) + this.tileOffsetY) +
+			(cellX * this.tileHalfHeight);
+
+		return y + 20;
+	}	
 });

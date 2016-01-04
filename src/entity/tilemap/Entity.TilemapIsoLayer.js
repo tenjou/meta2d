@@ -2,153 +2,146 @@
 
 meta.class("Entity.TilemapIsoLayer", "Entity.TilemapLayer",
 {
-	draw: function(ctx) 
+	draw: function(ctx, minX, minY) 
 	{
 		if((this.parent.flags & this.Flag.LOADED) === 0) { return; }
 
 		var cameraVolume = meta.camera.volume;
+		var renderer = meta.renderer;
 
 		var startTileX = 0;
 		var endTileX = this.tilesX;
 		var startTileY = 0;
 		var endTileY = this.tilesY;
 
-		// var minX = Math.floor(this.volume.minX + (startTileX * this.tileWidth));
-		// var minY = Math.floor(this.volume.minY + (startTileY * this.tileHeight));
-		var minX = 0;
-		var minY = this.offsetY;
-
-		var id = 0, info;
-		var posX = minX | 0;
-		var posY = minY | 0;
-
-		var halfWidth = this.tileWidth * 0.5;
-		var halfHeight = this.tileHeight * 0.5;
-
-		startTileX = 0;
-		startTileY = 0;
-		endTileX = this.tilesX;
-		endTileY = this.tilesY;
-
-		//this.tilesY = 2;
-
-		// var centerX = this.tilesX * halfWidth;
-		// var centerY = this.tilesY * halfHeight;
-		// var startPosX = cameraVolume.minX - centerX;
-		// var startPosY = cameraVolume.minY - centerY;
-		// var endPosX = cameraVolume.maxX - centerX + halfWidth;
-		// var endPosY = cameraVolume.maxY - centerY + halfHeight;
-		
-		// var minTileX = Math.floor(startPosX / halfWidth);
-		// var minTileY = Math.floor(startPosY / halfHeight);
-		// var maxTileX = Math.ceil(endPosX / halfWidth);
-		// var maxTileY = Math.ceil(endPosY / halfHeight);
-		// console.log(minTileX, minTileY, maxTileX, maxTileY);
-
-		// if(minTileX < 0) {
-
-		// }
+		var texture, posX, posY, x, y;
+		var id = 0;
 
 		if(this._dataFlags)
 		{		
 			for(var y = startTileY; y < this.tilesY; y++)
 			{
-				posX = -(y * halfWidth) + ((this.tilesX - 1) * halfWidth) + minX;
-				posY = (y * halfHeight) - halfHeight + minY;		
-				// posX = -(y * halfWidth);
-				// posY = y * halfHeight;
+				posX = (this.tilesX * this.tileHalfWidth) - (y * this.tileHalfWidth) - this.tileHalfWidth + minX;
+				posY = (y * this.tileHalfHeight) + this.tileOffsetY + minY;
 
 				for(var x = startTileX; x < endTileX; x++)
 				{
-					info = this._dataInfo[id++];
-					if(info) 
+					texture = this._dataInfo[id];
+					if(texture) 
 					{
-						ctx.drawImage(info.canvas, 
-							info.posX, info.posY, info.width, info.height, 
-							posX, posY, info.width, info.height);
+						ctx.drawImage(texture.canvas, 
+							texture.x, texture.y, texture.width, texture.height, 
+							posX, posY + this.tileHeight - texture.height, texture.width, texture.height);
 					}
 
-					posX += halfWidth;
-					posY += halfHeight;
+					id++;
+					posX += this.tileHalfWidth;
+					posY += this.tileHalfHeight;
 				}
 			}	
 		}
 		else
 		{
-			var texture;
-
 			for(var y = startTileY; y < this.tilesY; y++)
 			{
-				posX = (this.tilesX * halfWidth) - (y * halfWidth) - halfWidth;
-				posY = (y * halfHeight) + this.tileOffsetY;
+				posX = (this.tilesX * this.tileHalfWidth) - (y * this.tileHalfWidth) - this.tileHalfWidth + minX;
+				posY = (y * this.tileHalfHeight) + this.tileOffsetY + minY;
 
 				for(var x = startTileX; x < this.tilesX; x++)
-				{
-					// console.log(posX, posY);
-					// console.log("here:",this.getPosX(0, 0), this.getPosY(0, 0))
-					// return;
-					
-					texture = this._dataInfo[id++];
+				{					
+					texture = this._dataInfo[id];
 					if(texture) 
 					{
 						ctx.drawImage(texture.canvas, 
 							texture.x, texture.y, texture.width, texture.height, 
-							posX, posY - texture.width + this.tileHeight, texture.width, texture.height);
+							posX, posY + this.tileHeight - texture.height, texture.width, texture.height);
 					}
 
-					posX += halfWidth;
-					posY += halfHeight;
+					if(this._cells)
+					{
+						var cell = this._cells[id];
+						if(cell)
+						{
+							var num = cell.length;
+							for(var n = 0; n < num; n ++) 
+							{
+								var entity = cell[n];
+								if(!entity.texture) { continue; }
+
+								renderer.drawEntity(entity);
+							}
+						}
+					}					
+
+					id++;
+					posX += this.tileHalfWidth;
+					posY += this.tileHalfHeight;
 				}
-			}			
+			}
 		}
-
-
 	},
 
-	calcEntityCell: function(entity)
+	_calcEntityCell: function(entity)
 	{
-		
-	},	
+		var adjScreenX = entity.x - (this.tilesX * this.tileHalfWidth);
+		var adjScreenY = entity.y
+		entity.cellX = Math.floor(((adjScreenY / this.tileHalfHeight) + (adjScreenX / this.tileHalfWidth)) / 2);
+		entity.cellY = Math.floor(((adjScreenY / this.tileHalfHeight) - (adjScreenX / this.tileHalfWidth)) / 2);
+
+		this._updateEntityCell(entity);
+	},
+
+	_calcEntityPos: function(entity)
+	{
+		var x = ((this.tilesX * this.tileHalfWidth) - (entity.cellY * this.tileHalfWidth) - this.tileHalfWidth) + 
+			(entity.cellX * this.tileHalfWidth);
+		var y = ((entity.cellY * this.tileHalfHeight) + this.tileOffsetY) +
+			(entity.cellX * this.tileHalfHeight);
+
+		entity._x = x + this.tileHalfWidth;
+		entity._y = y + this.tileHalfHeight;
+		entity.updatePos();
+	},
 
 	getPos: function(cellX, cellY)
 	{
-		var x = ((this.tilesX * this.tileHalfWidth) - (cellY * this.tileHalfWidth) - this.tileHalfWidth) + 
+		var x = (this.tilesX * this.tileHalfWidth) - (cellY * this.tileHalfWidth) + 
 			(cellX * this.tileHalfWidth);
-		var y = y = ((cellY * this.tileHalfHeight) + this.tileOffsetY) +
-			(cellX * this.tileHalfHeight);
+		var y = (cellY * this.tileHalfHeight) + (cellX * this.tileHalfHeight) + 
+			this.tileHalfHeight + this.tileOffsetY;
 
 		return [ x, y ];
 	},
 
 	getWorldPos: function(cellX, cellY)
 	{
-		var x = ((this.tilesX * this.tileHalfWidth) - (cellY * this.tileHalfWidth) - this.tileHalfWidth) + 
+		var x = (this.tilesX * this.tileHalfWidth) - (cellY * this.tileHalfWidth) + 
 			(cellX * this.tileHalfWidth) + this.volume.minX;
-		var y = y = ((cellY * this.tileHalfHeight) + this.tileOffsetY) +
-			(cellX * this.tileHalfHeight) + this.volume.minY;
+		var y = (cellY * this.tileHalfHeight) + (cellX * this.tileHalfHeight) + 
+			this.tileHalfHeight + this.tileOffsetY + this.volume.minY;
 
 		return [ x, y ];
 	},	
 
 	getPosEx: function(cellPos)
 	{
-		cellPos.x = ((this.tilesX * this.tileHalfWidth) - (cellPos.cellY * this.tileHalfWidth) - this.tileHalfWidth) + 
+		cellPos.x = (this.tilesX * this.tileHalfWidth) - (cellPos.cellY * this.tileHalfWidth) + 
 			(cellPos.cellX * this.tileHalfWidth);
-		cellPos.y = y = ((cellPos.cellY * this.tileHalfHeight) + this.tileOffsetY) +
-			(cellPos.cellX * this.tileHalfHeight);
+		cellPos.y = (cellPos.cellY * this.tileHalfHeight) + (cellPos.cellX * this.tileHalfHeight) + 
+			this.tileHalfHeight + this.tileOffsetY;
 	},
 
 	getWorldPosEx: function(cellPos)
 	{
-		cellPos.x = ((this.tilesX * this.tileHalfWidth) - (cellPos.cellY * this.tileHalfWidth) - this.tileHalfWidth) + 
+		cellPos.x = (this.tilesX * this.tileHalfWidth) - (cellPos.cellY * this.tileHalfWidth) + 
 			(cellPos.cellX * this.tileHalfWidth) + this.volume.minX;
-		cellPos.y = y = ((cellPos.cellY * this.tileHalfHeight) + this.tileOffsetY) +
-			(cellPos.cellX * this.tileHalfHeight) + this.volume.minY;
+		cellPos.y = (cellPos.cellY * this.tileHalfHeight) + (cellPos.cellX * this.tileHalfHeight) + 
+			this.tileHalfHeight + this.tileOffsetY + this.volume.minY;
 	},	
 
 	getPosX: function(cellX, cellY)
 	{
-		var x = ((this.tilesX * this.tileHalfWidth) - (cellY * this.tileHalfWidth) - this.tileHalfWidth) + 
+		var x = (this.tilesX * this.tileHalfWidth) - (cellY * this.tileHalfWidth) + 
 			(cellX * this.tileHalfWidth);
 		
 		return x;
@@ -156,13 +149,24 @@ meta.class("Entity.TilemapIsoLayer", "Entity.TilemapLayer",
 
 	getPosY: function(cellX, cellY)
 	{
-		var y = ((cellY * this.tileHalfHeight) + this.tileOffsetY) +
-			(cellX * this.tileHalfHeight);
+		var y = (cellY * this.tileHalfHeight) + (cellX * this.tileHalfHeight) + 
+			this.tileOffsetY + this.tileOffsetY;
 
-		return y + 20;
+		return y;
 	},
 
-	getGridFromWorldPos: function(worldX, worldY) 
+	getCellFromPos: function(posX, posY)
+	{
+		var adjScreenX = posX - (this.tilesX * this.tileHalfWidth) - this.offsetX;
+		var adjScreenY = posY - this.offsetY;
+
+		var cellX = Math.floor(((adjScreenY / this.tileHalfHeight) + (adjScreenX / this.tileHalfWidth)) / 2);
+		var cellY = Math.floor(((adjScreenY / this.tileHalfHeight) - (adjScreenX / this.tileHalfWidth)) / 2);
+
+		return [ cellX, cellY ];
+	},
+
+	getCellFromWorldPos: function(worldX, worldY) 
 	{
 		var adjScreenX = worldX - (this.tilesX * this.tileHalfWidth) - (this.volume.x + this.offsetX);
 		var adjScreenY = worldY - (this.volume.y - this.offsetY);
@@ -171,5 +175,23 @@ meta.class("Entity.TilemapIsoLayer", "Entity.TilemapLayer",
 		var gridY = Math.floor(((adjScreenY / this.tileHalfHeight) - (adjScreenX / this.tileHalfWidth)) / 2);
 
 		return [ gridX, gridY ];
-	},	
+	},
+
+	getCellFromPosEx: function(cellPos)
+	{
+		var adjScreenX = cellPos.x - (this.tilesX * this.tileHalfWidth) - this.offsetX;
+		var adjScreenY = cellPos.y - this.offsetY;
+
+		cellPos.cellX = Math.floor(((adjScreenY / this.tileHalfHeight) + (adjScreenX / this.tileHalfWidth)) / 2);
+		cellPos.cellY = Math.floor(((adjScreenY / this.tileHalfHeight) - (adjScreenX / this.tileHalfWidth)) / 2);
+	},
+
+	getCellFromWorldPosEx: function(cellPos)
+	{
+		var adjScreenX = cellPos.x - (this.tilesX * this.tileHalfWidth) - (this.volume.x + this.offsetX);
+		var adjScreenY = cellPos.y - (this.volume.y - this.offsetY);
+
+		cellPos.cellX = Math.floor(((adjScreenY / this.tileHalfHeight) + (adjScreenX / this.tileHalfWidth)) / 2);
+		cellPos.cellY = Math.floor(((adjScreenY / this.tileHalfHeight) - (adjScreenX / this.tileHalfWidth)) / 2);
+	}
 });

@@ -185,10 +185,10 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		for(var n = 0; n < num; n++)
 		{
 			tileset = this.tilesets[n];
-			tilesetOffsetY = tileset.tileHeight - this.tileHeight;
-			if(tilesetOffsetY > tileOffsetY) {
-				tileOffsetY = tilesetOffsetY;
-			}
+			// tilesetOffsetY = tileset.tileHeight - this.tileHeight;
+			// if(tilesetOffsetY > tileOffsetY) {
+			// 	tileOffsetY = tilesetOffsetY;
+			// }
 		}
 
 		if(this.children)
@@ -229,7 +229,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		for(n = 0; n < num; n++)
 		{
 			layerInfo = layers[n];
-			layer = this.createLayer(layerInfo.width, layerInfo.height, layerInfo.data, layerInfo.name);
+			layer = this.createLayer(layerInfo.data, layerInfo.width, layerInfo.height, layerInfo.name);
 			if(layerInfo.visible) {
 				layer.visible = layerInfo.visible;
 			}
@@ -375,7 +375,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 			}
 		}
 
-		var layer = this.createLayer(tilesX, tilesY, data, name);
+		var layer = this.createLayer(data, tilesX, tilesY, name);
 		layer.hidden = !visible;
 	},
 
