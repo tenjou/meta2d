@@ -445,7 +445,7 @@ meta.SparseGrid.prototype =
 		if(!this.debug) { return; }
 		
 		ctx.save();
-		ctx.lineWidth = 1.5;
+		ctx.lineWidth = 1;
 		ctx.strokeStyle = "#43a6e2";	
 		ctx.fillStyle = "#c9e3f3";
 		

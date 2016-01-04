@@ -113,6 +113,10 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 				}
 
 				this.drawVolume(entity);
+
+				if(entity.renderDebug) {
+					entity.renderDebug();
+				}
 			}
 		}
 	},
@@ -128,7 +132,6 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 		if(entity.clipVolume) 
 		{
 			this.ctx.save();
-
 			this.ctx.beginPath();
 
 			if(entity.flags & entity.Flag.CLIP_BOUNDS) {
@@ -195,10 +198,9 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 	{
 		var volume = entity.volume;
 
-		this.ctx.save();
-
 		if(entity.clipVolume) 
 		{
+			this.ctx.save();
 			this.ctx.beginPath();
 
 			if(entity.flags & entity.Flag.CLIP_BOUNDS) {
@@ -214,24 +216,50 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 			this.ctx.clip();
 		}
 
-		this.ctx.globalAlpha = entity.totalAlpha;
+		if(!volume.__transformed) {
+			entity.draw(this.ctx, Math.floor(volume.minX), Math.floor(volume.minY));
+		}
+		else
+		{
+			this.ctx.globalAlpha = entity.totalAlpha;
 
-		this.ctx.transform(
-			volume.m11, volume.m12, 
-			volume.m21, volume.m22,
-			Math.floor(volume.x), Math.floor(volume.y));
+			this.ctx.transform(
+				volume.m11, volume.m12, 
+				volume.m21, volume.m22,
+				Math.floor(volume.x), Math.floor(volume.y));
+			
+			entity.draw(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY);
 		
-		entity.draw(this.ctx);
+			this.ctx.globalAlpha = 1.0;
+			
+			this.resetProjection();
+		}
 
-		this.ctx.restore();		
+		if(entity.clipVolume) {
+			this.ctx.restore();
+		}	
 	},
 
 	drawVolume: function(entity)
 	{
 		var volume = entity.volume;
 
-		if(volume.__type === 0) {
-			this._drawVolume(volume);
+		if(volume.__transformed === 0) 
+		{
+			var minX = Math.floor(volume.minX);
+			var minY = Math.floor(volume.minY);
+			var maxX = Math.ceil(volume.maxX);
+			var maxY = Math.ceil(volume.maxY);		
+
+			this.ctx.beginPath();
+			this.ctx.moveTo(minX, minY);
+			this.ctx.lineTo(maxX, minY);
+			this.ctx.lineTo(maxX, maxY);
+			this.ctx.lineTo(minX, maxY);
+			this.ctx.lineTo(minX, minY - 1);
+			this.ctx.stroke();	
+
+			this.ctx.fillRect(Math.floor(volume.x) - 3, Math.floor(volume.y) - 3, 6, 6);
 		}
 		else
 		{

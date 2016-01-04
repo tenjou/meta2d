@@ -14,12 +14,15 @@ meta.class("meta.Renderer",
 		this.holder = new Entity.Geometry();
 		this.holder._view = view;
 		this.staticHolder = new Entity.Geometry();
-		this.staticHolder._view = view;		
+		this.staticHolder._view = view;	
+		this.layerHolder = new Entity.TilemapOrthoLayer();
+		this._view = view;	
 		
 		var flags = (this.holder.Flag.ENABLED | this.holder.Flag.INSTANCE_ENABLED | this.holder.Flag.LOADED);
 		entityProto.flags = flags;
 		entityProto.renderer = this;
 		entityProto.parent = this.holder;
+		Entity.TileGeometry.prototype.parent = this.layerHolder;
 
 		this.holder.flags = flags | this.holder.Flag.ROOT_HOLDER;
 		this.staticHolder.flags = flags | this.holder.Flag.ROOT_HOLDER;
@@ -252,15 +255,12 @@ meta.class("meta.Renderer",
 		}
 	},
 
-	sort: function(buffer)
-	{
-	    buffer.sort(function(a, b) {
-	        return a.totalZ - b.totalZ;
-	    });
+	sort: function(buffer) {
+	    buffer.sort(this.sortFunc);   
+	},
 
-        if(buffer[-1]) {
-        	console.log("ERROR SORT");
-        }	   
+	sortFunc: function(a, b) {
+		return a.totalZ - b.totalZ;
 	},
 
 	makeEntityVisible: function(entity)
@@ -297,9 +297,7 @@ meta.class("meta.Renderer",
 
 	addEntity: function(entity, reuse)
 	{
-		if((entity.flags & entity.Flag.INSTANCE_ENABLED) === 0) { return; }
-
-		entity._activate();
+		if((entity.flags & entity.Flag.INSTANCE_ENABLED) === 0) { return; }	
 
 		// If view has different buffer than default one - treat it as static or debugger.
 		if(entity._view.entityBuffer !== this.entities) {
@@ -307,13 +305,25 @@ meta.class("meta.Renderer",
 		}
 		else
 		{
-			if(this.culling) {
+			if(this.culling) 
+			{
+				if(entity._view.entityBuffer === this.entities) {
+					entity.node = new meta.SparseNode(this);
+				}	
+
 				this.culling.add(entity);
 			}
 			else {
 				this.makeEntityVisible(entity);
 			}
 		}
+
+		this._addEntity(entity, reuse);
+	},
+
+	_addEntity: function(entity, reuse)
+	{
+		entity._activate();	
 
 		if(entity.children) 
 		{
@@ -322,7 +332,7 @@ meta.class("meta.Renderer",
 			for(var n = 0; n < num; n++) {
 				this.addEntity(children[n], reuse);
 			}
-		}
+		}		
 	},
 
 	addEntities: function(entities)
@@ -712,6 +722,7 @@ meta.class("meta.Renderer",
 
 	holder: null,
 	staticHolder: null,
+	layerHolder: null,
 
 	camera: null,
 	cameraVolume: null,

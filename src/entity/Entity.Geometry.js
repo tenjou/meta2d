@@ -98,11 +98,9 @@ meta.class("Entity.Geometry",
 			this.updating = true;
 		}		
 
-		this._updateAnchor();
-
-		if(this.renderer.culling && this._view.entityBuffer === this.renderer.entities) {
-			this.node = new meta.SparseNode(this);
-		}		
+		if(this._anchorX !== 0 || this._anchorY !== 0) {
+			this._updateAnchor();	
+		}
 
 		if(this.components !== this.parent.components)
 		{
@@ -1056,7 +1054,7 @@ meta.class("Entity.Geometry",
 
 		if(entity === this) {
 			console.warn("(Entity.Geometry.attach) Trying to attach themself");
-			return;			
+			return;	
 		}
 
 		if(entity._view) {
@@ -1548,6 +1546,8 @@ meta.class("Entity.Geometry",
 	},
 
 	/* Debug */
+	renderDebug: null,
+
 	set debug(value) 
 	{
 		if(value) 
