@@ -122,8 +122,8 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 	{
 		var rawFramesX = (this.texture.trueFullWidth / frameWidth);
 		var rawFramesY = (this.texture.trueFullHeight / frameHeight);
-		var framesX = Math.ceil(rawFramesX);
-		var framesY = Math.ceil(rawFramesY);
+		var framesX = Math.floor(rawFramesX);
+		var framesY = Math.floor(rawFramesY);
 
 		var numFrames = framesX * framesY;
 		this.frames = new Array(numFrames);
