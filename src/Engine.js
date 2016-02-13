@@ -8,8 +8,7 @@ meta.engine =
 	 */
 	create: function()
 	{
-		this._container = document.body;
-		this._container.style.cssText = this.elementStyle;
+		this.onCreate();
 
 		this.parseFlags();
 
@@ -19,14 +18,6 @@ meta.engine =
 		if(this.autoMetaTags) {
 			this._addMetaTags();
 		}
-
-		this.onUpdate = meta.createChannel(meta.Event.UPDATE);
-		this.onResize = meta.createChannel(meta.Event.RESIZE);
-		this.onAdapt = meta.createChannel(meta.Event.ADAPT);
-		this.onBlur = meta.createChannel(meta.Event.BLUR);
-		this.onFocus = meta.createChannel(meta.Event.FOCUS);
-		this.onFullscreen = meta.createChannel(meta.Event.FULLSCREEN);
-		this.onDebug = meta.createChannel(meta.Event.DEBUG);
 
 		// Callbacks:
 		var self = this;
@@ -65,10 +56,31 @@ meta.engine =
 		resources.onLoadingStart.add(this.onLoadingStart, this);
 		resources.onLoadingEnd.add(this.onLoadingEnd, this);
 
-		this.sortAdaptions();
-		this.updateResolution();	
-
 		this._initAll();
+	},
+
+	onCreate: function()
+	{
+		this.onUpdate = meta.createChannel(meta.Event.UPDATE);
+		this.onResize = meta.createChannel(meta.Event.RESIZE);
+		this.onAdapt = meta.createChannel(meta.Event.ADAPT);
+		this.onBlur = meta.createChannel(meta.Event.BLUR);
+		this.onFocus = meta.createChannel(meta.Event.FOCUS);
+		this.onFullscreen = meta.createChannel(meta.Event.FULLSCREEN);
+		this.onDebug = meta.createChannel(meta.Event.DEBUG);
+
+		var createFuncs = meta.cache.createFuncs;
+		var num = createFuncs.length;
+		for(var n = 0; n < num; n++) {
+			createFuncs[n]();
+		}
+		meta.cache.createFuncs = null;	
+
+		if(!this._container) {
+			this._container = document.body;	
+		}	
+		
+		this._container.style.cssText = this.elementStyle;
 	},
 
 	parseFlags: function()
@@ -529,8 +541,8 @@ meta.engine =
 			containerHeight = window.innerHeight;
 		}
 		else {
-			containerWidth = this.container.clientWidth;
-			containerHeight = this.container.clientHeight;
+			containerWidth = this._container.clientWidth;
+			containerHeight = this._container.clientHeight;
 		}
 
 		if(width === 0) {
@@ -560,6 +572,7 @@ meta.engine =
 		height = Math.round(height);		
 
 		if(this.width === width && this.height === height && !this._center) { return; }
+		if(!this.canvas) { return; }
 
 		var ratio = 1;
 		this.width = Math.ceil(width * ratio);
@@ -676,15 +689,16 @@ meta.engine =
 		this.canvas.setAttribute("id", "meta-canvas");
 		this.canvas.style.cssText = this.canvasStyle;
 
-		var container = this.meta.cache.container;
-		if(!container) {
+		meta.renderer = new meta.CanvasRenderer();	
+
+		this.updateResolution();
+
+		if(!this._container) {
 			document.body.appendChild(this.canvas);	
 		}
 		else {
-			container.appendChild(this.canvas);	
+			this._container.appendChild(this.canvas);	
 		}	
-
-		meta.renderer = new meta.CanvasRenderer();	
 	},
 
 	_updateOffset: function()
@@ -777,8 +791,10 @@ meta.engine =
 			this._container = element;
 		}
 
-		this._container.appendChild(this.canvas);
-		this.updateResolution();
+		if(this.canvas) {
+			this._container.appendChild(this.canvas);
+			this.updateResolution();	
+		}
 	},
 
 	get container() { return this._container; },

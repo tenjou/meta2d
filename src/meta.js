@@ -45,6 +45,7 @@ var meta =
 		metaTagsAdded: false,
 		timerIndex: 0,
 
+		createFuncs: [],
 		initFuncs: [], 
 		preloadFuncs: [],
 		loadFuncs: [], 
@@ -63,6 +64,14 @@ var meta =
 
 		infoView: null
 	},
+
+	set onCreate(func) 
+	{
+		this.cache.createFuncs.push(func);
+		if(this.engine && this.engine.inited) {
+			func();
+		}
+	},	
 
 	set onInit(func) 
 	{

@@ -168,7 +168,7 @@ meta.Tween.Link.prototype =
 	 * @returns {meta.Tween.Link}
 	 */
 	reverse: function(value) {
-		this.tween.reverse(value);
+		this.tween.reverse = value;
 		return this;
 	},
 

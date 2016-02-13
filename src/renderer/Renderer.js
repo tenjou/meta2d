@@ -97,9 +97,11 @@ meta.class("meta.Renderer",
 		}
 
 		this._removeFromBuffer(this.entitiesUpdate, this.entitiesUpdateRemove);
+		this._removeFromBuffer(this.entitiesUpdate, this.entitiesUpdateRemove);
 		this._removeFromBuffer(this.entitiesAnim, this.entitiesAnimRemove);
 		this._removeFromBuffer(this.entitiesPicking, this.entitiesPickingRemove);
 		this._removeFromBuffer(this.tweens, this.tweensRemove);	
+		this._removeFromBufferEx(this.compsUpdate, this.compsUpdateRemove);
 
 		// updating:
 		this.__updating = true;	
@@ -109,6 +111,11 @@ meta.class("meta.Renderer",
 		for(var i = 0; i < num; i++) {
 			this.entitiesUpdate[i].update(tDelta);
 		}	
+
+		num = this.compsUpdate.length;
+		for(i = 0; i < num; i++) {
+			this.compsUpdate[i].update(tDelta);
+		}
 
 		num = this.tweens.length;
 		for(i = 0; i < num; i++) {
@@ -249,6 +256,43 @@ meta.class("meta.Renderer",
 			}
 			else {
 				buffer.length = 0;
+			}
+
+			removeBuffer.length = 0;
+		}
+	},
+
+	_removeFromBufferEx: function(buffer, removeBuffer)
+	{
+		var num = removeBuffer.length;
+		if(num > 0)
+		{
+			var n;
+			var numItems = buffer.length;
+
+			if(num === numItems) 
+			{
+				for(n = 0; n < num; n++) {
+					buffer[n]._updateIndex = -1;
+				}
+
+				buffer.length = 0;
+			}
+			else
+			{
+				var item, lastItem;
+				for(n = 0; n < num; n++)
+				{
+					item = removeBuffer[n];
+					if(!item) { continue; }
+					
+					lastItem = buffer[--numItems];
+					lastItem._updateIndex = item._updateIndex;
+					item._updateIndex = -1;
+					buffer[item._updateIndex] = lastItem;
+				}
+
+				buffer.length = numItems;
 			}
 
 			removeBuffer.length = 0;
@@ -738,12 +782,11 @@ meta.class("meta.Renderer",
 
 	entitiesUpdate: [],
 	entitiesUpdateRemove: [],
-
 	entitiesAnim: [],
 	entitiesAnimRemove: [],	
-
 	entitiesPicking: [],
 	entitiesPickingRemove: [],
+
 	hoverEntity: null,
 	pressedEntity: null,
 	enablePicking: true,
@@ -754,6 +797,8 @@ meta.class("meta.Renderer",
 	entitiesDebug: null,
 	entitiesDebugRemove: null,
 
+	compsUpdate: [],
+	compsUpdateRemove: [],
 	tweens: [],
 	tweensRemove: [],
 

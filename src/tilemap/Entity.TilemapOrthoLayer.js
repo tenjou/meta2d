@@ -214,7 +214,7 @@ meta.class("Entity.TilemapOrthoLayer", "Entity.TilemapLayer",
 	{
 		cellPos.x = ((this.tilesX * this.tileHalfWidth) - (cellPos.cellY * this.tileHalfWidth) - this.tileHalfWidth) + 
 			(cellPos.cellX * this.tileHalfWidth);
-		cellPos.y = y = ((cellPos.cellY * this.tileHalfHeight) + this.tileOffsetY) +
+		cellPos.y = ((cellPos.cellY * this.tileHalfHeight) + this.tileOffsetY) +
 			(cellPos.cellX * this.tileHalfHeight);
 	},
 
@@ -222,7 +222,7 @@ meta.class("Entity.TilemapOrthoLayer", "Entity.TilemapLayer",
 	{
 		cellPos.x = ((this.tilesX * this.tileHalfWidth) - (cellPos.cellY * this.tileHalfWidth) - this.tileHalfWidth) + 
 			(cellPos.cellX * this.tileHalfWidth) + this.volume.minX;
-		cellPos.y = y = ((cellPos.cellY * this.tileHalfHeight) + this.tileOffsetY) +
+		cellPos.y = ((cellPos.cellY * this.tileHalfHeight) + this.tileOffsetY) +
 			(cellPos.cellX * this.tileHalfHeight) + this.volume.minY;
 	},	
 

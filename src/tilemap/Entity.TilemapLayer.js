@@ -291,7 +291,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 
 		entity._activate();
 		if(entity.flags & entity.Flag.PICKING) {
-			meta.renderer.entitiesPicking.push(entity);
+			this.renderer.entitiesPicking.push(entity);
 		}		
 	},
 
@@ -300,7 +300,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 		entity.layerParent = this;
 
 		if(entity.flags & entity.Flag.PICKING) {
-			meta.renderer.entitiesPicking.push(entity);
+			this.renderer.entitiesPicking.push(entity);
 		}		
 
 
