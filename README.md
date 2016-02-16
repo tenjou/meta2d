@@ -2,7 +2,7 @@ META v0.82
 ====
 
 [![Join the chat at https://gitter.im/InfiniteFoundation/meta2d](https://badges.gitter.im/InfiniteFoundation/meta2d.svg)](https://gitter.im/InfiniteFoundation/meta2d?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-![Trello](https://img.shields.io/badge/trello-roadmap-43a6e2.svg)
+[![Trello](https://img.shields.io/badge/trello-roadmap-43a6e2.svg)](https://trello.com/b/a6C8jUbV/metadev)
 
 Meta is free and fast open source HTML5 game engine for making cross platform games, supports Canvas and WebGL rendering and Dopple for native compilation.
 
