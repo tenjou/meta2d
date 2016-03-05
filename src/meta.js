@@ -12,7 +12,6 @@ var meta =
 	input: null,
 	physics: null,
 	steering: null,
-	channels: [],
 	modules: {},
 
 	loading: null,

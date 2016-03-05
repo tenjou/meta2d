@@ -1,4 +1,4 @@
- META changelog
+META changelog
 ====
 
 0.8.1

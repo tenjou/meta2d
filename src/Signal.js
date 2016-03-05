@@ -277,3 +277,5 @@ meta.emit = function(channel, data, event)
 
 	channel.emit(data, event);
 };
+
+meta.channels = [];
