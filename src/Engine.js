@@ -571,7 +571,6 @@ meta.engine =
 		width = Math.round(width);
 		height = Math.round(height);		
 
-		if(this.width === width && this.height === height && !this._center) { return; }
 		if(!this.canvas) { return; }
 
 		var ratio = 1;

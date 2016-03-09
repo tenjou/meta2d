@@ -75,12 +75,7 @@ meta.class("meta.Renderer",
 		meta.camera.onResize.add(this.onCameraResize, this);
 		meta.camera.onMove.add(this.onCameraMove, this);
 
-		this.holder.resize(this.camera.volume.width, this.camera.volume.height);
-		this.staticHolder.resize(meta.engine.width, meta.engine.height);
-
-		if(this.culling) {
-			this.culling.calc();
-		}
+		meta.engine.updateResolution();
 	},
 
 	update: function(tDelta)

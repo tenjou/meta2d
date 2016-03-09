@@ -1147,6 +1147,10 @@ meta.class("Entity.Geometry",
 		this.children.length = 0;
 	},
 
+	get view() {
+		return this._view;
+	},
+
 	_updateHidden: function()
 	{
 		if(this.flags & this.Flag.INSTANCE_HIDDEN) 
