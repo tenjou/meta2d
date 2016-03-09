@@ -497,7 +497,7 @@ meta.class("meta.Renderer",
 
 			if(this.enablePixelPicking) 
 			{
-				if(entity._static) 
+				if(entity._view.flags & entity._view.Flag.STATIC) 
 				{
 					if(!entity.isPointInsidePx(data.screenX, data.screenY)) {
 						continue;
@@ -512,7 +512,7 @@ meta.class("meta.Renderer",
 			}
 			else 
 			{
-				if(entity._static) 
+				if(entity._view.flags & entity._view.Flag.STATIC) 
 				{
 					if(!entity.isPointInside(data.screenX, data.screenY)) {
 						continue;
