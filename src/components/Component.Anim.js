@@ -16,7 +16,7 @@ meta.component("Component.Anim",
 
 		this.texture = texture;
 
-		if(texture.frames > 1)
+		if(texture.frameData)
 		{
 			this.texture = texture;
 			this.fps = texture.fps;	

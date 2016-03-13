@@ -220,14 +220,13 @@ meta.class("meta.Renderer",
 					this.entitiesPickingRemove.push(entity); 
 				}
 
-				if(entity.flags & entity.Flag.REMOVED) 
-				{
-					entity._remove();
-
-					if(entity.children) {
-						this._removeEntitiesGroup(entities, entity.children, true);
-					}					
+				if(entity.flags & entity.Flag.REMOVED) {
+					entity._remove();				
 				}	
+
+				if(entity.children) {
+					this._removeEntitiesGroup(entities, entity.children, true);
+				}					
 
 				entity.flags &= ~entity.Flag.RENDER_REMOVE;
 			}

@@ -30,7 +30,8 @@ meta.class("Input.Manager",
 			screenX: 0,
 			screenY: 0,
 			keyCode: 0,
-			entity: null
+			entity: null,
+			keyboard: false
 		};
 
 		this._addEventListeners();
@@ -131,6 +132,7 @@ meta.class("Input.Manager",
 		this._event.x = 0;
 		this._event.y = 0;
 		this._event.keyCode = keyCode;
+		this._event.keyboard = true;
 
 		this.onDown.emit(this._event, Input.Event.DOWN);
 
@@ -199,6 +201,7 @@ meta.class("Input.Manager",
 		this._event.x = 0;
 		this._event.y = 0;
 		this._event.keyCode = keyCode;
+		this._event.keyboard = true;
 
 		this.onUp.emit(this._event, Input.Event.UP);
 
@@ -245,6 +248,7 @@ meta.class("Input.Manager",
 		this._event.x = this.x;
 		this._event.y = this.y;
 		this._event.keyCode = keyCode;
+		this._event.keyboard = false;
 
 		this.onDown.emit(this._event, Input.Event.DOWN);
 
@@ -288,6 +292,7 @@ meta.class("Input.Manager",
 		this._event.x = this.x;
 		this._event.y = this.y;
 		this._event.keyCode = keyCode;
+		this._event.keyboard = false;
 
 		this.onUp.emit(this._event, Input.Event.UP);
 		this.onClick.emit(this._event, Input.Event.CLICK);
@@ -324,6 +329,7 @@ meta.class("Input.Manager",
 		this._event.x = this.x;
 		this._event.y = this.y;
 		this._event.keyCode = -1;
+		this._event.keyboard = false;
 
 		this.onMove.emit(this._event, Input.Event.MOVE);
 		this._event.entity = null;
@@ -366,6 +372,7 @@ meta.class("Input.Manager",
 		this._event.x = this.x;
 		this._event.y = this.y;
 		this._event.keyCode = keyCode;
+		this._event.keyboard = false;
 
 		this.onDbClick.emit(this._event, Input.Event.DBCLICK);
 
@@ -434,6 +441,7 @@ meta.class("Input.Manager",
 			this._event.x = x;
 			this._event.y = y;
 			this._event.keyCode = keyCode;
+			this._event.keyboard = false;
 
 			if(id === 0) {
 				this.screenX = screenX;
@@ -516,6 +524,7 @@ meta.class("Input.Manager",
 			this._event.x = x;
 			this._event.y = y;
 			this._event.keyCode = id;
+			this._event.keyboard = false;
 
 			this.onUp.emit(this._event, Input.Event.UP);
 			this.onClick.emit(this._event, Input.Event.CLICK);
@@ -575,6 +584,7 @@ meta.class("Input.Manager",
 			this._event.x = x;
 			this._event.y = y;
 			this._event.keyCode = keyCode;
+			this._event.keyboard = false;
 
 			this.onMove.emit(this._event, Input.Event.MOVE);
 			this._event.entity = null;
@@ -594,6 +604,7 @@ meta.class("Input.Manager",
 		this._event.x = 0;
 		this._event.y = 0;
 		this._event.keyCode = 0;
+		this._event.keyboard = false;
 
 		this.metaPressed = false;
 

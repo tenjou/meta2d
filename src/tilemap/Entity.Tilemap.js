@@ -49,6 +49,8 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 
 	create: function(tilesX, tilesY, tileWidth, tileHeight, type)
 	{
+		this.properties = {};
+
 		this.tilesX = tilesX;
 		this.tilesY = tilesY;
 		this.tileWidth = tileWidth;
@@ -134,6 +136,8 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		if(this.numToLoad === 0) {
 			this.finishLoading();
 		}
+
+		return tileset;
 	},
 
 	createLayer: function(data, tilesX, tilesY, name)
@@ -165,6 +169,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		layer.tileHeight = this.tileHeight;
 		layer.tileHalfWidth = this.tileWidth * 0.5;
 		layer.tileHalfHeight = this.tileHeight * 0.5;
+		layer.properties = {};
 		this.attach(layer);
 
 		layer.data = data;
@@ -182,13 +187,8 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 
 		var tileset, tilesetOffsetY;
 		var num = this.tilesets.length;
-		for(var n = 0; n < num; n++)
-		{
+		for(var n = 0; n < num; n++) {
 			tileset = this.tilesets[n];
-			// tilesetOffsetY = tileset.tileHeight - this.tileHeight;
-			// if(tilesetOffsetY > tileOffsetY) {
-			// 	tileOffsetY = tilesetOffsetY;
-			// }
 		}
 
 		if(this.children)
@@ -213,14 +213,19 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		var json = JSON.parse(data);
 
 		this.create(json.width, json.height, json.tilewidth, json.tileheight);
+		this.properties = json.properties;
 
-		var tileset;
+		var tileset, tilesetInfo;
 		var tilesets = json.tilesets;
 		var num = tilesets.length;
 		for(var n = 0; n < num; n++) 
 		{
-			tileset = tilesets[n];
-			this.createTileset(tileset.firstgid, this.folderPath + tileset.image, tileset.tileWidth, tileset.tileHeight);
+			tilesetInfo = tilesets[n];
+
+			tileset = this.createTileset(
+				tilesetInfo.firstgid, this.folderPath + tilesetInfo.image, 
+				tilesetInfo.tilewidth, tilesetInfo.tileheight);
+			tileset.properties = tilesetInfo.tileproperties;
 		}
 
 		var layer, layerInfo;
@@ -230,6 +235,10 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		{
 			layerInfo = layers[n];
 			layer = this.createLayer(layerInfo.data, layerInfo.width, layerInfo.height, layerInfo.name);
+
+			if(layerInfo.properties) {
+				layer.properties = layerInfo.properties;
+			}
 			if(layerInfo.visible) {
 				layer.visible = layerInfo.visible;
 			}
@@ -260,14 +269,19 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 			node = childNodes[i];
 			if(node.nodeType !== 1) { continue; }
 
-			if(node.nodeName === "tileset") {
-				this._parse_tmx_tileset(node);
-			}
-			else if(node.nodeName === "layer") {
-				this._parse_tmx_layer(node);
-			}
-			else if(node.nodeName === "objectgroup") {
+			switch(node.nodeName)
+			{
+				case "tileset":
+					this._parse_tmx_tileset(node);
+					break;
 
+				case "layer":
+					this._parse_tmx_layer(node);
+					break;
+
+				case "properties":
+					this.properties = this._parse_tmx_properties(node);
+					break;
 			}
 		}
 
@@ -279,6 +293,8 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 	_parse_tmx_tileset: function(node)
 	{
 		var imgPath = "";
+		var properties = {};
+		var tileProperties;
 
 		var childNode;
 		var childNodes = node.childNodes;
@@ -288,8 +304,19 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 			childNode = childNodes[n];
 			if(childNode.nodeType !== 1) { continue; }
 
-			if(childNode.nodeName === "image") {
-				imgPath = this.folderPath + childNode.getAttribute("source");
+			switch(childNode.nodeName)
+			{
+				case "image":
+					imgPath = this.folderPath + childNode.getAttribute("source");
+					break;
+
+				case "tile":
+				{
+					tileProperties = this._parse_tmx_tile(childNode);
+					if(tileProperties) {
+						properties[childNode.getAttribute("id")] = tileProperties;
+					}	
+				} break;
 			}
 		}
 
@@ -299,12 +326,38 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		var marginStr = node.getAttribute("margin");
 		var margin = marginStr ? parseInt(marginStr) : 0;		
 
-		this.createTileset(
+		var tileset = this.createTileset(
 			parseInt(node.getAttribute("firstgid")),
 			imgPath,
 			parseInt(node.getAttribute("tilewidth")),
 			parseInt(node.getAttribute("tileheight")),
-			margin, spacing);
+			margin, spacing);	
+		tileset.properties = properties;
+	},
+
+	_parse_tmx_tile: function(node)
+	{
+		var properties = null;
+
+		var childNode;
+		var childNodes = node.childNodes;
+		var numNodes = childNodes.length;
+		for(var n = 0; n < numNodes; n++)
+		{
+			childNode = childNodes[n];
+			if(childNode.nodeType !== 1) { continue; }
+
+			switch(childNode.nodeName)
+			{
+				case "properties":
+					properties = this._parse_tmx_properties(childNode);
+					break;
+			}
+		}
+
+		console.log(properties);
+
+		return properties;
 	},
 
 	_parse_tmx_layer: function(node)
@@ -319,11 +372,40 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 			visible = parseInt(visible);
 		}
 
-		var dataNode = node.firstElementChild;
-		var encoding = dataNode.getAttribute("encoding");
+		var properties = null;
 		var data;
 
-		var num = this.tilesX * tilesY;
+		var childNodes = node.childNodes;
+		var numNodes = childNodes.length;
+		for(var i = 0; i < numNodes; i++)
+		{
+			node = childNodes[i];
+			if(node.nodeType !== 1) { continue; }
+
+			switch(node.nodeName)
+			{
+				case "data":
+					data = this._parse_tmx_data(node, tilesX, tilesY);
+					break;
+
+				case "properties":
+					properties = this._parse_tmx_properties(node);
+					break;
+			}
+		}
+
+		var layer = this.createLayer(data, tilesX, tilesY, name);
+		if(properties) {
+			layer.properties = properties;
+		}
+		layer.hidden = !visible;
+	},
+
+	_parse_tmx_data: function(node, tilesX, tilesY)
+	{
+		var num = tilesX * tilesY;
+		var encoding = node.getAttribute("encoding");
+		var data;
 
 		if(encoding)
 		{
@@ -331,27 +413,27 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 
 			if(encoding === "csv")
 			{
-				strData = dataNode.textContent.split(",");
+				strData = node.textContent.split(",");
 				if(strData.length !== num) {
 					console.warn("(Entity.Tilemap._parse_tmx): Layer resolution does not match with data size");
 					return;
 				}
 
 				data = new Uint32Array(num);
-				var num = tilesX * tilesY;
+				
 				for(var n = 0; n < num; n++) {
 					data[n] = parseInt(strData[n]);
 				}				
 			}
 			else if(encoding === "base64")
 			{
-				var compression = dataNode.getAttribute("compression");
+				var compression = node.getAttribute("compression");
 				if(compression) {
 					console.warn("(Entity.Tilemap._parse_tmx): Unsupported compression - " + compression);
 					return;
 				}
 
-				data = meta.decodeBinaryBase64(dataNode.textContent);
+				data = meta.decodeBinaryBase64(node.textContent);
 			}
 			else {
 				console.warn("(Entity.Tilemap._parse_tmx): Unsupported layer encoding used: " + encoding);
@@ -361,7 +443,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		else
 		{
 			var id = 0;
-			var dataNodes = dataNode.childNodes;
+			var dataNodes = node.childNodes;
 
 			num = dataNodes.length;
 			data = new Uint32Array(num);
@@ -375,8 +457,26 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 			}
 		}
 
-		var layer = this.createLayer(data, tilesX, tilesY, name);
-		layer.hidden = !visible;
+		return data;
+	},
+
+	_parse_tmx_properties: function(node)
+	{
+		var properties = {};
+
+		var childNodes = node.childNodes;
+		var num = childNodes.length;
+
+		var childNode;
+		for(var n = 0; n < num; n++) 
+		{
+			childNode = childNodes[n];
+			if(childNode.nodeType !== 1) { continue; }
+
+			properties[childNode.getAttribute("name")] = childNode.getAttribute("value");
+		}
+
+		return properties;
 	},
 
 	getLayer: function(name)
@@ -424,6 +524,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 
 	//
 	tilesets: null,
+	properties: null,
 
 	path: "",
 	folderPath: "",
@@ -441,6 +542,7 @@ meta.Tileset = function(gid, texture, spriteSheet, tileWidth, tileHeight)
 	this.gid = gid;
 	this.texture = texture;
 	this.spriteSheet = spriteSheet;
+	this.properties = null;
 	this.tileWidth = tileWidth;
 	this.tileHeight = tileHeight;
 };

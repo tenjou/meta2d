@@ -197,6 +197,32 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 		return this._dataFlags[id];
 	},
 
+	getPropertiesFromPos: function(x, y) {
+		return this.getProperties(this.getGid(x, y));
+	},
+
+	getProperties: function(gid) 
+	{
+		if(gid <= 0) { return null; }
+
+		var tileset = this._tilesets[0];
+		for(var i = 1; i < this._numTilesets; i++) 
+		{
+			if(gid < this._tilesets[i].gid) {
+				break;
+			}
+
+			tileset = this._tilesets[i];
+		}
+
+		var props = tileset.properties[gid - tileset.gid];
+		if(!props) {
+			return null;
+		}
+
+		return props;
+	},
+
 	saveData: function()
 	{
 		if(!this.data) {
@@ -343,6 +369,8 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 	tileWidth: 1, tileHeight: 1,
 	tileHalfWidth: 0, tileHalfHeight: 0,
 	tileOffsetX: 0, tileOffsetY: 0,
+
+	properties: null,
 
 	cellPos: null,
 

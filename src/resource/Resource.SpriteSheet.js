@@ -128,7 +128,7 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 		var numFrames = framesX * framesY;
 		this.frames = new Array(numFrames);
 
-		var offset = margin + spacing;
+		var offset = margin;
 		var id = 0;
 		var posX, posY;		
 

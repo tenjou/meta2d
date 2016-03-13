@@ -1737,13 +1737,16 @@ meta.View.prototype = {
             return;
         }
         var num = this.entities.length;
-        var index = this.entities.indexOf(entity);
-        if (index > -1) {
-            this.entities[index] = this.entities[num - 1];
-            this.entities.pop();
+        for (var n = 0; n < num; n++) {
+            if (this.entities[n] === entity) {
+                this.entities[n] = this.entities[num - 1];
+                this.entities.pop();
+                break;
+            }
         }
         if (this.flags & this.Flag.ACTIVE && !(this.flags & this.Flag.INSTANCE_HIDDEN)) {
             meta.renderer.removeEntity(entity);
+            window.view = entity._view;
             entity._view = null;
         }
     },
@@ -5219,7 +5222,7 @@ meta.class("Resource.SpriteSheet", "Resource.Basic", {
         var framesY = Math.floor(rawFramesY);
         var numFrames = framesX * framesY;
         this.frames = new Array(numFrames);
-        var offset = margin;
+        var offset = margin + spacing;
         var id = 0;
         var posX, posY;
         if (rawFramesX !== framesX || rawFramesY !== framesY) {
@@ -6068,8 +6071,7 @@ meta.class("Input.Manager", {
             screenX: 0,
             screenY: 0,
             keyCode: 0,
-            entity: null,
-            keyboard: false
+            entity: null
         };
         this._addEventListeners();
         this._loadIgnoreKeys();
@@ -6166,7 +6168,6 @@ meta.class("Input.Manager", {
         this._event.x = 0;
         this._event.y = 0;
         this._event.keyCode = keyCode;
-        this._event.keyboard = true;
         this.onDown.emit(this._event, Input.Event.DOWN);
         if (this.keyRepeat) {
             if (!this._inputTimer) {
@@ -6215,7 +6216,6 @@ meta.class("Input.Manager", {
         this._event.x = 0;
         this._event.y = 0;
         this._event.keyCode = keyCode;
-        this._event.keyboard = true;
         this.onUp.emit(this._event, Input.Event.UP);
         if (this.keyRepeat && this._inputTimer) {
             this._inputTimer.pause();
@@ -6251,7 +6251,6 @@ meta.class("Input.Manager", {
         this._event.x = this.x;
         this._event.y = this.y;
         this._event.keyCode = keyCode;
-        this._event.keyboard = false;
         this.onDown.emit(this._event, Input.Event.DOWN);
         this._event.entity = null;
     },
@@ -6285,7 +6284,6 @@ meta.class("Input.Manager", {
         this._event.x = this.x;
         this._event.y = this.y;
         this._event.keyCode = keyCode;
-        this._event.keyboard = false;
         this.onUp.emit(this._event, Input.Event.UP);
         this.onClick.emit(this._event, Input.Event.CLICK);
         this._event.entity = null;
@@ -6313,7 +6311,6 @@ meta.class("Input.Manager", {
         this._event.x = this.x;
         this._event.y = this.y;
         this._event.keyCode = -1;
-        this._event.keyboard = false;
         this.onMove.emit(this._event, Input.Event.MOVE);
         this._event.entity = null;
     },
@@ -6347,7 +6344,6 @@ meta.class("Input.Manager", {
         this._event.x = this.x;
         this._event.y = this.y;
         this._event.keyCode = keyCode;
-        this._event.keyboard = false;
         this.onDbClick.emit(this._event, Input.Event.DBCLICK);
         if (this._onUpCBS && this._onUpCBS[keyCode]) {
             var cbs = this._onUpCBS[keyCode];
@@ -6396,7 +6392,6 @@ meta.class("Input.Manager", {
             this._event.x = x;
             this._event.y = y;
             this._event.keyCode = keyCode;
-            this._event.keyboard = false;
             if (id === 0) {
                 this.screenX = screenX;
                 this.screenY = screenY;
@@ -6459,7 +6454,6 @@ meta.class("Input.Manager", {
             this._event.x = x;
             this._event.y = y;
             this._event.keyCode = id;
-            this._event.keyboard = false;
             this.onUp.emit(this._event, Input.Event.UP);
             this.onClick.emit(this._event, Input.Event.CLICK);
             this._event.entity = null;
@@ -6504,7 +6498,6 @@ meta.class("Input.Manager", {
             this._event.x = x;
             this._event.y = y;
             this._event.keyCode = keyCode;
-            this._event.keyboard = false;
             this.onMove.emit(this._event, Input.Event.MOVE);
             this._event.entity = null;
         }
@@ -6517,7 +6510,6 @@ meta.class("Input.Manager", {
         this._event.x = 0;
         this._event.y = 0;
         this._event.keyCode = 0;
-        this._event.keyboard = false;
         this.metaPressed = false;
         var numTotalKeys = this.numKeys + this.numInputs;
         for (i = 0; i < this.numTotalKeys; i++) {
@@ -8621,7 +8613,7 @@ meta.component("Component.Anim", {
             return;
         }
         this.texture = texture;
-        if (texture.frameData) {
+        if (texture.frames > 1) {
             this.texture = texture;
             this.fps = texture.fps;
             this.__tAnim = 0;
@@ -8792,7 +8784,6 @@ meta.class("Entity.Tilemap", "Entity.Geometry", {
         });
     },
     create: function(tilesX, tilesY, tileWidth, tileHeight, type) {
-        this.properties = {};
         this.tilesX = tilesX;
         this.tilesY = tilesY;
         this.tileWidth = tileWidth;
@@ -8842,7 +8833,6 @@ meta.class("Entity.Tilemap", "Entity.Geometry", {
         if (this.numToLoad === 0) {
             this.finishLoading();
         }
-        return tileset;
     },
     createLayer: function(data, tilesX, tilesY, name) {
         var layer;
@@ -8869,7 +8859,6 @@ meta.class("Entity.Tilemap", "Entity.Geometry", {
         layer.tileHeight = this.tileHeight;
         layer.tileHalfWidth = this.tileWidth * .5;
         layer.tileHalfHeight = this.tileHeight * .5;
-        layer.properties = {};
         this.attach(layer);
         layer.data = data;
         if (name) {
@@ -8899,14 +8888,12 @@ meta.class("Entity.Tilemap", "Entity.Geometry", {
     _parse_json: function(data) {
         var json = JSON.parse(data);
         this.create(json.width, json.height, json.tilewidth, json.tileheight);
-        this.properties = json.properties;
-        var tileset, tilesetInfo;
+        var tileset;
         var tilesets = json.tilesets;
         var num = tilesets.length;
         for (var n = 0; n < num; n++) {
-            tilesetInfo = tilesets[n];
-            tileset = this.createTileset(tilesetInfo.firstgid, this.folderPath + tilesetInfo.image, tilesetInfo.tilewidth, tilesetInfo.tileheight);
-            tileset.properties = tilesetInfo.tileproperties;
+            tileset = tilesets[n];
+            this.createTileset(tileset.firstgid, this.folderPath + tileset.image, tileset.tileWidth, tileset.tileHeight);
         }
         var layer, layerInfo;
         var layers = json.layers;
@@ -8914,9 +8901,6 @@ meta.class("Entity.Tilemap", "Entity.Geometry", {
         for (n = 0; n < num; n++) {
             layerInfo = layers[n];
             layer = this.createLayer(layerInfo.data, layerInfo.width, layerInfo.height, layerInfo.name);
-            if (layerInfo.properties) {
-                layer.properties = layerInfo.properties;
-            }
             if (layerInfo.visible) {
                 layer.visible = layerInfo.visible;
             }
@@ -8937,19 +8921,11 @@ meta.class("Entity.Tilemap", "Entity.Geometry", {
             if (node.nodeType !== 1) {
                 continue;
             }
-            switch (node.nodeName) {
-              case "tileset":
+            if (node.nodeName === "tileset") {
                 this._parse_tmx_tileset(node);
-                break;
-
-              case "layer":
+            } else if (node.nodeName === "layer") {
                 this._parse_tmx_layer(node);
-                break;
-
-              case "properties":
-                this.properties = this._parse_tmx_properties(node);
-                break;
-            }
+            } else if (node.nodeName === "objectgroup") {}
         }
         if (this.numToLoad === 0) {
             this.loaded = true;
@@ -8957,8 +8933,6 @@ meta.class("Entity.Tilemap", "Entity.Geometry", {
     },
     _parse_tmx_tileset: function(node) {
         var imgPath = "";
-        var properties = {};
-        var tileProperties;
         var childNode;
         var childNodes = node.childNodes;
         var numNodes = childNodes.length;
@@ -8967,46 +8941,15 @@ meta.class("Entity.Tilemap", "Entity.Geometry", {
             if (childNode.nodeType !== 1) {
                 continue;
             }
-            switch (childNode.nodeName) {
-              case "image":
+            if (childNode.nodeName === "image") {
                 imgPath = this.folderPath + childNode.getAttribute("source");
-                break;
-
-              case "tile":
-                {
-                    tileProperties = this._parse_tmx_tile(childNode);
-                    if (tileProperties) {
-                        properties[childNode.getAttribute("id")] = tileProperties;
-                    }
-                }
-                break;
             }
         }
         var spacingStr = node.getAttribute("spacing");
         var spacing = spacingStr ? parseInt(spacingStr) : 0;
         var marginStr = node.getAttribute("margin");
         var margin = marginStr ? parseInt(marginStr) : 0;
-        var tileset = this.createTileset(parseInt(node.getAttribute("firstgid")), imgPath, parseInt(node.getAttribute("tilewidth")), parseInt(node.getAttribute("tileheight")), margin, spacing);
-        tileset.properties = properties;
-    },
-    _parse_tmx_tile: function(node) {
-        var properties = null;
-        var childNode;
-        var childNodes = node.childNodes;
-        var numNodes = childNodes.length;
-        for (var n = 0; n < numNodes; n++) {
-            childNode = childNodes[n];
-            if (childNode.nodeType !== 1) {
-                continue;
-            }
-            switch (childNode.nodeName) {
-              case "properties":
-                properties = this._parse_tmx_properties(childNode);
-                break;
-            }
-        }
-        console.log(properties);
-        return properties;
+        this.createTileset(parseInt(node.getAttribute("firstgid")), imgPath, parseInt(node.getAttribute("tilewidth")), parseInt(node.getAttribute("tileheight")), margin, spacing);
     },
     _parse_tmx_layer: function(node) {
         var name = node.getAttribute("name");
@@ -9017,61 +8960,37 @@ meta.class("Entity.Tilemap", "Entity.Geometry", {
         if (visibleStr) {
             visible = parseInt(visible);
         }
-        var properties = null;
+        var dataNode = node.firstElementChild;
+        var encoding = dataNode.getAttribute("encoding");
         var data;
-        var childNodes = node.childNodes;
-        var numNodes = childNodes.length;
-        for (var i = 0; i < numNodes; i++) {
-            node = childNodes[i];
-            if (node.nodeType !== 1) {
-                continue;
-            }
-            switch (node.nodeName) {
-              case "data":
-                data = this._parse_tmx_data(node, tilesX, tilesY);
-                break;
-
-              case "properties":
-                properties = this._parse_tmx_properties(node);
-                break;
-            }
-        }
-        var layer = this.createLayer(data, tilesX, tilesY, name);
-        if (properties) {
-            layer.properties = properties;
-        }
-        layer.hidden = !visible;
-    },
-    _parse_tmx_data: function(node, tilesX, tilesY) {
-        var num = tilesX * tilesY;
-        var encoding = node.getAttribute("encoding");
-        var data;
+        var num = this.tilesX * tilesY;
         if (encoding) {
             var strData = null;
             if (encoding === "csv") {
-                strData = node.textContent.split(",");
+                strData = dataNode.textContent.split(",");
                 if (strData.length !== num) {
                     console.warn("(Entity.Tilemap._parse_tmx): Layer resolution does not match with data size");
                     return;
                 }
                 data = new Uint32Array(num);
+                var num = tilesX * tilesY;
                 for (var n = 0; n < num; n++) {
                     data[n] = parseInt(strData[n]);
                 }
             } else if (encoding === "base64") {
-                var compression = node.getAttribute("compression");
+                var compression = dataNode.getAttribute("compression");
                 if (compression) {
                     console.warn("(Entity.Tilemap._parse_tmx): Unsupported compression - " + compression);
                     return;
                 }
-                data = meta.decodeBinaryBase64(node.textContent);
+                data = meta.decodeBinaryBase64(dataNode.textContent);
             } else {
                 console.warn("(Entity.Tilemap._parse_tmx): Unsupported layer encoding used: " + encoding);
                 return;
             }
         } else {
             var id = 0;
-            var dataNodes = node.childNodes;
+            var dataNodes = dataNode.childNodes;
             num = dataNodes.length;
             data = new Uint32Array(num);
             for (n = 0; n < num; n++) {
@@ -9082,21 +9001,8 @@ meta.class("Entity.Tilemap", "Entity.Geometry", {
                 data[id++] = parseInt(node.getAttribute("gid"));
             }
         }
-        return data;
-    },
-    _parse_tmx_properties: function(node) {
-        var properties = {};
-        var childNodes = node.childNodes;
-        var num = childNodes.length;
-        var childNode;
-        for (var n = 0; n < num; n++) {
-            childNode = childNodes[n];
-            if (childNode.nodeType !== 1) {
-                continue;
-            }
-            properties[childNode.getAttribute("name")] = childNode.getAttribute("value");
-        }
-        return properties;
+        var layer = this.createLayer(data, tilesX, tilesY, name);
+        layer.hidden = !visible;
     },
     getLayer: function(name) {
         if (!name) {
@@ -9133,7 +9039,6 @@ meta.class("Entity.Tilemap", "Entity.Geometry", {
         FLIP_DIAGONALLY: 536870912
     },
     tilesets: null,
-    properties: null,
     path: "",
     folderPath: "",
     numToLoad: 0,
@@ -9148,7 +9053,6 @@ meta.Tileset = function(gid, texture, spriteSheet, tileWidth, tileHeight) {
     this.gid = gid;
     this.texture = texture;
     this.spriteSheet = spriteSheet;
-    this.properties = null;
     this.tileWidth = tileWidth;
     this.tileHeight = tileHeight;
 };
@@ -9305,26 +9209,6 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry", {
         }
         return this._dataFlags[id];
     },
-    getPropertiesFromPos: function(x, y) {
-        return this.getProperties(this.getGid(x, y));
-    },
-    getProperties: function(gid) {
-        if (gid <= 0) {
-            return null;
-        }
-        var tileset = this._tilesets[0];
-        for (var i = 1; i < this._numTilesets; i++) {
-            if (gid < this._tilesets[i].gid) {
-                break;
-            }
-            tileset = this._tilesets[i];
-        }
-        var props = tileset.properties[gid - tileset.gid];
-        if (!props) {
-            return null;
-        }
-        return props;
-    },
     saveData: function() {
         if (!this.data) {
             console.warn("(Entity.Tilemap.saveData) No data available for saving");
@@ -9432,7 +9316,6 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry", {
     tileHalfHeight: 0,
     tileOffsetX: 0,
     tileOffsetY: 0,
-    properties: null,
     cellPos: null,
     _data: null,
     _dataInfo: null,
@@ -10074,9 +9957,9 @@ meta.class("meta.Renderer", {
                 }
                 if (entity.flags & entity.Flag.REMOVED) {
                     entity._remove();
-                }
-                if (entity.children) {
-                    this._removeEntitiesGroup(entities, entity.children, true);
+                    if (entity.children) {
+                        this._removeEntitiesGroup(entities, entity.children, true);
+                    }
                 }
                 entity.flags &= ~entity.Flag.RENDER_REMOVE;
             }
@@ -10611,7 +10494,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer", {
             return;
         }
         if (!volume.__transformed) {
-            if (texture.frameData) {
+            if (texture.frames > 1) {
                 texture.drawFrame(this.ctx, Math.floor(volume.minX), Math.floor(volume.minY), entity.anim._frame);
             } else {
                 texture.draw(this.ctx, Math.floor(volume.minX), Math.floor(volume.minY));
@@ -10619,7 +10502,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer", {
         } else {
             this.ctx.globalAlpha = entity.totalAlpha;
             this.ctx.transform(volume.m11, volume.m12, volume.m21, volume.m22, Math.floor(volume.x), Math.floor(volume.y));
-            if (texture.frameData) {
+            if (texture.frames > 1) {
                 texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, entity.anim._frame);
             } else {
                 texture.draw(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY);

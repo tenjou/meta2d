@@ -139,26 +139,16 @@ meta.View.prototype =
 			return;
 		}
 
-		if(!(entity.parent.flags & entity.Flag.RENDER_HOLDER)) {
-			console.warn("(meta.View.detach) Entity is part of other view: " + entity._view.name);
-			return;
-		}
-
-		entity &= ~entity.Flag.ROOT;
-		entity._view = null;
-
 		var num = this.entities.length;
-		for(var n = 0; n < num; n++)
-		{
-			if(this.entities[n] === entity) {
-				this.entities[n] = this.entities[num - 1];
-				this.entities.pop();
-				break;
-			}
+		var index = this.entities.indexOf(entity);
+		if(index > -1) {
+			this.entities[index] = this.entities[num - 1];
+			this.entities.pop();
 		}
 
 		if((this.flags & this.Flag.ACTIVE) && !(this.flags & this.Flag.INSTANCE_HIDDEN)) {
 			meta.renderer.removeEntity(entity);
+			entity._view = null;
 		}
 	},
 
