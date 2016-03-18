@@ -327,9 +327,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 
 		if(entity.flags & entity.Flag.PICKING) {
 			this.renderer.entitiesPicking.push(entity);
-		}		
-
-
+		}
 	},
 
 	detach: function(entity)
