@@ -33,13 +33,14 @@ meta.class("Entity.Text", "Entity.Geometry",
 		var canvas = this._bitmapFont.texture.canvas;
 		var chars = this._bitmapFont.chars;
 		var charRect = null;
-		var numChars, tmpWidth, currText;
+		var numChars, tmpWidth, currText, i;
 
-		fontHeight = this._bitmapFont.height;
+		var fontHeight = this._bitmapFont.height;
+		var numLines = this._lineBuffer.length;
 
 		for(var n = 0; n < numLines; n++) 
 		{
-			currText = this._textBuffer[n];
+			currText = this._lineBuffer[n];
 			numChars = currText.length;
 			tmpWidth = 0;
 
@@ -51,17 +52,20 @@ meta.class("Entity.Text", "Entity.Geometry",
 				tmpWidth += charRect.kerning;
 			}
 
-			if(tmpWidth > width) {
-				width = tmpWidth;
+			if(tmpWidth > this._maxWidth) {
+				this._maxWidth = tmpWidth;
 			}
 		}
 
 		this._texture.clear();
-		this._texture.resize(width, fontHeight * numLines);
+		this._texture.resize(this._maxWidth, fontHeight * numLines);
+
+		var posX = 0;
+		var posY = 0;
 
 		for(n = 0; n < numLines; n++) 
 		{
-			currText = this._textBuffer[n];
+			currText = this._lineBuffer[n];
 			numChars = currText.length;
 
 			for(i = 0; i < numChars; i++)

@@ -207,20 +207,20 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 			{
 				this._createTexture(
 					node.getAttribute("name"),
-					node.getAttribute("x"),
-					node.getAttribute("y"),
-					node.getAttribute("width"),
-					node.getAttribute("height"));
+					parseInt(node.getAttribute("x")),
+					parseInt(node.getAttribute("y")),
+					parseInt(node.getAttribute("width")),
+					parseInt(node.getAttribute("height")));
 			}
 			// Generic XML
 			else if(node.nodeName === "sprite") 
 			{
 				this._createTexture(
 					node.getAttribute("n"),
-					node.getAttribute("x"),
-					node.getAttribute("y"),
-					node.getAttribute("w"),
-					node.getAttribute("h"));
+					parseInt(node.getAttribute("x")),
+					parseInt(node.getAttribute("y")),
+					parseInt(node.getAttribute("w")),
+					parseInt(node.getAttribute("h")));
 			}
 			// Plist
 			else if(node.nodeName === "dict") {

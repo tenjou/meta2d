@@ -28,12 +28,6 @@ meta.class("Resource.Manager",
 
 		meta.audio = new Resource.AudioManager();
 
-		var self = this;
-		this._xhr = new XMLHttpRequest();
-		this._xhr.onreadystatechange = function() {
-			self._loadFileStateChange();
-		};
-
 		meta.engine.onAdapt.add(this.onAdapt, this);
 	},
 
@@ -179,26 +173,21 @@ meta.class("Resource.Manager",
 		}
 
 		this.numToLoad++;
-		this.numTotalToLoad++;
+		this.numTotalToLoad++;		
 
-		this._xhrOnSuccess = onSuccess;
-		this._xhr.open("GET", path, true);
-		this._xhr.send();
-	},
-
-	_loadFileStateChange: function()
-	{
-		if(this._xhr.readyState === 4)
-		{
-			if(this._xhr.status === 200) 
-			{
-				if(this._xhrOnSuccess) {
-					this._xhrOnSuccess(this._xhr.response);
+		var self = this;
+		meta.ajax({
+			url: path,
+			success: function(response) {
+				self._updateLoading();
+				if(onSuccess) {
+					onSuccess(response);
 				}
+			},
+			error: function() {
+				self._updateLoading();
 			}
-
-			this._updateLoading();
-		}
+		})
 	},
 
 	/**
@@ -394,9 +383,6 @@ meta.class("Resource.Manager",
 	},
 
 	//
-	_xhr: null,
-	_xhrOnSuccess: null,
-
 	data: null,
 	textures: null,
 	spriteSheets: null,

@@ -71,4 +71,4 @@ cat meta.js \
 	tween/Link.js \
 	Loading.js \
 	Loader.js \
-	| uglifyjs --output ../versions/meta.dev.js --b
+	| uglifyjs --output ../versions/meta.dev.js --mangle -c dead_code=false,unused=false,side_effects=false --screw-ie8
