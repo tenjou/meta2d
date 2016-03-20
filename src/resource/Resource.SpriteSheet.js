@@ -163,7 +163,7 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 
 					posX = x * frameWidth + (x * (margin * 2)) + offset;
 					posY = y * frameHeight + (y * (margin * 2)) + offset;
-					this.frames[id] = this._createTexture(this.texture.name + id, 
+					this.frames[id] = this._createTexture(this.texture.name + "$$" + id, 
 										posX, posY, frameWidth + offsetX, frameHeight + offsetY);
 
 					id++;
@@ -178,7 +178,7 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 				{
 					posX = x * frameWidth + (x * (margin * 2)) + offset;
 					posY = y * frameHeight + (y * (margin * 2)) + offset;
-					this.frames[id] = this._createTexture(this.texture.name + id, posX, posY, frameWidth, frameHeight);
+					this.frames[id] = this._createTexture(this.texture.name + "$$" + id, posX, posY, frameWidth, frameHeight);
 
 					id++;
 				}

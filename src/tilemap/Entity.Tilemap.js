@@ -92,13 +92,6 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		var texture = null;
 		var spriteSheet = null;
 
-		if(typeof(resource) === "string") 
-		{
-			var name = meta.getNameFromPath(resource);
-
-			texture = meta.resources.textures[name];
-			if(!texture) 
-			{
 				spriteSheet = meta.resources.spriteSheets[name];
 				if(!spriteSheet)
 				{
@@ -108,21 +101,32 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 					meta.resources.spriteSheets[name] = spriteSheet;
 				}
 
-				texture = spriteSheet.texture;
-			}
-		}
-		else if(resource instanceof Resource.Texture) {
-			texture = resource;
-		}
-		else if(resource instanceof Resource.SpriteSheet) {
-			spriteSheet = resource;
-			texture = resource.texture;
-		}
 
-		if(!texture) {
-			console.warn("(Entity.Tilemap.createTileset) Invalid texture passed");
-			return;
-		}
+
+				texture = spriteSheet.texture;
+
+		// if(typeof(resource) === "string") 
+		// {
+		// 	var name = meta.getNameFromPath(resource);
+
+		// 	texture = meta.resources.textures[name];
+		// 	if(!texture) 
+		// 	{
+
+		// 	}
+		// }
+		// else if(resource instanceof Resource.Texture) {
+		// 	texture = resource;
+		// }
+		// else if(resource instanceof Resource.SpriteSheet) {
+		// 	spriteSheet = resource;
+		// 	texture = resource.texture;
+		// }
+
+		// if(!texture) {
+		// 	console.warn("(Entity.Tilemap.createTileset) Invalid texture passed");
+		// 	return;
+		// }
 
 		var tileset = new meta.Tileset(gid, texture, spriteSheet, tileWidth, tileHeight);
 		this.tilesets.push(tileset);
