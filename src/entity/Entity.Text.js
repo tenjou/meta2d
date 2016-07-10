@@ -162,7 +162,7 @@ meta.class("Entity.Text", "Entity.Geometry",
 		var text = "";
 		var prevText = "";
 		var width = 0;
-		var word, words, numWords, metrics, i;
+		var word, words, numWords, metrics;
 
 		var numLines = this._lineBuffer.length;
 		for(var n = 0; n < numLines; n++)
@@ -182,71 +182,62 @@ meta.class("Entity.Text", "Entity.Geometry",
 			}
 			else
 			{
-				for(i = 0; i < numWords; i++) 
+				for(var i = 0; i < numWords; i++) 
 				{
 					word = words[i];
-					
+
 					if(text) {
-						prevText = text;
-						text += " " + word;
+						metrics = ctx.measureText(" " + word);
 					}
 					else {
-						text = word;
+						metrics = ctx.measureText(word);
 					}
-
-					metrics = ctx.measureText(text);
 
 					if((width + metrics.width) > this._limitWidth) 
 					{
-						if(!prevText) 
+						lineBuffer.push(text);
+						if(this._maxWidth < width) {
+							this._maxWidth = width;
+						}
+
+						if(i === (numWords - 1)) 
 						{
 							lineBuffer.push(word);
-
-							if(metrics.width > this._maxWidth) {
+							if(this._maxWidth < metrics.width) {
 								this._maxWidth = metrics.width;
 							}
 
-							text = "";
+							width = 0;
+							text = null;							
 						}
 						else
 						{
-							lineBuffer.push(prevText);
-
-							if(width > this._maxWidth) {
-								this._maxWidth = width;
-							}								
-
-							text = "";
-							prevText = "";
-							width = 0;
-
-							if(i === (numWords - 1)) 
-							{
-								lineBuffer.push(word);
-
-								metrics = ctx.measureText(text);
-								if(metrics.width > this._maxWidth) {
-									this._maxWidth = metrics.width;
-								}
-							}
+							text = word;
+							width = metrics.width;
+						}
+					}
+					else 
+					{
+						if(text) {
+							text += " " + word;
+						}
+						else {
+							text = word;
 						}
 
-						continue;
-					}
-					else if(i === (numWords - 1)) 
-					{
-						lineBuffer.push(text);
+						if(i === (numWords - 1)) 
+						{
+							lineBuffer.push(text);
+							if(this._maxWidth < (width + metrics.width)) {
+								this._maxWidth = width + metrics.width;
+							}
 
-						text = "";
-						prevText = "";
-						width = 0;
-
-						if(metrics.width > this._maxWidth) {
-							this._maxWidth = metrics.width;
-						}							
-					}
-					else {
-						width += metrics.width;
+							text = 0;
+							width = 0;					
+						}
+						else {
+							width += metrics.width;
+						}
 					}
 				}
 			}

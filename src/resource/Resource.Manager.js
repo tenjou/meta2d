@@ -178,11 +178,12 @@ meta.class("Resource.Manager",
 		var self = this;
 		meta.ajax({
 			url: path,
-			success: function(response) {
-				self._updateLoading();
+			success: function(response) 
+			{
 				if(onSuccess) {
 					onSuccess(response);
 				}
+				self._updateLoading();
 			},
 			error: function() {
 				self._updateLoading();

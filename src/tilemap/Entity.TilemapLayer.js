@@ -40,7 +40,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 				entity = this.children[n];
 				if(entity instanceof tileGeometryRef)
 				{
-					console.log("add");
+					// console.log("add");
 				}
 			}
 		}

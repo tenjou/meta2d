@@ -101,8 +101,6 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 					meta.resources.spriteSheets[name] = spriteSheet;
 				}
 
-
-
 				texture = spriteSheet.texture;
 
 		// if(typeof(resource) === "string") 
@@ -131,10 +129,10 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		var tileset = new meta.Tileset(gid, texture, spriteSheet, tileWidth, tileHeight);
 		this.tilesets.push(tileset);
 		
-		if(!texture._loaded) {
+		if(!spriteSheet.loaded) {
 			this.loaded = false;
 			this.numToLoad++;
-			texture.subscribe(this.handleTilesetEvent, this);
+			spriteSheet.subscribe(this.handleTilesetEvent, this);
 		}
 
 		if(this.numToLoad === 0) {
@@ -358,8 +356,6 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 					break;
 			}
 		}
-
-		console.log(properties);
 
 		return properties;
 	},

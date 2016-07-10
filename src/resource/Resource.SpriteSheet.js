@@ -120,8 +120,11 @@ meta.class("Resource.SpriteSheet", "Resource.Basic",
 
 	_generateFromImg: function(frameWidth, frameHeight, margin, spacing)
 	{
-		var rawFramesX = (this.texture.trueFullWidth / frameWidth);
-		var rawFramesY = (this.texture.trueFullHeight / frameHeight);
+		var trueFrameWidth = frameWidth + (2 * spacing);
+		var trueFrameHeight = frameWidth + (2 * spacing);
+
+		var rawFramesX = (this.texture.trueFullWidth / trueFrameWidth);
+		var rawFramesY = (this.texture.trueFullHeight / trueFrameHeight);
 		var framesX = Math.floor(rawFramesX);
 		var framesY = Math.floor(rawFramesY);
 

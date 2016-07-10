@@ -128,5 +128,12 @@ var meta =
 		}
 	},
 
-	get debug() { return this.cache.debug; }
+	get debug() { 
+		return this.cache.debug; 
+	},
+
+	loadCfg: function(cfg)
+	{
+		console.log(cfg);
+	}
 };
