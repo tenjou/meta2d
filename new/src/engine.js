@@ -30,8 +30,21 @@ meta.engine =
 		meta.renderer.setup();
 
 		this.flags |= this.Flag.SETUPED;
-		this.load();
+		this.preload();
 	},
+
+	preload: function()
+	{
+		meta.emit("preload");
+
+		this.flags |= this.Flag.PRELOADED;
+
+		var self = this;
+		this.$renderLoopFunc = function() { self.render(); };
+		this.$renderLoopFunc();
+	},
+
+	$renderLoopFunc: null,
 
 	load: function()
 	{
@@ -40,18 +53,17 @@ meta.engine =
 		this.flags |= this.Flag.LOADED;
 	},
 
-	run: function()
+	ready: function()
 	{
 		meta.emit("ready");
 
 		this.flags |= this.Flag.READY;
-
-		meta.renderer.render();
 	},
 
 	update: function(tDelta)
 	{
-		this.$updateTimers(meta.time.delta);
+		meta.emit("update", tDelta);
+		//this.$updateTimers(meta.time.delta);
 	},
 
 	render: function()
@@ -80,24 +92,20 @@ meta.engine =
 		// Update FPS:
 		if(tNow - this.time.fps >= 1000) {
 			this.time.fps = tNow;
-			this.fps = this._fpsCounter;
-			this._fpsCounter = 0;
+			this.fps = this.$fpsCounter;
+			this.$fpsCounter = 0;
+			meta.emit("fps", this.fps);
 		}
 
 		this.update(this.time.deltaF);
 
-		// Process all render functions:
+		meta.emit("render");
 		meta.renderer.render(this.time.deltaF);
-		
-		var num = this.renderFuncs.length;
-		for(var n = 0; n < num; n++) {
-			this.renderFuncs[n](this.time.tDeltaF);
-		}	
 
-		this._fpsCounter++;
+		this.$fpsCounter++;
 		this.time.current = tNow;
 
-		requestAnimationFrame(this._renderLoop);
+		requestAnimationFrame(this.$renderLoopFunc);
 	},
 
 	updateResolution: function()
@@ -303,11 +311,12 @@ meta.engine =
 	Flag: {
 		INITIALIZED: 1 << 0,
 		SETUPED: 1 << 1,
-		LOADED: 1 << 2,
-		READY: 1 << 3,
-		META_TAGS_ADDED: 1 << 4,
-		FOCUS: 1 << 5,
-		FULLSCREEN: 1 << 6
+		PRELOADED: 1 << 2,
+		LOADED: 1 << 3,
+		READY: 1 << 4,
+		META_TAGS_ADDED: 1 << 5,
+		FOCUS: 1 << 6,
+		FULLSCREEN: 1 << 7
 	},
 
 	//
@@ -323,6 +332,10 @@ meta.engine =
 
 	offsetLeft: 0,
 	offsetTop: 0,
+
+	time: meta.time,
+	fps: 0,
+	$fpsCounter: 0,
 
 	containerStyle: "padding:0; margin:0;",
 	canvasStyle: "position:absolute; width: 100%; height: 100%; overflow:hidden; translateZ(0); " +

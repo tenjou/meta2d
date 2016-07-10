@@ -2,11 +2,11 @@
 
 meta.on("load", function() 
 {
-	meta.on("input.down", OnDown);
-	meta.on("input.up", OnUp);
+	// meta.on("input.down", OnDown);
+	// meta.on("input.up", OnUp);
 
-	meta.input.keybind("left", [ meta.input.key.A, meta.input.key.LEFT ]);
-	meta.input.keybind("right", [ meta.input.key.D, meta.input.key.RIGHT ]);
+	// meta.input.keybind("left", [ meta.input.key.A, meta.input.key.LEFT ]);
+	// meta.input.keybind("right", [ meta.input.key.D, meta.input.key.RIGHT ]);
 
 	// var shader = new meta.Shader("basic", "./basic.vert", "./basic.frag");
 	// shader.remove();
@@ -22,16 +22,6 @@ meta.on("load", function()
 	// meta.view.add(sprite);
 
 	// sprite.remove();
-});
-
-meta.on("render", function()
-{
-	console.log("render");
-});
-
-meta.on("update", function(tDelta)
-{
-	console.log("update");
 });
 
 function OnDown(event) 

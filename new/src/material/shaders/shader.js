@@ -51,6 +51,8 @@ meta.shader.prototype =
 	fragSource: null
 };
 
+
+
 meta.resources.addShader = function(shader) {
 	this.add("shader", shader);
 };

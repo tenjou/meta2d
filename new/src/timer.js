@@ -25,7 +25,6 @@ meta.Timer.prototype =
 	play: function() 
 	{
 		if(this.$index !== -1) { 
-			this.reset();
 			return; 
 		}
 
@@ -36,6 +35,10 @@ meta.Timer.prototype =
 	stop: function() 
 	{
 		if(this.$index === -1) { return; }
+
+		this.tAccumulator = 0;
+		this.numTimes = this.numTimesRemaining;
+		this.paused = false;
 
 		meta.engine.timersRemove.push(this);
 		this.$index = -1;
@@ -50,14 +53,13 @@ meta.Timer.prototype =
 	resume: function() 
 	{
 		this.paused = false;
-
-		this.start();
-		this.tStart = Date.now();
+		this.play();
 	},
 
-	reset: function() {
+	reset: function() 
+	{
 		this.tAccumulator = 0;
-		this.numTimes = this.initNumTimes;
+		this.numTimes = this.numTimesRemaining;
 		this.paused = false;
 		this.play();
 	},
