@@ -13,6 +13,11 @@ meta.renderer =
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 	},
 
+	onResize: function()
+	{
+		this.gl.viewport(0, 0, meta.engine.width, meta.engine.height);
+	},
+
 	set bgColor(color) 
 	{
 		if(this.$bgColor === color) { return; }

@@ -1,12 +1,21 @@
 "use strict";
 
+meta.on("init", function() 
+{
+	var holder = document.createElement("div");
+	holder.style.cssText = "position: relative; width: 400px; height: 400px;";
+	document.body.appendChild(holder);
+
+	meta.engine.container = holder;
+});
+
 meta.on("load", function() 
 {
-	// meta.on("input.down", OnDown);
-	// meta.on("input.up", OnUp);
+	meta.on("input.down", OnDown);
+	meta.on("input.up", OnUp);
 
-	// meta.input.keybind("left", [ meta.input.key.A, meta.input.key.LEFT ]);
-	// meta.input.keybind("right", [ meta.input.key.D, meta.input.key.RIGHT ]);
+	meta.input.keybind("left", [ meta.input.key.A, meta.input.key.LEFT ]);
+	meta.input.keybind("right", [ meta.input.key.D, meta.input.key.RIGHT ]);
 
 	// var shader = new meta.Shader("basic", "./basic.vert", "./basic.frag");
 	// shader.remove();

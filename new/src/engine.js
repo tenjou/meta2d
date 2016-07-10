@@ -25,9 +25,10 @@ meta.engine =
 		meta.views.master = masterView;
 		meta.view = masterView;
 
-		meta.camera = new meta.Camera();
-
 		meta.renderer.setup();
+		this.updateResolution();
+
+		meta.camera = new meta.Camera();
 
 		this.flags |= this.Flag.SETUPED;
 		this.preload();
@@ -110,6 +111,25 @@ meta.engine =
 
 	updateResolution: function()
 	{
+		var width = meta.cache.width;
+		var height = meta.cache.height;
+
+		if(this.container === document.body) {
+			width = window.innerWidth;
+			height = window.innerHeight;
+		}
+		else {
+			width = this.container.clientWidth;
+			height = this.container.clientHeight;
+		}
+
+		this.width = Math.ceil(width);
+		this.height = Math.ceil(height);
+		this.canvas.width = this.width;
+		this.canvas.height = this.height;
+		this.canvas.style.width = (width * this.scaleX) + "px";
+		this.canvas.style.height = (height * this.scaleY) + "px";
+
 		meta.renderer.onResize();
 	},
 
@@ -191,7 +211,7 @@ meta.engine =
 	createWebGL: function()
 	{
 		this.canvas = document.createElement("canvas");
-		this.canvas.id = "meta2d-webgl";
+		this.canvas.id = "meta-webgl";
 		this.canvas.style.cssText = this.canvasStyle;
 
 		this.gl = this.canvas.getContext("webgl") || this.canvas.getContext("experimental-webgl");
@@ -199,12 +219,12 @@ meta.engine =
 		if(!this.container) {
 			this.container = document.body;
 		}
-		
-		this.container.style.cssText = this.containerStyle;
+
+		document.body.style.cssText = this.containerStyle;
 		this.container.appendChild(this.canvas);
 
 		this.gl.enable(this.gl.DEPTH_TEST);
-		this.gl.depthFunc(this.gl.LEQUAL);		
+		this.gl.depthFunc(this.gl.LEQUAL);	
 	},
 
 	addListeners: function()
@@ -330,6 +350,12 @@ meta.engine =
 	timers: [],
 	timersRemove: [],
 
+	width: 0, 
+	height: 0,
+	scaleX: 1.0, 
+	scaleY: 1.0,
+	zoom: 1,
+	ratio: 1,
 	offsetLeft: 0,
 	offsetTop: 0,
 

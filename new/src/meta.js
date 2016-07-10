@@ -22,6 +22,8 @@ var meta =
 	},
 
 	cache: {
+		width: 0,
+		height: 0,
 		timerIndex: 0
 	},
 
