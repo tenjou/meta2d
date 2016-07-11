@@ -2,19 +2,49 @@
 
 meta.Camera = function(x, y, width, height)
 {
-	this.viewport = new meta.math.AABB(x, y, width, height);
+	this.volume = new meta.math.AABB(0, 0, 0, 0);
+	this.create();
 };
 
 meta.Camera.prototype = 
 {
+	create: function(x, y, width, height)
+	{
+		this.volume.set(x, y, width, height);
+	},
+
+	remove: function()
+	{
+
+	},
+
+	activate: function()
+	{
+
+	},
+
+	update: function()
+	{
+		this.emit("camera-move", this);
+	},
+
 	updateZoom: function()
 	{
 
 	},
 
+	onResize: function()
+	{
+		this.volume.resize(meta.engine.width, meta.engine.height);
+	},
+
 	//
-	viewport: null,
-	$zoom: 1
+	volume: null,
+	
+	$zoom: 1.0,
+	zoomPrev: 1.0,
+	zoomRatio: 1.0,
+	$zoomAuto: false
 };
 
 

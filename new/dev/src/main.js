@@ -37,16 +37,16 @@ function OnDown(event)
 {
 	console.log("down:", event);
 	if(event.keyCode === meta.input.key.W) {
-		console.log("up");
+		console.log("move up");
 	}
-	else if(event.keybind === "left") {
-		console.log("left");
+	else if(event.keybind) {
+		console.log("keybind", event.keybind);
 	}
 }
 
 function OnUp(event) 
 {
-	console.log("down:", event);
+	console.log("up:", event);
 	if(event.keyCode === meta.input.key.A) {
 		console.log("left");
 	}

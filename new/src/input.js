@@ -4,11 +4,12 @@ meta.input =
 {
 	setup: function()
 	{
-		var numTotalKeys = this.numKeys + this.numInputs + 1;
+		var numTotalKeys = this.$numKeys + this.$numInputs + 1;
 		this.keys = new Array(numTotalKeys);
 		this.keybinds = new Array(numTotalKeys);
 
-		this.resetInputs();
+		this.$eventDown = new this.Event();
+		this.$event = new this.Event();
 
 		meta.on("blur", this.resetInputs, this);
 
@@ -67,16 +68,16 @@ meta.input =
 
 		meta.emit("input.up", this.$event);
 
-		if(this.keyRepeat && this.$repeatTimer) {
-			this.$repeatTimer.pause();
+		if(this.repeatKey && this.$repeatTimer) {
+			this.$repeatTimer.stop();
 		}
 	},
 
-	handleMouseDown: function(event)
+	handleMouseDown: function(domEvent)
 	{
 		if(!this.enable) { return; }
 
-		var keyCode = event.button + Input.BUTTON_ENUM_OFFSET;
+		var keyCode = event.button + this.BUTTON_ENUM_OFFSET;
 		this.keys[keyCode] = 1;
 
 		var engine = meta.engine;
@@ -97,15 +98,16 @@ meta.input =
 		this.$event.x = this.x;
 		this.$event.y = this.y;
 		this.$event.keyCode = keyCode;
+		this.$event.keybind = this.keybinds[keyCode] || null;
 
 		meta.emit("input.down", this.$event);
 	},
 
-	handleMouseUp: function(event)
+	handleMouseUp: function(domEvent)
 	{
 		if(!this.enable) { return; }
 
-		var keyCode = event.button + Input.BUTTON_ENUM_OFFSET;
+		var keyCode = event.button + this.BUTTON_ENUM_OFFSET;
 		this.keys[keyCode] = 0;	
 
 		var engine = meta.engine;
@@ -126,56 +128,287 @@ meta.input =
 		this.$event.x = this.x;
 		this.$event.y = this.y;
 		this.$event.keyCode = keyCode;
+		this.$event.keybind = this.keybinds[keyCode] || null;
 
-		meta.emit("input.down", this.$event);
+		meta.emit("input.up", this.$event);
 	},
 
-	handleMouseMove: function(event)
+	handleMouseMove: function(domEvent)
 	{
 		if(document.activeElement === document.body) {
-			event.preventDefault();
+			domEvent.preventDefault();
 		}
 
 		if(!this.enable) { return; }
 
-		var scope = meta;
-		var camera = scope.camera;
+		var engine = meta.engine;
+		var camera = meta.camera;
+
 		this.prevScreenX = this.screenX;
 		this.prevScreenY = this.screenY;
-		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * this.engine.ratio;
-		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * this.engine.ratio;
+		this.screenX = ((event.pageX - engine.offsetLeft) * engine.scaleX) * engine.ratio;
+		this.screenY = ((event.pageY - engine.offsetTop) * engine.scaleY) * engine.ratio;
 		this.x = (this.screenX * camera.zoomRatio) + camera.volume.x | 0;
 		this.y = (this.screenY * camera.zoomRatio) + camera.volume.y | 0;
 
-		this._event.event = event;
-		this._event.prevScreenX = this.prevScreenX;
-		this._event.prevScreenY = this.prevScreenY;
-		this._event.screenX = this.screenX;
-		this._event.screenY = this.screenY;
-		this._event.x = this.x;
-		this._event.y = this.y;
-		this._event.keyCode = -1;
+		this.$event.domEvent = domEvent;
+		this.$event.prevScreenX = this.prevScreenX;
+		this.$event.prevScreenY = this.prevScreenY;
+		this.$event.screenX = this.screenX;
+		this.$event.screenY = this.screenY;
+		this.$event.x = this.x;
+		this.$event.y = this.y;
+		this.$event.keyCode = -1;
 
-		this.onMove.emit(this._event, Input.Event.MOVE);
-		this._event.entity = null;
+		meta.emit("input.move", this.$event);
 	},	
+
+	handleMouseDbClick: function(doMEvent)
+	{
+		if(!this.enable) { return; }
+
+		var engine = meta.engine;
+		var camera = meta.camera;		
+		var keyCode = domEvent.button;	
+
+		this.prevScreenX = this.screenX;
+		this.prevScreenY = this.screenY;		
+		this.screenX = ((event.pageX - engine.offsetLeft) * engine.scaleX) * engine.ratio;
+		this.screenY = ((event.pageY - engine.offsetTop) * engine.scaleY) * engine.ratio;
+		this.x = (this.screenX * camera.zoomRatio) + camera.volume.x | 0;
+		this.y = (this.screenY * camera.zoomRatio) + camera.volume.y | 0;
+
+		this.$event.domEvent = domEvent;
+		this.$event.prevScreenX = this.prevScreenX;
+		this.$event.prevScreenY = this.prevScreenY;
+		this.$event.screenX = this.screenX;
+		this.$event.screenY = this.screenY;
+		this.$event.x = this.x;
+		this.$event.y = this.y;
+		this.$event.keyCode = keyCode;
+		this.$event.keybind = this.keybinds[keyCode] || null;
+
+		meta.emit("input.up", this.$event);
+	},
+
+	handleTouchDown: function(domEvent)
+	{
+		if(document.activeElement === document.body) {		
+			domEvent.preventDefault();
+		}
+
+		var engine = meta.engine;
+		var camera = meta.camera;
+
+		var changedTouches = domEvent.changedTouches;
+		var numTouches = changedTouches.length;
+		for(var i = 0; i < numTouches; i++)
+		{
+			var id = this.touches.length - 1;
+			var touch = changedTouches[i];
+			this.touches.push(touch.identifier);
+
+			var screenX = ((touch.pageX - engine.offsetLeft) * engine.scaleX) * engine.ratio;
+			var screenY = ((touch.pageY - engine.offsetTop) * engine.scaleY) * engine.ratio;
+			var x = ((screenX * camera.zoomRatio) + camera.volume.x) | 0;
+			var y = ((screenY * camera.zoomRatio) + camera.volume.y) | 0;
+
+			var keyCode = id + this.BUTTON_ENUM_OFFSET;
+			this.keys[keyCode] = 1;
+
+			this.$event.domEvent = domEvent;
+			this.$event.prevScreenX = screenX;
+			this.$event.prevScreenY = screenY;
+			this.$event.screenX = screenX;
+			this.$event.screenY = screenY;
+			this.$event.x = x;
+			this.$event.y = y;
+			this.$event.keyCode = keyCode;
+			this.$event.keybind = this.keybinds[keyCode] || null;
+
+			if(id === 0) {
+				this.screenX = screenX;
+				this.screenY = screenY;
+				this.x = x;
+				this.y = y;
+			}
+
+			meta.emit("input.down", this.$event);
+		}
+	},
+
+	handleTouchUp: function(domEvent)
+	{
+		if(document.activeElement === document.body) {		
+			domEvent.preventDefault();
+		}
+
+		var engine = meta.engine;
+		var camera = meta.camera;
+
+		var changedTouches = domEvent.changedTouches;
+		var numTouches = changedTouches.length;
+		for(var i = 0; i < numTouches; i++)
+		{
+			var touch = changedTouches[i];
+			var id = this.$getTouchID(touch.identifier);
+			if(id === -1) { continue; }
+
+			this.touches.splice(id, 1);
+
+			var screenX = ((touch.pageX - engine.offsetLeft) * engine.scaleX) * engine.ratio;
+			var screenY = ((touch.pageY - engine.offsetTop) * engine.scaleY) * engine.ratio;
+			var x = ((screenX * camera.zoomRatio) + camera.volume.x) | 0;
+			var y = ((screenY * camera.zoomRatio) + camera.volume.y) | 0;
+
+			var keyCode = id + this.BUTTON_ENUM_OFFSET;
+			this.keys[keyCode] = 0;		
+
+			if(id === 0) 
+			{
+				this.prevScreenX = this.screenX;
+				this.prevScreenY = this.screenY;
+				this.screenX = screenX;
+				this.screenY = screenY;
+				this.x = x;
+				this.y = y;	
+				this.$event.prevScreenX = this.prevScreenX;
+				this.$event.prevScreenY = this.prevScreenY;							
+			}
+			else 
+			{
+				this.$event.prevScreenX = 0;
+				this.$event.prevScreenY = 0;
+			}
+
+			this.$event.domEvent = domEvent;
+			this.$event.screenX = screenX;
+			this.$event.screenY = screenY;
+			this.$event.x = x;
+			this.$event.y = y;
+			this.$event.keyCode = id;
+			this.$event.keybind = this.keybinds[keyCode] || null;
+
+			meta.emit("input.down", this.$event);
+		}
+	},
+
+	handleTouchMove: function(domEvent)
+	{
+		if(document.activeElement === document.body) {		
+			domEvent.preventDefault();
+		}
+
+		var scope = meta;
+		var camera = scope.camera;
+
+		var changedTouches = domEvent.changedTouches;
+		var numTouches = changedTouches.length;
+		for(var i = 0; i < numTouches; i++)
+		{
+			var touch = changedTouches[i];
+			var id = this.$getTouchID(touch.identifier);
+			if(id === -1) { continue; }
+
+			var screenX = ((touch.pageX - engine.offsetLeft) * engine.scaleX) * engine.ratio;
+			var screenY = ((touch.pageY - engine.offsetTop) * engine.scaleY) * engine.ratio;
+			var x = ((screenX * camera.zoomRatio) + camera.volume.x) | 0;
+			var y = ((screenY * camera.zoomRatio) + camera.volume.y) | 0;
+
+			var keyCode = id + this.BUTTON_ENUM_OFFSET;
+
+			if(id === 0) 
+			{
+				this.prevScreenX = this.screenX;
+				this.prevScreenY = this.screenY;
+				this.screenX = screenX;
+				this.screenY = screenY;
+				this.x = x;
+				this.y = y;	
+
+				this.$event.prevScreenX = this.prevScreenX;
+				this.$event.prevScreenY = this.prevScreenY;					
+			}
+			else {
+				this.$event.prevScreenX = screenX;
+				this.$event.prevScreenY = screenY;
+			}
+
+			this.$event.domEvent = domEvent;
+			this.$event.screenX = 0;
+			this.$event.screenY = 0;
+			this.$event.x = x;
+			this.$event.y = y;
+			this.$event.keyCode = keyCode;
+			this.$event.keybind = this.keybinds[keyCode] || null;
+
+			meta.emit("input.move", $event);
+		}
+	},
+
+	$getTouchID: function(eventTouchID)
+	{
+		for(var n = 0; n < this.touches.length; n++)
+		{
+			if(this.touches[n] === eventTouchID) {
+				return n;
+			}
+		}
+
+		return -1;
+	},
 
 	resetInputs: function()
 	{
+		this.$event.domEvent = null;
+		this.$event.prevScreenX = this.prevScreenX;
+		this.$event.prevScreenY = this.prevScreenY;
+		this.$event.screenX = this.screenX;
+		this.$event.screenY = this.screenY;
+		this.$event.x = this.x;
+		this.$event.y = this.y;
+
+		// Reset keys:
+		for(var n = 0; n < this.keys.length; n++) 
+		{
+			if(!this.keys[n]) { continue; }
+
+			this.keys[n] = 0;
+
+			this.$event.keyCode = n;
+			this.$event.keybind = this.$keybinds[n];
+
+			meta.emit("input.up", this.$event);
+		}
+
+		// Reset touches:
+		for(var n = 0; n < this.touches.length; n++)
+		{
+			if(!this.touches[n]) { continue; }
+
+			var keyCode = n + this.BUTTON_ENUM_OFFSET;
+			this.$event.keyCode = keyCode;
+			this.$event.keybind = this.$keybinds[keyCode];
+		}
+
 		this.$eventDown = new this.Event();
-		this.$event = new this.Event();
+		this.$event = new this.Event();		
 	},
 
 	keybind: function(keybind, keys)
 	{
 		if(keys instanceof Array)
 		{
-			for(var n = 0; n < keys.length; n++) {
-				this.keybinds[keys[n]] = keybind;
+			for(var n = 0; n < keys.length; n++) 
+			{
+				var key = keys[n];
+				this.keybinds[key] = keybind;
+				this.keybindMap[keybind] = key;
 			}
 		}
 		else {
 			this.keybinds[keys] = keybind;
+			this.keybindMap[keybind] = keys;
 		}
 	},
 
@@ -186,6 +419,14 @@ meta.input =
 	isUp: function(key) {
 		return !this.keys[key];
 	},
+
+	isKeybindDown: function(keybind) {
+		return this.keys[this.keybindMap[keybind]]
+	},
+
+	isKeybindUp: function(keybind) {
+		return !this.keys[this.keybindMap[keybind]]
+	},	
 
 	checkIgnoreKey: function(keyCode)
 	{
@@ -324,9 +565,10 @@ meta.input =
 	},
 
 	//
-	keys: [],
-	keybinds: [],
+	keys: null,
+	keybinds: null,
 	touches: [],
+	keybindMap: {},
 
 	ignoreKeys: {},
 	cmdKeys: {},
@@ -334,6 +576,7 @@ meta.input =
 
 	enable: true,
 	stickyKeys: false,
+	numCmdKeysPressed: 0,
 
 	$repeatTimer: null,
 	repeatKey: false,
@@ -346,370 +589,10 @@ meta.input =
 	prevScreenX: 0,
 	prevScreenY: 0,
 
+	$numKeys: 256,
+	$numInputs: 10,
 	BUTTON_ENUM_OFFSET: 2000
 };
-
-meta.input.setup();
-
-	/**
-	 * Callback onMouseDbClick.
-	 * @param event {Event} DOM event object.
-	 */
-	handleMouseDbClick: function(event)
-	{
-		if(this.blockInput) { return; }
-
-		var keyCode = event.button;
-		this.keys[keyCode] = 0;
-		this.pressed[this.keyID[keyCode]] = 0;
-
-		if(this._keybindMap && this._keybindMap[keyCode]) {
-			var buffer = this._keybindMap[keyCode];
-			var num = buffer.length;
-			for(var n = 0; n < num; n++) {
-				this.keybind[buffer[n]] = 0;
-			}
-		}		
-
-		var scope = meta;
-		var camera = scope.camera;
-		this.prevScreenX = this.screenX;
-		this.prevScreenY = this.screenY;		
-		this.screenX = ((event.pageX - this.engine.offsetLeft) * this.engine.scaleX) * this.engine.ratio;
-		this.screenY = ((event.pageY - this.engine.offsetTop) * this.engine.scaleY) * this.engine.ratio;
-		this.x = (this.screenX * camera.zoomRatio) + camera.volume.x | 0;
-		this.y = (this.screenY * camera.zoomRatio) + camera.volume.y | 0;
-
-		this._event.event = event;
-		this._event.prevScreenX = this.prevScreenX;
-		this._event.prevScreenY = this.prevScreenY;
-		this._event.screenX = this.screenX;
-		this._event.screenY = this.screenY;
-		this._event.x = this.x;
-		this._event.y = this.y;
-		this._event.keyCode = keyCode;
-		this._event.keyboard = false;
-
-		this.onDbClick.emit(this._event, Input.Event.DBCLICK);
-
-		// Callbacks:
-		if(this._onUpCBS && this._onUpCBS[keyCode]) 
-		{
-			var cbs = this._onUpCBS[keyCode]; 
-			var numCbs = cbs.length;
-			for(var i = 0; i < numCbs; i++) {
-				cbs[i](this._event, Input.Event.UP);
-			}
-		}
-
-		this._event.entity = null;
-	},
-
-	/**
-	 * Callback onTouchDown.
-	 * @param event {Event} DOM event object.
-	 */
-	handleTouchDown: function(event)
-	{
-		if(document.activeElement === document.body) {		
-			event.preventDefault();
-		}
-
-		var scope = meta;
-		var camera = scope.camera;
-
-		var touch, screenX, screenY, x, y, id;
-		var changedTouches = event.changedTouches;
-		var numTouches = changedTouches.length;
-		for(var i = 0; i < numTouches; i++)
-		{
-			id = this.touches.length - 1;
-			touch = event.changedTouches[i];
-			this.touches.push(touch.identifier);
-			this.numTouches++;
-
-			screenX = ((touch.pageX - this.engine.offsetLeft) * this.engine.scaleX) * this.engine.ratio;
-			screenY = ((touch.pageY - this.engine.offsetTop) * this.engine.scaleY) * this.engine.ratio;
-			x = ((screenX * camera.zoomRatio) + camera.volume.x) | 0;
-			y = ((screenY * camera.zoomRatio) + camera.volume.y) | 0;
-
-			var keyCode = id + Input.BUTTON_ENUM_OFFSET;
-			this.keys[keyCode] = 1;
-
-			if(id < 3) 
-			{
-				this.pressed[this.keyID[keyCode]] = 1;
-
-				if(this._keybindMap && this._keybindMap[keyCode]) {
-					var buffer = this._keybindMap[keyCode];
-					var num = buffer.length;
-					for(var n = 0; n < num; n++) {
-						this.keybind[buffer[n]] = 1;
-					}
-				}				
-			}
-
-			this._event.event = event;
-			this._event.prevScreenX = screenX;
-			this._event.prevScreenY = screenY;
-			this._event.screenX = screenX;
-			this._event.screenY = screenY;
-			this._event.x = x;
-			this._event.y = y;
-			this._event.keyCode = keyCode;
-			this._event.keyboard = false;
-
-			if(id === 0) {
-				this.screenX = screenX;
-				this.screenY = screenY;
-				this.x = x;
-				this.y = y;
-			}
-
-			this.onDown.emit(this._event, Input.Event.DOWN);
-
-			this._event.entity = null;
-		}
-	},
-
-	/**
-	 * Callback onTouchUp.
-	 * @param event {Event} DOM event object.
-	 */
-	handleTouchUp: function(event)
-	{
-		if(document.activeElement === document.body) {		
-			event.preventDefault();
-		}
-
-		var scope = meta;
-		var camera = scope.camera;
-
-		var touch, id, screenX, screenY, x, y;
-		var changedTouches = event.changedTouches;
-		var numTouches = changedTouches.length;
-		for(var i = 0; i < numTouches; i++)
-		{
-			touch = event.changedTouches[i];
-			id = this._getTouchID(touch.identifier);
-			if(id === -1) { continue; }
-
-			this.touches.splice(id, 1);
-			this.numTouches--;
-
-			screenX = ((touch.pageX - this.engine.offsetLeft) * this.engine.scaleX) * this.engine.ratio;
-			screenY = ((touch.pageY - this.engine.offsetTop) * this.engine.scaleY) * this.engine.ratio;
-			x = ((screenX * camera.zoomRatio) + camera.volume.x) | 0;
-			y = ((screenY * camera.zoomRatio) + camera.volume.y) | 0;
-
-			var keyCode = id + Input.BUTTON_ENUM_OFFSET;
-			this.keys[keyCode] = 0;
-
-			if(id < 3) 
-			{
-				this.pressed[this.keyID[keyCode]] = 0;
-
-				if(this._keybindMap && this._keybindMap[keyCode]) {
-					var buffer = this._keybindMap[keyCode];
-					var num = buffer.length;
-					for(var n = 0; n < num; n++) {
-						this.keybind[buffer[n]] = 0;
-					}
-				}				
-			}			
-
-			this._event.event = event;
-			if(id === 0) 
-			{
-				this.prevScreenX = this.screenX;
-				this.prevScreenY = this.screenY;
-				this.screenX = screenX;
-				this.screenY = screenY;
-				this.x = x;
-				this.y = y;	
-
-				this._event.prevScreenX = this.prevScreenX;
-				this._event.prevScreenY = this.prevScreenY;							
-			}
-			else {
-				this._event.prevScreenX = 0;
-				this._event.prevScreenY = 0;
-			}
-			this._event.screenX = screenX;
-			this._event.screenY = screenY;
-			this._event.x = x;
-			this._event.y = y;
-			this._event.keyCode = id;
-			this._event.keyboard = false;
-
-			this.onUp.emit(this._event, Input.Event.UP);
-			this.onClick.emit(this._event, Input.Event.CLICK);
-
-			this._event.entity = null;
-		}
-	},
-
-	/**
-	 * Callback onTouchMove.
-	 * @param event {Event} DOM event object.
-	 */
-	handleTouchMove: function(event)
-	{
-		if(document.activeElement === document.body) {		
-			event.preventDefault();
-		}
-
-		var scope = meta;
-		var camera = scope.camera;
-
-		var touch, id, screenX, screenY, x, y;
-		var changedTouches = event.changedTouches;
-		var numTouches = changedTouches.length;
-		for(var i = 0; i < numTouches; i++)
-		{
-			touch = event.changedTouches[i];
-			id = this._getTouchID(touch.identifier);
-			if(id === -1) { continue; }
-
-			screenX = ((touch.pageX - this.engine.offsetLeft) * this.engine.scaleX) * this.engine.ratio;
-			screenY = ((touch.pageY - this.engine.offsetTop) * this.engine.scaleY) * this.engine.ratio;
-			x = ((screenX * camera.zoomRatio) + camera.volume.x) | 0;
-			y = ((screenY * camera.zoomRatio) + camera.volume.y) | 0;
-
-			var keyCode = id + Input.BUTTON_ENUM_OFFSET;
-
-			this._event.event = event;
-			if(id === 0) 
-			{
-				this.prevScreenX = this.screenX;
-				this.prevScreenY = this.screenY;
-				this.screenX = screenX;
-				this.screenY = screenY;
-				this.x = x;
-				this.y = y;	
-
-				this._event.prevScreenX = this.prevScreenX;
-				this._event.prevScreenY = this.prevScreenY;					
-			}
-			else {
-				this._event.prevScreenX = screenX;
-				this._event.prevScreenY = screenY;
-			}
-			this._event.screenX = 0;
-			this._event.screenY = 0;
-			this._event.x = x;
-			this._event.y = y;
-			this._event.keyCode = keyCode;
-			this._event.keyboard = false;
-
-			this.onMove.emit(this._event, Input.Event.MOVE);
-			this._event.entity = null;
-		}
-	},
-
-	/**
-	 * Reset all inputs. Will send graceful up-event on every active input.
-	 */
-	resetInput: function()
-	{
-		var i;
-
-		this._event.event = null;
-		this._event.prevX = 0;
-		this._event.prevY = 0;
-		this._event.x = 0;
-		this._event.y = 0;
-		this._event.keyCode = 0;
-		this._event.keyboard = false;
-
-		this.metaPressed = false;
-
-		// Reset key presses.
-		var numTotalKeys = this.numKeys + this.numInputs;
-		for(i = 0; i < this.numTotalKeys; i++)
-		{
-			if(this.keys[i]) {
-				this.keys[i] = 0;
-				this._event.keyCode = i;
-				this.onKeyUp.emit(this._event, Input.Event.UP);
-			}
-		}
-
-		this.pressed = {};
-		this.keybind = {};
-
-		this._numCmdKeys = 0;
-
-		// Reset touches.
-		if(this.numTouches)
-		{
-			for(i = 0; i < this.numTouches; i++) {
-				this._event.keyCode = i;
-				this.onUp.emit(this._event, Input.Event.UP);
-			}
-
-			this.touches.length = 0;
-			this.numTouches = 0;
-		}
-	},
-
-	getEvent: function()
-	{
-		this._event.event = null;
-		this._event.prevScreenX = this.prevScreenX;
-		this._event.prevScreenY = this.prevScreenY;
-		this._event.screenX = this.screenX;
-		this._event.screenY = this.screenY;
-		this._event.x = this.inputX;
-		this._event.y = this.inputY;
-		this._event.keyCode = -1;	
-
-		return this._event;	
-	},
-
-	_getTouchID: function(eventTouchID)
-	{
-		for(var i = 0; i < this.numTouches; i++)
-		{
-			if(this.touches[i] === eventTouchID) {
-				return i;
-			}
-		}
-
-		return -1;
-	},
-
-	keyID: null,
-
-	keys: null,
-	touches: null,
-	pressed: null,
-	keybind: null,
-	_keybindMap: null,
-
-	blockInput: false,
-	stickyKeys: true,
-	metaPressed: false,
-
-	keyRepeat: 0,
-	_inputTimer: null,
-	_repeatKey: 0,
-
-	numKeys: 256,
-	numInputs: 10,
-	numTouches: 0,
-
-	x: 0, y: 0,
-	screenX: 0, screenY: 0,
-	prevScreenX: 0, prevScreenY: 0,
-
-	_event: null,
-
-	_ignoreKeys: null,
-	_cmdKeys: null,
-	_iframeKeys: null,
-	_numCmdKeys: 0
-}
 
 meta.input.key =
 {
@@ -809,3 +692,5 @@ meta.input.key =
 	BUTTON_MIDDLE: 1 + meta.input.BUTTON_ENUM_OFFSET,
 	BUTTON_RIGHT: 2 + meta.input.BUTTON_ENUM_OFFSET
 };
+
+meta.input.setup();

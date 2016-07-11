@@ -43,6 +43,8 @@ meta.engine =
 		var self = this;
 		this.$renderLoopFunc = function() { self.render(); };
 		this.$renderLoopFunc();
+
+		this.load();
 	},
 
 	$renderLoopFunc: null,
