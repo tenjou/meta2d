@@ -3,7 +3,7 @@
 meta.on("init", function()
 {
 	var holder = document.createElement("div");
-	holder.style.cssText = "position: relative; width: 400px; height: 400px;";
+	holder.style.cssText = "position: relative; width: 640px; height: 480px;";
 	document.body.appendChild(holder);
 
 	meta.engine.container = holder;
@@ -11,7 +11,7 @@ meta.on("init", function()
 
 meta.on("preload", function() 
 {
-	var shader = meta.resources.loadShader("sprite", {
+	shader = meta.resources.loadShader("sprite", {
 		vertexShader: [
 			"attribute vec3 vertexPos;",
 
@@ -28,8 +28,7 @@ meta.on("preload", function()
 			"}"
 		]
 	});
-
-	var shader2 = meta.resources.getShader("sprite");
+	shader.use();
 });
 
 meta.on("load", function() 

@@ -216,7 +216,7 @@ meta.engine =
 		this.canvas.id = "meta-webgl";
 		this.canvas.style.cssText = this.canvasStyle;
 
-		this.gl = this.canvas.getContext("webgl") || this.canvas.getContext("experimental-webgl");
+		this.gl = WebGLDebugUtils.makeDebugContext(this.canvas.getContext("webgl") || this.canvas.getContext("experimental-webgl"));
 
 		if(!this.container) {
 			this.container = document.body;

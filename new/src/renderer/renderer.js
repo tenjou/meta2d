@@ -1,16 +1,48 @@
 "use strict"
 
+var vertices = [
+	1.0, 1.0, 0.0,
+	-1.0, 1.0, 0.0,
+	1.0, -1.0, 0.0,
+	-1.0, -1.0, 0.0
+];
+
+var vbo = null;
+var shader = null;
+
 meta.renderer = 
 {
 	setup: function()
 	{
 		this.gl = meta.engine.gl;
 		this.bgColor = "#000000FF";
+
+		vbo = this.gl.createBuffer();
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vbo);
+		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
+		this.gl.viewport(0, 0, 640, 480);
 	},
 
 	render: function()
 	{
-		this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+		var gl = this.gl;
+
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+		var projMatrix = new meta.math.Matrix4();
+		projMatrix.perspective(45, 640 / 480, 0.1, 100.0);
+
+		var modelViewMatrix = new meta.math.Matrix4();
+		modelViewMatrix.translate(0, 0, -6);
+		projMatrix.m[14] = projMatrix.m[11];
+		projMatrix.m[11] = -1;
+		console.log(projMatrix.m);
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+		gl.vertexAttribPointer(this.currShader.attrib.vertexPos, 3, gl.FLOAT, false, 0, 0);
+		gl.uniformMatrix4fv(this.currShader.uniform.modelViewMatrix, false, modelViewMatrix.m);
+		gl.uniformMatrix4fv(this.currShader.uniform.projMatrix, false, projMatrix.m);
+		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);		
 	},
 
 	onResize: function()
@@ -43,5 +75,6 @@ meta.renderer =
 	},
 
 	//
-	$bgColor: null
+	$bgColor: null,
+	currShader: null
 };

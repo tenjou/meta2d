@@ -90,6 +90,22 @@ meta.math.Matrix4.prototype =
 
 	},
 
+	translate: function(x, y, z)
+	{
+		this.m[12] += this.m[0] * x + this.m[4] * y + this.m[8] * z;
+		this.m[13] += this.m[1] * x + this.m[5] * y + this.m[9] * z;
+		this.m[14] += this.m[2] * x + this.m[6] * y + this.m[10] * z;
+		this.m[15] += this.m[3] * x + this.m[7] * y + this.m[11] * z;
+	},
+
+	position: function(x, y, z)
+	{
+		this.m[12] = x
+		this.m[13] = y
+		this.m[14] = z
+		this.m[15] = 1;
+	},
+
 	ortho: function(left, right, bottom, top, near, far) 
 	{
 		var leftRight = 1 / (left - right);
@@ -112,5 +128,43 @@ meta.math.Matrix4.prototype =
 		this.m[13] = (top + bottom) * bottomTop;
 		this.m[14] = (far + near) * nearFar;
 		this.m[15] = 1;
+	},
+
+	perspective: function(fovy, aspect, near, far)
+	{
+		var maxY = near * Math.tan(fovy * Math.PI / 360.0);
+		var minY = -maxY;
+		var minX = minY * aspect;
+		var maxX = maxY * aspect;
+
+		this.frustum(minX, maxX, minY, maxY, near, far);
+	},
+
+	frustum: function(left, right, bottom, top, near, far)
+	{
+		var twoNear = 2 * near;
+		var rightMinusLeft = right - left;
+		var topMinusBottom = top - bottom;
+		var farMinusNear = far - near;
+
+		this.m[0] = twoNear / rightMinusLeft;
+		this.m[1] = 0;
+		this.m[2] = (right + left) / rightMinusLeft;
+		this.m[3] = 0;
+
+		this.m[4] = 0;
+		this.m[5] = twoNear / topMinusBottom;
+		this.m[6] = (top + bottom) / topMinusBottom;
+		this.m[7] = 0;
+
+		this.m[8] = 0;
+		this.m[9] = 0;
+		this.m[10] = -(far + near) / farMinusNear;
+		this.m[11] = -(twoNear * far) / farMinusNear;
+
+		this.m[12] = 0;
+		this.m[13] = 0;
+		this.m[14] = -1;
+		this.m[15] = 0;
 	}
 };

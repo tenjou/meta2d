@@ -38,31 +38,42 @@ meta.class("meta.Shader", "meta.Resource",
 		this.loadUniforms();
 	},
 
+	use: function() {
+		meta.engine.gl.useProgram(this.program);
+		meta.renderer.currShader = this;
+	},
+
 	loadAttribs: function()
 	{
+		this.attrib = {};
+
 		var gl = meta.engine.gl;
 
         var num = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
         for(var n = 0; n < num; n++) {
             var attrib = gl.getActiveAttrib(this.program, n);
-            this.attribs[attrib.name] = gl.getAttribLocation(this.program, attrib.name);
+            var attribLoc = gl.getAttribLocation(this.program, attrib.name);
+            gl.enableVertexAttribArray(attribLoc);
+            this.attrib[attrib.name] = attribLoc;
         }
 
-        console.log("attribs", this.attribs)
+        console.log("attribs", this.attrib)
 	},
 
 	loadUniforms: function()
 	{
+		this.uniform = {};
+
 		var gl = meta.engine.gl;
 
         var num = gl.getProgramParameter(this.program, gl.ACTIVE_UNIFORMS);
         for(var n = 0; n < num; n++) {
             var uniform = gl.getActiveUniform(this.program, n);
             var name = uniform.name.replace("[0]", "");
-            this.uniforms[name] = gl.getUniformLocation(this.program, name);
+            this.uniform[name] = gl.getUniformLocation(this.program, name);
         }
 
-        console.log("uniform", this.uniforms)
+        console.log("uniform", this.uniform)
 	},
 
 	set vertexShader(src) 
@@ -126,8 +137,8 @@ meta.class("meta.Shader", "meta.Resource",
 	},
 
 	//
-	attribs: {},
-	uniforms: {},
+	attributre: null,
+	uniform: null,
 
 	$vertexShader: null,
 	$fragmentShader: null,

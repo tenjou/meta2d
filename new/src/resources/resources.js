@@ -48,6 +48,8 @@ meta.resources =
 		var shader = meta.new(cls, params);
 		shader.id = id;
 		buffer[id] = shader;
+
+		return shader;
 	},
 
 	getResource: function(type, id)
