@@ -1,10 +1,15 @@
 "use strict";
 
-meta.entity("sprite", 
+meta.class("meta.Sprite"
 {
-	create: function()
+	init: function()
 	{
 		this.$position = new meta.vector2(0, 0);
+	},
+
+	create: function()
+	{
+		
 	},
 
 	remove: function()

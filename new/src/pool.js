@@ -2,19 +2,25 @@
 
 meta.pools = {};
 
-meta.create = function(type, name, params)
+meta.new = function(cls, params)
 {
-	var obj = meta.pools[type].pop();
-	// if(!obj) {
-	// 	obj = new 
-	// }
+	var buffer = meta.pools[cls.prototype.__name__];
+	if(!buffer) {
+		buffer = [];
+		meta.pools[cls.prototype.__name__] = buffer;
+	}
+
+	var obj = buffer.pop();
+	if(!obj) {
+		obj = new cls(params);
+	}
+
+	obj.create();
+	return obj;
 };
 
-meta.remove = function()
-{
-
-};
-
-meta.createEntity = function(name, params) {
-	return meta.create("entity", name, params);
+meta.delete = function(obj)
+{	
+	obj.remove();
+	buffer.push(obj);
 };

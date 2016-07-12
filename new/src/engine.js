@@ -1,5 +1,5 @@
-"use strict";
-
+"use strict"
+;
 meta.engine = 
 {
 	init: function()

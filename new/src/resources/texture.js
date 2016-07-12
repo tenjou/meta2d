@@ -1,3 +1,5 @@
 "use strict";
 
-meta.resource("Texture")
+meta.class("meta.Texture", "meta.Resource",
+{
+});

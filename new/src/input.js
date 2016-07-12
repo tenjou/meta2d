@@ -163,7 +163,7 @@ meta.input =
 		meta.emit("input.move", this.$event);
 	},	
 
-	handleMouseDbClick: function(doMEvent)
+	handleMouseDbClick: function(domEvent)
 	{
 		if(!this.enable) { return; }
 
