@@ -85,9 +85,28 @@ meta.math.Matrix4.prototype =
 		this.m[15] = 1;
 	},
 
+		
 	transpose: function()
 	{
+		var a01 = this.m[1];
+		var a02 = this.m[2];
+		var a03 = this.m[3];
+		var a12 = this.m[6];
+		var a13 = this.m[7];
+		var a23 = this.m[11];
 
+		this.m[1] = this.m[4];
+		this.m[2] = this.m[8];
+		this.m[3] = this.m[12];
+		this.m[4] = a01;
+		this.m[6] = this.m[9];
+		this.m[7] = this.m[13];
+		this.m[8] = a02;
+		this.m[9] = a12;
+		this.m[11] = this.m[14];
+		this.m[12] = a03;
+		this.m[13] = a13;
+		this.m[14] = a23;
 	},
 
 	translate: function(x, y, z)
