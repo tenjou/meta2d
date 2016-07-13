@@ -2,8 +2,9 @@
 
 meta.class("meta.Shader", "meta.Resource",
 {
-	create: function()
+	create: function(params)
 	{
+		this.loadParams(params);
 		this.compile();
 	},
 

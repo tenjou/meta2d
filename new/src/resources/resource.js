@@ -2,14 +2,20 @@
 
 meta.class("meta.Resource", 
 {
-	init: function(params) {
+	create: function(params) {
 		this.loadParams(params);
 	},
 
 	loadParams: function(params)
 	{
-		for(var key in params) {
-			this[key] = params[key];
+		if(typeof params === "string") {
+			this.load(params);
+		}
+		else 
+		{
+			for(var key in params) {
+				this[key] = params[key];
+			}
 		}
 	},
 
@@ -37,6 +43,31 @@ meta.class("meta.Resource",
 			}
 		}
 	},	
+
+	emit: function(event)
+	{
+		if(!this.watchers) { return; }
+		
+		for(var n = 0; n < this.watchers.length; n++) {
+			this.watchers[n](event);
+		}
+	},
+
+	set path(path)
+	{
+		if(this.$path === path) { return; }
+		this.$path = path;
+
+		this.load(path);
+	},
+
+	get path() {
+		return this.$path;
+	},
+
+	get loaded() {
+		return ((this.flags & this.Flag.LOADED) === this.Flag.LOADED);
+	},
 
 	Flag: {
 		LOADED: 1 << 0

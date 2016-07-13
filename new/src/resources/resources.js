@@ -77,11 +77,28 @@ meta.resources =
 		return this.getResource("shader", id);
 	},	
 
+	loadTexture: function(id, params) {
+		return this.loadResource("texture", meta.Texture, id, params);
+	},
+
+	getTexture: function(id) {
+		return this.getResource("texture", id);
+	},	
+
+	loadVideo: function(id, params) {
+		return this.loadResource("video", meta.Video, id, params);
+	},
+
+	getVideo: function(id) {
+		return this.getResource("video", id);
+	},		
+
 	//
 	table: {
 		texture: {},
 		shader: {},
 		audio: {},
-		atlas: {}
+		atlas: {},
+		video: {}
 	}
 };

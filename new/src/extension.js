@@ -1,10 +1,11 @@
 "use strict";
 
-meta.cache.extensions = {};
+meta.cache.exts = {};
+meta.cache.extParams = {};
 
-meta.getExtension = function(name)
+meta.getExt = function(name)
 {
-	var extension = this.cache.extensions[name];
+	var extension = this.cache.exts[name];
 	if(extension) {
 		return extension;
 	}
@@ -50,7 +51,17 @@ meta.getExtension = function(name)
 		return;
 	}
 
-	this.cache.extensions[name] = extension;
+	this.cache.exts[name] = extension;
 	return extension;
 };
 
+meta.getExtParam = function(type)
+{
+	var param = this.cache.extParams[type];
+	if(!param) {
+		param = meta.engine.gl.getParameter(type);
+		this.cache.extParams[type] = param;
+	}
+
+	return param;
+}

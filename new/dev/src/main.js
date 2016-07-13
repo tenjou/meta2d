@@ -1,38 +1,52 @@
 "use strict";
 
-meta.on("init", function()
-{
-	var holder = document.createElement("div");
-	holder.style.cssText = "position: relative; width: 640px; height: 480px;";
-	document.body.appendChild(holder);
+// meta.on("init", function()
+// {
+// 	var holder = document.createElement("div");
+// 	holder.style.cssText = "position: relative; width: 640px; height: 480px;";
+// 	document.body.appendChild(holder);
 
-	meta.engine.container = holder;
-});
+// 	meta.engine.container = holder;
+// });
 
 meta.on("preload", function() 
 {
-	shader = meta.resources.loadShader("sprite", {
+	var shader = meta.resources.loadShader("sprite", {
 		vertexShader: [
 			"attribute vec3 vertexPos;",
+			"attribute vec2 uvCoords;",
 
 			"uniform mat4 modelViewMatrix;",
 			"uniform mat4 projMatrix;",
 
+			"varying highp vec2 var_uvCoords;",
+
 			"void main(void) {",
 			"	gl_Position = projMatrix * modelViewMatrix * vec4(vertexPos, 1.0);",
+			"	var_uvCoords = uvCoords;",
 			"}"
 		],
 		fragmentShader: [
+			"varying highp vec2 var_uvCoords;",
+
+			"uniform sampler2D texture;",
+
 			"void main(void) {",
-			"	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);",
+			"	gl_FragColor = texture2D(texture, vec2(var_uvCoords.s, var_uvCoords.t));",
 			"}"
 		]
 	});
 	shader.use();
+
+	texture = meta.resources.loadTexture("cube", "cubetexture.png");
+
+	// var player = meta.new(meta.Sprite, "cube");
+	// meta.view.add(player);
 });
 
 meta.on("load", function() 
 {
+
 	// var shader = new meta.Shader("basic", "./basic.vert", "./basic.frag");
 	// shader.remove();
 

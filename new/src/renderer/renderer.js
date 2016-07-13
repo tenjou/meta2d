@@ -1,26 +1,50 @@
 "use strict"
 
 var vertices = [
-	1.0, 1.0, 0.0,
-	-1.0, 1.0, 0.0,
-	1.0, -1.0, 0.0,
-	-1.0, -1.0, 0.0
+	10, 10,
+	200, 10,
+	200, 200,
+	10, 200
+];
+
+var indices = [
+	0, 1, 2,
+	0, 2, 3
+];
+
+var uvCoords = [
+  0.0,  1.0,
+  1.0,  1.0,
+  1.0,  0.0,
+  0.0,  0.0,
 ];
 
 var vbo = null;
-var shader = null;
+var uv, indiceBuffer;
+var texture;
 
 meta.renderer = 
 {
 	setup: function()
 	{
-		this.gl = meta.engine.gl;
+		var gl = meta.engine.gl;
+
+		this.gl = gl;
 		this.bgColor = "#000000FF";
 
-		vbo = this.gl.createBuffer();
-		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vbo);
-		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
-		this.gl.viewport(0, 0, 640, 480);
+		vbo = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+		uv = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, uv);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvCoords), gl.STATIC_DRAW);
+
+		indiceBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indiceBuffer);
+		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+
+		gl.activeTexture(gl.TEXTURE0);
 	},
 
 	render: function()
@@ -30,19 +54,24 @@ meta.renderer =
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 		var projMatrix = new meta.math.Matrix4();
-		projMatrix.perspective(45, 640 / 480, 0.1, 100.0);
-
+		projMatrix.ortho(0, meta.engine.width, meta.engine.height, 0, 0, 1);
 		var modelViewMatrix = new meta.math.Matrix4();
-		modelViewMatrix.translate(0, 0, -6);
-		projMatrix.m[14] = projMatrix.m[11];
-		projMatrix.m[11] = -1;
-		console.log(projMatrix.m);
+		modelViewMatrix.translate(0, 0, 0);
+
+		if(!texture.loaded) { return; }
+
+		gl.bindTexture(gl.TEXTURE_2D, texture.instance);
+		gl.uniform1i(this.currShader.uniform.texture, 0);
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-		gl.vertexAttribPointer(this.currShader.attrib.vertexPos, 3, gl.FLOAT, false, 0, 0);
+		gl.vertexAttribPointer(this.currShader.attrib.vertexPos, 2, gl.FLOAT, false, 0, 0);
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, uv);
+		gl.vertexAttribPointer(this.currShader.attrib.uvCoords, 2, gl.FLOAT, false, 0, 0);
+
 		gl.uniformMatrix4fv(this.currShader.uniform.modelViewMatrix, false, modelViewMatrix.m);
 		gl.uniformMatrix4fv(this.currShader.uniform.projMatrix, false, projMatrix.m);
-		gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);		
+		gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);		
 	},
 
 	onResize: function()
