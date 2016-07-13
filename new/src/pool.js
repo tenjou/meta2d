@@ -4,6 +4,11 @@ meta.pools = {};
 
 meta.new = function(cls, params)
 {
+	if(!cls) {
+		console.warn("(meta.new) Invalid class passed with params:", params);
+		return;
+	}
+
 	var buffer = meta.pools[cls.prototype.__name__];
 	if(!buffer) {
 		buffer = [];

@@ -11,7 +11,8 @@
 
 meta.on("preload", function() 
 {
-	var shader = meta.resources.loadShader("sprite", {
+	var shader = meta.resources.loadShader({
+		id: "sprite",
 		vertexShader: [
 			"attribute vec3 vertexPos;",
 			"attribute vec2 uvCoords;",
@@ -38,9 +39,11 @@ meta.on("preload", function()
 	});
 	shader.use();
 
-	texture = meta.resources.loadTexture("cube", "cubetexture.png");
+	// texture = meta.new(meta.Texture, "cubetexture.png");
 
-	// var player = meta.new(meta.Sprite, "cube");
+	texture = meta.resources.loadTexture("cubetexture.png");
+
+	var player = meta.new(meta.Sprite, "cubetexture");
 	// meta.view.add(player);
 });
 

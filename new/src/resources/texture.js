@@ -90,18 +90,6 @@ meta.class("meta.Texture", "meta.Resource",
 		this.emit("loaded");
 	},
 
-	set path(path)
-	{
-		if(this.$path === path) { return; }
-		this.$path = path;
-
-		this.load(path);
-	},
-
-	get path() {
-		return this.$path;
-	},
-
 	//
 	type: "texture",
 
@@ -110,6 +98,5 @@ meta.class("meta.Texture", "meta.Resource",
 
 	width: 0,
 	height: 0,
-
-	$path: null
+	path: null
 });

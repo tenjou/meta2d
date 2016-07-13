@@ -1,6 +1,6 @@
 "use strict";
 
-meta.entity("text", "sprite",
+meta.class("meta.Text", "meta.Sprite",
 {
 
 });

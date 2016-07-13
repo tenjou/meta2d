@@ -1,6 +1,6 @@
 "use strict";
 
-meta.entity("particle", 
+meta.class("meta.Particle", 
 {
 
 });

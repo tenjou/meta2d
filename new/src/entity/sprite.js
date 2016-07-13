@@ -1,20 +1,36 @@
 "use strict";
 
-meta.class("meta.Sprite"
+meta.class("meta.Sprite",
 {
-	init: function()
+	init: function(params)
 	{
-		this.$position = new meta.vector2(0, 0);
+		this.$position = new meta.math.Vector2(0, 0);
+		this.create(params);
 	},
 
-	create: function()
+	create: function(params) 
 	{
-		
+		this.loadParams(params);
 	},
 
-	remove: function()
+	remove: function() 
 	{
+		this.$position.set(0, 0);
+	},
 
+	loadParams: function(params)
+	{
+		if(!params) { return; }
+
+		if(typeof params === "string") {
+			this.texture = params;
+		}
+		else
+		{
+			for(var key in params) {
+				this[key] = params[key];
+			}
+		}
 	},
 
 	position: function(x, y)
@@ -44,9 +60,10 @@ meta.class("meta.Sprite"
 
 	set texture(id)
 	{
-		if(this.$texture.id === id) { return; }
+		if(this.$texture) 
+		{
+			if(this.$texture.id === id) { return; }
 
-		if(this.$texture) {
 			this.$texture.unwatch(this);
 		}
 
@@ -61,9 +78,9 @@ meta.class("meta.Sprite"
 		return this.$texture;
 	},
 
-	handleTexture: function(event, data)
+	handleTexture: function(event)
 	{
-
+		console.log("event", event);
 	},
 
 	set shader(id)

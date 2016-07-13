@@ -57,7 +57,8 @@ meta.class("meta.Resource",
 		if(!this.watchers) { return; }
 		
 		for(var n = 0; n < this.watchers.length; n++) {
-			this.watchers[n](event);
+			var watcher = this.watchers[n];
+			watcher.func.call(watcher.owner, event);
 		}
 	},
 
