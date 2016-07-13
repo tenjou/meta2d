@@ -117,6 +117,12 @@ meta.math.Vector2.prototype =
 		this.y = a.y + t * (b.y - a.y);
 	},
 
+	rand: function(min, max)
+	{
+		this.x = meta.random.number(min, max);
+		this.y = meta.random.number(min, max);
+	},
+
 	exactEquals: function(vec) 
 	{
 		if(this.x === vec.x && this.y === vec.y) {
