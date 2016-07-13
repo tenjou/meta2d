@@ -138,6 +138,8 @@ meta.class("meta.Shader", "meta.Resource",
 	},
 
 	//
+	type: "shader",
+
 	attributre: null,
 	uniform: null,
 

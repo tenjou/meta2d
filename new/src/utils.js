@@ -17,3 +17,13 @@ meta.getNameFromPath = function(path)
 
 	return path.slice(slashIndex + 1, wildcardIndex);
 };
+
+meta.getExtFromPath = function(path)
+{
+	var wildcardIndex = path.lastIndexOf(".");
+	if(wildcardIndex === -1) {
+		return null;
+	}
+
+	return path.slice(wildcardIndex + 1);
+};

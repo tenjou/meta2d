@@ -2,7 +2,7 @@
 
 meta.class("meta.Texture", "meta.Resource",
 {
-	delete: function() 
+	onRemove: function() 
 	{
 		this.emit("removed");
 		
@@ -13,8 +13,28 @@ meta.class("meta.Texture", "meta.Resource",
 		this.height = 0;
 	},
 
-	load: function(path)
+	load: function(params)
 	{
+		if(!params) { return; }
+
+		// Resolve path, ext and id:
+		var path;
+		if(typeof params === "string") {
+			path = params;
+			this.id = meta.getNameFromPath(params);
+		}
+		else 
+		{
+			if(!params.path) { return; }
+
+			path = params.path;
+			this.id = params.id || meta.getNameFromPath(path);
+		}
+
+		this.ext = meta.getExtFromPath(params) || "png";
+		this.$path = params + "." + this.ext;		
+
+		// Create instance if there is no one already:
 		if(!this.instance) 
 		{ 
 			var self = this;
@@ -32,6 +52,8 @@ meta.class("meta.Texture", "meta.Resource",
 	onLoad: function()
 	{
 		if(!this.instance) { return; }
+
+		console.log("onload")
 
 		this.width = this.image.width;
 		this.height = this.image.height;
@@ -68,7 +90,21 @@ meta.class("meta.Texture", "meta.Resource",
 		this.emit("loaded");
 	},
 
+	set path(path)
+	{
+		if(this.$path === path) { return; }
+		this.$path = path;
+
+		this.load(path);
+	},
+
+	get path() {
+		return this.$path;
+	},
+
 	//
+	type: "texture",
+
 	instance: null,
 	image: null,
 

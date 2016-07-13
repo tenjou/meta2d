@@ -2,16 +2,24 @@
 
 meta.class("meta.Resource", 
 {
-	create: function(params) {
-		this.loadParams(params);
+	init: function(params) {
+		this.create(params || null);
+	},
+
+	create: function(params) 
+	{
+		if(params) {
+			this.loadParams(params);
+			this.load(params);
+		}
+		else {
+			this.load(null);
+		}
 	},
 
 	loadParams: function(params)
 	{
-		if(typeof params === "string") {
-			this.load(params);
-		}
-		else 
+		if(typeof params === "object") 
 		{
 			for(var key in params) {
 				this[key] = params[key];
@@ -53,27 +61,19 @@ meta.class("meta.Resource",
 		}
 	},
 
-	set path(path)
-	{
-		if(this.$path === path) { return; }
-		this.$path = path;
-
-		this.load(path);
-	},
-
-	get path() {
-		return this.$path;
-	},
-
 	get loaded() {
 		return ((this.flags & this.Flag.LOADED) === this.Flag.LOADED);
 	},
 
 	Flag: {
-		LOADED: 1 << 0
+		LOADED: 1 << 0,
+		ADDED: 1 << 1
 	},
 
 	//
+	id: null,
+	type: null,
+
 	watchers: null,
 
 	flags: 0

@@ -12,10 +12,12 @@ meta.new = function(cls, params)
 
 	var obj = buffer.pop();
 	if(!obj) {
-		obj = new cls();
+		obj = new cls(params);
+	}
+	else {
+		obj.create(params);
 	}
 
-	obj.create(params);
 	return obj;
 };
 

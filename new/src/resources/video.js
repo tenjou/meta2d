@@ -39,6 +39,8 @@ meta.class("meta.Video", "meta.Resource",
 	},
 
 	//
+	type: "video",
+
 	$path: null,
 	videoElement: null
 });
