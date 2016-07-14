@@ -21,7 +21,7 @@ meta.input =
 	{
 		var keyCode = domEvent.keyCode;
 
-		this.checkIgnoreKey(keyCode);
+		this.checkIgnoreKey(domEvent, keyCode);
 
 		if(!this.enable) { return; }
 
@@ -50,7 +50,7 @@ meta.input =
 	{
 		var keyCode = event.keyCode;
 
-		this.checkIgnoreKey(keyCode);
+		this.checkIgnoreKey(domEvent, keyCode);
 
 		if(!this.enable) { return; }
 
@@ -428,7 +428,7 @@ meta.input =
 		return !this.keys[this.keybindMap[keybind]]
 	},	
 
-	checkIgnoreKey: function(keyCode)
+	checkIgnoreKey: function(domEvent, keyCode)
 	{
 		if(document.activeElement === document.body)
 		{
