@@ -130,7 +130,7 @@ meta.resources =
 
 		var resource = buffer[id];
 		if(!resource) {
-			console.warn("(meta.resources.getResource) There is already resource with id: " + id + ", and type: " + type);
+			console.warn("(meta.resources.getResource) There is no resource with id: " + id + ", and type: " + type);
 			return;
 		}		
 

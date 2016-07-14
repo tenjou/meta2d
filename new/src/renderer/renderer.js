@@ -21,7 +21,6 @@ var uvCoords = [
 
 var vbo = null;
 var uv, indiceBuffer;
-var texture;
 
 meta.renderer = 
 {
@@ -57,9 +56,6 @@ meta.renderer =
 		projMatrix.ortho(0, meta.engine.width, meta.engine.height, 0, 0, 1);
 		gl.uniformMatrix4fv(this.currShader.uniform.projMatrix, false, projMatrix.m);
 
-		if(!texture.loaded) { return; }
-
-		gl.bindTexture(gl.TEXTURE_2D, texture.instance);
 		gl.uniform1i(this.currShader.uniform.texture, 0);
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
@@ -73,6 +69,10 @@ meta.renderer =
 		for(var n = 0; n < this.entities.length; n++)
 		{
 			var entity = this.entities[n];
+			if(!entity.texture) { return; }
+			if(!entity.texture.loaded) { return; }
+
+			gl.bindTexture(gl.TEXTURE_2D, entity.texture.instance);
 
 			var modelViewMatrix = new meta.math.Matrix4();
 			modelViewMatrix.translate(entity.$x, entity.$y, 0);

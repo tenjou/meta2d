@@ -24,6 +24,9 @@ meta.class("meta.Sprite",
 		if(typeof params === "string") {
 			this.texture = params;
 		}
+		else if(params instanceof meta.Texture) {
+			this.texture = params;
+		}		
 		else
 		{
 			for(var key in params) {
@@ -97,16 +100,20 @@ meta.class("meta.Sprite",
 
 	onPress: null,
 
-	set texture(id)
+	set texture(texture)
 	{
+		if(typeof texture === "string") {
+			texture = meta.resources.getTexture(texture);
+		}
+
 		if(this.$texture) 
 		{
-			if(this.$texture.id === id) { return; }
+			if(this.$texture.id === texture.id) { return; }
 
 			this.$texture.unwatch(this);
 		}
 
-		this.$texture = meta.resources.getTexture(id);
+		this.$texture = texture;
 
 		if(this.$texture) {
 			this.$texture.watch(this.handleTexture, this);

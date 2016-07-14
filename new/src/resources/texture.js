@@ -31,8 +31,14 @@ meta.class("meta.Texture", "meta.Resource",
 			this.id = params.id || meta.getNameFromPath(path);
 		}
 
-		this.ext = meta.getExtFromPath(params) || "png";
-		this.$path = params + "." + this.ext;		
+		this.ext = meta.getExtFromPath(params);
+		if(this.ext) {
+			this.$path = params;
+		}
+		else {
+			this.ext = "png";
+			this.$path = params + ".png";
+		}	
 
 		// Create instance if there is no one already:
 		if(!this.instance) 
