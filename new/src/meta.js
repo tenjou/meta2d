@@ -3,9 +3,12 @@
 var meta =
 {
 	version: "0.9",
-	flags: {},
 	view: null,
 	views: {},
+
+	flags: {
+		autoPowTwo: true
+	},
 
 	time: {
 		delta: 0,
