@@ -22,6 +22,7 @@ meta.engine =
 		this.addListeners();
 
 		var masterView = new meta.View("master");
+		masterView.$activate();
 		meta.views.master = masterView;
 		meta.view = masterView;
 

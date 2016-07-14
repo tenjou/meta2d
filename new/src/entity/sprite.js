@@ -4,7 +4,6 @@ meta.class("meta.Sprite",
 {
 	init: function(params)
 	{
-		this.$position = new meta.math.Vector2(0, 0);
 		this.create(params);
 	},
 
@@ -15,7 +14,7 @@ meta.class("meta.Sprite",
 
 	remove: function() 
 	{
-		this.$position.set(0, 0);
+		this.$x = this.$y = this.$z = 0;
 	},
 
 	loadParams: function(params)
@@ -35,13 +34,53 @@ meta.class("meta.Sprite",
 
 	position: function(x, y)
 	{
-		this.$position(x, y);
+		this.$x = 0;
+		this.$y = 0;
+		this.updatePosition();
+	},
+
+	move: function(deltaX, deltaY)
+	{
+		this.$x += deltaX;
+		this.$y += deltaY;
 		this.updatePosition();
 	},
 
 	updatePosition: function()
 	{
 
+	},
+
+	updateZ: function()
+	{
+
+	},
+
+	set x(value) {
+		this.$x = value;
+		this.updatePosition();
+	},
+
+	set y(value) {
+		this.$y = value;
+		this.updatePosition();
+	},
+
+	set z(value) {
+		this.$z = value;
+		this.updateZ();
+	},
+
+	get x() {
+		return this.$x;
+	},
+
+	get y() {
+		return this.$y;
+	},
+
+	get z() {
+		return this.$z;
 	},
 
 	anchor: function(x, y)
@@ -108,14 +147,21 @@ meta.class("meta.Sprite",
 	},
 
 	Flag: {
-
+		REMOVED: 1 << 0,
+		INSTANCE_ENABLED: 1 << 1,
+		INSTANCE_VISIBLE: 1 << 2,
+		ROOT: 1 << 3
 	},
 
 	//
-	$poolIndex: -1,
-	$flags: 0,
+	$view: null,
+	parent: null,
 
-	$position: null,
+	flags: 0,
+
+	$x: 0,
+	$y: 0,
+	$z: 0,
 	$angle: null,
 	$texture: null,
 	$shader: null,
