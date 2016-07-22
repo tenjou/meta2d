@@ -16,7 +16,7 @@ meta.math.Random = function()
 meta.math.Random.prototype =
 {
 	init: function() {
-		this.setSeed(Data.now(), true);
+		this.setSeed(Date.now(), true);
 	},
 
 	generate: function()
