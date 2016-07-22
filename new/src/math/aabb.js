@@ -13,5 +13,11 @@ meta.math.AABB.prototype =
 		this.y = y || 0;
 		this.width = width || width;
 		this.height = height || height;
+	},
+
+	resize: function(width, height)
+	{
+		this.width = width;
+		this.height = height;
 	}
 };

@@ -50,15 +50,13 @@ meta.class("meta.Shader", "meta.Resource",
 
 		var gl = meta.engine.gl;
 
-        var num = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
-        for(var n = 0; n < num; n++) {
-            var attrib = gl.getActiveAttrib(this.program, n);
-            var attribLoc = gl.getAttribLocation(this.program, attrib.name);
-            gl.enableVertexAttribArray(attribLoc);
-            this.attrib[attrib.name] = attribLoc;
-        }
-
-        console.log("attribs", this.attrib)
+		var num = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
+		for(var n = 0; n < num; n++) {
+			var attrib = gl.getActiveAttrib(this.program, n);
+			var attribLoc = gl.getAttribLocation(this.program, attrib.name);
+			gl.enableVertexAttribArray(attribLoc);
+			this.attrib[attrib.name] = attribLoc;
+		}
 	},
 
 	loadUniforms: function()
@@ -67,14 +65,12 @@ meta.class("meta.Shader", "meta.Resource",
 
 		var gl = meta.engine.gl;
 
-        var num = gl.getProgramParameter(this.program, gl.ACTIVE_UNIFORMS);
-        for(var n = 0; n < num; n++) {
-            var uniform = gl.getActiveUniform(this.program, n);
-            var name = uniform.name.replace("[0]", "");
-            this.uniform[name] = gl.getUniformLocation(this.program, name);
-        }
-
-        console.log("uniform", this.uniform)
+		var num = gl.getProgramParameter(this.program, gl.ACTIVE_UNIFORMS);
+		for(var n = 0; n < num; n++) {
+			var uniform = gl.getActiveUniform(this.program, n);
+			var name = uniform.name.replace("[0]", "");
+			this.uniform[name] = gl.getUniformLocation(this.program, name);
+		}
 	},
 
 	set vertexShader(src) 

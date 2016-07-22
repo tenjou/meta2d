@@ -44,6 +44,34 @@ meta.renderer =
 		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
 
 		gl.activeTexture(gl.TEXTURE0);
+
+		var spriteShader = meta.resources.loadShader({
+			id: "sprite",
+			vertexShader: [
+				"attribute vec3 vertexPos;",
+				"attribute vec2 uvCoords;",
+
+				"uniform mat4 modelViewMatrix;",
+				"uniform mat4 projMatrix;",
+
+				"varying highp vec2 var_uvCoords;",
+
+				"void main(void) {",
+				"	gl_Position = projMatrix * modelViewMatrix * vec4(vertexPos, 1.0);",
+				"	var_uvCoords = uvCoords;",
+				"}"
+			],
+			fragmentShader: [
+				"varying highp vec2 var_uvCoords;",
+
+				"uniform sampler2D texture;",
+
+				"void main(void) {",
+				"	gl_FragColor = texture2D(texture, vec2(var_uvCoords.s, var_uvCoords.t));",
+				"}"
+			]
+		});
+		spriteShader.use();
 	},
 
 	render: function()

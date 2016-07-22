@@ -149,6 +149,17 @@
 			proto[key] = prop[key];
 		}
 
+		proto.delete = function()
+		{
+			if(this.__managed__) {
+				meta.delete(this);
+			}
+			else {
+				this.remove();
+			}
+		};
+		proto.__managed__ = false;
+
 		cls.prototype = proto;		
 		cls.prototype.__name__ = clsName;
 		cls.prototype.__lastName__ = name;

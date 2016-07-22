@@ -217,7 +217,14 @@ meta.engine =
 		this.canvas.id = "meta-webgl";
 		this.canvas.style.cssText = this.canvasStyle;
 
-		this.gl = WebGLDebugUtils.makeDebugContext(this.canvas.getContext("webgl") || this.canvas.getContext("experimental-webgl"));
+		var context = this.canvas.getContext("webgl") || this.canvas.getContext("experimental-webgl");
+
+		if(window.WebGLDebugUtils) {
+			this.gl = WebGLDebugUtils.makeDebugContext(context);
+		}
+		else {
+			this.gl = context;
+		}
 
 		if(!this.container) {
 			this.container = document.body;
@@ -263,14 +270,12 @@ meta.engine =
 
 	handleFocus: function(value)
 	{
-		if(this.flags & this.Flat.PAUSE_ON_BLUR) {
-			this.pause = !value;
-		}
-
 		if(value) {
+			this.flags |= this.Flag.FOCUS;
 			meta.emit("focus");
 		}
 		else {
+			this.flags &= ~(this.Flag.FOCUS | this.Flag.PAUSED);
 			meta.emit("blur");
 		}
 	},
@@ -329,7 +334,6 @@ meta.engine =
 	get focus() {
 		return (this.flags & this.Flag.FOCUS);
 	},
-
 
 	Flag: {
 		INITIALIZED: 1 << 0,

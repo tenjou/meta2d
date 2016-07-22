@@ -4,6 +4,7 @@ meta.class("meta.Sprite",
 {
 	init: function(params)
 	{
+		this.$volume = new meta.math.AABB(0, 0, 0, 0);
 		this.create(params);
 	},
 
@@ -126,18 +127,26 @@ meta.class("meta.Sprite",
 
 	handleTexture: function(event)
 	{
+		if(event === "loaded" || event === "updated") {
+			this.$volume.resize(this.$texture.width, this.$texture.height);
+		}
 		console.log("event", event);
 	},
 
 	set shader(id)
 	{
-		if(this.$shader.id === id) { return; }
+		if(typeof shader === "string") {
+			shader = meta.resources.getShader(shader);
+		}
 
-		if(this.$shader) {
+		if(this.$shader) 
+		{
+			if(this.$shader.id === shader.id) { return; }
+
 			this.$shader.unwatch(this);
 		}
 
-		this.$shader = meta.resources.getShader(id);
+		this.$shader = shader;
 
 		if(this.$shader) {
 			this.$shader.watch(this.handleShader, this);
@@ -163,6 +172,7 @@ meta.class("meta.Sprite",
 	//
 	$view: null,
 	parent: null,
+	$volume: null,
 
 	flags: 0,
 
