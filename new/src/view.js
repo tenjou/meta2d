@@ -8,7 +8,7 @@ meta.View = function(name)
 	this.entities = [];
 	this.children = [];
 
-	this.$position = new meta.math.Vector2(0, 0);
+	this.$position = new meta.Vector2(0, 0);
 	this.$z = 0;
 };
 

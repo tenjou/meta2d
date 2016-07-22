@@ -1,13 +1,13 @@
 "use strict";
 
-meta.math.Matrix4 = function(src) 
+meta.Matrix4 = function(src) 
 {
 	if(src) 
 	{
 		if(src instanceof Float32Array) {
 			this.m = new Float32Array(src);
 		}
-		else if(src instanceof meta.math.Matrix4) {
+		else if(src instanceof meta.Matrix4) {
 			this.m = new Float32Array(src.m);
 		}
 	}
@@ -16,7 +16,7 @@ meta.math.Matrix4 = function(src)
 	}
 };
 
-meta.math.Matrix4.prototype =
+meta.Matrix4.prototype =
 {
 	create: function()
 	{
@@ -29,7 +29,7 @@ meta.math.Matrix4.prototype =
 	},
 
 	clone: function() {
-		return new meta.math.Matrix4(this.m);
+		return new meta.Matrix4(this.m);
 	},
 
 	copy: function(matrix) {

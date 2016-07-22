@@ -29,7 +29,7 @@ meta.renderer =
 		var gl = meta.engine.gl;
 
 		this.gl = gl;
-		this.bgColor = "#000000FF";
+		this.bgColor = 0xdddddd;
 
 		vbo = gl.createBuffer();
 		gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
@@ -80,7 +80,7 @@ meta.renderer =
 
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-		var projMatrix = new meta.math.Matrix4();
+		var projMatrix = new meta.Matrix4();
 		projMatrix.ortho(0, meta.engine.width, meta.engine.height, 0, 0, 1);
 		gl.uniformMatrix4fv(this.currShader.uniform.projMatrix, false, projMatrix.m);
 
@@ -102,7 +102,7 @@ meta.renderer =
 
 			gl.bindTexture(gl.TEXTURE_2D, entity.texture.instance);
 
-			var modelViewMatrix = new meta.math.Matrix4();
+			var modelViewMatrix = new meta.Matrix4();
 			modelViewMatrix.translate(entity.$x, entity.$y, 0);
 
 			gl.uniformMatrix4fv(this.currShader.uniform.modelViewMatrix, false, modelViewMatrix.m);
@@ -139,24 +139,13 @@ meta.renderer =
 
 	},
 
-	set bgColor(color) 
+	set bgColor(hex) 
 	{
-		if(this.$bgColor === color) { return; }
+		if(this.$bgColor.getHex() === hex) { return; }
 
-		// If color does not contain an alpha:
-		if(color.length === 7) {
-			color += "FF";
-		}
+		this.$bgColor.setHex(hex);
 
-		this.$bgColor = color;
-		var colorNumber = parseInt(color.slice(1), 16);
-
-		var red = (colorNumber >> 24) / 0xff;
-		var green = ((colorNumber >> 16) & 0xff) / 0xff;
-		var blue = ((colorNumber >> 8) & 0xff) / 0xff;
-		var alpha = (colorNumber & 0xff) / 0xff;
-
-		this.gl.clearColor(red, green, blue, alpha);
+		this.gl.clearColor(this.$bgColor.r, this.$bgColor.g, this.$bgColor.b, 1.0);
 	},
 
 	get color() {
@@ -167,6 +156,6 @@ meta.renderer =
 	entities: [],
 	entitiesRemove: [],
 
-	$bgColor: null,
+	$bgColor: new meta.Color(0, 0, 0),
 	currShader: null,
 };

@@ -109,8 +109,8 @@ meta.class("meta.Texture", "meta.Resource",
 	resizePowTwo: function() 
 	{
 		var canvas = document.createElement("canvas");
-		canvas.width = meta.math.nearestPowerOfTwo(this.width);
-		canvas.height = meta.math.nearestPowerOfTwo(this.height);
+		canvas.width = meta.nearestPowerOfTwo(this.width);
+		canvas.height = meta.nearestPowerOfTwo(this.height);
 
 		var context = canvas.getContext("2d");
 		context.drawImage(this.image, 0, 0, canvas.width, canvas.height);

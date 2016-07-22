@@ -1,12 +1,12 @@
 "use strict";
 
-meta.math.Vector2 = function(x, y)
+meta.Vector2 = function(x, y)
 {
 	this.x = x || 0;
 	this.y = y || 0;
 };
 
-meta.math.Vector2.prototype = 
+meta.Vector2.prototype = 
 {
 	set: function(x, y) {
 		this.x = x;
@@ -14,7 +14,7 @@ meta.math.Vector2.prototype =
 	},
 
 	clone: function() {
-		return new meta.math.Vector2(this.x, this.y);
+		return new meta.Vector2(this.x, this.y);
 	},
 
 	copy: function(vec) {
@@ -134,8 +134,8 @@ meta.math.Vector2.prototype =
 
 	equals: function(vec)
 	{
-		return (Math.abs(this.x - vec.x) <= meta.math.epsilon * Math.max(1.0, Math.abs(this.x), Math.abs(vec.x)) &&
-				Math.abs(this.y - vec.y) <= meta.math.epsilon * Math.max(1.0, Math.abs(this.y), Math.abs(vec.y)));
+		return (Math.abs(this.x - vec.x) <= meta.epsilon * Math.max(1.0, Math.abs(this.x), Math.abs(vec.x)) &&
+				Math.abs(this.y - vec.y) <= meta.epsilon * Math.max(1.0, Math.abs(this.y), Math.abs(vec.y)));
 	},
 
 	getNormalized: function()
@@ -143,10 +143,10 @@ meta.math.Vector2.prototype =
 		var mag = Math.sqrt(this.x * this.x + this.y * this.y);
 
 		if(mag === 0) {
-			return new meta.math.vector2(0, 0);
+			return new meta.vector2(0, 0);
 		}
 
-		return new meta.math.vector2(this.x / mag, this.y / mag);
+		return new meta.vector2(this.x / mag, this.y / mag);
 	},
 
 	getAngle: function() {

@@ -2,7 +2,7 @@
 
 meta.Camera = function(x, y, width, height)
 {
-	this.volume = new meta.math.AABB(0, 0, 0, 0);
+	this.volume = new meta.AABB(0, 0, 0, 0);
 	this.create();
 };
 
@@ -50,7 +50,7 @@ meta.Camera.prototype =
 
 // meta.Camera = function()
 // {
-// 	this.volume = new meta.math.AABBext(0, 0, 0, 0);
+// 	this.volume = new meta.AABBext(0, 0, 0, 0);
 // 	this.zoomBounds = null;
 
 // 	this._wasResized = false;

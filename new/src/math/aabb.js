@@ -1,11 +1,11 @@
 "use strict";
 
-meta.math.AABB = function(x, y, width, height) 
+meta.AABB = function(x, y, width, height) 
 {
 	this.set(x, y, width, height);
 };
 
-meta.math.AABB.prototype =
+meta.AABB.prototype =
 {
 	set: function(x, y, width, height)
 	{

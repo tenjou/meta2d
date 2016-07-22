@@ -4,7 +4,7 @@ meta.class("meta.Sprite",
 {
 	init: function(params)
 	{
-		this.$volume = new meta.math.AABB(0, 0, 0, 0);
+		this.$volume = new meta.AABB(0, 0, 0, 0);
 		this.create(params);
 	},
 
