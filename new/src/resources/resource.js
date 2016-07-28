@@ -66,6 +66,39 @@ meta.class("meta.Resource",
 		return ((this.flags & this.Flag.LOADED) === this.Flag.LOADED);
 	},
 
+	set data(data)
+	{
+		if(this.$data === data) { return; }
+
+		if(this.$data) {
+			this.$data.unwatch(this.handleData, this);
+		}
+
+		this.$data = data;
+		
+		if(this.$data) 
+		{
+			var table = meta.resources.table[this.type];
+
+			if(this.flags & this.Flag.ADDED) {
+				delete table[this.id];
+			}
+
+			this.id = this.$data.id;
+			table[this.id] = this;
+			
+			this.$data.watch(this.handleData, this);
+		}
+	},
+
+	get data() {
+		return this.$data;
+	},
+
+	handleData: function(event) {
+		console.log("data_changed");
+	},
+
 	Flag: {
 		LOADED: 1 << 0,
 		ADDED: 1 << 1
@@ -74,6 +107,7 @@ meta.class("meta.Resource",
 	//
 	id: null,
 	type: null,
+	$data: null,
 
 	watchers: null,
 

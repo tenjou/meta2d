@@ -4,14 +4,17 @@ meta.resources =
 {
 	add: function(type, resource)
 	{
+		if(!resource.id) {
+			console.warn("(meta.resources.add) Invalid id for resource:", resource);
+			return;
+		}
+
 		var buffer = this.table[type];
 		if(!buffer) {
-			buffer = [ resource ];
 			this.table[type] = buffer;
 		}
-		else {
-			buffer.push(resource);
-		}
+
+		buffer[resource.id] = resource;
 	},
 
 	remove: function(type, resource)
