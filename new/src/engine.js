@@ -17,6 +17,8 @@ meta.engine =
 
 	setup: function()
 	{
+		meta.camera = new meta.Camera();
+		
 		meta.emit("setup");
 
 		this.addListeners();
@@ -28,8 +30,6 @@ meta.engine =
 
 		meta.renderer.setup();
 		this.updateResolution();
-
-		meta.camera = new meta.Camera();
 
 		this.flags |= this.Flag.SETUPED;
 		this.preload();

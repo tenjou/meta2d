@@ -376,7 +376,7 @@ meta.input =
 			this.keys[n] = 0;
 
 			this.$event.keyCode = n;
-			this.$event.keybind = this.$keybinds[n];
+			this.$event.keybind = this.keybinds[n];
 
 			meta.emit("input.up", this.$event);
 		}
@@ -388,7 +388,7 @@ meta.input =
 
 			var keyCode = n + this.BUTTON_ENUM_OFFSET;
 			this.$event.keyCode = keyCode;
-			this.$event.keybind = this.$keybinds[keyCode];
+			this.$event.keybind = this.keybinds[keyCode];
 		}
 
 		this.$eventDown = new this.Event();
