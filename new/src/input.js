@@ -12,9 +12,20 @@ meta.input =
 		this.$event = new this.Event();
 
 		meta.on("blur", this.resetInputs, this);
+		meta.on("update", this.updatePicking, this);
 
 		this.$loadIgnoreKeys();
 		this.$addEventListeners();
+	},
+
+	updatePicking: function(tDelta)
+	{
+		// if(this.entitiesPickingRemove.length > 0) 
+		// {
+		// 	for(var n = 0; n this.entitiesPickingRemove.length; n++) {
+		// 		this.entitiesPicking
+		// 	}
+		// }
 	},
 
 	handleKeyDown: function(domEvent)
@@ -38,10 +49,11 @@ meta.input =
 		this.$eventDown.screenY = 0;
 		this.$eventDown.x = 0;
 		this.$eventDown.y = 0;
+		this.$eventDown.delta = 0;
 		this.$eventDown.keyCode = keyCode;
 		this.$eventDown.keybind = this.keybinds[keyCode] || null;
 
-		meta.emit("input.down", this.$eventDown);
+		meta.emit("input-down", this.$eventDown);
 
 		this.updateRepeatKey(keyCode);
 	},
@@ -63,10 +75,11 @@ meta.input =
 		this.$event.screenY = 0;
 		this.$event.x = 0;
 		this.$event.y = 0;
+		this.$event.delta = 0;
 		this.$event.keyCode = keyCode;
 		this.$event.keybind = this.keybinds[keyCode] || null;
 
-		meta.emit("input.up", this.$event);
+		meta.emit("input-up", this.$event);
 
 		if(this.repeatKey && this.$repeatTimer) {
 			this.$repeatTimer.stop();
@@ -97,10 +110,11 @@ meta.input =
 		this.$event.screenY = this.screenY;
 		this.$event.x = this.x;
 		this.$event.y = this.y;
+		this.$event.delta = 0;
 		this.$event.keyCode = keyCode;
 		this.$event.keybind = this.keybinds[keyCode] || null;
 
-		meta.emit("input.down", this.$event);
+		meta.emit("input-down", this.$event);
 	},
 
 	handleMouseUp: function(domEvent)
@@ -114,7 +128,7 @@ meta.input =
 		var camera = meta.camera;
 
 		this.prevScreenX = this.screenX;
-		this.prevScreenY = this.screenY;		
+		this.prevScreenY = this.screenY;
 		this.screenX = ((event.pageX - engine.offsetLeft) * engine.scaleX) * engine.ratio;
 		this.screenY = ((event.pageY - engine.offsetTop) * engine.scaleY) * engine.ratio;
 		this.x = (this.screenX * camera.zoomRatio) + camera.volume.x | 0;
@@ -127,10 +141,11 @@ meta.input =
 		this.$event.screenY = this.screenY;
 		this.$event.x = this.x;
 		this.$event.y = this.y;
+		this.$event.delta = 0;
 		this.$event.keyCode = keyCode;
 		this.$event.keybind = this.keybinds[keyCode] || null;
 
-		meta.emit("input.up", this.$event);
+		meta.emit("input-up", this.$event);
 	},
 
 	handleMouseMove: function(domEvent)
@@ -158,9 +173,10 @@ meta.input =
 		this.$event.screenY = this.screenY;
 		this.$event.x = this.x;
 		this.$event.y = this.y;
+		this.$event.delta = 0;
 		this.$event.keyCode = -1;
 
-		meta.emit("input.move", this.$event);
+		meta.emit("input-move", this.$event);
 	},	
 
 	handleMouseDbClick: function(domEvent)
@@ -185,10 +201,11 @@ meta.input =
 		this.$event.screenY = this.screenY;
 		this.$event.x = this.x;
 		this.$event.y = this.y;
+		this.$event.delta = 0;
 		this.$event.keyCode = keyCode;
 		this.$event.keybind = this.keybinds[keyCode] || null;
 
-		meta.emit("input.up", this.$event);
+		meta.emit("input-up", this.$event);
 	},
 
 	handleTouchDown: function(domEvent)
@@ -223,6 +240,7 @@ meta.input =
 			this.$event.screenY = screenY;
 			this.$event.x = x;
 			this.$event.y = y;
+			this.$event.delta = 0;
 			this.$event.keyCode = keyCode;
 			this.$event.keybind = this.keybinds[keyCode] || null;
 
@@ -233,7 +251,7 @@ meta.input =
 				this.y = y;
 			}
 
-			meta.emit("input.down", this.$event);
+			meta.emit("input-down", this.$event);
 		}
 	},
 
@@ -286,10 +304,11 @@ meta.input =
 			this.$event.screenY = screenY;
 			this.$event.x = x;
 			this.$event.y = y;
+			this.$event.delta = 0;
 			this.$event.keyCode = id;
 			this.$event.keybind = this.keybinds[keyCode] || null;
 
-			meta.emit("input.down", this.$event);
+			meta.emit("input-down", this.$event);
 		}
 	},
 
@@ -325,7 +344,6 @@ meta.input =
 				this.screenY = screenY;
 				this.x = x;
 				this.y = y;	
-
 				this.$event.prevScreenX = this.prevScreenX;
 				this.$event.prevScreenY = this.prevScreenY;					
 			}
@@ -339,11 +357,43 @@ meta.input =
 			this.$event.screenY = 0;
 			this.$event.x = x;
 			this.$event.y = y;
+			this.$event.delta = 0;
 			this.$event.keyCode = keyCode;
 			this.$event.keybind = this.keybinds[keyCode] || null;
 
-			meta.emit("input.move", $event);
+			meta.emit("input-move", $event);
 		}
+	},
+
+	handleMouseWheel: function(domEvent)
+	{
+		if(document.activeElement === document.body) {		
+			domEvent.preventDefault();
+		}
+
+		var delta = Math.max(-1, Math.min(1, (domEvent.wheelDelta || -domEvent.detail)));
+		var engine = meta.engine;
+		var camera = meta.camera;
+
+		this.prevScreenX = this.screenX;
+		this.prevScreenY = this.screenY;
+		this.screenX = ((event.pageX - engine.offsetLeft) * engine.scaleX) * engine.ratio;
+		this.screenY = ((event.pageY - engine.offsetTop) * engine.scaleY) * engine.ratio;
+		this.x = (this.screenX * camera.zoomRatio) + camera.volume.x | 0;
+		this.y = (this.screenY * camera.zoomRatio) + camera.volume.y | 0;
+
+		this.$event.domEvent = domEvent;
+		this.$event.prevScreenX = this.prevScreenX;
+		this.$event.prevScreenY = this.prevScreenY;
+		this.$event.screenX = this.screenX;
+		this.$event.screenY = this.screenY;
+		this.$event.x = this.x;
+		this.$event.y = this.y;
+		this.$event.delta = delta;
+		this.$event.keyCode = 0;
+		this.$event.keybind = null
+
+		meta.emit("input-scroll", this.$event);
 	},
 
 	$getTouchID: function(eventTouchID)
@@ -367,6 +417,7 @@ meta.input =
 		this.$event.screenY = this.screenY;
 		this.$event.x = this.x;
 		this.$event.y = this.y;
+		this.$event.delta = 0;
 
 		// Reset keys:
 		for(var n = 0; n < this.keys.length; n++) 
@@ -378,7 +429,7 @@ meta.input =
 			this.$event.keyCode = n;
 			this.$event.keybind = this.keybinds[n];
 
-			meta.emit("input.up", this.$event);
+			meta.emit("input-up", this.$event);
 		}
 
 		// Reset touches:
@@ -467,10 +518,11 @@ meta.input =
 		this.$eventDown.screenY = 0;
 		this.$eventDown.x = 0;
 		this.$eventDown.y = 0;
+		this.$eventDown.delta = 0;
 		this.$eventDown.keyCode = keyCode;
 		this.$eventDown.keybind = this.keybinds[keyCode] || null;
 
-		meta.emit("input.down", $this.eventDown);
+		meta.emit("input-down", $this.eventDown);
 	},
 
 	$addEventListeners: function()
@@ -485,6 +537,7 @@ meta.input =
 		window.addEventListener("touchmove", function(event) { self.handleTouchMove(event); });
 		window.addEventListener("touchcancel", function(event) { self.handleTouchUp(event); });
 		window.addEventListener("touchleave", function(event) { self.handleTouchUp(event); });
+		window.addEventListener("mousewheel", function(event) { self.handleMouseWheel(event); });
 
 		if(meta.device.support.onkeydown)	{
 			window.addEventListener("keydown", function(event) { self.handleKeyDown(event); });
@@ -555,6 +608,7 @@ meta.input =
 		this.domEvent = null;
 		this.x = 0;
 		this.y = 0;
+		this.delta = 0;
 		this.prevScreenX = 0;
 		this.prevScreenY = 0;
 		this.screenX = 0;
@@ -591,10 +645,13 @@ meta.input =
 
 	$numKeys: 256,
 	$numInputs: 10,
-	BUTTON_ENUM_OFFSET: 2000
+	BUTTON_ENUM_OFFSET: 2000,
+
+	entitiesPicking: [],
+	entitiesPickingRemove: []
 };
 
-meta.input.key =
+meta.key =
 {
 	BACKSPACE: 8,
 	TAB: 9,
