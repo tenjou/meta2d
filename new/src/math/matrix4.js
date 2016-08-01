@@ -84,8 +84,7 @@ meta.Matrix4.prototype =
 		this.m[14] = 0;
 		this.m[15] = 1;
 	},
-
-		
+	
 	transpose: function()
 	{
 		var a01 = this.m[1];
