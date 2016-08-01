@@ -2,7 +2,7 @@
 
 meta.class("meta.Texture", "meta.Resource",
 {
-	onRemove: function() 
+	cleanup: function() 
 	{
 		this.emit("removed");
 		

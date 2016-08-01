@@ -25,14 +25,35 @@ meta.resources =
 			return;
 		}
 
-		var index = buffer.indexOf(resource);
-		if(index === -1) {
-			console.warn("(meta.resources.remove) No resources with such type added: " + type);
+		if(resource instanceof meta.Resource) 
+		{
+			if(!buffer[resource.id]) {
+				console.warn("(meta.resources.remove) No resources with such type added: " + type);
+				return;
+			}
+
+			delete buffer[resource.id];
+		}
+		else if(typeof resource === "string") 
+		{
+			var ref = buffer[resource];
+			if(!ref) {
+				console.warn("(meta.resources.remove) No resources with such type added: " + resource);
+				return;
+			}
+
+			delete buffer[resource];
+
+			resource = ref;
+		}
+		else {
+			console.warn("(meta.resources.remove) Invalid resource or id passed");
 			return;
 		}
 
-		buffer[index] = buffer[buffer.lenght - 1];
-		buffer.pop();
+		if(resource.cleanup) {
+			resource.cleanup();
+		}
 	},
 
 	addResource: function(resource)

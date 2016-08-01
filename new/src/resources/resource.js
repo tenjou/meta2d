@@ -17,6 +17,19 @@ meta.class("meta.Resource",
 		}
 	},
 
+	remove: function() 
+	{
+		if(this.flags & this.Flag.ADDED) {
+			meta.resources.remove(this.type, this.id);
+		}
+		else 
+		{
+			if(this.cleanup) {
+				this.cleanup();
+			}
+		}
+	},
+
 	loadParams: function(params)
 	{
 		if(typeof params === "object") 
