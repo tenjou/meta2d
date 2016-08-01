@@ -2,13 +2,12 @@
 
 meta.Camera = function(x, y, width, height)
 {
-	this.volume = new meta.AABB(0, 0, 0, 0);
-	this.create();
+	this.volume = new meta.AABB(x, y, width, height);
 };
 
 meta.Camera.prototype = 
 {
-	create: function(x, y, width, height)
+	set: function(x, y, width, height)
 	{
 		this.volume.set(x, y, width, height);
 	},
@@ -20,12 +19,23 @@ meta.Camera.prototype =
 
 	activate: function()
 	{
+		if(this.active) { return; }
+		this.active = true;
 
+		this.updateDraggable();
+	},
+
+	deactivate: function()
+	{
+		if(!this.active) { return; }
+		this.active = false;
+
+		this.updateDraggable();
 	},
 
 	update: function()
 	{
-		this.emit("camera-move", this);
+		
 	},
 
 	updateZoom: function()
@@ -38,13 +48,95 @@ meta.Camera.prototype =
 		this.volume.resize(meta.engine.width, meta.engine.height);
 	},
 
+	set x(x) 
+	{
+		if(this.volume.x === x) { return; }
+		this.volume.position(x, this.volume.y);
+
+		meta.emit("camera-move", this);
+	},
+
+	set y(value) 
+	{
+		if(this.volume.y === y) { return; }
+		this.volume.position(this.volume.x, y);
+
+		meta.emit("camera-move", this);
+	},
+
+	get x() {
+		return this.volume.x;
+	},
+
+	get y() {
+		return this.volume.y;
+	},
+
+	set draggable(value) 
+	{
+		if(this.$draggable === value) { return; }
+		this.$draggable = value;
+
+		this.updateDraggable();
+	},
+
+	get draggable() {
+		return this.$draggable;
+	},
+
+	updateDraggable: function()
+	{
+		if(this.$draggable && this.active) 
+		{
+			meta.on("input-move", this.drag, this);
+			meta.on("input-down", this.handleInputDown, this);
+			meta.on("input-up", this.handleInputUp, this);
+		}
+		else 
+		{
+			meta.off("input-move", this.drag, this);
+			meta.off("input-down", this.handleInputDown, this);
+			meta.off("input-up", this.handleInputUp, this);
+		}
+	},
+
+	drag: function(event)
+	{
+		if(!this.$dragging) { return; }
+
+		var diffX = (event.screenX - event.prevScreenX) * this.zoomRatio;
+		var diffY = (event.screenY - event.prevScreenY) * this.zoomRatio;
+
+		this.volume.move(-diffX, -diffY);
+
+		meta.emit("camera-move", this);
+	},
+
+	handleInputDown: function(event)
+	{
+		if(event.keyCode === meta.key.BUTTON_LEFT) {
+			this.$dragging = true;
+		}
+	},
+
+	handleInputUp: function(event)
+	{
+		if(event.keyCode === meta.key.BUTTON_LEFT) {
+			this.$dragging = false;
+		}
+	},
+
 	//
 	volume: null,
 	
 	$zoom: 1.0,
 	zoomPrev: 1.0,
 	zoomRatio: 1.0,
-	$zoomAuto: false
+	$zoomAuto: false,
+
+	$active: false,
+	$draggable: false,
+	$dragging: false
 };
 
 

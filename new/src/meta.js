@@ -27,7 +27,8 @@ var meta =
 	cache: {
 		width: 0,
 		height: 0,
-		timerIndex: 0
+		timerIndex: 0,
+		camera: null
 	},
 
 	$listeners: {},
@@ -87,6 +88,18 @@ var meta =
 				item.func.call(item.owner);
 			}			
 		}
+	},
+
+	set camera(camera) 
+	{
+		if(this.cache.camera === camera) { return; }
+		this.cache.camera = camera;
+
+		camera.activate();
+	},
+
+	get camera() {
+		return this.cache.camera;
 	},
 
 	Watcher: function(func, owner) {
