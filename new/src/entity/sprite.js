@@ -162,6 +162,50 @@ meta.class("meta.Sprite",
 
 	},
 
+	set data(data)
+	{
+		if(this.$data === data) { return; }
+
+		if(this.$data) {
+			this.$data.unwatch(this.handleData, this);
+		}
+
+		this.$data = data;
+		
+		if(this.$data) 
+		{
+			var raw = data.raw;
+			for(var key in raw) {
+				this[key] = raw[key];
+			}
+
+			// var table = meta.resources.table[this.type];
+
+			// if(this.flags & this.Flag.ADDED) {
+			// 	delete table[this.id];
+			// }
+
+			// this.id = this.$data.id;
+			// table[this.id] = this;
+			
+			this.$data.watch(this.handleData, this);
+		}
+	},
+
+	get data() {
+		return this.$data;
+	},
+
+	handleData: function(action, key, value, index, data)
+	{
+		switch(action)
+		{
+			case "set":
+				this[key] = value;
+				break;
+		}
+	},
+
 	Flag: {
 		REMOVED: 1 << 0,
 		INSTANCE_ENABLED: 1 << 1,
@@ -186,5 +230,7 @@ meta.class("meta.Sprite",
 	anchorX: 0,
 	anchorY: 0,
 	pivotX: 0,
-	pivotY: 0
+	pivotY: 0,
+
+	$data: null
 });
