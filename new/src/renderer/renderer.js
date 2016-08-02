@@ -72,6 +72,32 @@ meta.renderer =
 			]
 		});
 		spriteShader.use();
+
+		this.entities.length = 16;
+		this.entitiesRemove.length = 8;
+
+		meta.on("update", this.update, this);
+	},
+
+	update: function(tDelta)
+	{
+		if(this.numEntitiesRemove > 0) 
+		{
+			for(var n = 0; n < this.numEntitiesRemove; n++) 
+			{
+				var entity = this.entitiesRemove[n];
+				var index = this.entities.indexOf(entity);
+				if(index === -1) {
+					console.warn("(meta.renderer.update) Trying to remove entity that is not part of visible entities");
+					continue;
+				}
+
+				this.numEntities--;
+				this.entities[index] = this.entities[this.numEntities];
+			}
+
+			this.numEntitiesRemove = 0;
+		}
 	},
 
 	render: function()
@@ -82,6 +108,7 @@ meta.renderer =
 
 		var projMatrix = new meta.Matrix4();
 		projMatrix.ortho(0, meta.engine.width, meta.engine.height, 0, 0, 1);
+		projMatrix.translate(-meta.camera.x, -meta.camera.y, 0);
 		gl.uniformMatrix4fv(this.currShader.uniform.projMatrix, false, projMatrix.m);
 
 		gl.uniform1i(this.currShader.uniform.texture, 0);
@@ -94,7 +121,7 @@ meta.renderer =
 
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indiceBuffer);
 
-		for(var n = 0; n < this.entities.length; n++)
+		for(var n = 0; n < this.numEntities; n++)
 		{
 			var entity = this.entities[n];
 			if(!entity.texture) { return; }
@@ -131,12 +158,26 @@ meta.renderer =
 
 	addEntity: function(entity)
 	{
-		this.entities.push(entity);
+		if(entity.flags & entity.Flag.RENDERING) { return; }
+		entity.flags |= entity.Flag.RENDERING;
+
+		if(this.numEntities === this.entities.length) {
+			this.entities.length += 8;
+		}
+
+		this.entities[this.numEntities++] = entity;
 	},
 
 	removeEntity: function(entity)
 	{
+		if((entity.flags & entity.Flag.RENDERING) === 0) { return; }
+		entity.flags &= ~entity.Flag.RENDERING;
 
+		if(this.numEntitiesRemove === this.entitiesRemove.length) {
+			this.entitiesRemove.length += 8;
+		}
+
+		this.entitiesRemove[this.numEntitiesRemove++] = entity;
 	},
 
 	set bgColor(hex) 
@@ -154,7 +195,10 @@ meta.renderer =
 
 	//
 	entities: [],
+	numEntities: 0,
+
 	entitiesRemove: [],
+	numEntitiesRemove: 0,
 
 	$bgColor: new meta.Color(0, 0, 0),
 	currShader: null,

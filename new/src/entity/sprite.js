@@ -10,12 +10,27 @@ meta.class("meta.Sprite",
 
 	create: function(params) 
 	{
+		this.flags = 0;
+
 		this.loadParams(params);
+	},
+
+	cleanup: function()
+	{
+		if(this.flags & this.Flag.REMOVED) { return; }
+		this.flags |= this.Flag.REMOVED;
+
+		this.$x = this.$y = this.$z = 0;
 	},
 
 	remove: function() 
 	{
-		this.$x = this.$y = this.$z = 0;
+		if(this.$view) {
+			this.$view.remove(this);
+		}
+		else {
+			this.cleanup();
+		}
 	},
 
 	loadParams: function(params)
@@ -207,10 +222,12 @@ meta.class("meta.Sprite",
 	},
 
 	Flag: {
-		REMOVED: 1 << 0,
-		INSTANCE_ENABLED: 1 << 1,
-		INSTANCE_VISIBLE: 1 << 2,
-		ROOT: 1 << 3
+		REMOVE: 1 << 0,
+		REMOVED: 1 << 1,
+		INSTANCE_ENABLED: 1 << 2,
+		INSTANCE_VISIBLE: 1 << 3,
+		ROOT: 1 << 4,
+		RENDERING: 1 << 5
 	},
 
 	//
