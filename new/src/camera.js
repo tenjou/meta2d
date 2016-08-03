@@ -72,6 +72,18 @@ meta.Camera.prototype =
 		return this.volume.y;
 	},
 
+	set zoom(zoom) 
+	{
+		if(this.$zoom === zoom) { return; }
+		this.$zoom = zoom;
+
+		
+	},
+
+	get zoom() {
+		return this.$zoom;
+	},
+
 	set draggable(value) 
 	{
 		if(this.$draggable === value) { return; }
@@ -88,15 +100,23 @@ meta.Camera.prototype =
 	{
 		if(this.$draggable && this.active) 
 		{
-			meta.on("input-move", this.drag, this);
-			meta.on("input-down", this.handleInputDown, this);
-			meta.on("input-up", this.handleInputUp, this);
+			if(!this.$listeningEvents) 
+			{
+				this.$listeningEvents = true;
+				meta.on("input-move", this.drag, this);
+				meta.on("input-down", this.handleInputDown, this);
+				meta.on("input-up", this.handleInputUp, this);
+			}
 		}
 		else 
 		{
-			meta.off("input-move", this.drag, this);
-			meta.off("input-down", this.handleInputDown, this);
-			meta.off("input-up", this.handleInputUp, this);
+			if(this.$listeningEvents) 
+			{
+				this.$listeningEvents = false;
+				meta.off("input-move", this.drag, this);
+				meta.off("input-down", this.handleInputDown, this);
+				meta.off("input-up", this.handleInputUp, this);
+			}
 		}
 	},
 
@@ -136,7 +156,8 @@ meta.Camera.prototype =
 
 	$active: false,
 	$draggable: false,
-	$dragging: false
+	$dragging: false,
+	$listeningEvents: false
 };
 
 
