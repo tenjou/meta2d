@@ -2,10 +2,17 @@
 
 meta.class("meta.Shader", "meta.Resource",
 {
-	create: function(params)
+	cleanup: function()
 	{
-		this.loadParams(params);
-		this.compile();
+		var gl = meta.engine.gl;
+
+		gl.deleteProgram(this.program);
+		gl.deleteShader(this.$vertexShader);
+		gl.deleteShader(this.$fragmentShader);
+
+		this.program = null;
+		this.$vertexShader = null;
+		this.$fragmentShader = null;
 	},
 
 	compile: function()
@@ -97,6 +104,10 @@ meta.class("meta.Shader", "meta.Resource",
 			this.$vertexShader = null;
 			return;
 		}
+
+		if(this.$fragmentShader) {
+			this.compile();
+		}
 	},
 
 	get vertexShader() {
@@ -127,6 +138,10 @@ meta.class("meta.Shader", "meta.Resource",
 			this.$fragmentShader = null;
 			return;
 		}
+
+		if(this.$vertexShader) {
+			this.compile();
+		}		
 	},
 
 	get fragmentShader() {

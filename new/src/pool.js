@@ -2,10 +2,10 @@
 
 meta.pools = {};
 
-meta.new = function(cls, params)
+meta.new = function(cls, a, b)
 {
 	if(!cls) {
-		console.warn("(meta.new) Invalid class passed with params:", params);
+		console.warn("(meta.new) Invalid class passed");
 		return;
 	}
 
@@ -17,10 +17,10 @@ meta.new = function(cls, params)
 
 	var obj = buffer.pop();
 	if(!obj) {
-		obj = new cls(params);
+		obj = new cls(a, b);
 	}
 	else {
-		obj.create(params);
+		obj.create(a, b);
 	}
 
 	return obj;
@@ -28,6 +28,17 @@ meta.new = function(cls, params)
 
 meta.delete = function(obj)
 {	
+	if(!obj) {
+		console.warn("(meta.delete) Invalid object passed");
+		return;		
+	}
+
+	var buffer = meta.pools[obj.__name__];
+	if(!buffer) {
+		console.warn("(meta.delete) Buffer not found for: " + obj.__name__ );
+		return;
+	}
+	
 	obj.remove();
 	buffer.push(obj);
 };

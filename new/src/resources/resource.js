@@ -2,19 +2,37 @@
 
 meta.class("meta.Resource", 
 {
-	init: function(params) {
-		this.create(params || null);
+	init: function(params, id) 
+	{
+		this.create(params, id);
 	},
 
-	create: function(params) 
+	create: function(params, id) 
 	{
+		if(this.flags & this.Flag.ADDED) { return; }
+
+		if(!id)
+		{
+			if(typeof params === "string") {
+				this.id = meta.getNameFromPath(params);
+			}
+			else if(params instanceof Object && params.id) {
+				this.id = params.id;
+			}
+			else {
+				this.id = meta.genUniqueId();
+			}
+		}
+
+		if(this.setup) {
+			this.setup(params);
+		}
+
 		if(params) {
 			this.loadParams(params);
-			this.load(params);
 		}
-		else {
-			this.load(null);
-		}
+
+		meta.resources.add(this);
 	},
 
 	remove: function() 
@@ -22,12 +40,18 @@ meta.class("meta.Resource",
 		if(this.flags & this.Flag.ADDED) {
 			meta.resources.remove(this.type, this.id);
 		}
-		else 
-		{
-			if(this.cleanup) {
-				this.cleanup();
-			}
+		else {	
+			this.$remove();
 		}
+	},
+
+	$remove: function()
+	{
+		this.emit("removed");
+		
+		if(this.cleanup) {
+			this.cleanup();
+		}		
 	},
 
 	loadParams: function(params)
@@ -79,6 +103,28 @@ meta.class("meta.Resource",
 		return ((this.flags & this.Flag.LOADED) === this.Flag.LOADED);
 	},
 
+	set loading(value) 
+	{
+		if(value) 
+		{
+			if(this.flags & this.Flag.LOADING) { return; }
+			
+			this.flags |= this.Flag.LOADING;
+		}
+		else 
+		{
+			if((this.flags & this.Flag.LOADING) === 0) { return; }
+
+			this.flags &= ~this.Flag.LOADING;
+			this.flags |= this.Flag.LOADED;
+			this.emit("loaded");
+		}
+	},
+
+	get loading() {
+		return (this.flags & this.Flag.LOADING) === this.Flag.LOADING;
+	},
+
 	set data(data)
 	{
 		if(this.$data === data) { return; }
@@ -92,9 +138,16 @@ meta.class("meta.Resource",
 		if(this.$data) 
 		{
 			var table = meta.resources.table[this.type];
+			delete table[this.id];
 
-			if(this.flags & this.Flag.ADDED) {
-				delete table[this.id];
+			var raw = data.raw;
+			for(var key in raw) 
+			{
+				var value = this[key];
+				var newValue = raw[key];
+
+				if(value === undefined || value === newValue) { continue; }
+				this[key] = raw[key];
 			}
 
 			this.id = this.$data.id;
@@ -113,8 +166,9 @@ meta.class("meta.Resource",
 	},
 
 	Flag: {
-		LOADED: 1 << 0,
-		ADDED: 1 << 1
+		ADDED: 1 << 0,
+		LOADED: 1 << 1,
+		LOADING: 1 << 2
 	},
 
 	//

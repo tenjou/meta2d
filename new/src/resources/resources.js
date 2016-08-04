@@ -2,34 +2,55 @@
 
 meta.resources = 
 {
-	add: function(type, resource)
+	add: function(resource)
 	{
-		if(!resource.id) {
-			console.warn("(meta.resources.add) Invalid id for resource:", resource);
-			return;
+		if(!resource) {
+			return console.warn("(meta.resources.add) Invalid resource passed");
 		}
 
-		var buffer = this.table[type];
+		if(!resource.type) {
+			return console.warn("(meta.resources.add) Invalid resource type");
+		}
+
+		if(resource.flags & resource.Flag.ADDED) { 
+			return console.warn("(meta.resources.add) Resource is already added to manager: " + resource.id);
+		}
+
+		var buffer = this.table[resource.type];
 		if(!buffer) {
+			buffer = {};
 			this.table[type] = buffer;
 		}
 
+		if(buffer[resource.id]) 
+		{
+			return console.warn("(meta.resources.load) There is already resource with id: " + 
+				resource.id + ", and type: " + resource.type);
+		}
+
+		resource.flags |= resource.Flag.ADDED;
 		buffer[resource.id] = resource;
 	},
 
-	remove: function(type, resource)
+	remove: function(resource)
 	{
-		var buffer = this.table[type];
+		if(!resource) {
+			return console.warn("(meta.resources.remove) Invalid resource passed");
+		}
+
+		if((resource.flags & resource.Flag.ADDED) === 0) {
+			return console.warn("(meta.resources.remove) Resource has not been added to the manager: " + resource.id);
+		}
+
+		var buffer = this.table[resource.type];
 		if(!buffer) {
-			console.warn("(meta.resources.remove) No resources with such type added: " + type);
-			return;
+			return console.warn("(meta.resources.remove) No resources with such type added: " + resource.type);
 		}
 
 		if(resource instanceof meta.Resource) 
 		{
 			if(!buffer[resource.id]) {
-				console.warn("(meta.resources.remove) No resources with such type added: " + type);
-				return;
+				return console.warn("(meta.resources.remove) No resources with such type added: " + resource.type);
 			}
 
 			delete buffer[resource.id];
@@ -38,8 +59,7 @@ meta.resources =
 		{
 			var ref = buffer[resource];
 			if(!ref) {
-				console.warn("(meta.resources.remove) No resources with such type added: " + resource);
-				return;
+				return console.warn("(meta.resources.remove) No resources with such type added: " + resource.type);
 			}
 
 			delete buffer[resource];
@@ -47,78 +67,13 @@ meta.resources =
 			resource = ref;
 		}
 		else {
-			console.warn("(meta.resources.remove) Invalid resource or id passed");
-			return;
+			return console.warn("(meta.resources.remove) Invalid resource or id passed");
 		}
 
-		if(resource.cleanup) {
-			resource.cleanup();
-		}
+		resource.$remove();
 	},
 
-	addResource: function(resource)
-	{
-		if(!resource) {
-			console.warn("(meta.resources.addResource) Invalid resource passed");
-			return;
-		}
-
-		if(!resource.type) {
-			console.warn("(meta.resources.addResource) Invalid resource type");
-			return;
-		}
-
-		var buffer = this.table[type];
-		if(!buffer) {
-			buffer = {};
-			this.table[type] = buffer;
-		}
-
-		if(buffer[resource.id]) {
-			console.warn("(meta.resources.loadResource) There is already resource with id: " + id + ", and type: " + type);
-			return;
-		}
-
-		buffer[resource.id] = resource;
-	},
-
-	removeResource: function(resource, autoRemove)
-	{
-		if(!resource) {
-			console.warn("(meta.resources.removeResource) Invalid resource passed");
-			return;
-		}
-
-		if((resource.flags & resource.Flag.MANAGED) === 0) {
-			console.warn("(meta.resources.removeResource) Resource not managed by resource manager");
-			return;
-		}
-
-		if(!resource.type) {
-			console.warn("(meta.resources.removeResource) Invalid resource type");
-			return;
-		}
-
-		var buffer = this.table[type];
-		if(!buffer) {
-			console.warn("(meta.resources.removeResource) No such resource found:", resource.id);
-			return;
-		}
-
-		if(!buffer[id]) {
-			console.warn("(meta.resources.removeResource) No such resource found:", resource.id);
-			return;
-		}
-
-		if(autoRemove === undefined) {
-			autoRemove = true;
-		}
-
-		buffer[id] = null;
-		resource.remove();
-	},
-
-	loadResource: function(type, cls, params)
+	load: function(type, cls, params)
 	{
 		var buffer = this.table[type];
 		if(!buffer) {
@@ -129,13 +84,13 @@ meta.resources =
 		var resource = meta.new(cls, params);
 		if(!resource.id) {
 			meta.delete(resource);
-			console.warn("(meta.resources.loadResource) Created resource with invalid ID from params: ", params);
+			console.warn("(meta.resources.load) Created resource with invalid ID from params: `" + params + "`");
 			return null;
 		}
 
 		if(buffer[resource.id]) {
 			meta.delete(resource);
-			console.warn("(meta.resources.loadResource) There is already resource with id: " + id + ", and type: " + type);
+			console.warn("(meta.resources.load) There is already resource with id: `" + resource.id + "` that has type: `" + resource.type + "`");
 			return null;
 		}
 
@@ -144,17 +99,17 @@ meta.resources =
 		return resource;
 	},
 
-	getResource: function(type, id)
+	get: function(type, id)
 	{
 		var buffer = this.table[type];
 		if(!buffer) {
-			console.warn("(meta.resources.getResource) No resources found for type: " + type);
+			console.warn("(meta.resources.get) No resources found for type: " + type);
 			return;
 		}
 
 		var resource = buffer[id];
 		if(!resource) {
-			console.warn("(meta.resources.getResource) There is no resource with id: " + id + ", and type: " + type);
+			console.warn("(meta.resources.get) There is no resource with id: " + id + ", and type: " + type);
 			return;
 		}		
 
@@ -162,30 +117,32 @@ meta.resources =
 	},
 
 	loadShader: function(id, params) {
-		return this.loadResource("shader", meta.Shader, id, params);
+		return this.load("shader", meta.Shader, id, params);
 	},
 
 	getShader: function(id) {
-		return this.getResource("shader", id);
+		return this.get("shader", id);
 	},	
 
 	loadTexture: function(id, params) {
-		return this.loadResource("texture", meta.Texture, id, params);
+		return this.load("texture", meta.Texture, id, params);
 	},
 
 	getTexture: function(id) {
-		return this.getResource("texture", id);
+		return this.get("texture", id);
 	},	
 
 	loadVideo: function(id, params) {
-		return this.loadResource("video", meta.Video, id, params);
+		return this.load("video", meta.Video, id, params);
 	},
 
 	getVideo: function(id) {
-		return this.getResource("video", id);
+		return this.get("video", id);
 	},		
 
 	//
+	rootPath: "",
+
 	table: {
 		texture: {},
 		shader: {},

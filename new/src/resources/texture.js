@@ -2,10 +2,23 @@
 
 meta.class("meta.Texture", "meta.Resource",
 {
-	cleanup: function() 
+	setup: function(params)
 	{
-		this.emit("removed");
-		
+		var self = this;
+
+		this.instance = meta.engine.gl.createTexture();
+		this.image = new Image();
+		this.image.onload = function() {
+			self.$load();
+		};
+
+		if(typeof params === "string") {
+			this.path = params;
+		}
+	},
+
+	cleanup: function() 
+	{	
 		meta.engine.gl.deleteTexture(this.instance);
 		this.instance = null;
 		this.image = null;
@@ -13,52 +26,65 @@ meta.class("meta.Texture", "meta.Resource",
 		this.height = 0;
 	},
 
-	load: function(params)
+	load: function(path)
 	{
-		if(!params) { return; }
+		if(!params) {
+			console.warn("(meta.Texture.load) Invalid path passed");
+			return;
+		}
 
-		// Resolve path, ext and id:
+		this.$path = path;
+		this.ext = meta.getExtFromPath(params);
+		this.image.src = meta.resources.rootPath + path;
+
 		var path;
-		if(typeof params === "string") {
-			path = params;
-			this.id = meta.getNameFromPath(params);
+
+		if(params)
+		{
+			// Resolve path, ext and id:
+			if(typeof params === "string") {
+				path = params;
+				this.id = meta.getNameFromPath(params);
+			}
+			else 
+			{
+				if(!params.path) { return; }
+
+				path = params.path;
+				this.id = params.id || meta.getNameFromPath(path);
+			}
+
+			this.ext = meta.getExtFromPath(params);
+			if(this.ext) {
+				this.path = params;
+			}
+			else {
+				this.ext = "png";
+				this.path = params + ".png";
+			}	
+
+			this.image.src = meta.resources.rootPath + path;
+		}
+	},
+
+	load: function(path)
+	{
+		if(this.loading) { return; }
+		this.loading = true;
+
+		if(!path) 
+		{
+			this.image.src = "";
+			this.$load();
 		}
 		else 
 		{
-			if(!params.path) { return; }
-
-			path = params.path;
-			this.id = params.id || meta.getNameFromPath(path);
+			this.image.src = meta.resources.rootPath + path;
 		}
-
-		this.ext = meta.getExtFromPath(params);
-		if(this.ext) {
-			this.$path = params;
-		}
-		else {
-			this.ext = "png";
-			this.$path = params + ".png";
-		}	
-
-		// Create instance if there is no one already:
-		if(!this.instance) 
-		{ 
-			var self = this;
-
-			this.instance = meta.engine.gl.createTexture();
-			this.image = new Image();
-			this.image.onload = function() {
-				self.onLoad();
-			};
-		}
-
-		this.image.src = path;		
 	},
 
-	onLoad: function()
+	$load: function()
 	{
-		if(!this.instance) { return; }
-
 		this.width = this.image.width;
 		this.height = this.image.height;
 
@@ -69,9 +95,9 @@ meta.class("meta.Texture", "meta.Resource",
 		if(this.isPowTwo()) 
 		{
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-			gl.generateMipmap(gl.TEXTURE_2D);	
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			gl.generateMipmap(gl.TEXTURE_2D);
 		}
 		else
 		{
@@ -79,19 +105,21 @@ meta.class("meta.Texture", "meta.Resource",
 			{
 				this.resizePowTwo();
 				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-				gl.generateMipmap(gl.TEXTURE_2D);	
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+				gl.generateMipmap(gl.TEXTURE_2D);
 			}
 			else
 			{
 				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 			}
 		}
+
+		this.image.src = null;
 
 		var ext = meta.getExt("EXT_texture_filter_anisotropic");
 		if(ext) 
@@ -102,15 +130,15 @@ meta.class("meta.Texture", "meta.Resource",
 
 		gl.bindTexture(gl.TEXTURE_2D, null);
 
-		this.flags |= this.Flag.LOADED;
-		this.emit("loaded");
+		this.loading = false;
 	},
 
 	resizePowTwo: function() 
 	{
 		var canvas = document.createElement("canvas");
-		canvas.width = meta.nearestPowerOfTwo(this.width);
-		canvas.height = meta.nearestPowerOfTwo(this.height);
+		canvas.imageSmoothingEnabled = false;
+		canvas.width = meta.upperPowerOfTwo(this.width);
+		canvas.height = meta.upperPowerOfTwo(this.height);
 
 		var context = canvas.getContext("2d");
 		context.drawImage(this.image, 0, 0, canvas.width, canvas.height);
@@ -118,8 +146,8 @@ meta.class("meta.Texture", "meta.Resource",
 		console.warn("(meta.Texture.resizePowTwo) Resized image[" + this.id + "] from (" + 
 			this.width + "x" + this.height + ") to (" + canvas.width + "x" + canvas.height + ")");
 
-		this.width = canvas.width;
-		this.height = canvas.height;
+		this.fullWidth = canvas.width;
+		this.fullHeight = canvas.height;
 		this.image = canvas;
 	},
 
@@ -138,6 +166,20 @@ meta.class("meta.Texture", "meta.Resource",
 		return true;
 	},
 
+	set path(path) 
+	{
+		if(this.$path === path) { return; }
+		this.$path = path;
+
+		if(path) {
+			this.load(path);
+		}
+	},
+
+	get path() {
+		return this.$path;
+	},
+
 	//
 	type: "texture",
 
@@ -146,5 +188,8 @@ meta.class("meta.Texture", "meta.Resource",
 
 	width: 0,
 	height: 0,
-	path: null
+	fullWidth: 0,
+	fullHeight: 0,
+	ext: null,
+	$path: null
 });
