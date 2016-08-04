@@ -217,7 +217,13 @@ meta.engine =
 		this.canvas.id = "meta-webgl";
 		this.canvas.style.cssText = this.canvasStyle;
 
-		var context = this.canvas.getContext("webgl") || this.canvas.getContext("experimental-webgl");
+		var params = {
+			alpha: false,
+			premultipliedAlpha: false
+		};
+
+		var context = this.canvas.getContext("webgl", params) || 
+					  this.canvas.getContext("experimental-webgl", params);
 
 		if(window.WebGLDebugUtils) {
 			this.gl = WebGLDebugUtils.makeDebugContext(context);
