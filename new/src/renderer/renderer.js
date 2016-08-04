@@ -99,6 +99,15 @@ meta.renderer =
 
 			this.numEntitiesRemove = 0;
 		}
+
+		if(this.needSort) 
+		{	
+			console.log("sort")
+			this.entities.sort(this.sortFunc);
+
+			this.needSort = false;
+			this.needRender = true;
+		}
 	},
 
 	render: function()
@@ -138,6 +147,7 @@ meta.renderer =
 			this.vertices[5] = texture.height;
 			this.vertices[6] = 0;
 			this.vertices[7] = texture.height;
+
 			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
 			gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.DYNAMIC_DRAW);			
 
@@ -149,7 +159,13 @@ meta.renderer =
 			gl.uniformMatrix4fv(this.currShader.uniform.modelViewMatrix, false, modelViewMatrix.m);
 			gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 		}
+
+		this.needRender = false;
 	},
+
+	sortFunc: function(a, b) {
+		return a.totalZ - b.totalZ;
+	},	
 
 	onResize: function()
 	{

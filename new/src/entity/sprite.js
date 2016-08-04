@@ -72,7 +72,8 @@ meta.class("meta.Sprite",
 
 	updateZ: function()
 	{
-
+		this.totalZ = this.$z;
+		meta.renderer.needSort = true;
 	},
 
 	set x(value) {
@@ -85,17 +86,17 @@ meta.class("meta.Sprite",
 		this.updatePosition();
 	},
 
-	set z(value) {
-		this.$z = value;
-		this.updateZ();
-	},
-
 	get x() {
 		return this.$x;
 	},
 
 	get y() {
 		return this.$y;
+	},
+
+	set z(value) {
+		this.$z = value;
+		this.updateZ();
 	},
 
 	get z() {
@@ -243,6 +244,7 @@ meta.class("meta.Sprite",
 	$x: 0,
 	$y: 0,
 	$z: 0,
+	totalZ: 0,
 	$angle: null,
 	$texture: null,
 	$shader: null,
