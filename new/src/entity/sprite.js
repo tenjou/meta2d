@@ -103,6 +103,28 @@ meta.class("meta.Sprite",
 		return this.$z;
 	},
 
+	set angle(degree) 
+	{
+		var newAngle = (degree * Math.PI) / 180.0;
+
+		if(this.$angle === newAngle) { return; }
+		this.$angle = newAngle;
+	},
+
+	set angleRad(angle) 
+	{
+		if(this.$angle === angle) { return; }
+		this.$angle = angle;
+	},
+
+	get angle() { 
+		return (this.$angle * 180.0) / Math.PI; 
+	},
+
+	get angleRad() {
+		return this.$angle;
+	},
+
 	anchor: function(x, y)
 	{
 
@@ -110,7 +132,29 @@ meta.class("meta.Sprite",
 
 	pivot: function(x, y)
 	{
+		if(this.$pivotX === x && this.$pivotY === y) { return; }
+		this.$pivotX = x;
+		this.$pivotY = y;
+	},
 
+	set pivotX(x) 
+	{
+		if(this.$pivotX === x) { return; }
+		this.$pivotX = x;
+	},
+
+	set pivotY(y) 
+	{
+		if(this.$pivotY === y) { return; }
+		this.$pivotY = y;
+	},
+
+	get pivotX() {
+		return this.$pivotX;
+	},
+
+	get pivotY() {
+		return this.$pivotY;
 	},
 
 	onClick: null,
@@ -249,10 +293,10 @@ meta.class("meta.Sprite",
 	$texture: null,
 	$shader: null,
 
-	anchorX: 0,
-	anchorY: 0,
-	pivotX: 0,
-	pivotY: 0,
+	$anchorX: 0,
+	$anchorY: 0,
+	$pivotX: 0,
+	$pivotY: 0,
 
 	$data: null
 });

@@ -143,7 +143,7 @@ meta.class("meta.Texture", "meta.Resource",
 		var context = canvas.getContext("2d");
 		context.drawImage(this.image, 0, 0, canvas.width, canvas.height);
 
-		console.warn("(meta.Texture.resizePowTwo) Resized image[" + this.id + "] from (" + 
+		console.warn("(meta.Texture.resizePowTwo) Resized image `" + this.id + "` from (" + 
 			this.width + "x" + this.height + ") to (" + canvas.width + "x" + canvas.height + ")");
 
 		this.fullWidth = canvas.width;

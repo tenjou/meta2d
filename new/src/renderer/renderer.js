@@ -21,18 +21,24 @@ meta.renderer =
 		var spriteShader = meta.new(meta.Shader, {
 			id: "sprite",
 			vertexShader: [
+				"#define PI 3.1415926535897932384626433832795",
+
 				"attribute vec3 vertexPos;",
 				"attribute vec2 uvCoords;",
 
 				"uniform mat4 modelViewMatrix;",
 				"uniform mat4 projMatrix;",
+				"uniform float angle;",
 
 				"varying highp vec2 var_uvCoords;",
 
 				"void main(void) {",
-				"	gl_Position = projMatrix * modelViewMatrix * vec4(vertexPos, 1.0);",
+				"	float angleX = sin(angle);",
+				"	float angleY = cos(angle);",
+				"	vec2 rotatedPos = vec2(vertexPos.x * angleY + vertexPos.y * angleX, vertexPos.y * angleY - vertexPos.x * angleX);",
+				"	gl_Position = projMatrix * modelViewMatrix * vec4(rotatedPos, vertexPos.z, 1.0);",
 				"	var_uvCoords = uvCoords;",
-				"}"
+				"}"		
 			],
 			fragmentShader: [
 				"varying highp vec2 var_uvCoords;",
@@ -101,8 +107,7 @@ meta.renderer =
 		}
 
 		if(this.needSort) 
-		{	
-			console.log("sort")
+		{
 			this.entities.sort(this.sortFunc);
 
 			this.needSort = false;
@@ -139,14 +144,19 @@ meta.renderer =
 			if(!texture) { return; }
 			if(!texture.loaded) { return; }
 
-			this.vertices[0] = 0;
-			this.vertices[1] = 0;
-			this.vertices[2] = texture.width;
-			this.vertices[3] = 0;
-			this.vertices[4] = texture.width;
-			this.vertices[5] = texture.height;
-			this.vertices[6] = 0;
-			this.vertices[7] = texture.height;
+			var minX = -texture.width * entity.$pivotX;
+			var minY = -texture.height * entity.$pivotY;
+			var maxX = minX + texture.width;
+			var maxY = minY + texture.height;
+
+			this.vertices[0] = minX;
+			this.vertices[1] = minY;
+			this.vertices[2] = maxX;
+			this.vertices[3] = minY;
+			this.vertices[4] = maxX;
+			this.vertices[5] = maxY;
+			this.vertices[6] = minX;
+			this.vertices[7] = maxY;
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
 			gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.DYNAMIC_DRAW);			
@@ -157,6 +167,7 @@ meta.renderer =
 			modelViewMatrix.translate(entity.$x, entity.$y, 0);
 
 			gl.uniformMatrix4fv(this.currShader.uniform.modelViewMatrix, false, modelViewMatrix.m);
+			gl.uniform1f(this.currShader.uniform.angle, entity.$angle);
 			gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 		}
 
