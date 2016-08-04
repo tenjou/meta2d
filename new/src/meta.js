@@ -28,7 +28,8 @@ var meta =
 		width: 0,
 		height: 0,
 		timerIndex: 0,
-		camera: null
+		camera: null,
+		uniqueId: 1
 	},
 
 	$listeners: {},

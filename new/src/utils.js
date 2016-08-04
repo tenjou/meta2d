@@ -27,3 +27,7 @@ meta.getExtFromPath = function(path)
 
 	return path.slice(wildcardIndex + 1);
 };
+
+meta.genUniqueId = function() {
+	return (meta.cache.uniqueId++) + "";
+};
