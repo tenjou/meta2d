@@ -1,27 +1,5 @@
 "use strict"
 
-var vertices = [
-	0, 0,
-	200, 0,
-	200, 200,
-	0, 200
-];
-
-var indices = [
-	0, 1, 2,
-	0, 2, 3
-];
-
-var uvCoords = [
-  0.0,  0.0,
-  1.0,  0.0,
-  1.0,  1.0,
-  0.0,  1.0,
-];
-
-var vbo = null;
-var uv, indiceBuffer;
-
 meta.renderer = 
 {
 	setup: function()
@@ -31,21 +9,16 @@ meta.renderer =
 		this.gl = gl;
 		this.bgColor = 0xdddddd;
 
-		vbo = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-
-		uv = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, uv);
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvCoords), gl.STATIC_DRAW);
-
-		indiceBuffer = gl.createBuffer();
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indiceBuffer);
-		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+		this.prepareVBO();
 
 		gl.activeTexture(gl.TEXTURE0);
 
-		var spriteShader = meta.resources.loadShader({
+		gl.enable(gl.BLEND);
+		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+		gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
+		gl.blendFuncSeparate(gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
+		var spriteShader = meta.new(meta.Shader, {
 			id: "sprite",
 			vertexShader: [
 				"attribute vec3 vertexPos;",
@@ -79,6 +52,34 @@ meta.renderer =
 		meta.on("update", this.update, this);
 	},
 
+	prepareVBO: function()
+	{
+		var gl = meta.engine.gl;
+
+		var indices = [
+			0, 1, 2,
+			0, 2, 3
+		];
+
+		var uvCoords = [
+			0.0, 0.0,
+			1.0, 0.0,
+			1.0, 1.0,
+			0.0, 1.0,
+		];
+
+		this.vertices = new Float32Array(8);
+		this.vbo = gl.createBuffer();
+
+		this.uv = gl.createBuffer();
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.uv);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uvCoords), gl.STATIC_DRAW);
+
+		this.indiceBuffer = gl.createBuffer();
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indiceBuffer);
+		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+	},
+
 	update: function(tDelta)
 	{
 		if(this.numEntitiesRemove > 0) 
@@ -104,7 +105,7 @@ meta.renderer =
 	{
 		var gl = this.gl;
 
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		gl.clear(gl.COLOR_BUFFER_BIT);
 
 		var projMatrix = new meta.Matrix4();
 		projMatrix.ortho(0, meta.engine.width, meta.engine.height, 0, 0, 1);
@@ -113,19 +114,32 @@ meta.renderer =
 
 		gl.uniform1i(this.currShader.uniform.texture, 0);
 
-		gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
 		gl.vertexAttribPointer(this.currShader.attrib.vertexPos, 2, gl.FLOAT, false, 0, 0);
 
-		gl.bindBuffer(gl.ARRAY_BUFFER, uv);
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.uv);
 		gl.vertexAttribPointer(this.currShader.attrib.uvCoords, 2, gl.FLOAT, false, 0, 0);
 
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indiceBuffer);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indiceBuffer);
 
 		for(var n = 0; n < this.numEntities; n++)
 		{
 			var entity = this.entities[n];
-			if(!entity.texture) { return; }
-			if(!entity.texture.loaded) { return; }
+			var texture = entity.texture;
+
+			if(!texture) { return; }
+			if(!texture.loaded) { return; }
+
+			this.vertices[0] = 0;
+			this.vertices[1] = 0;
+			this.vertices[2] = texture.width;
+			this.vertices[3] = 0;
+			this.vertices[4] = texture.width;
+			this.vertices[5] = texture.height;
+			this.vertices[6] = 0;
+			this.vertices[7] = texture.height;
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
+			gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.DYNAMIC_DRAW);			
 
 			gl.bindTexture(gl.TEXTURE_2D, entity.texture.instance);
 
@@ -199,6 +213,10 @@ meta.renderer =
 
 	entitiesRemove: [],
 	numEntitiesRemove: 0,
+
+	vbo: null,
+	uv: null,
+	indiceBuffer: null,
 
 	$bgColor: new meta.Color(0, 0, 0),
 	currShader: null,

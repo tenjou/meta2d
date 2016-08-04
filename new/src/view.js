@@ -6,7 +6,7 @@ meta.View = function(name)
 	this.flags = 0;
 
 	this.entities = [];
-	this.children = [];
+	this.children = {};
 
 	this.$position = new meta.Vector2(0, 0);
 	this.$z = 0;
@@ -16,10 +16,10 @@ meta.View.prototype =
 {
 	add: function(entity)
 	{
-		if(entity.flags & this.Flag.REMOVED) {
-			console.warn("(meta.View.add) Trying to add entity that has been removed");
-			return;
-		}
+		// if(entity.flags & this.Flag.REMOVED) {
+		// 	console.warn("(meta.View.add) Trying to add entity that has been removed");
+		// 	return;
+		// }
 
 		if(entity.$view)
 		{
@@ -61,7 +61,39 @@ meta.View.prototype =
 
 	remove: function(entity)
 	{
+		if(entity instanceof meta.Sprite)
+		{
+			if(entity.$view !== this) {
+				console.warn("(meta.view.remove) Entity has different view: ", entity.$view.id);
+				return;
+			}
 
+			var index = this.entities.indexOf(entity);
+			if(index === -1) {
+				console.warn("(meta.view.remove) Entity not found: ", entity.id);
+				return;
+			}
+
+			this.entitiesRemove.push(entity);
+		}
+		else if(typeof entity === "string")
+		{
+
+
+			if(entity.$view !== this) {
+				console.warn("(meta.view.remove) Entity has different view: ", entity.$view.id);
+				return;
+			}
+
+
+		}
+		else {
+			console.warn("(meta.view.remove) Invalid entity or id passed");
+			return;
+		}
+
+
+		meta.renderer.removeEntity(entity);
 	},
 
 	$activate: function()

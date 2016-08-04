@@ -118,13 +118,19 @@ meta.class("meta.Sprite",
 
 	set texture(texture)
 	{
-		if(typeof texture === "string") {
-			texture = meta.resources.getTexture(texture);
+		if(typeof texture === "string") 
+		{
+			if(texture === "") {
+				texture = null;
+			}
+			else {
+				texture = meta.resources.getTexture(texture);
+			}
 		}
 
 		if(this.$texture) 
 		{
-			if(this.$texture.id === texture.id) { return; }
+			if(texture && this.$texture.id === texture.id) { return; }
 
 			this.$texture.unwatch(this);
 		}
@@ -145,7 +151,6 @@ meta.class("meta.Sprite",
 		if(event === "loaded" || event === "updated") {
 			this.$volume.resize(this.$texture.width, this.$texture.height);
 		}
-		console.log("event", event);
 	},
 
 	set shader(id)
@@ -190,18 +195,14 @@ meta.class("meta.Sprite",
 		if(this.$data) 
 		{
 			var raw = data.raw;
-			for(var key in raw) {
+			for(var key in raw) 
+			{
+				var value = this[key];
+				var newValue = raw[key];
+
+				if(value === undefined || value === newValue) { continue; }
 				this[key] = raw[key];
 			}
-
-			// var table = meta.resources.table[this.type];
-
-			// if(this.flags & this.Flag.ADDED) {
-			// 	delete table[this.id];
-			// }
-
-			// this.id = this.$data.id;
-			// table[this.id] = this;
 			
 			this.$data.watch(this.handleData, this);
 		}
@@ -215,9 +216,11 @@ meta.class("meta.Sprite",
 	{
 		switch(action)
 		{
-			case "set":
+			case "set": 
+			{
+				if(this[key] === undefined) { return; }
 				this[key] = value;
-				break;
+			} break;
 		}
 	},
 
