@@ -26,9 +26,10 @@ meta.renderer =
 				"attribute vec3 vertexPos;",
 				"attribute vec2 uvCoords;",
 
-				"uniform mat4 modelViewMatrix;",
 				"uniform mat4 projMatrix;",
 				"uniform float angle;",
+				"uniform float tilesX;",
+				"uniform float tilesY;",
 
 				"varying highp vec2 var_uvCoords;",
 
@@ -36,8 +37,8 @@ meta.renderer =
 				"	float angleX = sin(angle);",
 				"	float angleY = cos(angle);",
 				"	vec2 rotatedPos = vec2(vertexPos.x * angleY + vertexPos.y * angleX, vertexPos.y * angleY - vertexPos.x * angleX);",
-				"	gl_Position = projMatrix * modelViewMatrix * vec4(rotatedPos, vertexPos.z, 1.0);",
-				"	var_uvCoords = uvCoords;",
+				"	gl_Position = projMatrix * vec4(rotatedPos, vertexPos.z, 1.0);",
+				"	var_uvCoords = vec2(uvCoords.s * tilesX -0.2, uvCoords.t * tilesY);",
 				"}"		
 			],
 			fragmentShader: [
@@ -50,7 +51,6 @@ meta.renderer =
 				"}"
 			]
 		});
-		spriteShader.use();
 
 		this.entities.length = 16;
 		this.entitiesRemove.length = 8;
@@ -124,54 +124,36 @@ meta.renderer =
 		var projMatrix = new meta.Matrix4();
 		projMatrix.ortho(0, meta.engine.width, meta.engine.height, 0, 0, 1);
 		projMatrix.translate(-meta.camera.x, -meta.camera.y, 0);
-		gl.uniformMatrix4fv(this.currShader.uniform.projMatrix, false, projMatrix.m);
-
-		gl.uniform1i(this.currShader.uniform.texture, 0);
-
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
-		gl.vertexAttribPointer(this.currShader.attrib.vertexPos, 2, gl.FLOAT, false, 0, 0);
-
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.uv);
-		gl.vertexAttribPointer(this.currShader.attrib.uvCoords, 2, gl.FLOAT, false, 0, 0);
-
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indiceBuffer);
 
 		for(var n = 0; n < this.numEntities; n++)
 		{
 			var entity = this.entities[n];
-			var texture = entity.texture;
+			var shader = entity.$shader;
+			if(!shader) { continue; }
 
-			if(!texture) { return; }
-			if(!texture.loaded) { return; }
+			if(shader !== this.currShader) 
+			{
+				this.currShader = shader;
+				this.currShader.use();
 
-			var minX = -texture.width * entity.$pivotX;
-			var minY = -texture.height * entity.$pivotY;
-			var maxX = minX + texture.width;
-			var maxY = minY + texture.height;
+				gl.uniformMatrix4fv(this.currShader.uniform.projMatrix, false, projMatrix.m);
+				gl.uniform1i(this.currShader.uniform.texture, 0);
 
-			this.vertices[0] = minX;
-			this.vertices[1] = minY;
-			this.vertices[2] = maxX;
-			this.vertices[3] = minY;
-			this.vertices[4] = maxX;
-			this.vertices[5] = maxY;
-			this.vertices[6] = minX;
-			this.vertices[7] = maxY;
+				gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
+				gl.vertexAttribPointer(this.currShader.attrib.vertexPos, 2, gl.FLOAT, false, 0, 0);
+
+				gl.bindBuffer(gl.ARRAY_BUFFER, this.uv);
+				gl.vertexAttribPointer(this.currShader.attrib.uvCoords, 2, gl.FLOAT, false, 0, 0);
+
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indiceBuffer);
+			}
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
-			gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.DYNAMIC_DRAW);			
-
-			gl.bindTexture(gl.TEXTURE_2D, entity.texture.instance);
-
-			var modelViewMatrix = new meta.Matrix4();
-			modelViewMatrix.translate(entity.$x, entity.$y, 0);
-
-			gl.uniformMatrix4fv(this.currShader.uniform.modelViewMatrix, false, modelViewMatrix.m);
-			gl.uniform1f(this.currShader.uniform.angle, entity.$angle);
-			gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+			entity.render(gl, this.vertices);
 		}
 
 		this.needRender = false;
+		this.currShader = null;
 	},
 
 	sortFunc: function(a, b) {
@@ -207,6 +189,7 @@ meta.renderer =
 		}
 
 		this.entities[this.numEntities++] = entity;
+		this.needSort = true;
 	},
 
 	removeEntity: function(entity)

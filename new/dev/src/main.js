@@ -9,59 +9,134 @@
 // 	meta.engine.container = holder;
 // });
 
+var player;
+
 meta.on("preload", function() 
 {
-	var shader = meta.resources.loadShader({
-		id: "sprite",
-		vertexShader: [
-			"attribute vec3 vertexPos;",
-			"attribute vec2 uvCoords;",
+	meta.resources.preload = false;
+	meta.camera.draggable = true;
 
-			"uniform mat4 modelViewMatrix;",
-			"uniform mat4 projMatrix;",
+	meta.on("input-scroll", updateZoom);
 
-			"varying highp vec2 var_uvCoords;",
+	// var texture = meta.resources.createTexture("cubetexture");
+	// texture.path = "cubetexture.png";
+	// var texture = meta.resources.loadTexture("cubetexture.png");
 
-			"void main(void) {",
-			"	gl_Position = projMatrix * modelViewMatrix * vec4(vertexPos, 1.0);",
-			"	var_uvCoords = uvCoords;",
-			"}"
-		],
-		fragmentShader: [
-			"varying highp vec2 var_uvCoords;",
+	player = meta.new(meta.Sprite);
+	player.texture = meta.new(meta.Texture, "correct.png");
+	player.position(10, 0);
+	meta.layer.add(player);
 
-			"uniform sampler2D texture;",
 
-			"void main(void) {",
-			"	gl_FragColor = texture2D(texture, vec2(var_uvCoords.s, var_uvCoords.t));",
-			"}"
-		]
+		var tilingShader = meta.new(meta.Shader, {
+			id: "tiling",
+			vertexShader: [
+				"attribute vec3 vertexPos;",
+				"attribute vec2 uvCoords;",
+
+				"uniform mat4 projMatrix;",
+				"uniform float angle;",
+				"uniform float tilesX;",
+
+				"varying highp vec2 var_uvCoords;",
+
+				"void main(void) {",
+				"	float angleX = sin(angle);",
+				"	float angleY = cos(angle);",
+				"	vec2 rotatedPos = vec2(vertexPos.x * angleY + vertexPos.y * angleX, vertexPos.y * angleY - vertexPos.x * angleX);",
+				"	gl_Position = projMatrix * vec4(rotatedPos, vertexPos.z, 1.0);",
+				"	var_uvCoords = vec2(uvCoords.s, uvCoords.t);",
+				"}"		
+			],
+			fragmentShader: [
+				"varying highp vec2 var_uvCoords;",
+
+				"uniform sampler2D texture;",
+
+				"void main(void) {",
+				"	gl_FragColor = texture2D(texture, vec2(var_uvCoords.s, var_uvCoords.t));",
+				"}"
+			]
+		});
+
+	var gridCanvas = document.createElement("canvas");
+	gridCanvas.width = 256;
+	gridCanvas.height = 256;
+	var gridCtx = gridCanvas.getContext("2d");
+	// gridCtx.fillStyle = "red";
+	// gridCtx.fillRect(0, 0, 256 ,256);
+		gridCtx.beginPath();
+		gridCtx.moveTo(0.5, -0.5);
+		gridCtx.lineTo(0.5, 256);
+		gridCtx.moveTo(0.5, 1.5);
+		gridCtx.lineTo(256, 1.5);		
+		gridCtx.stroke();	
+
+	var texture = meta.new(meta.Texture, gridCanvas);
+	texture.anisotropy = false;
+
+	var entity = meta.new(meta.Sprite, texture);
+	entity.resize(meta.engine.width, 100);
+	meta.on("resize", function(engine) {
+		entity.resize(engine.width, engine.height)
 	});
-	shader.use();
+	meta.layer.add(entity);
 
-	// texture = meta.new(meta.Texture, "cubetexture.png");
+	var gridLayer = meta.createLayer("grid");
+	gridLayer.static = true;
+	gridLayer.add(entity);
+	
+	// meta.view.remove(player);
 
-	texture = meta.resources.loadTexture("cubetexture.png");
-
-	var player = meta.new(meta.Sprite, "cubetexture");
-	// meta.view.add(player);
+	meta.on("input-down", handleOnDown);
+	meta.on("input-up", handleOnUp);
 });
 
-meta.on("load", function() 
+function updateZoom(event)
 {
+	meta.camera.zoom += event.delta * 0.05;
+	console.log(event.x)
+}
 
-	// var shader = new meta.Shader("basic", "./basic.vert", "./basic.frag");
-	// shader.remove();
+var speedMod = 100;
+var speedX = 0;
+var speedY = 0;
 
-	// console.log("load");
+function handleOnDown(event)
+{
+	switch(event.keyCode)
+	{
+		case meta.key.A: 
+			speedX = -speedMod;
+			break;
+		case meta.key.D: 
+			speedX = speedMod;
+			break;	
+		case meta.key.W: 
+			speedY = -speedMod;
+			break;	
+		case meta.key.S: 
+			speedY = speedMod;
+			break;							
+	}
+}
 
-	// // var camera = meta.createCamera();
-	// // camera.position(20, 300);
-	// // meta.camera = camera;
+function handleOnUp(event)
+{
+	switch(event.keyCode)
+	{
+		case meta.key.A: 
+		case meta.key.D: 
+			speedX = 0;
+			break;	
+		case meta.key.W: 
+		case meta.key.S: 
+			speedY = 0;
+			break;	
+	}
+}
 
-	// var sprite = meta.createEntity("sprite", "player");
-	// sprite.position(200, 300);
-	// meta.view.add(sprite);
-
-	// sprite.remove();
+meta.on("update", function(tDelta)
+{
+	player.move(speedX * tDelta, speedY * tDelta);
 });

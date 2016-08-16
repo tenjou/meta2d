@@ -23,10 +23,10 @@ meta.engine =
 
 		this.addListeners();
 
-		var masterView = new meta.View("master");
-		masterView.$activate();
-		meta.views.master = masterView;
-		meta.view = masterView;
+		var masterLayer = new meta.Layer("master");
+		masterLayer.$activate();
+		meta.layers.master = masterLayer;
+		meta.layer = masterLayer;
 
 		meta.renderer.setup();
 		this.updateResolution();
@@ -134,6 +134,7 @@ meta.engine =
 		this.canvas.style.height = (height * this.scaleY) + "px";
 
 		meta.renderer.onResize();
+		meta.emit("resize", this);
 	},
 
 	$updateOffset: function()

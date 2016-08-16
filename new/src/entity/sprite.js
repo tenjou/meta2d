@@ -4,7 +4,7 @@ meta.class("meta.Sprite",
 {
 	init: function(params)
 	{
-		this.$volume = new meta.AABB(0, 0, 0, 0);
+		this.volume = new meta.AABB(0, 0, 0, 0);
 		this.create(params);
 	},
 
@@ -13,14 +13,19 @@ meta.class("meta.Sprite",
 		this.flags = 0;
 
 		this.loadParams(params);
+
+		if(!this.$shader) {
+			this.shader = meta.resources.table.shader.sprite;
+		}
 	},
 
 	cleanup: function()
 	{
 		if(this.flags & this.Flag.REMOVED) { return; }
 		this.flags |= this.Flag.REMOVED;
+		this.
 
-		this.$x = this.$y = this.$z = 0;
+		this.volume.reset();
 	},
 
 	remove: function() 
@@ -51,17 +56,43 @@ meta.class("meta.Sprite",
 		}
 	},
 
+	render: function(gl, buffer)
+	{
+		if(!this.texture) { return; }
+		if(!this.texture.loaded) { return; }
+
+		buffer[0] = this.volume.minX;
+		buffer[1] = this.volume.minY;
+		buffer[2] = this.volume.maxX;
+		buffer[3] = this.volume.minY;
+		buffer[4] = this.volume.maxX;
+		buffer[5] = this.volume.maxY;
+		buffer[6] = this.volume.minX;
+		buffer[7] = this.volume.maxY;
+		
+		gl.bufferData(gl.ARRAY_BUFFER, buffer, gl.DYNAMIC_DRAW);	
+
+		gl.bindTexture(gl.TEXTURE_2D, this.texture.instance);
+
+		gl.uniform1f(this.$shader.uniform.angle, this.$angle);
+
+		var numTilesX = this.volume.width / this.texture.width;
+		gl.uniform1f(this.$shader.uniform.tilesX, numTilesX);
+		var numTilesY = this.volume.height / this.texture.height;
+		gl.uniform1f(this.$shader.uniform.tilesY, numTilesY);
+
+		gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+	},
+
 	position: function(x, y)
 	{
-		this.$x = 0;
-		this.$y = 0;
+		this.volume.position(x, y);
 		this.updatePosition();
 	},
 
 	move: function(deltaX, deltaY)
 	{
-		this.$x += deltaX;
-		this.$y += deltaY;
+		this.volume.move(deltaX, deltaY);
 		this.updatePosition();
 	},
 
@@ -76,22 +107,22 @@ meta.class("meta.Sprite",
 		meta.renderer.needSort = true;
 	},
 
-	set x(value) {
-		this.$x = value;
+	set x(x) {
+		this.volume.position(x, this.volume.y);
 		this.updatePosition();
 	},
 
-	set y(value) {
-		this.$y = value;
+	set y(y) {
+		this.volume.position(this.volume.x, y);
 		this.updatePosition();
 	},
 
 	get x() {
-		return this.$x;
+		return this.volume.x;
 	},
 
 	get y() {
-		return this.$y;
+		return this.volume.y;
 	},
 
 	set z(value) {
@@ -125,8 +156,63 @@ meta.class("meta.Sprite",
 		return this.$angle;
 	},
 
+	resize: function(width, height) {
+		this.volume.resize(width, height);
+		this.updateAnchor();
+	},
+
+	set width(width) 
+	{
+		if(this.volume.width === width) { return; }
+		this.volume.resize(width, this.volume.height);
+		this.updateAnchor();
+	},
+
+	set height(height) 
+	{
+		if(this.volume.height === height) { return; }
+		this.volume.resize(this.volume.width, height);
+		this.updateAnchor();
+	},
+
+	get width() {
+		return this.volume.width;
+	},
+
+	get height() {
+		return this.volume.height;
+	},
+
 	anchor: function(x, y)
 	{
+		this.$anchorX = x;
+		this.$anchorY = y;
+		this.updateAnchor();
+	},
+
+	set anchorX(x) 
+	{
+		if(this.$anchorX === x) { return; }
+		this.$anchorX = x;
+		this.updateAnchor();
+	},
+
+	set anchorY(y) 
+	{
+		if(this.$anchorY === y) { return; }
+		this.$anchorY = y;
+		this.updateAnchor();
+	},
+
+	get anchorX() {
+		return this.$anchorX;
+	},
+
+	get anchorY() {
+		return this.$anchorY;
+	},
+
+	updateAnchor: function() {
 
 	},
 
@@ -155,6 +241,33 @@ meta.class("meta.Sprite",
 
 	get pivotY() {
 		return this.$pivotY;
+	},
+
+	scale: function(x, y)
+	{
+		if(this.$scaleX === x && this.$scaleY === y) { return; }
+		this.$scaleX = x;
+		this.$scaleY = y;
+	},
+
+	set scaleX(x) 
+	{
+		if(this.$scaleX === x) { return; }
+		this.$scaleX = x;
+	},
+
+	set scaleY(y)
+	{
+		if(this.$scaleY === y) { return; }
+		this.$scaleY = y;
+	},
+
+	get scaleX() {
+		return this.$scaleX;
+	},
+
+	get scaleY() {
+		return this.$scaleY;
 	},
 
 	onClick: null,
@@ -194,11 +307,11 @@ meta.class("meta.Sprite",
 	handleTexture: function(event)
 	{
 		if(event === "loaded" || event === "updated") {
-			this.$volume.resize(this.$texture.width, this.$texture.height);
+			this.volume.resize(this.$texture.width, this.$texture.height);
 		}
 	},
 
-	set shader(id)
+	set shader(shader)
 	{
 		if(typeof shader === "string") {
 			shader = meta.resources.getShader(shader);
@@ -281,18 +394,18 @@ meta.class("meta.Sprite",
 	//
 	$view: null,
 	parent: null,
-	$volume: null,
+	volume: null,
 
 	flags: 0,
 
-	$x: 0,
-	$y: 0,
 	$z: 0,
 	totalZ: 0,
 	$angle: null,
 	$texture: null,
 	$shader: null,
 
+	$scaleX: 1.0,
+	$scaleY: 1.0,
 	$anchorX: 0,
 	$anchorY: 0,
 	$pivotX: 0,

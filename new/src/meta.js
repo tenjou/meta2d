@@ -3,8 +3,8 @@
 var meta =
 {
 	version: "0.9",
-	view: null,
-	views: {},
+	layer: null,
+	layers: {},
 
 	flags: {
 		autoPowTwo: true
