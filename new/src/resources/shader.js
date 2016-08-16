@@ -48,7 +48,6 @@ meta.class("meta.Shader", "meta.Resource",
 
 	use: function() {
 		meta.engine.gl.useProgram(this.program);
-		meta.renderer.currShader = this;
 	},
 
 	loadAttribs: function()

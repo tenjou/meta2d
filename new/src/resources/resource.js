@@ -23,6 +23,9 @@ meta.class("meta.Resource",
 				this.id = meta.genUniqueId();
 			}
 		}
+		else {
+			this.id = id;
+		}
 
 		if(this.setup) {
 			this.setup(params);
@@ -51,7 +54,12 @@ meta.class("meta.Resource",
 		
 		if(this.cleanup) {
 			this.cleanup();
-		}		
+		}
+
+		this.$id = null;
+		if(this.watchers) {
+			this.watchers.length = 0;
+		}
 	},
 
 	loadParams: function(params)
@@ -99,6 +107,22 @@ meta.class("meta.Resource",
 		}
 	},
 
+	set id(id) 
+	{
+		if(id === this.$id) { return; }
+
+		if(this.$id) {
+			meta.resources.move(this, id);
+		}
+		else {
+			this.$id = id;
+		}
+	},
+
+	get id() {
+		return this.$id;
+	},
+
 	get loaded() {
 		return ((this.flags & this.Flag.LOADED) === this.Flag.LOADED);
 	},
@@ -113,8 +137,6 @@ meta.class("meta.Resource",
 		}
 		else 
 		{
-			if((this.flags & this.Flag.LOADING) === 0) { return; }
-
 			this.flags &= ~this.Flag.LOADING;
 			this.flags |= this.Flag.LOADED;
 			this.emit("loaded");
@@ -172,7 +194,7 @@ meta.class("meta.Resource",
 	},
 
 	//
-	id: null,
+	$id: null,
 	type: null,
 	$data: null,
 

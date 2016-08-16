@@ -73,6 +73,26 @@ meta.resources =
 		resource.$remove();
 	},
 
+	move: function(resource, newId)
+	{
+		if(!resource) {
+			return console.warn("(meta.resources.move) Invalid resource passed");
+		}
+
+		if((resource.flags & resource.Flag.ADDED) === 0) {
+			return console.warn("(meta.resources.move) Resource has not been added to manager");
+		}
+
+		var buffer = this.table[resource.type];
+		if(!buffer || !buffer[resource.$id]) {
+			return console.warn("(meta.resources.move) No such resource found: " + resource.$id);
+		}
+
+		delete buffer[resource.$id];
+		resource.$id = newId;
+		buffer[newId] = resource;
+	},
+
 	load: function(type, cls, params)
 	{
 		var buffer = this.table[type];

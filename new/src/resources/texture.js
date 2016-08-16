@@ -2,18 +2,27 @@
 
 meta.class("meta.Texture", "meta.Resource",
 {
-	setup: function(params)
+	setup: function()
 	{
-		var self = this;
-
 		this.instance = meta.engine.gl.createTexture();
-		this.image = new Image();
-		this.image.onload = function() {
-			self.$load();
-		};
+	},
 
-		if(typeof params === "string") {
-			this.path = params;
+	loadParams: function(params)
+	{
+		if(params instanceof HTMLCanvasElement) {
+			this.createFromImage(params);
+		}
+		else
+		{
+			if(typeof params === "string") {
+				this.path = params;
+			}
+			else if(params instanceof Object)
+			{
+				for(var key in params) {
+					this[key] = params[key];
+				}
+			}
 		}
 	},
 
@@ -28,63 +37,37 @@ meta.class("meta.Texture", "meta.Resource",
 
 	load: function(path)
 	{
-		if(!params) {
-			console.warn("(meta.Texture.load) Invalid path passed");
-			return;
-		}
-
-		this.$path = path;
-		this.ext = meta.getExtFromPath(params);
-		this.image.src = meta.resources.rootPath + path;
-
-		var path;
-
-		if(params)
-		{
-			// Resolve path, ext and id:
-			if(typeof params === "string") {
-				path = params;
-				this.id = meta.getNameFromPath(params);
-			}
-			else 
-			{
-				if(!params.path) { return; }
-
-				path = params.path;
-				this.id = params.id || meta.getNameFromPath(path);
-			}
-
-			this.ext = meta.getExtFromPath(params);
-			if(this.ext) {
-				this.path = params;
-			}
-			else {
-				this.ext = "png";
-				this.path = params + ".png";
-			}	
-
-			this.image.src = meta.resources.rootPath + path;
-		}
-	},
-
-	load: function(path)
-	{
 		if(this.loading) { return; }
 		this.loading = true;
 
+		if(!this.image)
+		{
+			var self = this;
+
+			this.image = new Image();
+			this.image.onload = function() {
+				self.createFromImage(self.image);
+			};
+		}
+
 		if(!path) 
 		{
+			this.ext = null;
+			this.$path = null;
 			this.image.src = "";
-			this.$load();
+			this.createFromImage(this.image);
 		}
 		else 
 		{
+			this.ext = meta.getExtFromPath(path);
+			this.$path = path;
 			this.image.src = meta.resources.rootPath + path;
 		}
 	},
 
-	$load: function()
+	createFromImage: function(img)
 	{
+		this.image = img;
 		this.width = this.image.width;
 		this.height = this.image.height;
 
@@ -114,18 +97,24 @@ meta.class("meta.Texture", "meta.Resource",
 				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.image);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+				// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				// gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 			}
 		}
 
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);		
+
 		this.image.src = null;
 
-		var ext = meta.getExt("EXT_texture_filter_anisotropic");
-		if(ext) 
+		if(this.$anisotropy) 
 		{
-			gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, 
-				meta.getExtParam(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT));
+			var ext = meta.getExt("EXT_texture_filter_anisotropic");
+			if(ext) 
+			{
+				gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, 
+					meta.getExtParam(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT));
+			}
 		}
 
 		gl.bindTexture(gl.TEXTURE_2D, null);
@@ -180,6 +169,35 @@ meta.class("meta.Texture", "meta.Resource",
 		return this.$path;
 	},
 
+	set anisotropy(value) 
+	{
+		if(this.$anisotropy === value) { return; }
+		this.$anisotropy = value;
+
+		if(this.instance)
+		{
+			var ext = meta.getExt("EXT_texture_filter_anisotropic");
+			if(!ext) { return; }
+
+			var gl = meta.engine.gl;
+			gl.bindTexture(gl.TEXTURE_2D, this.instance);
+
+			if(value) 
+			{
+				gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, 
+					meta.getExtParam(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT));
+			}
+			else 
+			{
+				gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, 1);			
+			}
+		}
+	},
+
+	get anisotropy() {
+		return this.$anisotropy;
+	},
+
 	//
 	type: "texture",
 
@@ -191,5 +209,6 @@ meta.class("meta.Texture", "meta.Resource",
 	fullWidth: 0,
 	fullHeight: 0,
 	ext: null,
-	$path: null
+	$path: null,
+	$anisotropy: true
 });
