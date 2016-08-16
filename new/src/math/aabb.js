@@ -13,23 +13,48 @@ meta.AABB.prototype =
 		this.y = y || 0;
 		this.width = width || 0;
 		this.height = height || 0;
+
+		this.minX = this.x;
+		this.minY = this.y;
+		this.maxX = this.x + this.width;
+		this.maxY = this.y + this.height;
+	},
+
+	reset: function()
+	{
+		this.x = this.y = 0;
+		this.width = this.height = 0;
+		this.minX = this.minY = this.maxX = this.maxY = 0;
 	},
 
 	resize: function(width, height)
 	{
 		this.width = width;
 		this.height = height;
+
+		this.maxX = this.x + this.width;
+		this.maxY = this.y + this.height;		
 	}, 
 
 	move: function(diffX, diffY)
 	{
 		this.x += diffX;
 		this.y += diffY;
+
+		this.minX = this.x;
+		this.minY = this.y;
+		this.maxX = this.x + this.width;
+		this.maxY = this.y + this.height;
 	},
 
 	position: function(x, y)
 	{
 		this.x = x;
 		this.y = y;
+
+		this.minX = this.x;
+		this.minY = this.y;
+		this.maxX = this.x + this.width;
+		this.maxY = this.y + this.height;
 	}
 };
