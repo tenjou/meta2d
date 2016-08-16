@@ -57,6 +57,8 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 
 	_updateDataInfoCell: function(id) 
 	{
+		if(!this._data) { return; }
+
 		var gid = this._data[id];
 
 		if(!gid) {
@@ -344,7 +346,7 @@ meta.class("Entity.TilemapLayer", "Entity.Geometry",
 
 	set data(data) 
 	{
-		this._data = data;
+		this._data = data || null;
 		this.numTiles = this.tilesX * this.tilesY;		
 
 		if(this.parent.flags & this.Flag.LOADED) {

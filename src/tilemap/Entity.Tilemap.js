@@ -82,7 +82,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		this.detachAll();
 	},
 
-	createTileset: function(gid, resource, tileWidth, tileHeight, margin, spacing)
+	createTileset: function(gid, name, path, tileWidth, tileHeight, margin, spacing)
 	{
 		if(gid < 1) {
 			console.warn("(Entity.Tilemap.createTileset) gid argument should be 1 or larger number");
@@ -92,16 +92,16 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		var texture = null;
 		var spriteSheet = null;
 
-				spriteSheet = meta.resources.spriteSheets[name];
-				if(!spriteSheet)
-				{
-					spriteSheet = new Resource.SpriteSheet();
-					spriteSheet.name = name;
-					spriteSheet.loadFromImg(resource, tileWidth, tileHeight, margin, spacing);
-					meta.resources.spriteSheets[name] = spriteSheet;
-				}
+		spriteSheet = meta.resources.spriteSheets[name];
+		if(!spriteSheet)
+		{
+			spriteSheet = new Resource.SpriteSheet();
+			spriteSheet.name = name;
+			spriteSheet.loadFromImg(path, tileWidth, tileHeight, margin || 0, spacing || 0);
+			meta.resources.spriteSheets[name] = spriteSheet;
+		}
 
-				texture = spriteSheet.texture;
+		texture = spriteSheet.texture;
 
 		// if(typeof(resource) === "string") 
 		// {
@@ -129,10 +129,12 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		var tileset = new meta.Tileset(gid, texture, spriteSheet, tileWidth, tileHeight);
 		this.tilesets.push(tileset);
 		
-		if(!spriteSheet.loaded) {
-			this.loaded = false;
-			this.numToLoad++;
-			spriteSheet.subscribe(this.handleTilesetEvent, this);
+		if(!spriteSheet.loaded) 
+		{
+			if(spriteSheet.subscribe(this.handleTilesetEvent, this)) {
+				this.loaded = false;
+				this.numToLoad++;
+			}
 		}
 
 		if(this.numToLoad === 0) {
@@ -215,7 +217,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 		var json = JSON.parse(data);
 
 		this.create(json.width, json.height, json.tilewidth, json.tileheight);
-		this.properties = json.properties;
+		this.properties = json.properties || {};
 
 		var tileset, tilesetInfo;
 		var tilesets = json.tilesets;
@@ -225,9 +227,9 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 			tilesetInfo = tilesets[n];
 
 			tileset = this.createTileset(
-				tilesetInfo.firstgid, this.folderPath + tilesetInfo.image, 
+				tilesetInfo.firstgid, tilesetInfo.name, this.folderPath + tilesetInfo.image, 
 				tilesetInfo.tilewidth, tilesetInfo.tileheight);
-			tileset.properties = tilesetInfo.tileproperties;
+			tileset.properties = tilesetInfo.tileproperties || {};
 		}
 
 		var layer, layerInfo;
@@ -239,7 +241,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 			layer = this.createLayer(layerInfo.data, layerInfo.width, layerInfo.height, layerInfo.name);
 
 			if(layerInfo.properties) {
-				layer.properties = layerInfo.properties;
+				layer.properties = layerInfo.properties || {};
 			}
 			if(layerInfo.visible) {
 				layer.visible = layerInfo.visible;
@@ -330,6 +332,7 @@ meta.class("Entity.Tilemap", "Entity.Geometry",
 
 		var tileset = this.createTileset(
 			parseInt(node.getAttribute("firstgid")),
+			node.getAttribute("name"),
 			imgPath,
 			parseInt(node.getAttribute("tilewidth")),
 			parseInt(node.getAttribute("tileheight")),

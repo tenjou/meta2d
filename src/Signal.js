@@ -58,14 +58,14 @@ meta.Channel.prototype =
 
 		if(!func) {
 			console.warn("(meta.Channel.subscribe) No valid callback function passed.");
-			return;			
+			return false;
 		}
 
 		for(var i = 0; i < this.numSubs; i++)
 		{
 			if(this.subs[i].owner === owner) {
-				console.warn("(meta.Channel.subscribe) Already subscribed to channel: " + this.name);
-				return;
+				// console.warn("(meta.Channel.subscribe) Already subscribed to channel: " + this.name);
+				return false;
 			}
 		}
 
@@ -80,6 +80,8 @@ meta.Channel.prototype =
 		else if(this._havePriority) {
 			this.subs.sort(this._sortFunc);
 		}
+
+		return true;
 	},
 
 	/**

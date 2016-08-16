@@ -28,7 +28,7 @@ meta.class("Resource.Basic",
 			this.chn = meta.createChannel("__res" + this.id);
 		}
 
-		this.chn.add(func, owner);
+		return this.chn.add(func, owner);
 	},
 
 	/**
