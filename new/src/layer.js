@@ -38,7 +38,7 @@ meta.Layer.prototype =
 		// }
 
 		entity.flags |= entity.Flag.ROOT;
-		entity.$layer = this;
+		entity.$setLayer(this);
 
 		if(this.$position.x !== 0 || this.$position.y !== 0) {
 			entity.updatePosition();
@@ -188,12 +188,65 @@ meta.Layer.prototype =
 		return ((this.flags & this.Flag.ACTIVE) === this.Flag.ACTIVE);
 	},
 
+	set fixed(value)
+	{
+		if(value)
+		{
+			if(this.flags & this.Flag.FIXED) { return; }
+			this.flags |= this.Flag.FIXED;
+
+			if(this.flags & this.Flag.ACTIVE) {
+				meta.renderer.needRender = true;
+			}
+		}
+		else
+		{
+			if((this.flags & this.Flag.FIXED) === 0) { return; }
+		}
+		
+		this.updateFixed();
+	},
+
+	get fixed() {
+		return ((this.flags & this.Flag.FIXED) === this.Flag.FIXED);
+	},
+
+	updateFixed: function()
+	{
+		if(this.parent) 
+		{
+			if(this.flags & this.Flag.FIXED && this.parent.flags & this.Flag.INSTANCE_FIXED) {
+				this.flags |= this.Flag.INSTANCE_FIXED;
+			}
+			else {
+				this.flags &= ~this.Flag.INSTANCE_FIXED;
+			}
+		}
+		else
+		{
+			if(this.flags & this.Flag.FIXED) {
+				this.flags |= this.Flag.INSTANCE_FIXED;
+			}
+			else {
+				this.flags &= ~this.Flag.INSTANCE_FIXED;
+			}
+		}
+
+		if(this.children)
+		{
+			for(var key in this.children) {
+				this.children[key].updateStatic();
+			}
+		}
+	},
+
 	Flag: {
 		HIDDEN: 1 << 0,
 		INSTANCE_HIDDEN: 1 << 1,
 		ACTIVE: 1 << 2,
-		STATIC: 1 << 3,
-		DEBUGGER: 1 << 4
+		INSTANCE_FIXED: 1 << 3,
+		FIXED: 1 << 4,
+		DEBUGGER: 1 << 5
 	}
 };
 

@@ -156,3 +156,68 @@ meta.class("meta.Shader", "meta.Resource",
 	$vertexShader: null,
 	$fragmentShader: null,
 });
+
+meta.on("preload", function()
+{
+	meta.new(meta.Shader, {
+		id: "sprite",
+		vertexShader: [
+			"attribute vec3 vertexPos;",
+			"attribute vec2 uvCoords;",
+
+			"uniform mat4 projMatrix;",
+			"uniform float angle;",
+
+			"varying highp vec2 var_uvCoords;",
+
+			"void main(void) {",
+			"	float angleX = sin(angle);",
+			"	float angleY = cos(angle);",
+			"	vec2 rotatedPos = vec2(vertexPos.x * angleY + vertexPos.y * angleX, vertexPos.y * angleY - vertexPos.x * angleX);",
+			"	gl_Position = projMatrix * vec4(rotatedPos, vertexPos.z, 1.0);",
+			"	var_uvCoords = vec2(uvCoords.s, uvCoords.t);",
+			"}"		
+		],
+		fragmentShader: [
+			"varying highp vec2 var_uvCoords;",
+
+			"uniform sampler2D texture;",
+
+			"void main(void) {",
+			"	gl_FragColor = texture2D(texture, vec2(var_uvCoords.s, var_uvCoords.t));",
+			"}"
+		]
+	});
+
+	meta.new(meta.Shader, {
+		id: "tiling",
+		vertexShader: [
+			"#define PI 3.1415926535897932384626433832795",
+
+			"attribute vec3 vertexPos;",
+			"attribute vec2 uvCoords;",
+
+			"uniform mat4 projMatrix;",
+			"uniform float tilesX;",
+			"uniform float tilesY;",
+			"uniform float offsetX;",
+			"uniform float offsetY;",				
+
+			"varying highp vec2 var_uvCoords;",
+
+			"void main(void) {",
+			"	gl_Position = projMatrix * vec4(vertexPos, 1.0);",
+			"	var_uvCoords = vec2(uvCoords.s * tilesX + offsetX, uvCoords.t * tilesY + offsetY);",
+			"}"		
+		],
+		fragmentShader: [
+			"varying highp vec2 var_uvCoords;",
+
+			"uniform sampler2D texture;",
+
+			"void main(void) {",
+			"	gl_FragColor = texture2D(texture, vec2(var_uvCoords.s, var_uvCoords.t));",
+			"}"
+		]
+	});	
+});

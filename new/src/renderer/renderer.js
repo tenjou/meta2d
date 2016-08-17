@@ -18,40 +18,6 @@ meta.renderer =
 		gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
 		gl.blendFuncSeparate(gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-		var spriteShader = meta.new(meta.Shader, {
-			id: "sprite",
-			vertexShader: [
-				"#define PI 3.1415926535897932384626433832795",
-
-				"attribute vec3 vertexPos;",
-				"attribute vec2 uvCoords;",
-
-				"uniform mat4 projMatrix;",
-				"uniform float angle;",
-				"uniform float tilesX;",
-				"uniform float tilesY;",
-
-				"varying highp vec2 var_uvCoords;",
-
-				"void main(void) {",
-				"	float angleX = sin(angle);",
-				"	float angleY = cos(angle);",
-				"	vec2 rotatedPos = vec2(vertexPos.x * angleY + vertexPos.y * angleX, vertexPos.y * angleY - vertexPos.x * angleX);",
-				"	gl_Position = projMatrix * vec4(rotatedPos, vertexPos.z, 1.0);",
-				"	var_uvCoords = vec2(uvCoords.s * tilesX -0.2, uvCoords.t * tilesY);",
-				"}"		
-			],
-			fragmentShader: [
-				"varying highp vec2 var_uvCoords;",
-
-				"uniform sampler2D texture;",
-
-				"void main(void) {",
-				"	gl_FragColor = texture2D(texture, vec2(var_uvCoords.s, var_uvCoords.t));",
-				"}"
-			]
-		});
-
 		this.entities.length = 16;
 		this.entitiesRemove.length = 8;
 
@@ -118,12 +84,16 @@ meta.renderer =
 	render: function()
 	{
 		var gl = this.gl;
+		var fixed = false;
 
 		gl.clear(gl.COLOR_BUFFER_BIT);
 
 		var projMatrix = new meta.Matrix4();
 		projMatrix.ortho(0, meta.engine.width, meta.engine.height, 0, 0, 1);
 		projMatrix.translate(-meta.camera.x, -meta.camera.y, 0);
+
+		var staticProjMatrix = new meta.Matrix4();
+		staticProjMatrix.ortho(0, meta.engine.width, meta.engine.height, 0, 0, 1);
 
 		for(var n = 0; n < this.numEntities; n++)
 		{
@@ -135,8 +105,7 @@ meta.renderer =
 			{
 				this.currShader = shader;
 				this.currShader.use();
-
-				gl.uniformMatrix4fv(this.currShader.uniform.projMatrix, false, projMatrix.m);
+				
 				gl.uniform1i(this.currShader.uniform.texture, 0);
 
 				gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
@@ -146,6 +115,14 @@ meta.renderer =
 				gl.vertexAttribPointer(this.currShader.attrib.uvCoords, 2, gl.FLOAT, false, 0, 0);
 
 				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indiceBuffer);
+			}
+
+			var layer = entity.$layer;
+			if(layer.flags & layer.Flag.INSTANCE_FIXED) {
+				gl.uniformMatrix4fv(this.currShader.uniform.projMatrix, false, staticProjMatrix.m);
+			}
+			else {
+				gl.uniformMatrix4fv(this.currShader.uniform.projMatrix, false, projMatrix.m);
 			}
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);

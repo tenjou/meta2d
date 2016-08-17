@@ -15,7 +15,7 @@ meta.class("meta.Sprite",
 		this.loadParams(params);
 
 		if(!this.$shader) {
-			this.shader = meta.resources.table.shader.sprite;
+			this.$shader = meta.resources.get("shader", "sprite");
 		}
 	},
 
@@ -23,15 +23,14 @@ meta.class("meta.Sprite",
 	{
 		if(this.flags & this.Flag.REMOVED) { return; }
 		this.flags |= this.Flag.REMOVED;
-		this.
 
 		this.volume.reset();
 	},
 
 	remove: function() 
 	{
-		if(this.$view) {
-			this.$view.remove(this);
+		if(this.$layer) {
+			this.$layer.remove(this);
 		}
 		else {
 			this.cleanup();
@@ -76,10 +75,25 @@ meta.class("meta.Sprite",
 
 		gl.uniform1f(this.$shader.uniform.angle, this.$angle);
 
-		var numTilesX = this.volume.width / this.texture.width;
+		var numTilesX = (this.volume.width / this.texture.width);
 		gl.uniform1f(this.$shader.uniform.tilesX, numTilesX);
-		var numTilesY = this.volume.height / this.texture.height;
+
+		var numTilesY = (this.volume.height / this.texture.height);
 		gl.uniform1f(this.$shader.uniform.tilesY, numTilesY);
+
+		var offsetX = (meta.camera.x % 256);
+		
+		if(offsetX !== 0) {
+			offsetX = (1.0 / 256) * offsetX;
+		}
+
+		var offsetY = (meta.camera.y % 256);
+		if(offsetY !== 0) {
+			offsetY = (1.0 / 256) * offsetY;
+		}		
+
+		gl.uniform1f(this.$shader.uniform.offsetX, offsetX);
+		gl.uniform1f(this.$shader.uniform.offsetY, offsetY);
 
 		gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 	},
@@ -274,6 +288,31 @@ meta.class("meta.Sprite",
 
 	onPress: null,
 
+	set layer(layer)
+	{
+		if(this.$layer) {
+			this.$layer.remove(this);
+		}
+
+		this.$setLayer(layer);
+	},
+
+	get layer() {
+		return this.$layer;
+	},
+
+	$setLayer: function(layer) 
+	{
+		this.$layer = layer;
+
+		if(this.children) 
+		{
+			for(var n = 0; n < this.children.n++; n++) {
+				this.children[n].$setLayer(layer);
+			}
+		}
+	},
+
 	set texture(texture)
 	{
 		if(typeof texture === "string") 
@@ -307,8 +346,13 @@ meta.class("meta.Sprite",
 	handleTexture: function(event)
 	{
 		if(event === "loaded" || event === "updated") {
-			this.volume.resize(this.$texture.width, this.$texture.height);
+			this.updateFromTexture();
 		}
+	},
+
+	updateFromTexture: function()
+	{
+		this.volume.resize(this.$texture.width, this.$texture.height);
 	},
 
 	set shader(shader)
@@ -392,8 +436,9 @@ meta.class("meta.Sprite",
 	},
 
 	//
-	$view: null,
+	$layer: null,
 	parent: null,
+	children: null,
 	volume: null,
 
 	flags: 0,
