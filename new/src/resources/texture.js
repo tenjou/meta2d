@@ -55,6 +55,7 @@ meta.class("meta.Texture", "meta.Resource",
 			this.ext = null;
 			this.$path = null;
 			this.image.src = "";
+
 			this.createFromImage(this.image);
 		}
 		else 
@@ -102,7 +103,7 @@ meta.class("meta.Texture", "meta.Resource",
 			}
 		}	
 
-		this.image.src = null;
+		this.image.src = "";
 
 		if(this.$anisotropy) 
 		{

@@ -334,7 +334,12 @@ meta.class("meta.Sprite",
 
 		this.$texture = texture;
 
-		if(this.$texture) {
+		if(this.$texture) 
+		{
+			if(this.$texture.loaded) {
+				this.updateFromTexture();
+			}
+
 			this.$texture.watch(this.handleTexture, this);
 		}
 	},

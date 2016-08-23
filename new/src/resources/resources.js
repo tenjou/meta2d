@@ -108,12 +108,6 @@ meta.resources =
 			return null;
 		}
 
-		if(buffer[resource.id]) {
-			meta.delete(resource);
-			console.warn("(meta.resources.load) There is already resource with id: `" + resource.id + "` that has type: `" + resource.type + "`");
-			return null;
-		}
-
 		buffer[resource.id] = resource;
 
 		return resource;
