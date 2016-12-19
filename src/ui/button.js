@@ -1,41 +1,48 @@
-"use strict";
+import Text from "../entity/text";
 
-meta.class("UI.Button", "Entity.Geometry", 
+const pressOffset = 2;
+
+export default class Button extends Entity.Geometry
 {
-	onCreate: function() {
+	constructor(arg) {
+		this._label = null;
+		super(arg);
+	}
+
+	onCreate() {
 		this.picking = true;
-	},
+	}
 
-	onHoverEnter: function(data) {
+	onHoverEnter(data) {
 		meta.engine.cursor = "pointer";
-	},
+	}
 
-	onHoverExit: function(data) {
+	onHoverExit(data) {
 		meta.engine.cursor = "auto";
-	},
+	}
 
-	onDown: function() {
-		this.move(this.pressOffset, this.pressOffset);
-	},
+	onDown() {
+		this.move(pressOffset, pressOffset);
+	}
 
-	onUp: function() {
-		this.move(-this.pressOffset, -this.pressOffset);
-	},
+	onUp() {
+		this.move(-pressOffset, -pressOffset);
+	}
 
-	_createLabel: function(text)
+	_createLabel(text)
 	{
 		if(!text) {
 			text = "";
 		}
 
-		this._label = new Entity.Text(text);
+		this._label = new Text(text);
 		this._label.pivot(0.5);
 		this._label.anchor(0.5);
 		this._label.pickable = false;
 		this._label.size = 12;
 		this._label.color = "#ffffff";
 		this.attach(this._label);
-	},
+	}
 
 	set text(str)
 	{
@@ -45,7 +52,7 @@ meta.class("UI.Button", "Entity.Geometry",
 		else {
 			this._label.text = str;
 		}
-	},
+	}
 
 	get text()
 	{
@@ -54,7 +61,7 @@ meta.class("UI.Button", "Entity.Geometry",
 		}
 
 		return this._label.text;
-	},
+	}
 
 	get label() 
 	{
@@ -63,9 +70,5 @@ meta.class("UI.Button", "Entity.Geometry",
 		} 
 
 		return this._label;
-	},
-
-	//
-	_label: null,
-	pressOffset: 2
-});
+	}
+}

@@ -1,6 +1,6 @@
 "use strict";
 
-var meta = 
+window.meta = 
 {
 	version: "0.83 dev",
 	importUrl: "http://meta2d.com/store/",

@@ -32,16 +32,16 @@ meta.Tokenizer.prototype =
 		this.nextChar();
 
 		// Skip spaces
-		while(isSpace(this.currChar)) {
+		while(meta.isSpace(this.currChar)) {
 			this.nextChar();
 		}
 
 		// NAME
-		if(isAlpha(this.currChar)) 
+		if(meta.isAlpha(this.currChar)) 
 		{
 			this.token.str += this.currChar;
 			this.nextChar();
-			while(isAlphaNum(this.currChar)) {
+			while(meta.isAlphaNum(this.currChar)) {
 				this.token.str += this.currChar;
 				this.nextChar();
 			}
@@ -72,12 +72,12 @@ meta.Tokenizer.prototype =
 		}
 
 		// Number
-		if(isDigit(this.currChar)) 
+		if(meta.isDigit(this.currChar)) 
 		{
 			this.token.str += this.currChar;
 
 			this.nextChar();
-			while(isDigit(this.currChar)) {
+			while(meta.isDigit(this.currChar)) {
 				this.token.str += this.currChar;
 				this.nextChar();
 			}
@@ -96,7 +96,7 @@ meta.Tokenizer.prototype =
 		}
 
 		// BinOp
-		if(isBinOp(this.currChar)) {
+		if(meta.isBinOp(this.currChar)) {
 			this.token.str = this.currChar;
 			this.token.type = this.Type.BINOP;
 			return this.token;

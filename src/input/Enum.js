@@ -1,6 +1,6 @@
 "use strict";
 
-var Input = {
+window.Input = {
 	BUTTON_ENUM_OFFSET: 2000
 };
 

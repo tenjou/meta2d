@@ -1,6 +1,6 @@
 "use strict";
 
-var Entity = {};
+window.Entity = {};
 
 Entity.Event = {
 	INPUT_UP: "entityUp",

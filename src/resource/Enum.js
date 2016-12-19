@@ -92,3 +92,5 @@ Resource.TextureType =
 	 */
 	WEBGL: 1
 };
+
+window.Resource = Resource;

@@ -1,18 +1,49 @@
-"use strict";
 
-meta.class("Entity.Text", "Entity.Geometry", 
+export default class Text extends Entity.Geometry 
 {
-	onCreate: function(params)
+	constructor(arg)
+	{
+		this._bitmapFont = null;
+
+		this._text = "";
+		this._lineBuffer = null;
+		this._wordBuffer = null;
+
+		this._limitWidth = 0;
+		this._maxWidth = 0;
+
+		this._font = "Tahoma";
+		this._fontSize = 12;
+		this._fontSizePx = "12px";
+		this._color = "#fff";
+		this._style = "";
+
+		this._outline = false;
+		this._outlineColor = "#000";
+		this._outlineWidth = 1;
+
+		this._shadow = true;
+		this._shadowColor = "#000";
+		this._shadowBlur = 3;
+		this._shadowOffsetX = 0;
+		this._shadowOffsetY = 0;
+		
+		super();
+
+		if(arg) {
+			this.text = arg;
+		}
+	}
+
+	onCreate(params)
 	{
 		this.texture = new Resource.Texture();
 		this._texture.resize(this._fontSize, this._fontSize);
 		this._lineBuffer = new Array(1);
 		this.text = params;
-	},
+	}
 
-	initArg: function() {},
-
-	updateTxt: function()
+	updateTxt()
 	{
 		var ctx = this._texture.ctx;
 
@@ -24,9 +55,9 @@ meta.class("Entity.Text", "Entity.Geometry",
 		}
 
 		this.renderer.needRender = true;
-	},
+	}
 
-	updateTxt_bitmapFont: function(ctx)
+	updateTxt_bitmapFont(ctx)
 	{
 		if(!this._bitmapFont.loaded) { return; }
 
@@ -85,9 +116,9 @@ meta.class("Entity.Text", "Entity.Geometry",
 			posY += fontHeight;
 			posX = 0;
 		}
-	},
+	}
 
-	updateTxt_canvasFont: function(ctx)
+	updateTxt_canvasFont(ctx)
 	{
 		ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
 
@@ -153,9 +184,9 @@ meta.class("Entity.Text", "Entity.Geometry",
 
 			posY += fontHeight;
 		}
-	},
+	}
 
-	calcLineBuffer: function(ctx)
+	calcLineBuffer(ctx)
 	{
 		var lineBuffer = [];
 
@@ -244,7 +275,7 @@ meta.class("Entity.Text", "Entity.Geometry",
 		}	
 
 		return lineBuffer;	
-	},
+	}
 
 	set text(text) 
 	{ 
@@ -282,9 +313,9 @@ meta.class("Entity.Text", "Entity.Geometry",
 		}
 		
 		this.updateTxt();
-	},
+	}
 
-	get text() { return this._text; },
+	get text() { return this._text; }
 
 	set font(font) 
 	{
@@ -305,24 +336,24 @@ meta.class("Entity.Text", "Entity.Geometry",
 		}
 
 		this.updateTxt();
-	},
+	}
 
-	get font() { return this._font; },
+	get font() { return this._font; }
 
 	set size(size) { 
 		this._fontSize = size;
 		this._fontSizePx = size + "px";
 		this.updateTxt();
-	},
+	}
 
-	get size() { return this._fontSize; },
+	get size() { return this._fontSize; }
 
 	set color(color) {
 		this._color = color;
 		this.updateTxt();
-	},
+	}
 
-	get color() { return this._color; },
+	get color() { return this._color; }
 
 	set style(style) 
 	{ 
@@ -330,9 +361,9 @@ meta.class("Entity.Text", "Entity.Geometry",
 		this._style = style;
 		
 		this.updateTxt();
-	},
+	}
 
-	get style() { return this._style; },	
+	get style() { return this._style; }
 
 	set outlineColor(color) 
 	{ 
@@ -341,9 +372,9 @@ meta.class("Entity.Text", "Entity.Geometry",
 		this._outline = true;
 
 		this.updateTxt();
-	},
+	}
 
-	get outlineColor() { return this._outlineColor; },
+	get outlineColor() { return this._outlineColor; }
 
 	set outlineWidth(width) 
 	{ 
@@ -352,9 +383,9 @@ meta.class("Entity.Text", "Entity.Geometry",
 		this._outline = true;
 		
 		this.updateTxt();
-	},
+	}
 
-	get outlineWidth() { return this._outlineWidth; },
+	get outlineWidth() { return this._outlineWidth; }
 
 	set outline(value)
 	{
@@ -362,9 +393,9 @@ meta.class("Entity.Text", "Entity.Geometry",
 		this._outline = value;
 
 		this.updateTxt();
-	},
+	}
 
-	get outline() { return this._outline; },
+	get outline() { return this._outline; }
 
 	set shadow(value) 
 	{
@@ -372,9 +403,9 @@ meta.class("Entity.Text", "Entity.Geometry",
 		this._shadow = value;
 
 		this.updateTxt();
-	}, 
+	}
 
-	get shadow() { return this._shadow; },
+	get shadow() { return this._shadow; }
 
 	set shadowColor(value) 
 	{
@@ -383,9 +414,9 @@ meta.class("Entity.Text", "Entity.Geometry",
 		this._shadow = true;
 
 		this.updateTxt();
-	},
+	}
 
-	get shadowColor() { return this._shadowColor; },
+	get shadowColor() { return this._shadowColor; }
 
 	set shadowBlur(value)
 	{
@@ -394,9 +425,9 @@ meta.class("Entity.Text", "Entity.Geometry",
 		this._shadow = true;
 
 		this.updateTxt();
-	},
+	}
 
-	get shadowBlur() { return this._shadowBlur; },
+	get shadowBlur() { return this._shadowBlur; }
 
 	set shadowOffsetX(value)
 	{
@@ -405,7 +436,7 @@ meta.class("Entity.Text", "Entity.Geometry",
 		this._shadow = true;
 
 		this.updateTxt();
-	},
+	}
 
 	set shadowOffsetY(value)
 	{
@@ -414,14 +445,14 @@ meta.class("Entity.Text", "Entity.Geometry",
 		this._shadow = true;
 
 		this.updateTxt();
-	},	
+	}	
 
-	get shadowOffsetX() { return this._shadowOffsetY; },
-	get shadowOffsetY() { return this._shadowOffsetY; },
+	get shadowOffsetX() { return this._shadowOffsetY; }
+	get shadowOffsetY() { return this._shadowOffsetY; }
 
-	_onFontEvent: function(data, event) {
+	_onFontEvent(data, event) {
 		this.updateTxt();
-	},
+	}
 
 	set limitWidth(value) 
 	{
@@ -433,35 +464,9 @@ meta.class("Entity.Text", "Entity.Geometry",
 		}
 		
 		this.text = this._text;
-	},
+	}
 
 	get limitWidth() {
 		return this._limitWidth;
-	},
-
-	//
-	_bitmapFont: null,
-
-	_text: "",
-	_lineBuffer: null,
-	_wordBuffer: null,
-
-	_limitWidth: 0,
-	_maxWidth: 0,
-
-	_font: "Tahoma",
-	_fontSize: 12,
-	_fontSizePx: "12px",
-	_color: "#fff",
-	_style: "",
-
-	_outline: false,
-	_outlineColor: "#000",
-	_outlineWidth: 1,
-
-	_shadow: true,
-	_shadowColor: "#000",
-	_shadowBlur: 3,
-	_shadowOffsetX: 0,
-	_shadowOffsetY: 0
-});
+	}
+}

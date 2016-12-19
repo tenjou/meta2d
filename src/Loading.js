@@ -1,4 +1,3 @@
-"use strict";
 
 meta.controller("meta.Loading", 
 {

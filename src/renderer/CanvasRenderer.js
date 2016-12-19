@@ -161,7 +161,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 
 		if(!volume.__transformed) 
 		{
-			if(texture.frameData) {
+			if(texture.frames) {
 				texture.drawFrame(this.ctx, Math.floor(volume.minX), Math.floor(volume.minY), entity.anim._frame);
 			}
 			else {
@@ -177,7 +177,7 @@ meta.class("meta.CanvasRenderer", "meta.Renderer",
 				volume.m21, volume.m22,
 				Math.floor(volume.x), Math.floor(volume.y));
 				
-			if(texture.frameData) {
+			if(texture.frames) {
 				texture.drawFrame(this.ctx, -volume.initPivotPosX, -volume.initPivotPosY, entity.anim._frame);
 			}
 			else {

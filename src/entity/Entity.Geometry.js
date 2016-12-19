@@ -4,6 +4,7 @@ meta.class("Entity.Geometry",
 {
 	init: function(arg) 
 	{
+		this.listeners = null;
 		this.volume = new meta.math.AABBext();
 		this.anim = new Component.Anim();
 		this.anim.owner = this;
@@ -1069,7 +1070,7 @@ meta.class("Entity.Geometry",
 			this.children = [ entity ];
 
 			if(this.scaleX !== 1 || this.scaleY !== 1) {
-				this.updateScale();
+				this._updateScale();
 			}
 		}
 		else {
@@ -1291,64 +1292,15 @@ meta.class("Entity.Geometry",
 		return false;
 	},
 
-	/**
-	 * Callback if entity has been pressed.
-	 * @function
-	 */
 	onDown: null,
-
-	/**
-	 * Callback if press on entity ended.
-	 * @function
-	 */
 	onUp: null,
-
-	/**
-	 * Callback if entity has been clicked.
-	 * @function
-	 */
-	onClick: null,	
-
-	/**
-	 * Callback if entity has been double clicked on.
-	 * @function
-	 */
-	onDbClick: null,		
-
-	/**
-	 * Callback if entity is being dragged.
-	 * @function
-	 */
+	onClick: null,
+	onDbClick: null,
 	onDrag: null,
-
-	/**
-	 * Callback if started drag on the entity.
-	 * @function
-	 */
 	onDragStart: null,	
-
-	/**
-	 * Callback if ended drag on the entity.
-	 * @function
-	 */
-	onDragEnd: null,	
-
-	/**
-	 * Callback if input is moving on top of entity.
-	 * @function
-	 */
+	onDragEnd: null,
 	onHover: null,
-
-	/**
-	 * Callback if input entered in entity bounds.
-	 * @function
-	 */
 	onHoverEnter: null,
-
-	/**
-	 * Callback if input left entity bounds.
-	 * @function
-	 */
 	onHoverExit: null,
 
 	/**
@@ -1514,18 +1466,53 @@ meta.class("Entity.Geometry",
 		}
 	},	
 
-	/**
-	 * Rotate entoty so it looks to x, y world positions.
-	 * @param x {Number} World position on x axis to look at.
-	 * @param y {Number} World position on y axis to look at.
-	 */
-	lookAt: function(x, y) 
+	lookAt(x, y) 
 	{
 		if(this.flags & this.Flag.IGNORE_PARENT_ANGLE) {
 			this.angleRad = -Math.atan2(x - this.volume.x, y - this.volume.y) + Math.PI;
 		}
 		else {
 			this.angleRad = -Math.atan2(x - this.volume.x, y - this.volume.y) + Math.PI - this.parent.volume.angle
+		}
+	},
+
+	on(event, func) 
+	{
+		if(!this.listeners) {
+			const listeners = {};
+			listeners[event] = [ func ];
+			this.listeners = listeners;
+			return;
+		}
+
+		const buffer = this.listeners[event];
+		if(!buffer) {
+			this.listeners[event] = [ func ];
+		}
+		else {
+			buffer.push(event);
+		}
+	},
+
+	off(event, func)
+	{
+		const buffer = this.listeners[event];
+		if(!buffer) { return; }
+
+		const index = buffer.indexOf(func);
+		if(index === -1) { return; }
+
+		buffer[index] = buffer[buffer.length - 1];
+		buffer.pop();
+	},
+
+	emit(event, arg) 
+	{
+		const buffer = this.listeners[event];
+		if(!buffer) { return; }
+
+		for(let n = 0; n < buffer.length; n++) {
+			buffer[n](arg);
 		}
 	},
 

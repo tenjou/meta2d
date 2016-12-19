@@ -403,6 +403,8 @@ meta.class("meta.Renderer",
 
 	removeEntities: function(entities)
 	{
+		if(entities.length === 0) { return; }
+		
 		var removeBuffer = entities[0]._view.entityBufferRemove;
 		removeBuffer.push.apply(removeBuffer, entities);
 
