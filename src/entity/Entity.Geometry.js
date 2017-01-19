@@ -1308,7 +1308,7 @@ meta.class("Entity.Geometry",
 	 * @param x {Number} Drag position on X axis.
 	 * @param y {Number} Drag position on Y axis.
 	 */
-	dragStart: function(x, y) {
+	dragStart(x, y) {
 		this._dragOffsetX = x - this.volume.x;
 		this._dragOffsetY = y - this.volume.y;
 	},
