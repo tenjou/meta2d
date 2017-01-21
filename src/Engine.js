@@ -573,7 +573,14 @@ meta.engine =
 
 		if(!this.canvas) { return; }
 
-		var ratio = 1;
+		var devicePixelRatio = window.devicePixelRatio || 1;
+		var backingStoreRatio = this.ctx.webkitBackingStorePixelRatio ||
+								this.ctx.mozBackingStorePixelRatio ||
+								this.ctx.msBackingStorePixelRatio ||
+								this.ctx.oBackingStorePixelRatio ||
+								this.ctx.backingStorePixelRatio || 1;
+        var ratio = devicePixelRatio / backingStoreRatio;
+
 		this.width = Math.ceil(width * ratio);
 		this.height = Math.ceil(height * ratio);
 		this.canvas.width = this.width;
