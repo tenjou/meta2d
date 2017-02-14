@@ -1,0 +1,22 @@
+{
+  "name": "engine",
+  "version": "1.0.0",
+  "description": "META v0.82\r ====",
+  "main": "src/main.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tenjou/meta2d.git"
+  },
+  "author": "Arturs Šefers <arthur.der.shefer@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tenjou/meta2d/issues"
+  },
+  "homepage": "https://github.com/tenjou/meta2d#readme"
+}

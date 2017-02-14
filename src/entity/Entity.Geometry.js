@@ -1,5 +1,3 @@
-"use strict";
-
 meta.class("Entity.Geometry",
 {
 	init: function(arg) 

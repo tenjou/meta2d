@@ -13,8 +13,6 @@ meta.createEngine = function()
 	});
 };
 
-meta.createEngine();
-
 /**
  * Load script. Scripts will be loaded in synchronous order.
  * @param src {String} Path to the script.
@@ -144,3 +142,5 @@ meta.import = function(path)
 
 	meta.loadScript(path, null);
 };
+
+meta.createEngine();

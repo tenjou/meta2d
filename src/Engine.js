@@ -864,7 +864,7 @@ meta.engine =
 	},
 
 	get loaded() { 
-		return (this.flags & this.Flag.LOAED) === this.Flag.LOADED; 
+		return (this.flags & this.Flag.LOADED) === this.Flag.LOADED; 
 	},			
 
 	get ready() { 

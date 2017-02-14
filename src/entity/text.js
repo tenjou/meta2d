@@ -1,5 +1,5 @@
 
-export default class Text extends Entity.Geometry 
+class Text extends Entity.Geometry 
 {
 	constructor(arg)
 	{
@@ -470,3 +470,7 @@ export default class Text extends Entity.Geometry
 		return this._limitWidth;
 	}
 }
+
+Entity.Text = Text;
+
+export default Text;
