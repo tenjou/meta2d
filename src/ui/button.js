@@ -1,5 +1,3 @@
-import Text from "../entity/text";
-
 var pressOffset = 2;
 
 export default class Button extends Entity.Geometry
@@ -35,7 +33,7 @@ export default class Button extends Entity.Geometry
 			text = "";
 		}
 
-		this._label = new Text(text);
+		this._label = new Entity.Text(text);
 		this._label.pivot(0.5);
 		this._label.anchor(0.5);
 		this._label.pickable = false;

@@ -155,7 +155,7 @@ class Text extends Entity.Geometry
 
 		var fontHeight = (this._fontSize * 1.3);
 
-		this._texture.resize(this._maxWidth, fontHeight * numLines);
+		this._texture.resize(Math.ceil(this._maxWidth), Math.ceil(fontHeight * numLines));
 
 		ctx.clearRect(0, 0, this.volume.initWidth, this.volume.initHeight);
 		ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
@@ -174,31 +174,16 @@ class Text extends Entity.Geometry
 			ctx.strokeStyle = this._outlineColor;
 		}		
 
-ctx.font="20px Georgia";
-ctx.fillText("Hello World!",10,50);
+		for(var n = 0; n < numLines; n++)
+		{
+			ctx.fillText(lineBuffer[n], posX, posY);
 
-ctx.font="30px Verdana";
-// Create gradient
-var gradient=ctx.createLinearGradient(0,0,400,0);
-gradient.addColorStop("0","magenta");
-gradient.addColorStop("0.5","blue");
-gradient.addColorStop("1.0","red");
-// Fill with gradient
-ctx.fillStyle=gradient;
-ctx.fillText("Big smile!",10,90);
+			if(this._outline) {
+				ctx.strokeText(lineBuffer[n], posY, posY);
+			}
 
-		// for(var n = 0; n < numLines; n++)
-		// {
-		// 	ctx.fillStyle = "red";
-		// 	alert(lineBuffer[n])
-		// 	ctx.fillText(lineBuffer[n], posX, posY);
-
-		// 	if(this._outline) {
-		// 		ctx.strokeText(lineBuffer[n], posY, posY);
-		// 	}
-
-		// 	posY += fontHeight;
-		// }
+			posY += fontHeight;
+		}
 	}
 
 	calcLineBuffer(ctx)

@@ -34,7 +34,7 @@ import "./input/Enum";
 import "./input/Input.Manager.js";
 import "./entity/Enum";
 import "./entity/Entity.Geometry.js";
-import Text from "./entity/text";
+import "./entity/Entity.Text.js";
 import "./entity/Entity.Tiling.js";
 import "./entity/Entity.Particle.js";
 import "./components/Component.Basic.js";
