@@ -1,5 +1,3 @@
-import Text from "../entity/text";
-
 meta.controller("meta.debugger",
 {
 	onFirstLoad: function()
@@ -15,75 +13,75 @@ meta.controller("meta.debugger",
 		this.holder.pivot(0, 1);
 		this.view.attach(this.holder);
 
-		var fps = new Text();
+		var fps = new Entity.Text();
 		fps.position(10, 10);
 		fps.text = "fps: 60";
 		this.holder.attach(fps);	
 
-		var memory = new Text();
+		var memory = new Entity.Text();
 		memory.position(10, 25);
 		this.holder.attach(memory);
 
-		var entities = new Text();
+		var entities = new Entity.Text();
 		entities.position(10, 40);
 		entities.text = "entities: 0, static: 0";
 		this.holder.attach(entities);							
 
-		var resolution = new Text();
+		var resolution = new Entity.Text();
 		resolution.position(10, 65);
 		this.holder.attach(resolution);	
 		
 		/* World */
-		var worldInfo = new Text();
+		var worldInfo = new Entity.Text();
 		worldInfo.text = "world:";
 		worldInfo.position(10, 90);
 		this.holder.attach(worldInfo);
 
-		var worldBoundsMin = new Text();
+		var worldBoundsMin = new Entity.Text();
 		worldBoundsMin.position(20, 105);
 		this.holder.attach(worldBoundsMin);	
 
-		var worldBoundsMax = new Text();
+		var worldBoundsMax = new Entity.Text();
 		worldBoundsMax.position(20, 120);
 		this.holder.attach(worldBoundsMax);	
 
-		var worldResolution = new Text();
+		var worldResolution = new Entity.Text();
 		worldResolution.position(20, 135);
 		this.holder.attach(worldResolution);			
 
 		/* Camera */
-		var cameraInfo = new Text();
+		var cameraInfo = new Entity.Text();
 		cameraInfo.text = "camera:";
 		cameraInfo.position(10, 155);
 		this.holder.attach(cameraInfo);
 
-		var cameraBoundsMin = new Text();
+		var cameraBoundsMin = new Entity.Text();
 		cameraBoundsMin.position(20, 170);
 		this.holder.attach(cameraBoundsMin);	
 
-		var cameraBoundsMax = new Text();
+		var cameraBoundsMax = new Entity.Text();
 		cameraBoundsMax.position(20, 185);
 		this.holder.attach(cameraBoundsMax);	
 
-		var cameraResolution = new Text();
+		var cameraResolution = new Entity.Text();
 		cameraResolution.position(20, 200);
 		this.holder.attach(cameraResolution);				
 
-		var cameraZoom = new Text();
+		var cameraZoom = new Entity.Text();
 		cameraZoom.position(20, 215);
-		this.holder.attach(cameraZoom);							
+		this.holder.attach(cameraZoom);
 
 		/* Cursor */
-		var cursorInfo = new Text();
+		var cursorInfo = new Entity.Text();
 		cursorInfo.text = "cursor:";
 		cursorInfo.position(10, 235);
 		this.holder.attach(cursorInfo);
 
-		var world = new Text();
+		var world = new Entity.Text();
 		world.position(20, 250);
 		this.holder.attach(world);
 
-		var screen = new Text();
+		var screen = new Entity.Text();
 		screen.position(20, 265);
 		this.holder.attach(screen);	
 

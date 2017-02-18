@@ -154,7 +154,7 @@ class Text extends Entity.Geometry
 
 		var fontHeight = (this._fontSize * 1.3);
 
-		this._texture.resize(this._maxWidth, fontHeight * numLines);
+		this._texture.resize(Math.ceil(this._maxWidth), Math.ceil(fontHeight * numLines));
 
 		ctx.clearRect(0, 0, this.volume.initWidth, this.volume.initHeight);
 		ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
