@@ -1,6 +1,6 @@
 import Text from "../entity/text";
 
-const pressOffset = 2;
+var pressOffset = 2;
 
 export default class Button extends Entity.Geometry
 {

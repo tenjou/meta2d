@@ -1477,13 +1477,13 @@ meta.class("Entity.Geometry",
 	on(event, func) 
 	{
 		if(!this.listeners) {
-			const listeners = {};
+			var listeners = {};
 			listeners[event] = [ func ];
 			this.listeners = listeners;
 			return;
 		}
 
-		const buffer = this.listeners[event];
+		var buffer = this.listeners[event];
 		if(!buffer) {
 			this.listeners[event] = [ func ];
 		}
@@ -1494,10 +1494,10 @@ meta.class("Entity.Geometry",
 
 	off(event, func)
 	{
-		const buffer = this.listeners[event];
+		var buffer = this.listeners[event];
 		if(!buffer) { return; }
 
-		const index = buffer.indexOf(func);
+		var index = buffer.indexOf(func);
 		if(index === -1) { return; }
 
 		buffer[index] = buffer[buffer.length - 1];
@@ -1506,10 +1506,10 @@ meta.class("Entity.Geometry",
 
 	emit(event, arg) 
 	{
-		const buffer = this.listeners[event];
+		var buffer = this.listeners[event];
 		if(!buffer) { return; }
 
-		for(let n = 0; n < buffer.length; n++) {
+		for(var n = 0; n < buffer.length; n++) {
 			buffer[n](arg);
 		}
 	},

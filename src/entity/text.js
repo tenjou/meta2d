@@ -174,16 +174,31 @@ class Text extends Entity.Geometry
 			ctx.strokeStyle = this._outlineColor;
 		}		
 
-		for(var n = 0; n < numLines; n++)
-		{
-			ctx.fillText(lineBuffer[n], posX, posY);
+ctx.font="20px Georgia";
+ctx.fillText("Hello World!",10,50);
 
-			if(this._outline) {
-				ctx.strokeText(lineBuffer[n], posY, posY);
-			}
+ctx.font="30px Verdana";
+// Create gradient
+var gradient=ctx.createLinearGradient(0,0,400,0);
+gradient.addColorStop("0","magenta");
+gradient.addColorStop("0.5","blue");
+gradient.addColorStop("1.0","red");
+// Fill with gradient
+ctx.fillStyle=gradient;
+ctx.fillText("Big smile!",10,90);
 
-			posY += fontHeight;
-		}
+		// for(var n = 0; n < numLines; n++)
+		// {
+		// 	ctx.fillStyle = "red";
+		// 	alert(lineBuffer[n])
+		// 	ctx.fillText(lineBuffer[n], posX, posY);
+
+		// 	if(this._outline) {
+		// 		ctx.strokeText(lineBuffer[n], posY, posY);
+		// 	}
+
+		// 	posY += fontHeight;
+		// }
 	}
 
 	calcLineBuffer(ctx)
