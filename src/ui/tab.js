@@ -3,11 +3,11 @@ export default class Tab extends Entity.Geometry
 {
 	constructor(arg) 
 	{
+		super(arg);
+
 		this._textureOn = null;
 		this._textureOff = null;
 		this._checked = false;
-
-		super(arg);
 
 		this.picking = true;
 	}

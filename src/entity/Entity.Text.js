@@ -3,11 +3,12 @@ class Text extends Entity.Geometry
 {
 	constructor(arg)
 	{
+		super();
 		this._bitmapFont = null;
 
 		this._text = "";
-		this._lineBuffer = null;
-		this._wordBuffer = null;
+		this._lineBuffer = new Array();
+		this._wordBuffer = new Array();
 
 		this._limitWidth = 0;
 		this._maxWidth = 0;
@@ -27,8 +28,6 @@ class Text extends Entity.Geometry
 		this._shadowBlur = 3;
 		this._shadowOffsetX = 0;
 		this._shadowOffsetY = 0;
-		
-		super();
 
 		if(arg) {
 			this.text = arg;

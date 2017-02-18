@@ -3,8 +3,8 @@ var pressOffset = 2;
 export default class Button extends Entity.Geometry
 {
 	constructor(arg) {
-		this._label = null;
 		super(arg);
+		this._label = null;
 	}
 
 	onCreate() {
