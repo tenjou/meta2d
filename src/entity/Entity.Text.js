@@ -18,6 +18,7 @@ class Text extends Entity.Geometry
 		this._fontSizePx = "12px";
 		this._color = "#fff";
 		this._style = "";
+		this._textAlign = "left";
 
 		this._outline = false;
 		this._outlineColor = "#000";
@@ -152,12 +153,19 @@ class Text extends Entity.Geometry
 			posX += this._shadowBlur;
 		}
 
+		if(this._textAlign === "right") {
+			posX += this._maxWidth;
+		} else if(this._textAlign === "center") {
+			posX += this._maxWidth/2;
+		}
+
 		var fontHeight = (this._fontSize * 1.3);
 
 		this._texture.resize(Math.ceil(this._maxWidth), Math.ceil(fontHeight * numLines));
 
 		ctx.clearRect(0, 0, this.volume.initWidth, this.volume.initHeight);
 		ctx.font = this._style + " " + this._fontSizePx + " " + this._font;
+		ctx.textAlign = this._textAlign;
 		ctx.fillStyle = this._color;
 		ctx.textBaseline = "top";
 
@@ -423,6 +431,14 @@ class Text extends Entity.Geometry
 		this._shadowBlur = value;
 		this._shadow = true;
 
+		this.updateTxt();
+	}
+
+	get align() { return this._textAlign; }
+	set align(value)
+	{
+		if(this._textAlign === value) { return; }
+		this._textAlign = value;
 		this.updateTxt();
 	}
 
