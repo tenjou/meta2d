@@ -16,9 +16,9 @@ class AnimatedSprite extends Sprite
 		this.pauseLastFrame = false
 	}
 
-	updateMesh() {
+	draw() {
 		this.updateAnim()
-		super.updateMesh()
+		super.draw()
 	}
 
 	updateAnim() 
