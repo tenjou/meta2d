@@ -11,11 +11,15 @@ class Renderable extends Entity
 	constructor() {
 		super()
 		const mesh = new Mesh(null, null)
-		this.needUpdateMesh = false
+		this.needUpdateMesh = true
+		this.hidden = false
 		this.drawCommand = new DrawCommand(this._transform, mesh, null, null)
 	}
 
 	draw() {
+		if(this.hidden) { 
+			return
+		}
 		if(this.needUpdateMesh) {
 			this.updateMesh()
 		}
