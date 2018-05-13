@@ -26,7 +26,7 @@ class Resources
 		const classes = this.Resource.__inherit
 		const cls = classes[config.type]
 		if(!cls) {
-			console.warn(`(Resources.load) No such resoruce type registered: ${config.type}`)
+			console.warn(`(Resources.load) No such resource type registered: ${config.type}`)
 			return
 		}
 

@@ -30,7 +30,6 @@ class Tileset extends Resource
 		this.margin = cfg.margin || 0
 		if(cfg.path) {
 			this.loadFromPath(cfg.path)
-			this.loading = false
 		}
 		else {
 			this.texture = cfg.texture || null
@@ -55,6 +54,7 @@ class Tileset extends Resource
 					this.texture.loadFromPath(path)
 				}
 				this.createFrames()
+				this.loading = false
 				break
 		}
 	}
@@ -94,7 +94,9 @@ class Tileset extends Resource
 					const id = source.replace(/\./g, '_')
 					this.texture = Resources.load(id, {
 						type: "Texture",
-						path: `${rootPath}${source}`
+						path: `${rootPath}${source}`,
+						minFilter: Texture.NEAREST,
+						magFilter: Texture.NEAREST
 					})
 					this.createFrames()
 				} break
@@ -102,10 +104,11 @@ class Tileset extends Resource
 		}
 	}
 
-	createFrames() 
-	{
+	createFrames() {
 		const tilesX = Math.floor(this.width / this.tileWidth)
 		const tilesY = Math.floor(this.height / this.tileHeight)
+		const uvOffsetX = 1.0 / this.width
+		const uvOffsetY = 1.0 / this.height
 		this.frames = new Array(tilesX * tilesY)
 		
 		let n = 0
@@ -114,7 +117,10 @@ class Tileset extends Resource
 		for(let y = 0; y < tilesY; y++) {
 			for(let x = 0; x < tilesX; x++) {
 				this.frames[n] = new Float32Array([ 
-					posX, posY, posX + this.tileWidth - this.margin, posY + this.tileHeight - this.margin
+					uvOffsetX * posX, 
+					uvOffsetY * posY, 
+					uvOffsetX * (posX + this.tileWidth - this.margin), 
+					uvOffsetY * (posY + this.tileHeight - this.margin)
 				])
 				posX += this.tileWidth + this.spacing
 				n++
