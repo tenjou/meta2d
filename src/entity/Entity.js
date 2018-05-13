@@ -33,21 +33,9 @@ class Entity
 
 	draw() {}
 
-	onEnable() {
-		if(this.children) {
-			for(let n = 0; n < this.children.length; n++) {
-				this.children[n].enable = true
-			}
-		}
-	}
+	onEnable() {}
 
-	onDisable() {
-		if(this.children) {
-			for(let n = 0; n < this.children.length; n++) {
-				this.children[n].enable = false
-			}
-		}
-	}
+	onDisable() {}
 
 	get position() {
 		this.needUpdateTransform = true
