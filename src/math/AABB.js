@@ -1,277 +1,170 @@
-"use strict";
+import { clamp, VolumeType } from "./Common"
 
-meta.math.AABB = function(x, y, width, height)
+class AABB
 {
-	/** 
-	 * x 
-	 * @type {number=0}
-	 */
-	this.x = x || 0;
+	constructor(x = 0, y = 0, width = 0, height = 0) {
+		this.minX = 0
+		this.minY = 0
+		this.maxX = 0
+		this.maxY = 0
+		this.width = 0
+		this.height = 0
+		this.set(x, y, width, height)
+	}
 
-	/** 
-	 * y 
-	 * @type {number=0}
-	 */
-	this.y = y || 0;	
+	set(x, y, width, height) {
+		this.width = width
+		this.height = height
+		this.minX = x
+		this.minY = y
+		this.maxX = x + width
+		this.maxY = y + height
+	}
 
-	/** 
-	 * width 
-	 * @type {number=0}
-	 */
-	this.width = width || 0;
+	position(x, y) {
+		this.minX = this.x
+		this.minY = this.y
+		this.maxX = this.minX + this.width
+		this.maxY = this.minY + this.height
+	}
 
-	/** 
-	 * height 
-	 * @type {number=0}
-	 */
-	this.height = height || 0;
+	move(x, y) {
+		this.minX += x
+		this.minY += y
+		this.maxX += x
+		this.maxY += y
+	}
 
-	this.halfWidth = this.width / 2;
-	this.halfHeight = this.height / 2;
-
-	/** 
-	 * pivotPosX 
-	 * @type {number}
-	 */
-	this.pivotPosX = this.width * this.pivotX;
-
-	/** 
-	 * pivotPosY 
-	 * @type {number}
-	 */
-	this.pivotPosY = this.height * this.pivotY;	
-
-	/** 
-	 * minX 
-	 * @type {number}
-	 */
-	this.minX = this.x;
-
-	/** 
-	 * minY 
-	 * @type {number}
-	 */
-	this.minY = this.y;
-
-	/** 
-	 * maxX 
-	 * @type {number}
-	 */
-	this.maxX = this.x + this.width;
-
-	/** 
-	 * maxY 
-	 * @type {number}
-	 */
-	this.maxY = this.y + this.height;
-};
-
-meta.math.AABB.prototype =
-{
-	/** 
-	 * set
-	 * @param x {number}
-	 * @param y {number}
-	 * @param width {number}
-	 * @param height {number}
-	 */	
-	set: function(x, y, width, height) 
+	resize(width, height)
 	{
-		this.x = x || 0;
-		this.y = y || 0;	
-		this.width = width || 0;
-		this.height = height || 0;
-		this.halfWidth = this.width / 2;
-		this.halfHeight = this.height / 2;
-		this.pivotPosX = this.width * this.pivotX;
-		this.pivotPosY = this.height * this.pivotY;	
+		this.width = width
+		this.height = height
+		this.maxX = this.minX + this.width
+		this.maxY = this.minY + this.height
+	}
 
-		this.minX = this.x;
-		this.minY = this.y;
-		this.maxX = this.x + this.width;
-		this.maxY = this.y + this.height;
-	},
-
-	position: function(x, y)
+	vsAABB(src)
 	{
-		this.x = x;
-		this.y = y;
-		this.minX = this.x - this.pivotPosX;
-		this.minY = this.y - this.pivotPosY;
-		this.maxX = this.minX + this.width;
-		this.maxY = this.minY + this.height;
-	},
+		if(this.maxX < src.minX || this.minX > src.maxX) { return false }
+		if(this.maxY < src.minY || this.minY > src.maxY) { return false }
 
-	move: function(x, y)
-	{
-		this.x += x;
-		this.y += y;
-		this.minX += x;
-		this.minY += y;
-		this.maxX += x;
-		this.maxY += y;
-	},
+		return true
+	}
 
-	resize: function(width, height)
+	vsBorderAABB(src)
 	{
-		this.width = width;
-		this.height = height;
-		this.halfWidth = width / 2;
-		this.halfHeight = height / 2;	
-		this.pivotPosX = this.width * this.pivotX;
-		this.pivotPosY = this.height * this.pivotY;
+		if(this.maxX <= src.minX || this.minX >= src.maxX) { return false }
+		if(this.maxY <= src.minY || this.minY >= src.maxY) { return false }
+
+		return true
+	}
+
+	vsAABBIntersection(src)
+	{
+		if(this.maxX < src.minX || this.minX > src.maxX) { return 0 }
+		if(this.maxY < src.minY || this.minY > src.maxY) { return 0 }
+
+		if(this.minX > src.minX || this.minY > src.minY) { return 1 }
+		if(this.maxX < src.maxX || this.maxY < src.maxY) { return 1 }
+
+		return 2
+	}
+
+	vsCircle(circle)
+	{
+		const aabb_halfExtents_width = this.width * 0.5
+		const aabb_halfExtents_height = this.height * 0.5
+		const aabb_centerX = this.minX + aabb_halfExtents_width
+		const aabb_centerY = this.minY + aabb_halfExtents_height
+
+		let diffX = circle.x - aabb_centerX
+		let diffY = circle.y - aabb_centerY
+		diffX = clamp(diffX, -aabb_halfExtents_width, aabb_halfExtents_width)
+		diffY = clamp(diffY, -aabb_halfExtents_height, aabb_halfExtents_height)
 		
-		this.minX = this.x - this.pivotPosX;
-		this.minY = this.y - this.pivotPosY;
-		this.maxX = this.minX + this.width;
-		this.maxY = this.minY + this.height;		
-	},
+		const closestX = aabb_centerX + diffX
+		const closestY = aabb_centerY + diffY
 
-	pivot: function(x, y)
+		diffX = closestX - circle.x
+		diffY = closestY - circle.y
+
+		return Math.sqrt((diffX * diffX) + (diffY * diffY)) < circle.radius
+	}
+
+	vsPoint(x, y)
 	{
-		if(y === void(0)) { y = x; }
+		if(this.minX > x || this.maxX < x) { return false }
+		if(this.minY > y || this.maxY < y) { return false }
 
-		this.pivotX = x;
-		this.pivotY = y;
-		this.pivotPosX = this.width * this.pivotX;
-		this.pivotPosY = this.height * this.pivotY;
+		return true
+	}
 
-		this.minX = this.x - this.pivotPosX;
-		this.minY = this.y - this.pivotPosY;
-		this.maxX = this.minX + this.width;
-		this.maxY = this.minY + this.height;		
-	},
-
-	vsAABB: function(src)
+	vsBorderPoint(x, y)
 	{
-		if(this.maxX < src.minX || this.minX > src.maxX) { return false; }
-		if(this.maxY < src.minY || this.minY > src.maxY) { return false; }
+		if(this.minX >= x || this.maxX <= x) { return false }
+		if(this.minY >= y || this.maxY <= y) { return false }
 
-		return true;
-	},
+		return true
+	}
 
-	vsBorderAABB: function(src)
+	getSqrDistance(x, y)
 	{
-		if(this.maxX <= src.minX || this.minX >= src.maxX) { return false; }
-		if(this.maxY <= src.minY || this.minY >= src.maxY) { return false; }
-
-		return true;
-	},
-
-	vsAABBIntersection: function(src)
-	{
-		if(this.maxX < src.minX || this.minX > src.maxX) { return 0; }
-		if(this.maxY < src.minY || this.minY > src.maxY) { return 0; }
-
-		if(this.minX > src.minX || this.minY > src.minY) { return 1; }
-		if(this.maxX < src.maxX || this.maxY < src.maxY) { return 1; }
-
-		return 2;
-	},
-
-	vsPoint: function(x, y)
-	{
-		if(this.minX > x || this.maxX < x) { return false; }
-		if(this.minY > y || this.maxY < y) { return false; }
-
-		return true;
-	},
-
-	vsBorderPoint: function(x, y)
-	{
-		if(this.minX >= x || this.maxX <= x) { return false; }
-		if(this.minY >= y || this.maxY <= y) { return false; }
-
-		return true;
-	},
-
-	getSqrDistance: function(x, y)
-	{
-		var tmp;
-		var sqDist = 0;
+		let tmp
+		let sqDist = 0
 
 		if(x < this.minX) {
-			tmp = (this.minX - x);
-			sqDist += tmp * tmp;
+			tmp = (this.minX - x)
+			sqDist += tmp * tmp
 		}
 		if(x > this.maxX) {
-			tmp = (x - this.maxX);
-			sqDist += tmp * tmp;
+			tmp = (x - this.maxX)
+			sqDist += tmp * tmp
 		}
 
 		if(y < this.minY) {
-			tmp = (this.minY - y);
-			sqDist += tmp * tmp;
+			tmp = (this.minY - y)
+			sqDist += tmp * tmp
 		}
 		if(y > this.maxY) {
-			tmp = (y - this.maxY);
-			sqDist += tmp * tmp;
+			tmp = (y - this.maxY)
+			sqDist += tmp * tmp
 		}
 
-		return sqDist;
-	},
+		return sqDist
+	}
 
-	getDistanceVsAABB: function(aabb)
+	getDistanceVsAABB(aabb)
 	{
-		var centerX = this.minX + ((this.maxX - this.minX) / 2);
-		var centerY = this.minY + ((this.maxY - this.minY) / 2);
-		var srcCenterX = aabb.minX + ((aabb.maxY - aabb.minY) / 2);
-		var srcCenterY = aabb.minY + ((aabb.maxY - aabb.minY) / 2);
+		const centerX = this.minX + ((this.maxX - this.minX) / 2)
+		const centerY = this.minY + ((this.maxY - this.minY) / 2)
+		const srcCenterX = aabb.minX + ((aabb.maxY - aabb.minY) / 2)
+		const srcCenterY = aabb.minY + ((aabb.maxY - aabb.minY) / 2)
 
-		var diffX = srcCenterX - centerX;
-		var diffY = srcCenterY - centerY;
+		const diffX = srcCenterX - centerX
+		const diffY = srcCenterY - centerY
 
-		return Math.sqrt((diffX * diffX) + (diffY * diffY));
-	},
+		return Math.sqrt((diffX * diffX) + (diffY * diffY))
+	}
 
+	isUndefined() {
+		return (this.maxY === undefined)
+	}
 
-	isUndefined: function() {
-		return (this.maxY === void(0));
-	},
-
-
-	genCircle: function() 
-	{
-		var width = (this.maxX - this.minX);
-		var height = (this.maxY - this.minY);
-
-		var radius;
-		if(width > height) {
-			radius = width / 2;
-		}
-		else {
-			radius = height / 2;
-		}
-
-		return new meta.math.Circle(this.x, this.y, radius);
-	},	
-
-	print: function(str)
+	print(str)
 	{
 		if(str)
 		{
 			console.log("(AABB) " + str + " minX: " + this.minX + " minY: " + this.minY
-				+ " maxX: " + this.maxX + " maxY: " + this.maxY);
+				+ " maxX: " + this.maxX + " maxY: " + this.maxY)
 		}
 		else
 		{
 			console.log("(AABB) minX: " + this.minX + " minY: " + this.minY
-				+ " maxX: " + this.maxX + " maxY: " + this.maxY);
+				+ " maxX: " + this.maxX + " maxY: " + this.maxY)
 		}
-	},
+	}
+}
 
+AABB.prototype.volumeType = VolumeType.AABB
 
-	/** 
-	 * pivotX 
-	 * @type {number=0}
-	 */
-	pivotX: 0,
-
-	/** 
-	 * pivotY 
-	 * @type {number=0}
-	 */
-	pivotY: 0,
-
-	type: meta.math.VolumeType.AABB
-};
+export default AABB

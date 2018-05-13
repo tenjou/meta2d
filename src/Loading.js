@@ -1,63 +1,25 @@
-"use strict";
+import Engine from "./Engine"
+import Resources from "./resources/Resources"
 
-meta.controller("meta.Loading", 
-{
-	onInit: function() {
-		meta.preloading = this;
-		meta.loading = this;			
-	},
+const loadingHolder = document.createElement("div")
+loadingHolder.style.cssText = "position:absolute; display:flex; width:100%; height:100%; background:black; align-items:center; justify-content: center;"
 
-	onFirstLoad: function() 
-	{
-		this.view.z = Number.MAX_SAFE_INTEGER - 10;
-		this.view.static = true;
+const progressBar = document.createElement("div")
+progressBar.style.cssText = "width:25%; max-width: 120px; height:4px; background:#333;"
+loadingHolder.appendChild(progressBar)
 
-		var bgTexture = new Resource.SVG();
-		bgTexture.fillStyle = "#030303";
-		bgTexture.fillRect(0, 0, 1, 1);
-		this.bg = new Entity.Geometry(bgTexture);
-		this.bg.fitIn(meta.camera.width, meta.camera.height);
-		this.view.attach(this.bg);
+const progressBarCurrent = document.createElement("div")
+progressBarCurrent.style.cssText = "width:0%; height:100%; background:white;"
+progressBar.appendChild(progressBarCurrent)
 
-		var progressShadowTexture = new Resource.SVG();
-		progressShadowTexture.fillStyle = "#222";
-		progressShadowTexture.fillRect(0, 0, 100, 4);
-		var progressShadow = new Entity.Geometry(progressShadowTexture);
-		progressShadow.pivot(0.5);
-		progressShadow.anchor(0.5);
-		this.view.attach(progressShadow);
+Resources.on("loading", () => {
+	Engine.container.appendChild(loadingHolder)
+})
 
-		var progressTexture = new Resource.SVG();
-		progressTexture.fillStyle = "white";
-		progressTexture.fillRect(0, 0, 100, 4);
-		this.progress = new Entity.Geometry(progressTexture);
-		this.progress.clipBounds(0, 4);
-		this.progress.pivot(0.5);
-		this.progress.anchor(0.5);
-		this.view.attach(this.progress);
-	},
+Resources.on("progress", (percents) => {
+	progressBarCurrent.style.width = `${percents}%`
+})
 
-	onLoad: function() {
-		meta.camera.onResize.add(this.onResize, this);
-		meta.resources.onLoadingUpdate.add(this.onResourceLoaded, this);
-	},
-
-	onUnload: function() {
-		meta.camera.onResize.remove(this);
-		meta.resources.onLoadingUpdate.remove(this);
-	},
-
-	onResize: function(data) {
-		this.bg.fitIn(data.width, data.height);
-	},
-
-	onResourceLoaded: function(mgr) 
-	{
-		var percents = Math.min((100 / mgr.numTotalToLoad) * (mgr.numTotalToLoad - mgr.numToLoad), 100);
-		this.progress.clipBounds(percents, 4);
-	},
-
-	//
-	bg: null,
-	progress: null
-});
+Resources.on("ready", () => {
+	Engine.container.removeChild(loadingHolder)
+})
