@@ -1,6 +1,20 @@
-import Entity from "../entity/Entity"
+import Engine from "../Engine"
+import Renderable from "../entity/Renderable"
+import Material from "../resources/Material"
+import Vector4 from "../math/Vector4"
+import tilemapVertexSrc from "../../shaders/tilemap.vertex.glsl"
+import tilemapFragmentSrc from "../../shaders/tilemap.fragment.glsl"
 
-class TilemapLayer extends Entity
+let tilemapMaterial = null
+Engine.on("setup", () => { 
+	tilemapMaterial = new Material()
+	tilemapMaterial.loadFromConfig({
+		vertexSrc: tilemapVertexSrc,
+		fragmentSrc: tilemapFragmentSrc
+	})
+})
+
+class TilemapLayer extends Renderable
 {
 	constructor() {
 		super()
@@ -9,10 +23,11 @@ class TilemapLayer extends Entity
 		this.numTilesY = 0
 		this.tileWidth = 0
 		this.tileHeight = 0
-		this.opacity = 1
+		this.color = new Vector4(1, 1, 1, 1)
 		this.data = null
 		this.dataInfo = null
 		this.needUpdateInfo = true
+		this.material = tilemapMaterial
 	}
 
 	create(numTilesX, numTilesY, tileWidth, tileHeight, data) {
@@ -36,6 +51,7 @@ class TilemapLayer extends Entity
 			this.updateInfo(n)
 		}	
 		this.needUpdateInfo = false	
+		this.drawCommand.uniforms.albedo = this.parent.tilesets[0].texture.instance
 	}
 
 	updateInfo(id) 
@@ -60,11 +76,10 @@ class TilemapLayer extends Entity
 				}
 				tileset = tilesets[n]
 			}
-			const canvas = tileset.texture.canvas
 			const frame = tileset.frames[gid - tileset.gid]
 
 			this.dataInfo[id] = {
-				canvas,
+				texture: tileset.texture,
 				frame,
 				flags
 			}
@@ -87,6 +102,12 @@ class TilemapLayer extends Entity
 		}
 		return this.data[id]
 	}
+
+	updateUniforms() {
+		this.drawCommand.uniforms = Object.assign({
+			color: this.color
+		}, this.drawCommand.material.uniforms)	
+	}	
 }
 
 export default TilemapLayer
