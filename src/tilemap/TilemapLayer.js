@@ -14,6 +14,11 @@ Engine.on("setup", () => {
 	})
 })
 
+const FLIPPED_HORIZONTALLY_FLAG = 0x80000000
+const FLIPPED_VERTICALLY_FLAG = 0x40000000
+const FLIPPED_DIAGONALLY_FLAG = 0x20000000
+const ALL_FLAGS = (FLIPPED_HORIZONTALLY_FLAG | FLIPPED_VERTICALLY_FLAG | FLIPPED_DIAGONALLY_FLAG)
+
 class TilemapLayer extends Renderable
 {
 	constructor() {
@@ -26,8 +31,6 @@ class TilemapLayer extends Renderable
 		this.tileset = null
 		this.color = new Vector4(1, 1, 1, 1)
 		this.data = null
-		this.dataInfo = null
-		this.needUpdateInfo = true
 		this.material = tilemapMaterial
 	}
 
@@ -39,6 +42,7 @@ class TilemapLayer extends Renderable
 		this.size.set(this.numTilesX * this.tileWidth, this.numTilesY * this.tileHeight)
 		this.dataInfo = new Array(numTilesX * numTilesY)
 		this.updateData(data)
+		this.extractTileset()
 	}
 
 	updateData(data) {
@@ -54,12 +58,7 @@ class TilemapLayer extends Renderable
 		for(let n = 0; n < num; n++) {
 			let gid = this.data[n]
 			if(gid === 0) { continue }
-
-			let flags = 0
-			flags |= (gid & 0x20000000)
-			flags |= (gid & 0x40000000)
-			flags |= (gid & 0x80000000)
-			gid &= 536870911		
+			gid &= ~ALL_FLAGS
 
 			tileset = tilesets[0]
 			for(let n = 1; n < tilesets.length; n++) {
@@ -72,44 +71,6 @@ class TilemapLayer extends Renderable
 		}
 		this.tileset = tileset
 		this.drawCommand.uniforms.albedo = this.tileset.texture.instance	
-	}
-
-	updateAllInfo() {
-		const num = this.numTilesX * this.numTilesY
-		this.extractTileset()
-		for(let n = 0; n < num; n++) {
-			this.updateInfo(n)
-		}
-		this.needUpdateInfo = false	
-	}
-
-	updateInfo(id) {
-		let gid = this.data[id]
-		if(gid === 0) {
-			this.dataInfo[id] = null
-		}
-		else {
-			let flags = 0
-			flags |= (gid & 0x20000000)
-			flags |= (gid & 0x40000000)
-			flags |= (gid & 0x80000000)
-			gid &= 536870911	
-			
-			const frameId = gid - this.tileset.gid
-			if(frameId < 0) {
-				this.dataInfo[id] = null
-				console.trace(`Non-matching tileset used`)
-			}
-			else {
-				const frame = this.tileset.frames[frameId]				
-				this.dataInfo[id] = {
-					gid, 
-					frameId,
-					frame,
-					flags
-				}
-			}
-		}
 	}
 
 	setGid(x, y, gid) {

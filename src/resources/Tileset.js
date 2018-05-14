@@ -3,6 +3,12 @@ import Resource from "./Resource"
 import Texture from "./Texture"
 import Utils from "../Utils"
 
+const FLIPPED_HORIZONTALLY_FLAG = 0x80000000
+const FLIPPED_VERTICALLY_FLAG = 0x40000000
+const FLIPPED_DIAGONALLY_FLAG = 0x20000000
+const ALL_FLAGS = (FLIPPED_HORIZONTALLY_FLAG | FLIPPED_VERTICALLY_FLAG | FLIPPED_DIAGONALLY_FLAG)
+const frameOutput = new Float32Array(5)
+
 const createTexture = (path) => {
 	const rootPath = Utils.getRootPath(path)
 	const id = path.replace(/\./g, '_')					
@@ -122,7 +128,8 @@ class Tileset extends Resource
 					uvOffsetX * posX, 
 					uvOffsetY * posY, 
 					uvOffsetX * (posX + this.tileWidth - this.margin), 
-					uvOffsetY * (posY + this.tileHeight - this.margin)
+					uvOffsetY * (posY + this.tileHeight - this.margin),
+					0
 				])
 				posX += this.tileWidth + this.spacing
 				n++
@@ -130,6 +137,45 @@ class Tileset extends Resource
 			posX = this.spacing
 			posY += this.tileHeight + this.spacing
 		}
+	}
+
+	getFrame(gid) {
+		if(gid < FLIPPED_DIAGONALLY_FLAG) {	
+			return this.frames[gid]		
+		}
+
+		const flippedHorizontally = (gid & FLIPPED_HORIZONTALLY_FLAG)
+		const flippedVertically = (gid & FLIPPED_VERTICALLY_FLAG)
+		const flippedDiagonally = (gid & FLIPPED_DIAGONALLY_FLAG)
+		gid &= ~ALL_FLAGS	
+		const frame = this.frames[gid]
+
+		if(flippedDiagonally) {
+			frameOutput[4] = 1
+		}
+		else {
+			frameOutput[4] = 0
+		}
+
+		if(flippedHorizontally) {
+			frameOutput[0] = frame[2]
+			frameOutput[2] = frame[0]
+		}
+		else {
+			frameOutput[0] = frame[0]
+			frameOutput[2] = frame[2]
+		}
+
+		if(flippedVertically) {
+			frameOutput[1] = frame[3]
+			frameOutput[3] = frame[1]
+		}
+		else {
+			frameOutput[1] = frame[1]
+			frameOutput[3] = frame[3]
+		}
+
+		return frameOutput
 	}
 }
 

@@ -8,10 +8,6 @@ class TilemapOrthogonalLayer extends TilemapLayer
 	}
 
 	updateMesh() {
-		if(this.needUpdateInfo) {
-			this.updateAllInfo()
-		}
-
 		const numTiles = this.numTilesX * this.numTilesY
 		this.buffer = new Float32Array(numTiles * 16)
 		this.indices = new Uint16Array(numTiles * 6)
@@ -25,29 +21,53 @@ class TilemapOrthogonalLayer extends TilemapLayer
 		for(let y = 0; y < this.numTilesY; y++) {
 			for(let x = 0; x < this.numTilesX; x++) {
 				const id = x + (y * this.numTilesX)
-				const info = this.dataInfo[id]
-				if(info) {
-					const frame = info.frame
+				let gid = this.data[id] - this.tileset.gid
+				if(gid > -1) {
+					const frame = this.tileset.getFrame(gid)
+					const flip = frame[4]
 					
-					this.buffer[index++] = posX + this.tileWidth
-					this.buffer[index++] = posY + this.tileHeight
-					this.buffer[index++] = frame[2]
-					this.buffer[index++] = frame[3]
-	
-					this.buffer[index++] = posX
-					this.buffer[index++] = posY + this.tileWidth
-					this.buffer[index++] = frame[0]
-					this.buffer[index++] = frame[3]
-	
-					this.buffer[index++] = posX
-					this.buffer[index++] = posY
-					this.buffer[index++] = frame[0]
-					this.buffer[index++] = frame[1]
-	
-					this.buffer[index++] = posX + this.tileHeight
-					this.buffer[index++] = posY
-					this.buffer[index++] = frame[2]
-					this.buffer[index++] = frame[1]
+					if(flip === 0) {
+						this.buffer[index++] = posX + this.tileWidth
+						this.buffer[index++] = posY + this.tileHeight
+						this.buffer[index++] = frame[2]
+						this.buffer[index++] = frame[3]
+		
+						this.buffer[index++] = posX
+						this.buffer[index++] = posY + this.tileWidth
+						this.buffer[index++] = frame[0]
+						this.buffer[index++] = frame[3]
+		
+						this.buffer[index++] = posX
+						this.buffer[index++] = posY
+						this.buffer[index++] = frame[0]
+						this.buffer[index++] = frame[1]
+		
+						this.buffer[index++] = posX + this.tileHeight
+						this.buffer[index++] = posY
+						this.buffer[index++] = frame[2]
+						this.buffer[index++] = frame[1]
+					}
+					else {
+						this.buffer[index++] = posX + this.tileWidth
+						this.buffer[index++] = posY + this.tileHeight
+						this.buffer[index++] = frame[0]
+						this.buffer[index++] = frame[1]
+		
+						this.buffer[index++] = posX
+						this.buffer[index++] = posY + this.tileWidth
+						this.buffer[index++] = frame[0]
+						this.buffer[index++] = frame[3]
+		
+						this.buffer[index++] = posX
+						this.buffer[index++] = posY
+						this.buffer[index++] = frame[2]
+						this.buffer[index++] = frame[3]
+		
+						this.buffer[index++] = posX + this.tileHeight
+						this.buffer[index++] = posY
+						this.buffer[index++] = frame[2]
+						this.buffer[index++] = frame[1]						
+					}
 	
 					this.indices[indiceIndex++] = verticeOffset
 					this.indices[indiceIndex++] = verticeOffset + 2
