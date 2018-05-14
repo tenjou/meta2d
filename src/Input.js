@@ -152,7 +152,7 @@ class Input
 			case "up":
 			{
 				const keyCode = domEvent.button + Key.BUTTON_ENUM_OFFSET
-				this.inputs[keyCode] = (eventType === "up") ? 0 : 1
+				this.inputs[keyCode] = (eventType === "up" || eventType === "dblclick") ? 0 : 1
 
 				if(this.firstInputEvent) {
 					inputEvent.deltaX = 0
