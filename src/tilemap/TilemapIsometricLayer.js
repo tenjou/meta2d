@@ -1,7 +1,7 @@
 import Engine from "../Engine"
 import TilemapLayer from "./TilemapLayer"
 
-class TilemapOrthographicLayer extends TilemapLayer
+class TilemapIsometricLayer extends TilemapLayer
 {
 	constructor() {
 		super()
@@ -22,32 +22,34 @@ class TilemapOrthographicLayer extends TilemapLayer
 		let posX = 0
 		let posY = 0
 		let numElements = 0
-		for(let y = 0; y < this.numTilesY; y++) {
+		for(let y = 0; y < 1; y++) {
 			for(let x = 0; x < this.numTilesX; x++) {
 				const id = x + (y * this.numTilesY)
 				const info = this.dataInfo[id]
 				if(info) {
 					const frame = info.frame
+					const uvOffsetX = 1.0 / info.texture.width
+					const uvOffsetY = 1.0 / info.texture.height
 					
 					this.buffer[index++] = posX + this.tileWidth
-					this.buffer[index++] = posY + this.tileHeight
-					this.buffer[index++] = frame[2]
-					this.buffer[index++] = frame[3]
+					this.buffer[index++] = posY + 64
+					this.buffer[index++] = uvOffsetX * 64
+					this.buffer[index++] = uvOffsetY * 64
 	
-					this.buffer[index++] = posX
-					this.buffer[index++] = posY + this.tileWidth
-					this.buffer[index++] = frame[0]
-					this.buffer[index++] = frame[3]
+					this.buffer[index++] = 0
+					this.buffer[index++] = 64
+					this.buffer[index++] = 0
+					this.buffer[index++] = uvOffsetY * 64
 	
-					this.buffer[index++] = posX
-					this.buffer[index++] = posY
-					this.buffer[index++] = frame[0]
-					this.buffer[index++] = frame[1]
+					this.buffer[index++] = 0
+					this.buffer[index++] = 0
+					this.buffer[index++] = 0
+					this.buffer[index++] = 0
 	
-					this.buffer[index++] = posX + this.tileHeight
-					this.buffer[index++] = posY
-					this.buffer[index++] = frame[2]
-					this.buffer[index++] = frame[1]
+					this.buffer[index++] = 64
+					this.buffer[index++] = 0
+					this.buffer[index++] = uvOffsetX * 64
+					this.buffer[index++] = 0
 	
 					this.indices[indiceIndex++] = verticeOffset
 					this.indices[indiceIndex++] = verticeOffset + 2
@@ -57,6 +59,7 @@ class TilemapOrthographicLayer extends TilemapLayer
 					this.indices[indiceIndex++] = verticeOffset + 2	
 					verticeOffset += 4
 					numElements++
+					break
 				}
 
 				posX += this.tileWidth
@@ -87,4 +90,4 @@ class TilemapOrthographicLayer extends TilemapLayer
 	}
 }
 
-export default TilemapOrthographicLayer
+export default TilemapIsometricLayer

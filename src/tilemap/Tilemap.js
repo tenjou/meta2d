@@ -1,9 +1,10 @@
-import TilemapOrthographicLayer from "./TilemapOrthographicLayer"
 import Entity from "../entity/Entity"
 import Resources from "../resources/Resources"
 import Tileset from "../resources/Tileset"
 import Tiled from "../resources/Tiled"
 import Texture from "../resources/Texture"
+import TilemapOrthogonalLayer from "./TilemapOrthogonalLayer"
+import TilemapIsometricLayer from "./TilemapIsometricLayer"
 
 class Tilemap extends Entity
 {
@@ -31,8 +32,23 @@ class Tilemap extends Entity
 		this.size.set(numTilesX * tileWidth, numTilesY * tileHeight)
 	}
 
-	createLayer(data) {
-		const layer = new TilemapOrthographicLayer()
+	createLayer(data, tileWidth, tileHeight, type) {
+		let layer = null
+		switch(type) {
+			case Tilemap.Type.Orthogonal:
+				layer = new TilemapOrthogonalLayer()
+				break
+			case Tilemap.Type.Isometric:
+				layer = new TilemapIsometricLayer()
+				break
+			default:
+				console.warn(`(Tilemap.createLayer) Unsupported layer type: ${type}`)
+				break
+		}
+		if(!layer) {
+			return null
+		}
+
 		this.addChild(layer)
 		layer.create(this.numTilesX, this.numTilesY, this.tileWidth, this.tileHeight, data)
 		return layer
@@ -70,9 +86,11 @@ class Tilemap extends Entity
 		const layers = tiled.layers
 		for(let n = 0; n < layers.length; n++) {
 			const layerInfo = layers[n]
-			const layer = this.createLayer(layerInfo.data)
-			layer.hidden = layerInfo.visible ? false : true
-			layer.color.set(1, 1, 1, layerInfo.opacity)
+			const layer = this.createLayer(layerInfo.data, layerInfo.tileWidth, layerInfo.tileHeight, this.type)
+			if(layer) {
+				layer.hidden = layerInfo.visible ? false : true
+				layer.color.set(1, 1, 1, layerInfo.opacity)
+			}
 		}
 	}
 
@@ -99,7 +117,7 @@ class Tilemap extends Entity
 }
 
 Tilemap.Type = {
-	Orthographic: "orthographic",
+	Orthogonal: "orthogonal",
 	Isometric: "isometric",
 	Hexagon: "hexagon"
 }
