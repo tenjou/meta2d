@@ -3,6 +3,17 @@ import Resource from "./Resource"
 import Texture from "./Texture"
 import Utils from "../Utils"
 
+const createTexture = (path) => {
+	const rootPath = Utils.getRootPath(path)
+	const id = path.replace(/\./g, '_')					
+	return Resources.load(id, {
+		type: "Texture",
+		path,
+		minFilter: Texture.NEAREST,
+		magFilter: Texture.NEAREST
+	})
+}
+
 class Tileset extends Resource
 {
 	constructor() {
@@ -50,8 +61,7 @@ class Tileset extends Resource
 			default:
 				this.texture = Resources.get(path)
 				if(!this.texture) {
-					this.texture = new Texture()
-					this.texture.loadFromPath(path)
+					this.texture = createTexture(path)
 				}
 				this.createFrames()
 				this.loading = false
@@ -71,13 +81,12 @@ class Tileset extends Resource
 		this.loading = false
 	}
 
-	parseFromTsx(data) 
-	{
+	parseFromTsx(data) {
 		const node = data.documentElement
 		this.tileWidth = parseInt(node.getAttribute("tilewidth"))
 		this.tileHeight = parseInt(node.getAttribute("tileheight"))
-		this.spacing = parseInt(node.getAttribute("spacing"))
-		this.margin = parseInt(node.getAttribute("margin"))
+		this.spacing = parseInt(node.getAttribute("spacing")) || 0
+		this.margin = parseInt(node.getAttribute("margin")) || 0
 
 		const children = node.childNodes
 		for(let n = 0; n < children.length; n++) {
@@ -90,14 +99,7 @@ class Tileset extends Resource
 					this.width = parseInt(node.getAttribute("width"))
 					this.height = parseInt(node.getAttribute("height"))
 					const source = node.getAttribute("source")
-					const rootPath = Utils.getRootPath(this.path)
-					const id = source.replace(/\./g, '_')
-					this.texture = Resources.load(id, {
-						type: "Texture",
-						path: `${rootPath}${source}`,
-						minFilter: Texture.NEAREST,
-						magFilter: Texture.NEAREST
-					})
+					this.texture = createTexture(path)
 					this.createFrames()
 				} break
 			}

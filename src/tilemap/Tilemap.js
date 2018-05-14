@@ -68,7 +68,7 @@ class Tilemap extends Entity
 		this.create(tiled.width, tiled.height, tiled.tileWidth, tiled.tileHeight, tiled.orientation, tiled.name)
 		this.tilesets = tiled.tilesets
 		const layers = tiled.layers
-		for(let n = layers.length - 1; n >= 0; n--) {
+		for(let n = 0; n < layers.length; n++) {
 			const layerInfo = layers[n]
 			const layer = this.createLayer(layerInfo.data)
 			layer.hidden = layerInfo.visible ? false : true
