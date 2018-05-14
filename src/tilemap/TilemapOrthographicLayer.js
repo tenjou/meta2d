@@ -21,6 +21,7 @@ class TilemapOrthographicLayer extends TilemapLayer
 		let verticeOffset = 0
 		let posX = 0
 		let posY = 0
+		let numElements = 0
 		for(let y = 0; y < this.numTilesY; y++) {
 			for(let x = 0; x < this.numTilesX; x++) {
 				const id = x + (y * this.numTilesY)
@@ -55,6 +56,7 @@ class TilemapOrthographicLayer extends TilemapLayer
 					this.indices[indiceIndex++] = verticeOffset + 3
 					this.indices[indiceIndex++] = verticeOffset + 2	
 					verticeOffset += 4
+					numElements++
 				}
 
 				posX += this.tileWidth
@@ -65,6 +67,7 @@ class TilemapOrthographicLayer extends TilemapLayer
 
 		this.drawCommand.mesh.upload(this.buffer)
 		this.drawCommand.mesh.uploadIndices(this.indices)
+		this.drawCommand.mesh.numElements = numElements * 6
 		this.needUpdateMesh = false
 	}
 
