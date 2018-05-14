@@ -128,7 +128,6 @@ class Input
 
 		const wnd = Engine.window
 		const transform = Engine.camera
-		const zoomRatio = 1.0 / transform._scale.x
 
 		this.prevScreenX = this.screenX
 		this.prevScreenY = this.screenY
@@ -136,8 +135,8 @@ class Input
 		this.screenY = ((domEvent.pageY - wnd.offsetTop) * wnd.scaleY) / wnd.ratio
 		this.prevX = this.x
 		this.prevY = this.y
-		this.x = ((this.screenX * transform._scale.x) - transform.x) / wnd.ratio | 0
-		this.y = ((this.screenY * transform._scale.y) - transform.y) / wnd.ratio | 0
+		this.x = (this.screenX - transform.x) / wnd.ratio | 0
+		this.y = (this.screenY - transform.y) / wnd.ratio | 0
 
 		const inputEvent = new Input.Event()
 		inputEvent.domEvent = domEvent
@@ -161,8 +160,8 @@ class Input
 					this.firstInputEvent = false
 				}
 				else {
-					inputEvent.deltaX = (this.prevScreenX - this.screenX) * zoomRatio / wnd.ratio
-					inputEvent.deltaY = (this.prevScreenY - this.screenY) * zoomRatio / wnd.ratio
+					inputEvent.deltaX = (this.prevScreenX - this.screenX) / wnd.ratio
+					inputEvent.deltaY = (this.prevScreenY - this.screenY)  / wnd.ratio
 				}
 
 				inputEvent.keyCode = keyCode
@@ -176,8 +175,8 @@ class Input
 					this.firstInputEvent = false
 				}
 				else {
-					inputEvent.deltaX = -domEvent.movementX * zoomRatio / wnd.ratio
-					inputEvent.deltaY = -domEvent.movementY * zoomRatio / wnd.ratio
+					inputEvent.deltaX = -domEvent.movementX / wnd.ratio
+					inputEvent.deltaY = -domEvent.movementY / wnd.ratio
 				}
 
 				inputEvent.keyCode = 0
@@ -211,7 +210,7 @@ class Input
 		if(domEvent.target !== Engine.canvas) { return }
 
 		const wnd = Engine.window
-		const transform = Engine.camera.parent
+		const transform = Engine.camera
 
 		const changedTouches = domEvent.changedTouches
 		for(let n = 0; n < changedTouches.length; n++)
@@ -239,8 +238,8 @@ class Input
 
 			const screenX = ((touch.pageX - wnd.offsetLeft) * wnd.scaleX)
 			const screenY = ((touch.pageY - wnd.offsetTop) * wnd.scaleY)
-			const x = (screenX * transform.zoomRatio) - transform.x | 0
-			const y = (screenY * transform.zoomRatio) - transform.y | 0
+			const x = (screenX - transform.x) | 0
+			const y = (screenY - transform.y) | 0
 			const keyCode = id + Key.BUTTON_ENUM_OFFSET
 
 			const inputEvent = new Input.Event()
