@@ -66,48 +66,6 @@ class TilemapOrthographicLayer extends TilemapLayer
 		this.drawCommand.mesh.upload(this.buffer)
 		this.drawCommand.mesh.uploadIndices(this.indices)
 		this.needUpdateMesh = false
-
-
-		// const transform = this.worldTransform
-		// const cameraTransform = Engine.scene.camera.worldTransform
-		// const ctx = Engine.ctx
-		// const tilesets = this.parent.tilesets
-		// const texture = tilesets[0].texture
-		// const dx = -this.pivot.x * this._size.x
-		// const dy = -this.pivot.y * this._size.y	
-
-		// if(this.opacity !== 1) {
-		// 	ctx.globalAlpha = this.opacity
-		// }
-
-		// ctx.setTransform(transform.a, transform.b,
-		// 	transform.c, transform.d,
-		// 	transform.tx - cameraTransform.tx | 0, transform.ty - cameraTransform.ty | 0)
-
-		// let posX = 0
-		// let posY = 0
-		// for(let y = 0; y < this.numTilesY; y++) 
-		// {
-		// 	for(let x = 0; x < this.numTilesX; x++) 
-		// 	{
-				// const id = x + (y * this.numTilesY)
-				// const info = this.dataInfo[id]
-
-		// 		if(info) {
-		// 			const frame = info.frame
-		// 			ctx.drawImage(info.canvas, frame[0], frame[1], this.tileWidth, this.tileHeight, 
-		// 				posX + dx, posY + dy, this.tileWidth, this.tileHeight)
-		// 		}
-
-		// 		posX += this.tileWidth
-		// 	}
-		// 	posX = 0
-		// 	posY += this.tileHeight
-		// }
-
-		// if(this.opacity !== 1) {
-		// 	ctx.globalAlpha = 1
-		// }
 	}
 
 	getCellFromWorldPos(worldX, worldY) {
