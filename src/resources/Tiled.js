@@ -7,6 +7,8 @@ function Layer() {
 	this.name = null
 	this.width = 0
 	this.height = 0
+	this.tileWidth = 0
+	this.tileHeight = 0
 	this.opacity = 1.0
 	this.visible = 1
 	this.data = null
@@ -116,7 +118,7 @@ class Tiled extends Resource
 		this.height = parseInt(node.getAttribute("height"))		
 		this.tileWidth = parseInt(node.getAttribute("tilewidth"))
 		this.tileHeight = parseInt(node.getAttribute("tileheight"))
-		this.orientation = parseInt(node.getAttribute("orientation"))
+		this.orientation = node.getAttribute("orientation")
 		this.tilesets = new Array()
 		this.layers = new Array()
 
@@ -136,7 +138,7 @@ class Tiled extends Resource
 						const child = children[n]
 						switch(child.nodeName) {
 							case "data":
-							layerData = this.parseData(child.textContent, child.getAttribute("encoding"))
+								layerData = this.parseData(child.textContent, child.getAttribute("encoding"))
 								if(!layerData) {
 									continue
 								}
@@ -163,6 +165,8 @@ class Tiled extends Resource
 	parseTmxTileset(node, rootPath) 
 	{
 		const gid = parseInt(node.getAttribute("firstgid"))
+		const tileWidth = parseInt(node.getAttribute("tilewidth"))
+		const tileHeight = parseInt(node.getAttribute("tileheight"))
 		let source = node.getAttribute("source")
 		let width = 0
 		let height = 0
@@ -181,7 +185,7 @@ class Tiled extends Resource
 			}
 		}
 
-		const id = `${gid}.${source}`
+		const id = `${source}.${gid}`
 		let tileset = Resources.get(id)
 		if(!tileset) {
 			const tilesetData = {
@@ -189,8 +193,8 @@ class Tiled extends Resource
 				gid,
 				path: `${rootPath}${source}`,
 				width, height,
-				tileWidth: this.tileWidth,
-				tileHeight: this.tileHeight
+				tileWidth,
+				tileHeight
 			}
 			tileset = Resources.load(id, tilesetData)
 		}
