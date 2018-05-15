@@ -9,17 +9,6 @@ const FLIPPED_DIAGONALLY_FLAG = 0x20000000
 const ALL_FLAGS = (FLIPPED_HORIZONTALLY_FLAG | FLIPPED_VERTICALLY_FLAG | FLIPPED_DIAGONALLY_FLAG)
 const frameOutput = new Float32Array(5)
 
-const createTexture = (path) => {
-	const rootPath = Utils.getRootPath(path)
-	const id = path.replace(/\./g, '_')					
-	return Resources.load(id, {
-		type: "Texture",
-		path,
-		minFilter: Texture.NEAREST,
-		magFilter: Texture.NEAREST
-	})
-}
-
 class Tileset extends Resource
 {
 	constructor() {
@@ -67,7 +56,12 @@ class Tileset extends Resource
 			default:
 				this.texture = Resources.get(path)
 				if(!this.texture) {
-					this.texture = createTexture(path)
+					this.texture = Resources.load(path, {
+						type: "Texture",
+						path,
+						minFilter: Texture.NEAREST,
+						magFilter: Texture.NEAREST
+					})
 				}
 				this.createFrames()
 				this.loading = false
@@ -85,31 +79,6 @@ class Tileset extends Resource
 				break
 		}
 		this.loading = false
-	}
-
-	parseFromTsx(data) {
-		const node = data.documentElement
-		this.tileWidth = parseInt(node.getAttribute("tilewidth"))
-		this.tileHeight = parseInt(node.getAttribute("tileheight"))
-		this.spacing = parseInt(node.getAttribute("spacing")) || 0
-		this.margin = parseInt(node.getAttribute("margin")) || 0
-
-		const children = node.childNodes
-		for(let n = 0; n < children.length; n++) {
-			const node = children[n]
-			if(node.nodeType !== 1) { 
-				continue 
-			}
-			switch(node.nodeName) {
-				case "image": {
-					this.width = parseInt(node.getAttribute("width"))
-					this.height = parseInt(node.getAttribute("height"))
-					const source = node.getAttribute("source")
-					this.texture = createTexture(path)
-					this.createFrames()
-				} break
-			}
-		}
 	}
 
 	createFrames() {

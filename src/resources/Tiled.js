@@ -24,6 +24,8 @@ class Tiled extends Resource
 		this.layers = null
 		this.tilesets = null
 		this.path = null
+		this._dependencies = 0
+		this._dependenciesLoaded = 0
 	}
 
 	loadFromConfig(cfg) {
@@ -159,46 +161,74 @@ class Tiled extends Resource
 			}
 		}
 
-		this.loading = false
+		if(this._dependencies === 0) {
+			this.loading = false
+		}
 	}
 
-	parseTmxTileset(node, rootPath) 
-	{
+	parseTmxTileset(node, rootPath) {
 		const gid = parseInt(node.getAttribute("firstgid"))
+		const source = node.getAttribute("source")
+		if(source) {
+			fetch(`${rootPath}/${source}`)
+			.then(response => response.text())
+			.then(str => (new DOMParser()).parseFromString(str, "text/xml"))
+			.then((data) => {
+				const node = data.documentElement
+				this.parseTileset(node, gid, rootPath)
+			})
+			this._dependencies++		
+		}
+		else {
+			this.parseTileset(node, gid, rootPath)
+		}
+	}
+
+	parseTileset(node, gid, rootPath) {
 		const tileWidth = parseInt(node.getAttribute("tilewidth"))
 		const tileHeight = parseInt(node.getAttribute("tileheight"))
-		let source = node.getAttribute("source")
+
+		let source = null
 		let width = 0
 		let height = 0
-
-		if(!source) {
-			const children = node.childNodes
-			for(let n = 0; n < children.length; n++) {
-				const child = children[n]
-				switch(child.nodeName) {
-					case "image":
-						source = child.getAttribute("source")
-						width = parseInt(child.getAttribute("width"))
-						height = parseInt(child.getAttribute("height"))
-						break
-				}
+		let margin = 0
+		let spacing = 0
+		const children = node.childNodes
+		for(let n = 0; n < children.length; n++) {
+			const child = children[n]
+			switch(child.nodeName) {
+				case "image":
+					source = child.getAttribute("source")
+					width = parseInt(child.getAttribute("width"))
+					height = parseInt(child.getAttribute("height"))
+					spacing = parseInt(node.getAttribute("spacing")) || 0
+					margin = parseInt(node.getAttribute("margin")) || 0
+					break
 			}
 		}
 
 		const id = `${source}.${gid}`
 		let tileset = Resources.get(id)
 		if(!tileset) {
-			const tilesetData = {
+			tileset = Resources.load(id, {
 				type: "Tileset",
 				gid,
 				path: `${rootPath}${source}`,
 				width, height,
 				tileWidth,
-				tileHeight
-			}
-			tileset = Resources.load(id, tilesetData)
+				tileHeight,
+				spacing,
+				margin
+			})
 		}
 		this.tilesets.push(tileset)
+		
+		if(this._dependencies > 0) {
+			this._dependenciesLoaded++	
+			if(this._dependencies === this._dependenciesLoaded) {
+				this.loading = false
+			}
+		}
 	}
 }
 
