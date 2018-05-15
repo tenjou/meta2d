@@ -45,39 +45,16 @@ class Tileset extends Resource
 
 	loadFromPath(path) {
 		this.path = path
-		const format = Utils.getExt(path)
-		switch(format) {
-			case "tsx":
-				fetch(path)
-				.then(response => response.text())
-				.then(str => (new DOMParser()).parseFromString(str, "text/xml"))
-				.then(data => this.parseFromData(data, format))
-				break
-			default:
-				this.texture = Resources.get(path)
-				if(!this.texture) {
-					this.texture = Resources.load(path, {
-						type: "Texture",
-						path,
-						minFilter: Texture.NEAREST,
-						magFilter: Texture.NEAREST
-					})
-				}
-				this.createFrames()
-				this.loading = false
-				break
+		this.texture = Resources.get(path)
+		if(!this.texture) {
+			this.texture = Resources.load(path, {
+				type: "Texture",
+				path,
+				minFilter: Texture.NEAREST,
+				magFilter: Texture.NEAREST
+			})
 		}
-	}
-
-	parseFromData(data, format) {
-		switch(format) {
-			case "tsx":
-				this.parseFromTsx(data)
-				break
-			default:
-				console.warn(`(Tileset.parseFromData) Unsupported file format: ${format}`)
-				break
-		}
+		this.createFrames()
 		this.loading = false
 	}
 
