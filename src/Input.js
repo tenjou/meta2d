@@ -43,8 +43,12 @@ class Input
 		this.prevScreenX = 0
 		this.prevScreenY = 0
 
+		Engine.on("setup", this.initialize.bind(this))
+	}
+
+	initialize() {
 		loadIgnoreKeys(this)
-		addEventListeners(this)
+		addEventListeners(this)				
 	}
 
 	handleKeyDown(domEvent)
