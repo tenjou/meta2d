@@ -68,9 +68,9 @@ class Tiled extends Resource
 									data.charCodeAt(index + 2) << 16 |
 									data.charCodeAt(index + 3) << 24
 						index += 4
-					} 
+					}
 					return result
-				} 
+				}
 				default:
 					console.error(`(Tiled.parseData) Unsupported encoding format for layer: ${encoding}`)
 					return null
@@ -94,23 +94,34 @@ class Tiled extends Resource
 		for(let n = 0; n < tilesets.length; n++) {
 			const tilesetInfo = tilesets[n]
 			const gid = tilesetInfo.firstgid
-			const image = tilesetInfo.image
-			const id = `${rootPath}${image}.${gid}`
-			let tileset = Resources.get(id)
-			if(!tileset) {
-				tileset = Resources.load(id, {
-					type: "Tileset",
-					gid,
-					path: `${rootPath}${image}`,
-					width: tilesetInfo.imagewidth, 
-					height: tilesetInfo.imageheight,
-					tileWidth: tilesetInfo.tilewidth,
-					tileHeight: tilesetInfo.tileheight,
-					spacing: tilesetInfo.spacing | 0,
-					margin: tilesetInfo.margin | 0					
+			if(tilesetInfo.source) {
+				this._dependencies++
+				fetch(`${rootPath}/${tilesetInfo.source}`)
+				.then(response => response.text())
+				.then(str => (new DOMParser()).parseFromString(str, "text/xml"))
+				.then((data) => {
+					this.parseTsxTileset(data.documentElement, gid, rootPath)
 				})
 			}
-			this.tilesets[n] = tileset
+			else {
+				const image = tilesetInfo.image
+				const id = `${rootPath}${image}.${gid}`
+				let tileset = Resources.get(id)
+				if(!tileset) {
+					tileset = Resources.load(id, {
+						type: "Tileset",
+						gid,
+						path: `${rootPath}${image}`,
+						width: tilesetInfo.imagewidth,
+						height: tilesetInfo.imageheight,
+						tileWidth: tilesetInfo.tilewidth,
+						tileHeight: tilesetInfo.tileheight,
+						spacing: tilesetInfo.spacing | 0,
+						margin: tilesetInfo.margin | 0
+					})
+				}
+				this.tilesets[n] = tileset
+			}
 		}
 
 		const numLayers = data.layers.length
@@ -132,13 +143,15 @@ class Tiled extends Resource
 			this.layers[n] = layer
 		}
 
-		this.loading = false
+		if(this._dependencies === 0) {
+			this.loading = false
+		}
 	}
 
 	parseTmx(data) {
 		const node = data.documentElement
 		this.width = parseInt(node.getAttribute("width"))
-		this.height = parseInt(node.getAttribute("height"))		
+		this.height = parseInt(node.getAttribute("height"))
 		this.tileWidth = parseInt(node.getAttribute("tilewidth"))
 		this.tileHeight = parseInt(node.getAttribute("tileheight"))
 		this.orientation = node.getAttribute("orientation")
@@ -153,8 +166,8 @@ class Tiled extends Resource
 				case "tileset":
 					this.parseTmxTileset(child, rootPath)
 					break
-				
-				case "layer": {		
+
+				case "layer": {
 					let layerData = null
 					const children = child.childNodes
 					for(let n = 0; n < children.length; n++) {
@@ -170,7 +183,7 @@ class Tiled extends Resource
 									layerData = new Array(children.length)
 									for(let n = 0; n < result.length; n++) {
 										layerData[n] = parseInt(children[n].getAttribute("gid"))
-									}				
+									}
 									return result
 								}
 								if(!layerData) {
@@ -202,21 +215,20 @@ class Tiled extends Resource
 		const gid = parseInt(node.getAttribute("firstgid"))
 		const source = node.getAttribute("source")
 		if(source) {
+			this._dependencies++
 			fetch(`${rootPath}/${source}`)
 			.then(response => response.text())
 			.then(str => (new DOMParser()).parseFromString(str, "text/xml"))
 			.then((data) => {
-				const node = data.documentElement
-				this.parseTileset(node, gid, rootPath)
+				this.parseTsxTileset(data.documentElement, gid, rootPath)
 			})
-			this._dependencies++		
 		}
 		else {
-			this.parseTileset(node, gid, rootPath)
+			this.parseTsxTileset(node, gid, rootPath)
 		}
 	}
 
-	parseTileset(node, gid, rootPath) {
+	parseTsxTileset(node, gid, rootPath) {
 		const tileWidth = parseInt(node.getAttribute("tilewidth"))
 		const tileHeight = parseInt(node.getAttribute("tileheight"))
 
@@ -254,9 +266,9 @@ class Tiled extends Resource
 			})
 		}
 		this.tilesets.push(tileset)
-		
+
 		if(this._dependencies > 0) {
-			this._dependenciesLoaded++	
+			this._dependenciesLoaded++
 			if(this._dependencies === this._dependenciesLoaded) {
 				this.loading = false
 			}
