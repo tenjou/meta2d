@@ -58,6 +58,18 @@ class Tiled extends Resource
 			switch(encoding) {
 				case "csv":
 					return JSON.parse(`[${data}]`)
+				case "base64":
+					data = atob(data)
+					const result = new Array(data.length / 4)
+					let index = 0
+					for(let n = 0; n < result.length; n++) {
+						result[n] = data.charCodeAt(index) |
+									data.charCodeAt(index + 1) << 8 |
+									data.charCodeAt(index + 2) << 16 |
+									data.charCodeAt(index + 3) << 24
+						index += 4
+					} 
+					return result
 				default:
 					console.error(`(Tiled.parseData) Unsupported encoding format for layer: ${encoding}`)
 					return null
