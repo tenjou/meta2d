@@ -47,7 +47,7 @@ class Tiled extends Resource
 			case "tmx": {
 				fetch(path)
 				.then(response => response.text())
-				.then(str => (new DOMParser()).parseFromString(str, "text/xml"))
+				.then(str => new DOMParser().parseFromString(str, "text/xml"))
 				.then(this.parseTmx.bind(this))
 			} break
 		}
@@ -58,7 +58,7 @@ class Tiled extends Resource
 			switch(encoding) {
 				case "csv":
 					return JSON.parse(`[${data}]`)
-				case "base64":
+				case "base64": {
 					data = atob(data)
 					const result = new Array(data.length / 4)
 					let index = 0
@@ -70,6 +70,7 @@ class Tiled extends Resource
 						index += 4
 					} 
 					return result
+				} 
 				default:
 					console.error(`(Tiled.parseData) Unsupported encoding format for layer: ${encoding}`)
 					return null
@@ -92,13 +93,21 @@ class Tiled extends Resource
 
 		for(let n = 0; n < tilesets.length; n++) {
 			const tilesetInfo = tilesets[n]
-			const source = tilesetInfo.source
-			let tileset = Resources.get(source)
+			const gid = tilesetInfo.firstgid
+			const image = tilesetInfo.image
+			const id = `${rootPath}${image}.${gid}`
+			let tileset = Resources.get(id)
 			if(!tileset) {
-				tileset = Resources.load(source, {
+				tileset = Resources.load(id, {
 					type: "Tileset",
-					gid: tilesetInfo.firstgid,
-					path: `${rootPath}${source}`
+					gid,
+					path: `${rootPath}${image}`,
+					width: tilesetInfo.imagewidth, 
+					height: tilesetInfo.imageheight,
+					tileWidth: tilesetInfo.tilewidth,
+					tileHeight: tilesetInfo.tileheight,
+					spacing: tilesetInfo.spacing | 0,
+					margin: tilesetInfo.margin | 0					
 				})
 			}
 			this.tilesets[n] = tileset
@@ -152,7 +161,18 @@ class Tiled extends Resource
 						const child = children[n]
 						switch(child.nodeName) {
 							case "data":
-								layerData = this.parseData(child.textContent, child.getAttribute("encoding"))
+								const encoding = child.getAttribute("encoding")
+								if(encoding) {
+									layerData = this.parseData(child.textContent, encoding)
+								}
+								else {
+									const children = data.children
+									layerData = new Array(children.length)
+									for(let n = 0; n < result.length; n++) {
+										layerData[n] = parseInt(children[n].getAttribute("gid"))
+									}				
+									return result
+								}
 								if(!layerData) {
 									continue
 								}
@@ -219,7 +239,7 @@ class Tiled extends Resource
 			}
 		}
 
-		const id = `${source}.${gid}`
+		const id = `${rootPath}${source}.${gid}`
 		let tileset = Resources.get(id)
 		if(!tileset) {
 			tileset = Resources.load(id, {
