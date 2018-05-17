@@ -18,6 +18,8 @@ class Tileset extends Resource
 		this.height = 0
 		this.tileWidth = 0
 		this.tileHeight = 0
+		this.offsetX = 0
+		this.offsetY = 0
 		this.spacing = 0
 		this.margin = 0
 		this.path = null
@@ -32,6 +34,8 @@ class Tileset extends Resource
 		this.height = cfg.height || 0
 		this.tileWidth = cfg.tileWidth || 0
 		this.tileHeight = cfg.tileHeight || 0
+		this.offsetX = cfg.offsetX || 0
+		this.offsetY = cfg.offsetY || 0
 		this.spacing = cfg.spacing || 0
 		this.margin = cfg.margin || 0
 		if(cfg.path) {

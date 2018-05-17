@@ -87,7 +87,6 @@ class Tiled extends Resource
 		this.orientation = data.orientation
 
 		const tilesets = data.tilesets
-		const tilesetsToLoad = {}
 		const rootPath = Utils.getRootPath(this.path)
 		this.tilesets = new Array(tilesets.length)
 
@@ -108,7 +107,7 @@ class Tiled extends Resource
 				const id = `${rootPath}${image}.${gid}`
 				let tileset = Resources.get(id)
 				if(!tileset) {
-					tileset = Resources.load(id, {
+					const data = {
 						type: "Tileset",
 						gid,
 						path: `${rootPath}${image}`,
@@ -118,7 +117,12 @@ class Tiled extends Resource
 						tileHeight: tilesetInfo.tileheight,
 						spacing: tilesetInfo.spacing | 0,
 						margin: tilesetInfo.margin | 0
-					})
+					}
+					if(tilesetInfo.offset) {
+						data.offsetX = tilesetInfo.offset.x
+						data.offsetY = tilesetInfo.offset.y
+					}
+					tileset = Resources.load(id, data)
 				}
 				this.tilesets[n] = tileset
 			}
@@ -179,12 +183,11 @@ class Tiled extends Resource
 									layerData = this.parseData(child.textContent, encoding)
 								}
 								else {
-									const children = data.children
+									const children = child.children
 									layerData = new Array(children.length)
-									for(let n = 0; n < result.length; n++) {
+									for(let n = 0; n < layerData.length; n++) {
 										layerData[n] = parseInt(children[n].getAttribute("gid"))
 									}
-									return result
 								}
 								if(!layerData) {
 									continue
@@ -231,22 +234,35 @@ class Tiled extends Resource
 	parseTsxTileset(node, gid, rootPath) {
 		const tileWidth = parseInt(node.getAttribute("tilewidth"))
 		const tileHeight = parseInt(node.getAttribute("tileheight"))
-
+		const data = {
+			type: "Tileset",
+			gid,
+			path: null,
+			width: 0, 
+			height: 0,
+			tileWidth,
+			tileHeight,
+			offsetX: 0,
+			offsetY: 0,
+			spacing: 0,
+			margin: 0
+		}
 		let source = null
-		let width = 0
-		let height = 0
-		let margin = 0
-		let spacing = 0
+
 		const children = node.childNodes
 		for(let n = 0; n < children.length; n++) {
 			const child = children[n]
 			switch(child.nodeName) {
 				case "image":
 					source = child.getAttribute("source")
-					width = parseInt(child.getAttribute("width"))
-					height = parseInt(child.getAttribute("height"))
-					spacing = parseInt(node.getAttribute("spacing")) || 0
-					margin = parseInt(node.getAttribute("margin")) || 0
+					data.width = parseInt(child.getAttribute("width"))
+					data.height = parseInt(child.getAttribute("height"))
+					data.spacing = parseInt(node.getAttribute("spacing")) || 0
+					data.margin = parseInt(node.getAttribute("margin")) || 0
+					break
+				case "tileoffset":
+					data.offsetX = parseInt(child.getAttribute("x"))
+					data.offsetY = parseInt(child.getAttribute("y"))
 					break
 			}
 		}
@@ -254,16 +270,8 @@ class Tiled extends Resource
 		const id = `${rootPath}${source}.${gid}`
 		let tileset = Resources.get(id)
 		if(!tileset) {
-			tileset = Resources.load(id, {
-				type: "Tileset",
-				gid,
-				path: `${rootPath}${source}`,
-				width, height,
-				tileWidth,
-				tileHeight,
-				spacing,
-				margin
-			})
+			data.path = `${rootPath}${source}`
+			tileset = Resources.load(id, data)
 		}
 		this.tilesets.push(tileset)
 
