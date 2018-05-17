@@ -10,6 +10,7 @@ class Texture extends Resource
 {
 	constructor() {
 		super()
+		this.path = null
 		this.instance = Engine.gl.createTexture()
 		this.width = 1
 		this.height = 1
@@ -32,6 +33,8 @@ class Texture extends Resource
 	}
 
 	loadFromConfig(config) {
+		this.loading = true
+		this.path = null
 		this.framesX = config.framesX || 1
 		this.framesY = config.framesY || 1
 		this._minFilter = config.minFilter || Texture.LINEAR
@@ -43,8 +46,8 @@ class Texture extends Resource
 		}	
 	}
 
-	loadFromPath(path) 
-	{
+	loadFromPath(path) {
+		this.path = path
 		this.loading = true
 
 		const image = new Image()
@@ -57,12 +60,10 @@ class Texture extends Resource
 		image.src = path
 	}	
 
-	loadEmpty() 
-	{
-		const gl = Engine.gl
-
+	loadEmpty() {
 		this.resize(1, 1)
 		
+		const gl = Engine.gl
 		gl.bindTexture(gl.TEXTURE_2D, this.instance)
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, greenPixel)
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, this._wrapS)

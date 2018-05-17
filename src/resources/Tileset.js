@@ -1,5 +1,4 @@
 import Resources from "./Resources"
-import Resource from "./Resource"
 import Texture from "./Texture"
 import Utils from "../Utils"
 
@@ -9,26 +8,23 @@ const FLIPPED_DIAGONALLY_FLAG = 0x20000000
 const ALL_FLAGS = (FLIPPED_HORIZONTALLY_FLAG | FLIPPED_VERTICALLY_FLAG | FLIPPED_DIAGONALLY_FLAG)
 const frameOutput = new Float32Array(5)
 
-class Tileset extends Resource
+class Tileset extends Texture
 {
 	constructor() {
 		super()
 		this.gid = 1
-		this.width = 0
-		this.height = 0
 		this.tileWidth = 0
 		this.tileHeight = 0
 		this.offsetX = 0
 		this.offsetY = 0
 		this.spacing = 0
 		this.margin = 0
-		this.path = null
-		this.texture = null
-		this.frames = null
 	}
 
 	loadFromConfig(cfg) {
-		this.loading = true
+		super.loadFromConfig(cfg)
+		this._minFilter = Texture.NEAREST
+		this._magFilter = Texture.NEAREST
 		this.gid = cfg.gid
 		this.width = cfg.width || 0
 		this.height = cfg.height || 0
@@ -38,31 +34,9 @@ class Tileset extends Resource
 		this.offsetY = cfg.offsetY || 0
 		this.spacing = cfg.spacing || 0
 		this.margin = cfg.margin || 0
-		if(cfg.path) {
-			this.loadFromPath(cfg.path)
-		}
-		else {
-			this.texture = cfg.texture || null
-			this.createFrames(this.texture.width, this.texture.height)
-		}
 	}
 
-	loadFromPath(path) {
-		this.path = path
-		this.texture = Resources.get(path)
-		if(!this.texture) {
-			this.texture = Resources.load(path, {
-				type: "Texture",
-				path,
-				minFilter: Texture.NEAREST,
-				magFilter: Texture.NEAREST
-			})
-		}
-		this.createFrames()
-		this.loading = false
-	}
-
-	createFrames() {
+	updateFrames() {
 		const tilesX = Math.floor(this.width / this.tileWidth)
 		const tilesY = Math.floor(this.height / this.tileHeight)
 		const uvOffsetX = 1.0 / this.width

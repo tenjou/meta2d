@@ -73,7 +73,7 @@ class TilemapLayer extends Renderable
 		}
 		this.tileset = tileset
 		if(tileset) {
-			this.drawCommand.uniforms.albedo = this.tileset.texture.instance
+			this.drawCommand.uniforms.albedo = this.tileset.instance
 		}
 		else {
 			this.drawCommand.uniforms.albedo = null
