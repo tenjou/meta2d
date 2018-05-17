@@ -39,11 +39,13 @@ class TilemapLayer extends Renderable
 		this.numTilesY = numTilesY
 		this.tileWidth = tileWidth
 		this.tileHeight = tileHeight
-		this.size.set(this.numTilesX * this.tileWidth, this.numTilesY * this.tileHeight)
 		this.dataInfo = new Array(numTilesX * numTilesY)
 		this.updateData(data)
 		this.extractTileset()
+		this.updateSize()
 	}
+
+	updateSize() {}
 
 	updateData(data) {
 		this.data = data
@@ -70,7 +72,13 @@ class TilemapLayer extends Renderable
 			break
 		}
 		this.tileset = tileset
-		this.drawCommand.uniforms.albedo = this.tileset.texture.instance	
+		if(tileset) {
+			this.drawCommand.uniforms.albedo = this.tileset.texture.instance
+		}
+		else {
+			this.drawCommand.uniforms.albedo = null
+			this.hidden = true
+		}
 	}
 
 	setGid(x, y, gid) {

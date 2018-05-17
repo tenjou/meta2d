@@ -7,16 +7,24 @@ class TilemapOrthogonalLayer extends TilemapLayer
 		super()
 	}
 
+	updateSize() {
+		this.size.set(
+			this.tileset.offsetX + (this.numTilesX * this.tileWidth), 
+			this.tileset.offsetY + (this.numTilesY * this.tileHeight))
+	}
+
 	updateMesh() {
 		const numTiles = this.numTilesX * this.numTilesY
+		const tileWidth = this.tileset.tileWidth
+		const tileHeight = this.tileset.tileHeight
 		this.buffer = new Float32Array(numTiles * 16)
 		this.indices = new Uint16Array(numTiles * 6)
 		
 		let index = 0
 		let indiceIndex = 0
 		let verticeOffset = 0
-		let posX = 0
-		let posY = 0
+		let posX = this.tileset.offsetX
+		let posY = this.tileset.offsetY
 		let numElements = 0
 		for(let y = 0; y < this.numTilesY; y++) {
 			for(let x = 0; x < this.numTilesX; x++) {
@@ -27,13 +35,13 @@ class TilemapOrthogonalLayer extends TilemapLayer
 					const flip = frame[4]
 					
 					if(flip === 0) {
-						this.buffer[index++] = posX + this.tileWidth
-						this.buffer[index++] = posY + this.tileHeight
+						this.buffer[index++] = posX + tileWidth
+						this.buffer[index++] = posY + tileHeight
 						this.buffer[index++] = frame[2]
 						this.buffer[index++] = frame[3]
 		
 						this.buffer[index++] = posX
-						this.buffer[index++] = posY + this.tileWidth
+						this.buffer[index++] = posY + tileWidth
 						this.buffer[index++] = frame[0]
 						this.buffer[index++] = frame[3]
 		
@@ -42,19 +50,19 @@ class TilemapOrthogonalLayer extends TilemapLayer
 						this.buffer[index++] = frame[0]
 						this.buffer[index++] = frame[1]
 		
-						this.buffer[index++] = posX + this.tileHeight
+						this.buffer[index++] = posX + tileHeight
 						this.buffer[index++] = posY
 						this.buffer[index++] = frame[2]
 						this.buffer[index++] = frame[1]
 					}
 					else {
-						this.buffer[index++] = posX + this.tileWidth
-						this.buffer[index++] = posY + this.tileHeight
+						this.buffer[index++] = posX + tileWidth
+						this.buffer[index++] = posY + tileHeight
 						this.buffer[index++] = frame[0]
 						this.buffer[index++] = frame[1]
 		
 						this.buffer[index++] = posX
-						this.buffer[index++] = posY + this.tileWidth
+						this.buffer[index++] = posY + tileWidth
 						this.buffer[index++] = frame[0]
 						this.buffer[index++] = frame[3]
 		
@@ -63,7 +71,7 @@ class TilemapOrthogonalLayer extends TilemapLayer
 						this.buffer[index++] = frame[2]
 						this.buffer[index++] = frame[3]
 		
-						this.buffer[index++] = posX + this.tileHeight
+						this.buffer[index++] = posX + tileHeight
 						this.buffer[index++] = posY
 						this.buffer[index++] = frame[2]
 						this.buffer[index++] = frame[1]						
@@ -92,17 +100,11 @@ class TilemapOrthogonalLayer extends TilemapLayer
 	}
 
 	getCellFromWorldPos(worldX, worldY) {
-		const dx = -this._pivot.x * this._size.x
-		const dy = -this._pivot.y * this._size.y			
-		let x = Math.floor((worldX + this._position.x + dx) / this.tileWidth)
-		let y = Math.floor((worldY + this._position.y + dy) / this.tileHeight)
-
-		if(x < 0) { x = 0 }
-		else if(x >= this.numTilesX) { x = this.numTilesX - 1 }
-
-		if(y < 0) { y = 0 }
-		else if(y >= this.numTilesY) { y = this.numTilesY - 1 }
-
+		const transform = this.transform	
+		worldX += this.tileset.offsetX - transform.m[6]
+		worldY += this.tileset.offsetY - transform.m[7]
+		const x = Math.floor(worldX / this.tileWidth)
+		const y = Math.floor(worldY / this.tileHeight)
 		return [ x, y ]
 	}
 }
