@@ -45,9 +45,6 @@ class TilemapLayer extends Renderable
 		if(this.tileset) {
 			this.updateSize()
 		}
-		else {
-			this.hidden = true
-		}
 	}
 
 	updateSize() {}

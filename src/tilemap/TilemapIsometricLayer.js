@@ -116,8 +116,8 @@ class TilemapIsometricLayer extends TilemapLayer
 		const halfWidth = this.tileWidth * 0.5
 		const halfHeight = this.tileHeight * 0.5
 		const transform = this.transform
-		worldX -= this.tileset.offsetX + transform.m[6] + (halfWidth * this.numTilesY)
-		worldY -= this.tileset.offsetY + transform.m[7] + halfHeight
+		worldX -= transform.m[6] + (halfWidth * this.numTilesY)
+		worldY -= transform.m[7] + halfHeight
 		const x = Math.floor((worldX / halfWidth + worldY / halfHeight) / 2)
 		const y = Math.floor((worldY / halfHeight -(worldX / halfWidth)) / 2)
 		return [ x, y ]
