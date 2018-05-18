@@ -14,6 +14,7 @@ class Tilemap extends Entity
 		this.numTilesY = 0
 		this.tileWidth = 0
 		this.tileHeight = 0
+		this.columns
 		this.type = Tilemap.Type.Orthographic
 		this.tilesets = []
 		if(resource) {

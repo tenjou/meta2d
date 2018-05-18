@@ -42,14 +42,19 @@ class TilemapLayer extends Renderable
 		this.dataInfo = new Array(numTilesX * numTilesY)
 		this.updateData(data)
 		this.extractTileset()
-		this.updateSize()
+		if(this.tileset) {
+			this.updateSize()
+		}
+		else {
+			this.hidden = true
+		}
 	}
 
 	updateSize() {}
 
 	updateData(data) {
 		this.data = data
-		this.needUpdateInfo = true
+		this.needUpdateMesh = true
 	}
 
 	extractTileset() {

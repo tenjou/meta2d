@@ -115,6 +115,7 @@ class Tiled extends Resource
 						height: tilesetInfo.imageheight,
 						tileWidth: tilesetInfo.tilewidth,
 						tileHeight: tilesetInfo.tileheight,
+						columns: tilesetInfo.columns,
 						spacing: tilesetInfo.spacing | 0,
 						margin: tilesetInfo.margin | 0
 					}
@@ -234,6 +235,7 @@ class Tiled extends Resource
 	parseTsxTileset(node, gid, rootPath) {
 		const tileWidth = parseInt(node.getAttribute("tilewidth"))
 		const tileHeight = parseInt(node.getAttribute("tileheight"))
+		const columns = parseInt(node.getAttribute("columns"))
 		const data = {
 			type: "Tileset",
 			gid,
@@ -242,6 +244,7 @@ class Tiled extends Resource
 			height: 0,
 			tileWidth,
 			tileHeight,
+			columns,
 			offsetX: 0,
 			offsetY: 0,
 			spacing: 0,

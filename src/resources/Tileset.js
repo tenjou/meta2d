@@ -15,6 +15,7 @@ class Tileset extends Texture
 		this.gid = 1
 		this.tileWidth = 0
 		this.tileHeight = 0
+		this.columns = 0
 		this.offsetX = 0
 		this.offsetY = 0
 		this.spacing = 0
@@ -30,6 +31,7 @@ class Tileset extends Texture
 		this.height = cfg.height || 0
 		this.tileWidth = cfg.tileWidth || 0
 		this.tileHeight = cfg.tileHeight || 0
+		this.columns = cfg.columns || 0
 		this.offsetX = cfg.offsetX || 0
 		this.offsetY = cfg.offsetY || 0
 		this.spacing = cfg.spacing || 0
@@ -37,7 +39,7 @@ class Tileset extends Texture
 	}
 
 	updateFrames() {
-		const tilesX = Math.floor(this.width / this.tileWidth)
+		const tilesX = this.columns || Math.floor(this.width / this.tileWidth)
 		const tilesY = Math.floor(this.height / this.tileHeight)
 		const uvOffsetX = 1.0 / this.width
 		const uvOffsetY = 1.0 / this.height

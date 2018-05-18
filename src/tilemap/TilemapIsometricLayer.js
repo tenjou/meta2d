@@ -10,9 +10,12 @@ class TilemapIsometricLayer extends TilemapLayer
 	updateSize() {
 		const halfTileWidth = this.tileWidth * 0.5
 		const halfTileHeight = this.tileHeight * 0.5
+		// this.size.set(
+		// 	this.tileset.offsetX + halfTileWidth + (this.numTilesX * halfTileWidth) + ((this.numTilesY - 1) * halfTileWidth),
+		// 	this.tileset.tileHeight + this.tileset.offsetY + (this.numTilesX * halfTileHeight) + ((this.numTilesY - 1) * halfTileHeight))
 		this.size.set(
-			this.tileset.offsetX + halfTileWidth + (this.numTilesX * halfTileWidth) + ((this.numTilesY - 1) * halfTileWidth),
-			this.tileset.tileHeight + this.tileset.offsetY + (this.numTilesX * halfTileHeight) + ((this.numTilesY - 1) * halfTileHeight))
+			this.tileset.offsetX + this.tileset.tileWidth + ((this.numTilesX - 1) * halfTileWidth) + (this.numTilesY - 1) * halfTileWidth,
+			this.tileset.offsetY + this.tileset.tileHeight + ((this.numTilesX - 1) * halfTileHeight) + (this.numTilesY - 1) * halfTileHeight)
 	}
 
 	updateMesh() {
@@ -38,7 +41,7 @@ class TilemapIsometricLayer extends TilemapLayer
 		for(let x = 0; x < this.numTilesX; x++) {
 			for(let y = 0; y < this.numTilesY; y++) {
 				const id = x + (y * this.numTilesX)
-				let gid = this.data[id] - this.tileset.gid
+				const gid = this.data[id] - this.tileset.gid
 				if(gid > -1) {
 					const frame = this.tileset.getFrame(gid)
 					const flip = frame[4]
