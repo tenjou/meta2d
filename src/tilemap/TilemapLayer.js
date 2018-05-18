@@ -34,7 +34,8 @@ class TilemapLayer extends Renderable
 		this.material = tilemapMaterial
 	}
 
-	create(numTilesX, numTilesY, tileWidth, tileHeight, data) {
+	create(numTilesX, numTilesY, tileWidth, tileHeight, data, name = "Layer") {
+		this.name = name
 		this.numTilesX = numTilesX
 		this.numTilesY = numTilesY
 		this.tileWidth = tileWidth

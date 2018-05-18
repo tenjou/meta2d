@@ -10,9 +10,6 @@ class TilemapIsometricLayer extends TilemapLayer
 	updateSize() {
 		const halfTileWidth = this.tileWidth * 0.5
 		const halfTileHeight = this.tileHeight * 0.5
-		// this.size.set(
-		// 	this.tileset.offsetX + halfTileWidth + (this.numTilesX * halfTileWidth) + ((this.numTilesY - 1) * halfTileWidth),
-		// 	this.tileset.tileHeight + this.tileset.offsetY + (this.numTilesX * halfTileHeight) + ((this.numTilesY - 1) * halfTileHeight))
 		this.size.set(
 			this.tileset.offsetX + this.tileset.tileWidth + ((this.numTilesX - 1) * halfTileWidth) + (this.numTilesY - 1) * halfTileWidth,
 			this.tileset.offsetY + this.tileset.tileHeight + ((this.numTilesX - 1) * halfTileHeight) + (this.numTilesY - 1) * halfTileHeight)
