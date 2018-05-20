@@ -8,6 +8,8 @@ class TilemapOrthogonalLayer extends TilemapLayer
 	}
 
 	updateSize() {
+		this.offsetX = -this.tileset.offsetX
+		this.offsetY = -this.tileset.offsetY
 		this.size.set(
 			this.tileset.offsetX + (this.numTilesX * this.tileWidth), 
 			this.tileset.offsetY + (this.numTilesY * this.tileHeight))
@@ -23,8 +25,8 @@ class TilemapOrthogonalLayer extends TilemapLayer
 		let index = 0
 		let indiceIndex = 0
 		let verticeOffset = 0
-		let posX = this.tileset.offsetX
-		let posY = this.tileset.offsetY
+		let posX = this.offsetX
+		let posY = this.offsetY
 		let numElements = 0
 		for(let y = 0; y < this.numTilesY; y++) {
 			for(let x = 0; x < this.numTilesX; x++) {
@@ -89,7 +91,7 @@ class TilemapOrthogonalLayer extends TilemapLayer
 
 				posX += this.tileWidth
 			}
-			posX = 0
+			posX = this.offsetX
 			posY += this.tileHeight
 		}
 
@@ -102,9 +104,9 @@ class TilemapOrthogonalLayer extends TilemapLayer
 	getCellFromWorldPos(worldX, worldY) {
 		const transform = this.transform	
 		worldX += this.tileset.offsetX - transform.m[6]
-		worldY += this.tileset.offsetY - transform.m[7]
+		worldY += this.tileset.offsetY - transform.m[7] - this._size.y
 		const x = Math.floor(worldX / this.tileWidth)
-		const y = Math.floor(worldY / this.tileHeight)
+		const y = Math.floor(worldY / this.tileHeight) + this.numTilesY
 		return [ x, y ]
 	}
 }
