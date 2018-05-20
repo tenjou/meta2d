@@ -11,8 +11,8 @@ class TilemapIsometricLayer extends TilemapLayer
 		const halfTileWidth = this.tileWidth * 0.5
 		const halfTileHeight = this.tileHeight * 0.5
 		this.size.set(
-			this.tileset.offsetX + this.tileset.tileWidth + ((this.numTilesX - 1) * halfTileWidth) + (this.numTilesY - 1) * halfTileWidth,
-			this.tileset.offsetY + this.tileset.tileHeight + ((this.numTilesX - 1) * halfTileHeight) + (this.numTilesY - 1) * halfTileHeight)
+			this.tileset.tileWidth + ((this.numTilesX - 1) * halfTileWidth) + (this.numTilesY - 1) * halfTileWidth,
+			this.tileset.tileHeight + ((this.numTilesX - 1) * halfTileHeight) + (this.numTilesY - 1) * halfTileHeight)
 	}
 
 	updateMesh() {
@@ -24,8 +24,8 @@ class TilemapIsometricLayer extends TilemapLayer
 		const tileHeight = this.tileset.tileHeight
 		const halfTileWidth = this.tileWidth * 0.5
 		const halfTileHeight = this.tileHeight * 0.5
-		const startX = this.tileset.offsetX + halfTileWidth * (this.numTilesY - 1)
-		const startY = this.tileset.offsetY
+		const startX = halfTileWidth * (this.numTilesY - 1)
+		const startY = 0
 		this.buffer = new Float32Array(numTiles * 16)
 		this.indices = new Uint16Array(numTiles * 6)
 		
@@ -110,13 +110,13 @@ class TilemapIsometricLayer extends TilemapLayer
 	}
 
 	getCellFromWorldPos(worldX, worldY) {	
-		const halfWidth = this.tileWidth * 0.5
-		const halfHeight = this.tileHeight * 0.5
+		const halfTileWidth = this.tileWidth * 0.5
+		const halfTileHeight = this.tileHeight * 0.5
 		const transform = this.transform
-		worldX -= transform.m[6] + (halfWidth * this.numTilesY)
-		worldY -= transform.m[7] + halfHeight
-		const x = Math.floor((worldX / halfWidth + worldY / halfHeight) / 2)
-		const y = Math.floor((worldY / halfHeight -(worldX / halfWidth)) / 2)
+		worldX -= transform.m[6] + ((this.numTilesX - 1) * halfTileWidth) - this.tileset.offsetX
+		worldY -= transform.m[7] + this._size.y - halfTileHeight - this.tileset.offsetY
+		const x = Math.floor((worldX / halfTileWidth + (worldY / halfTileHeight)) / 2) + this.numTilesX - 1
+		const y = Math.floor((worldY / halfTileHeight - (worldX / halfTileWidth)) / 2) + this.numTilesY
 		return [ x, y ]
 	}
 }

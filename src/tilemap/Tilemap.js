@@ -89,7 +89,7 @@ class Tilemap extends Entity
 			const layerInfo = layers[n]
 			const layer = this.createLayer(layerInfo.data, layerInfo.tileWidth, layerInfo.tileHeight, this.type, layerInfo.name)
 			if(layer) {
-				if(layer.tilemap) {
+				if(layer.tileset) {
 					layer.hidden = layerInfo.visible ? false : true
 				}
 				layer.color.set(1, 1, 1, layerInfo.opacity)
