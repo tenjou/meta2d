@@ -23,6 +23,7 @@ class RendererWebGL extends Renderer
 		super()
 		this.camera = null
 		this.material = null
+		this.indiceBuffer = null
 		Engine.on("setup", this.setup.bind(this))	
 	}
 
@@ -60,7 +61,10 @@ class RendererWebGL extends Renderer
 		this.updateAttribs(command.mesh, command.material)
 		this.updateUniforms(command.material, command.uniforms, command.transform)
 
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indices)
+		if(this.indiceBuffer !== mesh.indices) {
+			this.indiceBuffer = mesh.indices
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indices)
+		}
 		gl.drawElements(command.mode, mesh.numElements, gl.UNSIGNED_SHORT, 0)
 	}
 
@@ -105,7 +109,10 @@ class RendererWebGL extends Renderer
 			color: new Vector4(1, 0, 0, 1)	
 		}, command.transform)
 
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.debugMesh.indices)
+		if(this.indiceBuffer !== this.debugMesh.indices) {
+			this.indiceBuffer = this.debugMesh.indices
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.debugMesh.indices)
+		}
 		gl.drawElements(gl.TRIANGLES, this.debugMesh.numElements, gl.UNSIGNED_SHORT, 0)
 	}
 
