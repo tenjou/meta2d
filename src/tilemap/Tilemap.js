@@ -14,7 +14,6 @@ class Tilemap extends Entity
 		this.numTilesY = 0
 		this.tileWidth = 0
 		this.tileHeight = 0
-		this.columns
 		this.type = Tilemap.Type.Orthographic
 		this.tilesets = []
 		if(resource) {
@@ -110,10 +109,9 @@ class Tilemap extends Entity
 		return null
 	}
 
-	getCellFromWorldPos(x, y) 
-	{
+	getCellFromWorldPos(x, y) {
 		if(!this.children) { return null }
-
+		
 		const child = this.children[0]
 		return child.getCellFromWorldPos(x, y)
 	}
