@@ -74,15 +74,11 @@ class Tileset extends Texture
 			return this.frames[gid].coords
 		}
 
-		const flippedHorizontally = (gid & FLIPPED_HORIZONTALLY_FLAG)
-		const flippedVertically = (gid & FLIPPED_VERTICALLY_FLAG)
-		const flippedDiagonally = (gid & FLIPPED_DIAGONALLY_FLAG)
-		gid &= ~ALL_FLAGS	
-		const frame = this.frames[gid]
+		const frame = this.frames[gid & ~ALL_FLAGS]
 
 		frameOutput.set(frame.coords, 0)
 
-		if(flippedHorizontally) {
+		if(gid & FLIPPED_HORIZONTALLY_FLAG) {
 			const minX = frame.coords[6]
 			const maxX = frame.coords[2]
 			frameOutput[2] = minX
@@ -90,7 +86,7 @@ class Tileset extends Texture
 			frameOutput[10] = maxX
 			frameOutput[14] = minX
 		}
-		if(flippedVertically) {
+		if(gid & FLIPPED_VERTICALLY_FLAG) {
 			const minY = frame.coords[11]
 			const maxY = frame.coords[3]
 			frameOutput[3] = minY
@@ -98,7 +94,7 @@ class Tileset extends Texture
 			frameOutput[11] = maxY
 			frameOutput[15] = maxY
 		}
-		if(flippedDiagonally) {
+		if(gid & FLIPPED_DIAGONALLY_FLAG) {
 			const tmp1 = frameOutput[2]
 			const tmp2 = frameOutput[3]
 			frameOutput[2] = frameOutput[10]
