@@ -8,7 +8,6 @@ const defaultBufferSize = 64
 const layers = 8
 
 function Layer() {
-	this.size = defaultBufferSize
 	this.count = 0
 	this.buffer = new Array(defaultBufferSize)
 }
@@ -57,7 +56,7 @@ class Renderer
 
 	draw(command) {
 		const layer = this.layers[command.layer]
-		if(layer.count >= layer.size) {
+		if(layer.count >= layer.length) {
 			layer.buffer.length *= 2
 		}
 		layer.buffer[layer.count++] = command

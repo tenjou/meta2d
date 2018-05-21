@@ -49,10 +49,7 @@ class RendererWebGL extends Renderer
 		debugMaterial.loadFromConfig({
 			vertexSrc: debugVertexSrc,
 			fragmentSrc: debugFragmentSrc
-		})
-
-		gl.enable(gl.CULL_FACE);
-		gl.cullFace(gl.BACK);		
+		})	
 	}
 
 	drawCommand(command) {
