@@ -40,51 +40,17 @@ class TilemapIsometricLayer extends TilemapLayer
 				const id = x + (y * this.numTilesX)
 				const gid = this.data[id] - this.tileset.gid
 				if(gid > -1) {
-					const frame = this.tileset.getFrame(gid)
-					const flip = frame[4]
-					
-					if(flip === 0) {
-						this.buffer[index++] = posX + tileWidth
-						this.buffer[index++] = posY + tileHeight
-						this.buffer[index++] = frame[2]
-						this.buffer[index++] = frame[3]
-		
-						this.buffer[index++] = posX
-						this.buffer[index++] = posY + tileHeight
-						this.buffer[index++] = frame[0]
-						this.buffer[index++] = frame[3]
-		
-						this.buffer[index++] = posX
-						this.buffer[index++] = posY
-						this.buffer[index++] = frame[0]
-						this.buffer[index++] = frame[1]
-		
-						this.buffer[index++] = posX + tileWidth
-						this.buffer[index++] = posY
-						this.buffer[index++] = frame[2]
-						this.buffer[index++] = frame[1]
-					}
-					else {
-						this.buffer[index++] = posX + tileWidth
-						this.buffer[index++] = posY + tileHeight
-						this.buffer[index++] = frame[0]
-						this.buffer[index++] = frame[1]
-		
-						this.buffer[index++] = posX
-						this.buffer[index++] = posY + tileWidth
-						this.buffer[index++] = frame[0]
-						this.buffer[index++] = frame[3]
-		
-						this.buffer[index++] = posX
-						this.buffer[index++] = posY
-						this.buffer[index++] = frame[2]
-						this.buffer[index++] = frame[3]
-		
-						this.buffer[index++] = posX + tileHeight
-						this.buffer[index++] = posY
-						this.buffer[index++] = frame[2]
-						this.buffer[index++] = frame[1]						
-					}
+					const frame = this.tileset.getTileFrame(gid)
+					this.buffer.set(frame, index)
+					this.buffer[index + 0] += posX
+					this.buffer[index + 1] += posY
+					this.buffer[index + 4] += posX
+					this.buffer[index + 5] += posY	
+					this.buffer[index + 8] += posX
+					this.buffer[index + 9] += posY
+					this.buffer[index + 12] += posX
+					this.buffer[index + 13] += posY
+					index += 16
 	
 					this.indices[indiceIndex++] = verticeOffset
 					this.indices[indiceIndex++] = verticeOffset + 2

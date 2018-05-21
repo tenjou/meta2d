@@ -270,7 +270,7 @@ class Tiled extends Resource
 			}
 		}
 
-		const id = `${rootPath}${source}.${gid}`
+		const id = `${source}.${gid}`
 		let tileset = Resources.get(id)
 		if(!tileset) {
 			data.path = `${rootPath}${source}`

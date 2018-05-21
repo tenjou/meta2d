@@ -43,7 +43,7 @@ class Texture extends Resource
 		this._wrapT = config.wrapT || Texture.CLAMP_TO_EDGE
 		if(config.path) {
 			this.loadFromPath(config.path)
-		}	
+		}
 	}
 
 	loadFromPath(path) {
@@ -58,11 +58,11 @@ class Texture extends Resource
 			this.loadEmpty()
 		}
 		image.src = path
-	}	
+	}
 
 	loadEmpty() {
 		this.resize(1, 1)
-		
+
 		const gl = Engine.gl
 		gl.bindTexture(gl.TEXTURE_2D, this.instance)
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, greenPixel)
@@ -73,12 +73,12 @@ class Texture extends Resource
 
 		this.updateFrames()
 		this.loaded = true
-	}	
+	}
 
-	loadFromImage(image) 
+	loadFromImage(image)
 	{
 		const gl = Engine.gl
-		
+
 		this.resize(image.width, image.height)
 
 		gl.bindTexture(gl.TEXTURE_2D, this.instance)
@@ -99,10 +99,10 @@ class Texture extends Resource
 		this.loading = false
 	}
 
-	loadFromCanvas(canvas, resize = true) 
+	loadFromCanvas(canvas, resize = true)
 	{
 		const gl = Engine.gl
-		
+
 		if(resize) {
 			this.resize(canvas.width, canvas.height)
 		}
@@ -135,11 +135,11 @@ class Texture extends Resource
 
 		for(let y = 0; y < this.framesY; y++) {
 			for(let x = 0; x < this.framesX; x++) {
-				const frame = this.frames[index]	
+				const frame = this.frames[index]
 				const minX = posX * widthUV
 				const minY = posY * heightUV
 				const maxX = (posX + frameWidth) * widthUV
-				const maxY = (posY + frameHeight) * heightUV								
+				const maxY = (posY + frameHeight) * heightUV
 				this.frames[index] = new Frame(this, [
 					frameWidth, frameHeight, 	maxX, maxY,
 					0, frameHeight, 			minX, maxY,

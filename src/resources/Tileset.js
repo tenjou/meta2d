@@ -1,12 +1,13 @@
 import Resources from "./Resources"
 import Texture from "./Texture"
+import Frame from "./Frame"
 import Utils from "../Utils"
 
 const FLIPPED_HORIZONTALLY_FLAG = 0x80000000
 const FLIPPED_VERTICALLY_FLAG = 0x40000000
 const FLIPPED_DIAGONALLY_FLAG = 0x20000000
 const ALL_FLAGS = (FLIPPED_HORIZONTALLY_FLAG | FLIPPED_VERTICALLY_FLAG | FLIPPED_DIAGONALLY_FLAG)
-const frameOutput = new Float32Array(5)
+const frameOutput = new Float32Array(16)
 
 class Tileset extends Texture
 {
@@ -41,33 +42,36 @@ class Tileset extends Texture
 	updateFrames() {
 		const tilesX = this.columns || Math.floor(this.width / this.tileWidth)
 		const tilesY = Math.floor(this.height / this.tileHeight)
-		const uvOffsetX = 1.0 / this.width
-		const uvOffsetY = 1.0 / this.height
+		const widthUV = 1.0 / this.width
+		const heightUV = 1.0 / this.height
 		this.frames = new Array(tilesX * tilesY)
 		
-		let n = 0
+		let index = 0
 		let posX = this.spacing
 		let posY = this.spacing
 		for(let y = 0; y < tilesY; y++) {
 			for(let x = 0; x < tilesX; x++) {
-				this.frames[n] = new Float32Array([ 
-					uvOffsetX * posX, 
-					uvOffsetY * posY, 
-					uvOffsetX * (posX + this.tileWidth - this.margin), 
-					uvOffsetY * (posY + this.tileHeight - this.margin),
-					0
-				])
+				const minX = widthUV * posX
+				const minY = heightUV * posY
+				const maxX = widthUV * (posX + this.tileWidth - this.margin)
+				const maxY = heightUV * (posY + this.tileHeight - this.margin)
+				this.frames[index] = new Frame(this, [
+					this.tileWidth, this.tileHeight, 	maxX, maxY,
+					0, this.tileHeight, 				minX, maxY,
+					0, 0,								minX, minY,
+					this.tileWidth, 0,					maxX, minY
+				], 0)
 				posX += this.tileWidth + this.spacing
-				n++
+				index++
 			}
 			posX = this.spacing
 			posY += this.tileHeight + this.spacing
 		}
 	}
 
-	getFrame(gid) {
+	getTileFrame(gid) {
 		if(gid < FLIPPED_DIAGONALLY_FLAG) {	
-			return this.frames[gid]		
+			return this.frames[gid].coords
 		}
 
 		const flippedHorizontally = (gid & FLIPPED_HORIZONTALLY_FLAG)
@@ -76,29 +80,31 @@ class Tileset extends Texture
 		gid &= ~ALL_FLAGS	
 		const frame = this.frames[gid]
 
-		if(flippedDiagonally) {
-			frameOutput[4] = 1
-		}
-		else {
-			frameOutput[4] = 0
-		}
+		frameOutput.set(frame.coords, 0)
 
 		if(flippedHorizontally) {
-			frameOutput[0] = frame[2]
-			frameOutput[2] = frame[0]
+			const minX = frame.coords[6]
+			const maxX = frame.coords[2]
+			frameOutput[2] = minX
+			frameOutput[6] = maxX
+			frameOutput[10] = maxX
+			frameOutput[14] = minX
 		}
-		else {
-			frameOutput[0] = frame[0]
-			frameOutput[2] = frame[2]
-		}
-
 		if(flippedVertically) {
-			frameOutput[1] = frame[3]
-			frameOutput[3] = frame[1]
+			const minY = frame.coords[11]
+			const maxY = frame.coords[3]
+			frameOutput[3] = minY
+			frameOutput[7] = minY
+			frameOutput[11] = maxY
+			frameOutput[15] = maxY
 		}
-		else {
-			frameOutput[1] = frame[1]
-			frameOutput[3] = frame[3]
+		if(flippedDiagonally) {
+			const tmp1 = frameOutput[2]
+			const tmp2 = frameOutput[3]
+			frameOutput[2] = frameOutput[10]
+			frameOutput[3] = frameOutput[11]
+			frameOutput[10] = tmp1
+			frameOutput[11] = tmp2
 		}
 
 		return frameOutput
