@@ -50,6 +50,21 @@ class TilemapLayer extends Renderable
 		if(this.tileset) {
 			this.updateSize()
 		}
+
+		const numTiles = numTilesX * numTilesY
+		this.indices = new Uint16Array(numTiles * 6)
+		let indiceIndex = 0
+		let verticeOffset = 0
+		for(let n = 0; n < numTiles; n++) {
+			this.indices[indiceIndex++] = verticeOffset
+			this.indices[indiceIndex++] = verticeOffset + 2
+			this.indices[indiceIndex++] = verticeOffset + 1
+			this.indices[indiceIndex++] = verticeOffset
+			this.indices[indiceIndex++] = verticeOffset + 3
+			this.indices[indiceIndex++] = verticeOffset + 2	
+			verticeOffset += 4			
+		}
+		this.drawCommand.mesh.uploadIndices(this.indices)
 	}
 
 	updateSize() {}
@@ -63,14 +78,10 @@ class TilemapLayer extends Renderable
 		if(this._entityMode) {
 			return
 		}
-		const numTiles = this.numTilesX * this.numTilesY
 		const output = TilemapLayer.output
-		this.buffer = new Float32Array(numTiles * 16)
-		this.indices = new Uint16Array(numTiles * 6)
+		this.buffer = new Float32Array(this.numTilesX * this.numTilesY * 16)
 		
 		let index = 0
-		let indiceIndex = 0
-		let verticeOffset = 0
 		let numElements = 0
 		for(let y = 0; y < this.numTilesY; y++) {
 			for(let x = 0; x < this.numTilesX; x++) {
@@ -91,21 +102,12 @@ class TilemapLayer extends Renderable
 					this.buffer[index + 12] += posX
 					this.buffer[index + 13] += posY
 					index += 16
-	
-					this.indices[indiceIndex++] = verticeOffset
-					this.indices[indiceIndex++] = verticeOffset + 2
-					this.indices[indiceIndex++] = verticeOffset + 1
-					this.indices[indiceIndex++] = verticeOffset
-					this.indices[indiceIndex++] = verticeOffset + 3
-					this.indices[indiceIndex++] = verticeOffset + 2	
-					verticeOffset += 4
 					numElements++
 				}
 			}
 		}
 
 		this.drawCommand.mesh.upload(this.buffer)
-		this.drawCommand.mesh.uploadIndices(this.indices)
 		this.drawCommand.mesh.numElements = numElements * 6
 		this.needUpdateMesh = false
 	}
