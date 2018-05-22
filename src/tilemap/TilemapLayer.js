@@ -2,6 +2,7 @@ import Engine from "../Engine"
 import Renderable from "../entity/Renderable"
 import Sprite from "../entity/Sprite"
 import Material from "../resources/Material"
+import Vector2 from "../math/Vector2"
 import Vector4 from "../math/Vector4"
 import tilemapVertexSrc from "../../shaders/tilemap.vertex.glsl"
 import tilemapFragmentSrc from "../../shaders/tilemap.fragment.glsl"
@@ -90,8 +91,8 @@ class TilemapLayer extends Renderable
 				if(gid > -1) {
 					this.getWorldFromTile(x, y)
 					const frame = this.tileset.getTileFrame(gid)
-					const posX = output[0]
-					const posY = output[1]
+					const posX = output.x
+					const posY = output.y
 					this.buffer.set(frame, index)
 					this.buffer[index + 0] += posX
 					this.buffer[index + 1] += posY
@@ -162,10 +163,10 @@ class TilemapLayer extends Renderable
 		const output = TilemapLayer.output
 		const sprite = new Sprite()
 		sprite.frame = this.tileset.getFrame(gid & ~ALL_FLAGS)
-		sprite.debug = true
+		sprite.z = x + (y * this.numTilesX)
 		this.addChild(sprite)
 		this.getWorldFromTile(x, y)
-		sprite.position.set(output[0], output[1])
+		sprite.position.set(output.x, output.y)
 		
 		if(gid >= FLIPPED_DIAGONALLY_FLAG) {
 			let scaleX = 1
@@ -212,6 +213,6 @@ class TilemapLayer extends Renderable
 	}	
 }
 
-TilemapLayer.output = [ 0, 0 ]
+TilemapLayer.output = new Vector2(0, 0)
 
 export default TilemapLayer
