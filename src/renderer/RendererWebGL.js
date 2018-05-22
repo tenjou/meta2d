@@ -21,6 +21,9 @@ class RendererWebGL extends Renderer
 {
 	constructor() {
 		super()
+		this.prevProjection = null
+		this.prevView = null
+		this.prevMesh = null
 		this.camera = null
 		this.material = null
 		this.indiceBuffer = null
@@ -123,6 +126,9 @@ class RendererWebGL extends Renderer
 		const gl = Engine.gl
 
 		gl.useProgram(material.program)
+
+		this.prevProjection = null
+		this.prevView = null
 		
 		const currNumAttribs = this.activeMaterial ? this.activeMaterial.numAttribs : 0
 		const newNumAttribs = material.numAttribs
@@ -141,6 +147,9 @@ class RendererWebGL extends Renderer
 	}
 
 	updateAttribs(mesh, material) {
+		if(this.prevMesh === mesh) {
+			return
+		}
 		const gl = Engine.gl
 		const attribData = material.attribData
 
@@ -159,6 +168,8 @@ class RendererWebGL extends Renderer
 					break
 			}
 		}
+
+		this.prevMesh = mesh
 	}
 
 	updateUniforms(material, uniforms, transform)
@@ -191,9 +202,17 @@ class RendererWebGL extends Renderer
 					{
 						case "matrixProjection":
 							matrix = this.camera.projectionTransform
+							if(this.prevProjection === matrix) { 
+								continue
+							}
+							this.prevProjection = matrix
 							break						
 						case "matrixView":
 							matrix = this.camera.transform
+							if(this.prevView === matrix) {
+								continue
+							}
+							this.prevView = matrix
 							break
 						case "matrixModel":
 							matrix = transform

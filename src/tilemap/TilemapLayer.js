@@ -185,8 +185,6 @@ class TilemapLayer extends Renderable
 				sprite.position.y += this.tileHeight
 			}
 		}
-
-		return sprite
 	}
 
 	setGid(x, y, gid) {
