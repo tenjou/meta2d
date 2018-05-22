@@ -54,7 +54,7 @@ class Spritesheet extends Texture
 		this.loading = true
 		this.width = data.meta.size.w
 		this.height = data.meta.size.h
-		super.loadFromPath(`${rootPath}/${data.meta.image}`)
+		super.loadFromPath(`${rootPath}${data.meta.image}`)
 		
 		const frames = data.frames
 		if(Array.isArray(frames)) {
@@ -76,27 +76,35 @@ class Spritesheet extends Texture
 	loadFromXml(xml)
 	{
 		const rootPath = Utils.getRootPath(this.path)
+		const document = xml.documentElement
 
 		this.loading = true
-		const childNodes = xml.documentElement.childNodes
+		this.width = parseInt(document.getAttribute("width"))
+		this.height = parseInt(document.getAttribute("height"))
+		const imagePath = document.getAttribute("imagePath")
+		super.loadFromPath(`${rootPath}${imagePath}`)
+
+		const childNodes = document.childNodes
 		for(let n = 0; n < childNodes.length; n++) {
 			const node = childNodes[n]
 			switch(node.nodeName) {
+				case "#text":
+					continue
 				case "SubTexture": // Starling
 					this.createFrame(
 						node.getAttribute("name"),
-						node.getAttribute("x"),
-						node.getAttribute("y"),
-						node.getAttribute("width"),
-						node.getAttribute("height"))
+						parseInt(node.getAttribute("x")),
+						parseInt(node.getAttribute("y")),
+						parseInt(node.getAttribute("width")),
+						parseInt(node.getAttribute("height")))
 					break
 				case "sprite": // Generic XML
 					this.createFrame(
 						node.getAttribute("n"),
-						node.getAttribute("x"),
-						node.getAttribute("y"),
-						node.getAttribute("width"),
-						node.getAttribute("height"))				
+						parseInt(node.getAttribute("x")),
+						parseInt(node.getAttribute("y")),
+						parseInt(node.getAttribute("width")),
+						parseInt(node.getAttribute("height")))				
 					break
 				default:
 					console.warn(`(Spritesheet.loadFromXml) Unsupported node: ${node.nodeName}`)
