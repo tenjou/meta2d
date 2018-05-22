@@ -40,8 +40,8 @@ class Renderer
 				const camera = cameras[nCamera]
 				if((camera.cullMask >> nLayer) % 2 !== 0) {
 					this.camera = camera
-					for(let i = 0; i < layer.count; i++) {
-						this.drawCommand(this.buffer[i])
+					for(let n = 0; n < layer.count; n++) {
+						this.drawCommand(this.buffer[n])
 					}
 				}	
 			}

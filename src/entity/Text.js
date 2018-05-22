@@ -34,7 +34,7 @@ class Text extends Sprite
 		this.texture._minFilter = Texture.NEAREST
 		this.texture._magFilter = Texture.NEAREST
 
-		if(text) {
+		if(text !== undefined) {
 			this.text = text
 		}
 	}
@@ -108,10 +108,16 @@ class Text extends Sprite
 			posY += fontHeight
 		}
 
-		this._texture.needUpdate = true
-		this._frame = null
-		this.frame = this._texture.getFrame("0")
-		super.updateMesh()
+		if(width > 0) {
+			this._texture.needUpdate = true
+			this._frame = null
+			this.frame = this._texture.getFrame("0")
+			super.updateMesh()
+		}
+		else {
+			this._size.set(0, height)
+		}
+		this.needUpdateMesh = false
 	}
 
 	calcLineBuffer() {
