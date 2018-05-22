@@ -44,12 +44,13 @@ class Renderer
 						this.drawCommand(this.buffer[i])
 					}
 				}	
-				
-				for(let n = 0; n < this.debugCount; n++) {
-					this.drawCommandDebug(this.debugDrawCommands[n])
-				}
 			}
 			layer.count = 0
+		}
+
+		this.camera = Engine.camera
+		for(let n = 0; n < this.debugCount; n++) {
+			this.drawCommandDebug(this.debugDrawCommands[n])
 		}
 		this.debugCount = 0
 	}
