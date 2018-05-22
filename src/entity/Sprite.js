@@ -19,7 +19,7 @@ Engine.on("setup", () => {
 class Sprite extends Renderable
 {
 	constructor(texture) {
-		super()
+		super(null)
 		this._texture = null
 		this._frame = null
 		this.color = new Vector4(1, 1, 1, 1)

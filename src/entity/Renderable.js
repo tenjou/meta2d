@@ -8,9 +8,11 @@ import DrawCommand from "../renderer/DrawCommand"
 
 class Renderable extends Entity 
 {
-	constructor() {
+	constructor(mesh) {
 		super()
-		const mesh = new Mesh(null, null)
+		if(!mesh) {
+			mesh = new Mesh(null, null)
+		}
 		this.needUpdateMesh = true
 		this.hidden = false
 		this.drawCommand = new DrawCommand(this._transform, mesh, null, null)
