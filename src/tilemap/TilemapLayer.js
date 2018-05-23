@@ -144,6 +144,7 @@ class TilemapLayer extends Renderable
 
 	entityMode(flag) {
 		this._entityMode = flag
+		this.hidden = true
 		this.createSprites()
 	}
 
@@ -202,6 +203,14 @@ class TilemapLayer extends Renderable
 			return 0
 		}
 		return this.data[id]
+	}
+
+	getTile(gid) {
+		return this.tileset.getTile(gid - this.tileset.gid)
+	}
+
+	getProperties(gid) {
+		return this.tileset.getProperties(gid - this.tileset.gid)
 	}
 
 	updateUniforms() {

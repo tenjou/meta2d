@@ -36,6 +36,7 @@ class Tiled extends Resource
 	loadFromPath(path) {
 		this.loading = true
 		this.path = path
+
 		const ext = Utils.getExt(path)
 		switch(ext) {
 			case "json": {
@@ -236,6 +237,7 @@ class Tiled extends Resource
 		const tileWidth = parseInt(node.getAttribute("tilewidth"))
 		const tileHeight = parseInt(node.getAttribute("tileheight"))
 		const columns = parseInt(node.getAttribute("columns"))
+		const tiles = {}
 		const data = {
 			type: "Tileset",
 			gid,
@@ -248,14 +250,34 @@ class Tiled extends Resource
 			offsetX: 0,
 			offsetY: 0,
 			spacing: 0,
-			margin: 0
+			margin: 0,
+			tiles
 		}
 		let source = null
-
+	
 		const children = node.childNodes
 		for(let n = 0; n < children.length; n++) {
 			const child = children[n]
 			switch(child.nodeName) {
+				case "tile":
+					const id = parseInt(child.getAttribute("id"))
+					const tile = new Tileset.Tile()
+					const tileChildren = child.children
+					for(let i = 0; i < tileChildren.length; i++) {
+						const tileChild = tileChildren[i]
+						switch(tileChild.nodeName) {
+							case "properties":
+								tile.properties = {}
+								const propertiesChildren = tileChild.children
+								for(let m = 0; m < propertiesChildren.length; m++) {
+									const property = propertiesChildren[m]
+									tile.properties[property.getAttribute("name")] = property.getAttribute("value")
+								}
+								break
+						}
+					}
+					tiles[id] = tile
+					break
 				case "image":
 					source = child.getAttribute("source")
 					data.width = parseInt(child.getAttribute("width"))
