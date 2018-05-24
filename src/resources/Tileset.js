@@ -28,6 +28,8 @@ class Tileset extends Texture
 		super.loadFromConfig(cfg)
 		this._minFilter = Texture.NEAREST
 		this._magFilter = Texture.NEAREST
+		this._wrapS = Texture.CLAMP_TO_EDGE
+		this._wrapT = Texture.CLAMP_TO_EDGE
 		this.gid = cfg.gid
 		this.width = cfg.width || 0
 		this.height = cfg.height || 0
@@ -46,6 +48,7 @@ class Tileset extends Texture
 		const tilesY = Math.floor(this.height / this.tileHeight)
 		const widthUV = 1.0 / this.width
 		const heightUV = 1.0 / this.height
+		const innerPacing = 0.0001
 		this.frames = new Array(tilesX * tilesY)
 		
 		let index = 0
@@ -53,10 +56,10 @@ class Tileset extends Texture
 		let posY = this.spacing
 		for(let y = 0; y < tilesY; y++) {
 			for(let x = 0; x < tilesX; x++) {
-				const minX = widthUV * posX
-				const minY = heightUV * posY
-				const maxX = widthUV * (posX + this.tileWidth - this.margin)
-				const maxY = heightUV * (posY + this.tileHeight - this.margin)
+				const minX = widthUV * posX + innerPacing
+				const minY = heightUV * posY + innerPacing
+				const maxX = widthUV * (posX + this.tileWidth - this.margin) - innerPacing
+				const maxY = heightUV * (posY + this.tileHeight - this.margin) - innerPacing
 				this.frames[index] = new Frame(this, [
 					this.tileWidth, this.tileHeight, 	maxX, maxY,
 					0, this.tileHeight, 				minX, maxY,
