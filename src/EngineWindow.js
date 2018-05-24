@@ -190,7 +190,8 @@ class EngineWindow
 
 	background(r, g, b) {
 		const weight = 1 / 255
-		this.bgColor = `rgb(${r},${g},${b})`
+		this.bgColor.set(r * weight, g * weight, b * weight, 1)
+		Engine.gl.clearColor(this.bgColor.x, this.bgColor.y, this.bgColor.z, this.bgColor.w)
 	}
 
 	set cursor(type) 
