@@ -79,7 +79,13 @@ class AnimatedSprite extends Sprite
 	play(animationId, loop, speed, reverse) 
 	{
 		const newAnimation = Resources.get(animationId)
-		if(this.animation === newAnimation) { return }
+		if(!newAnimation) {
+			console.error(`(AnimatedSprite.play) No such animation found: ${animationId}`)
+			return
+		}
+		if(this.animation === newAnimation) { 
+			return 
+		}
 		this.animation = newAnimation
 
 		this.loop = loop || true
