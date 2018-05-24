@@ -118,7 +118,8 @@ class Tiled extends Resource
 						tileHeight: tilesetInfo.tileheight,
 						columns: tilesetInfo.columns,
 						spacing: tilesetInfo.spacing | 0,
-						margin: tilesetInfo.margin | 0
+						margin: tilesetInfo.margin | 0,
+						properties: tilesetInfo.tileproperties
 					}
 					if(tilesetInfo.offset) {
 						data.offsetX = tilesetInfo.offset.x
@@ -237,7 +238,7 @@ class Tiled extends Resource
 		const tileWidth = parseInt(node.getAttribute("tilewidth"))
 		const tileHeight = parseInt(node.getAttribute("tileheight"))
 		const columns = parseInt(node.getAttribute("columns"))
-		const tiles = {}
+		const properties = {}
 		const data = {
 			type: "Tileset",
 			gid,
@@ -251,7 +252,7 @@ class Tiled extends Resource
 			offsetY: 0,
 			spacing: 0,
 			margin: 0,
-			tiles
+			properties
 		}
 		let source = null
 	
@@ -260,23 +261,22 @@ class Tiled extends Resource
 			const child = children[n]
 			switch(child.nodeName) {
 				case "tile":
+					const tileProperties = {}
 					const id = parseInt(child.getAttribute("id"))
-					const tile = new Tileset.Tile()
 					const tileChildren = child.children
 					for(let i = 0; i < tileChildren.length; i++) {
 						const tileChild = tileChildren[i]
 						switch(tileChild.nodeName) {
 							case "properties":
-								tile.properties = {}
 								const propertiesChildren = tileChild.children
 								for(let m = 0; m < propertiesChildren.length; m++) {
 									const property = propertiesChildren[m]
-									tile.properties[property.getAttribute("name")] = property.getAttribute("value")
+									tileProperties[property.getAttribute("name")] = property.getAttribute("value")
 								}
 								break
 						}
 					}
-					tiles[id] = tile
+					properties[id] = tileProperties
 					break
 				case "image":
 					source = child.getAttribute("source")

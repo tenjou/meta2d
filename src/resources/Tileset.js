@@ -9,10 +9,6 @@ const FLIPPED_DIAGONALLY_FLAG = 0x20000000
 const ALL_FLAGS = (FLIPPED_HORIZONTALLY_FLAG | FLIPPED_VERTICALLY_FLAG | FLIPPED_DIAGONALLY_FLAG)
 const frameOutput = new Float32Array(16)
 
-function Tile() {
-	this.properties = null
-}
-
 class Tileset extends Texture
 {
 	constructor() {
@@ -25,7 +21,7 @@ class Tileset extends Texture
 		this.offsetY = 0
 		this.spacing = 0
 		this.margin = 0
-		this.tiles = {}
+		this.properties = {}
 	}
 
 	loadFromConfig(cfg) {
@@ -42,7 +38,7 @@ class Tileset extends Texture
 		this.offsetY = cfg.offsetY || 0
 		this.spacing = cfg.spacing || 0
 		this.margin = cfg.margin || 0
-		this.tiles = cfg.tiles || {}
+		this.properties = cfg.properties || {}
 	}
 
 	updateFrames() {
@@ -112,20 +108,10 @@ class Tileset extends Texture
 		return frameOutput
 	}
 
-	getTile(gid) {
-		const tile = this.tiles[gid]
-		return tile ? tile : null
-	}
-
 	getProperties(gid) {
-		const tile = this.tiles[gid]
-		if(tile) {
-			return tile.properties
-		}
-		return null
+		const properties = this.properties[gid]
+		return properties ? properties : null
 	}
 }
-
-Tileset.Tile = Tile
 
 export default Tileset
