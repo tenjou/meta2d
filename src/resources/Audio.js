@@ -1,5 +1,5 @@
 import Resources from "./Resources"
-import Input from "../Input"
+import Input from "../input/Input"
 
 class Audio
 {

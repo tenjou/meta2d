@@ -1,7 +1,6 @@
-import Device from "./Device"
+import Device from "../Device"
 
-function GamepadInfo(gamepad) 
-{
+function GamepadInfo(gamepad) {
 	const buttons = gamepad.buttons
 	this.buttons = new Array(buttons.length)
 	for(let n = 0; n < buttons.length; n++) {
@@ -14,8 +13,7 @@ function GamepadInfo(gamepad)
 
 class Gamepad
 {
-	constructor()
-	{
+	constructor() {
 		this.listeners = {}
 		this.gamepads = new Array(null, null, null, null)
 
@@ -27,8 +25,7 @@ class Gamepad
 		requestAnimationFrame(this.updateFunc)
 	}
 
-	update()
-	{
+	update() {
 		const gamepads = navigator.getGamepads()
 		for(let n = 0; n < gamepads.length; n++) 
 		{
@@ -87,8 +84,7 @@ class Gamepad
 		requestAnimationFrame(this.updateFunc)
 	}
 
-	handleConnected(event) 
-	{
+	handleConnected(event) {
 		const gamepad = event.gamepad
 		if(!this.gamepads[gamepad.index]) {
 			this.gamepads[gamepad.index] = new GamepadInfo(gamepad)
@@ -96,15 +92,13 @@ class Gamepad
 		}
 	}
 
-	handleDisconnected(event) 
-	{
+	handleDisconnected(event) {
 		const index = event.gamepad.index
 		this.gamepads[index] = null
 		this.emit("disconnected", index)
 	}
 
-	on(event, func) 
-	{
+	on(event, func) {
 		const buffer = this.listeners[event]
 		if(!buffer) {
 			this.listeners[event] = [ func ]
@@ -114,8 +108,7 @@ class Gamepad
 		}
 	}
 
-	off(event, func) 
-	{
+	off(event, func) {
 		const buffer = this.listeners[event]
 		if(!buffer) { return }
 
@@ -124,8 +117,7 @@ class Gamepad
 		buffer.pop()
 	}
 
-	emit(event, key, index, value)
-	{
+	emit(event, key, index, value) {
 		const buffer = this.listeners[event]
 		if(!buffer) { return }
 
@@ -139,8 +131,7 @@ class Gamepad
 		return gamepad ? gamepad.buttons[key].pressed : false
 	}
 
-	axis(key, index)
-	{
+	axis(key, index) {
 		const gamepad = this.gamepads[index]
 		if(!gamepad) {
 			return 0

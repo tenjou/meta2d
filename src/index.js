@@ -2,9 +2,8 @@ import Device from "./Device"
 import Engine from "./Engine"
 import EngineWindow from "./EngineWindow"
 import Time from "./Time"
-import Input from "./Input"
-import Key from "./Key"
-import Gamepad from "./Gamepad"
+import Input from "./input/Input"
+import Gamepad from "./input/Gamepad"
 import { onDomLoad } from "./Utils"
 import Entity from "./entity/Entity"
 import Sprite from "./entity/Sprite"
@@ -85,7 +84,8 @@ Engine.removeCamera = (camera) => {
 }
 
 export { 
-	Engine, Device, Time, Input, Key, Gamepad, 
+	Engine, Device, Time, 
+	Input, Gamepad, 
 	Entity, Sprite, AnimatedSprite, Camera, Text, BitmapText, Tilemap,
 	Resources, Audio, Resource, Material, Texture, Graphics, Animation, Spritesheet, Sound, Content, Tiled, Tileset,
 	Mesh,

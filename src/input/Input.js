@@ -1,5 +1,5 @@
-import Device from "./Device"
-import Engine from "./Engine"
+import Device from "../Device"
+import Engine from "../Engine"
 import Key from "./Key"
 
 const numKeys = 256
@@ -495,4 +495,6 @@ Input.Event = function()
 }
 
 const instance = new Input
+instance.Key = Key
+
 export default instance
