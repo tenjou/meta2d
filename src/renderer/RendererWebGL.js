@@ -56,6 +56,11 @@ class RendererWebGL extends Renderer
 		})	
 	}
 
+	reset() {
+		this.prevProjection = null
+		this.prevView = null	
+	}
+
 	drawCommand(command) {
 		const gl = Engine.gl
 		const mesh = command.mesh		

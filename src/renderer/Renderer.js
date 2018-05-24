@@ -53,6 +53,7 @@ class Renderer
 			this.drawCommandDebug(this.debugDrawCommands[n])
 		}
 		this.debugCount = 0
+		this.reset()
 	}
 
 	draw(command) {
