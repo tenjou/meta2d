@@ -212,6 +212,7 @@ class Input
 	handleTouchEvent(domEvent, eventType)
 	{
 		if(domEvent.target !== Engine.canvas) { return }
+		domEvent.preventDefault()
 
 		const wnd = Engine.window
 		const camera = Engine.camera
