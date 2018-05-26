@@ -11,6 +11,7 @@ const Engine =
 	camera: null,
 	cameras: null,
 	view: null,
+	updating: [],
 
 	defaultSettings: {
 		width: 0,
@@ -18,6 +19,18 @@ const Engine =
 		antialias: true,
 		alpha: true,
 		upscale: true
+	},
+
+	addUpdating(entity) {
+		this.updating.push(entity)
+	},
+
+	removeUpdating(entity) {
+		const index = this.updating.indexOf(entity)
+		if(index === -1) { return }
+
+		this.updating[index] = this.updating[this.updating.length - 1]
+		this.updating.pop()
 	},
 
 	on(event, func) {

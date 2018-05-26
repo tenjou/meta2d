@@ -158,6 +158,11 @@ class EngineWindow
 
 		Time.alpha = Time.accumulator / Time.updateFreq
 
+		const updating = Engine.updating
+		for(let n = 0; n < updating.length; n++) {
+			updating[n].update(Time.deltaF)	
+		}
+
 		Engine.emit("update", Time.deltaF)
 	
 		if(Engine.app.update) {
