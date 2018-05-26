@@ -20,7 +20,7 @@ class Entity
 		
 		this.enabled = false
 		this.removed = false
-		this.needUpdateTransform = true
+		this._needUpdateTransform = true
 		this.needUpdateVolume = true
 		this.needUpdateFrame = true
 		this.debug = false
@@ -220,14 +220,22 @@ class Entity
 			m[7] = ty			
 		}
 
-		if(this.children) {
+		this._needUpdateTransform = false
+		this.needUpdateVolume = true
+	}
+
+	set needUpdateTransform(value) {
+		if(this._needUpdatetransform === value) { return }
+		this._needUpdatetransform = value
+		if(value && this.children) {
 			for(let n = 0; n < this.children.length; n++) {
 				this.children[n].needUpdateTransform = true
-			}
+			}			
 		}
+	}
 
-		this.needUpdateTransform = false
-		this.needUpdateVolume = true
+	get needUpdateTransform() {
+		return this._needUpdatetransform
 	}
 
 	get transform() {
