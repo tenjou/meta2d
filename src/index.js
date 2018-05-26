@@ -2,6 +2,7 @@ import Device from "./Device"
 import Engine from "./Engine"
 import EngineWindow from "./EngineWindow"
 import Time from "./Time"
+import StateMachine from "./StateMachine"
 import Input from "./input/Input"
 import Gamepad from "./input/Gamepad"
 import { onDomLoad } from "./Utils"
@@ -12,6 +13,10 @@ import Camera from "./entity/Camera"
 import Text from "./entity/Text"
 import BitmapText from "./entity/BitmapText"
 import Tilemap from "./tilemap/Tilemap"
+import TilemapLayer from "./tilemap/TilemapLayer"
+import TilemapOrthogonalLayer from "./tilemap/TilemapOrthogonalLayer"
+import TilemapIsometricLayer from "./tilemap/TilemapIsometricLayer"
+import TileBody from "./tilemap/component/TileBody"
 import { radians, degrees, length, clamp, EPSILON } from "./math/Common"
 import Resources from "./resources/Resources"
 import Audio from "./resources/Audio"
@@ -84,9 +89,10 @@ Engine.removeCamera = (camera) => {
 }
 
 export { 
-	Engine, Device, Time, 
+	Engine, Device, Time, StateMachine,
 	Input, Gamepad, 
-	Entity, Sprite, AnimatedSprite, Camera, Text, BitmapText, Tilemap,
+	Entity, Sprite, AnimatedSprite, Camera, Text, BitmapText,
+	Tilemap, TilemapLayer, TilemapOrthogonalLayer, TilemapIsometricLayer, TileBody,
 	Resources, Audio, Resource, Material, Texture, Graphics, Animation, Spritesheet, Sound, Content, Tiled, Tileset,
 	Mesh,
 	Raycast,
