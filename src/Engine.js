@@ -12,6 +12,7 @@ const Engine =
 	cameras: null,
 	view: null,
 	updating: [],
+	updatingComponents: [],
 
 	defaultSettings: {
 		width: 0,
@@ -31,6 +32,18 @@ const Engine =
 
 		this.updating[index] = this.updating[this.updating.length - 1]
 		this.updating.pop()
+	},
+
+	addUpdatingComponent(entity) {
+		this.updatingComponents.push(entity)
+	},
+
+	removeUpdatingComponent(entity) {
+		const index = this.updatingComponents.indexOf(entity)
+		if(index === -1) { return }
+
+		this.updatingComponents[index] = this.updatingComponents[this.updatingComponents.length - 1]
+		this.updatingComponents.pop()
 	},
 
 	on(event, func) {

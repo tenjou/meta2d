@@ -29,7 +29,7 @@ class Entity
 	}
 
 	remove() {
-		this.active = false
+		this.enable = false
 	}
 
 	draw() {}
@@ -38,12 +38,30 @@ class Entity
 		if(this.update) {
 			Engine.addUpdating(this)
 		}
+		if(this.components) {
+			for(let n = 0; n < this.components.length; n++) {
+				const component = this.components[n]
+				component.onEnable()
+				if(component.update) {
+					Engine.addUpdatingComponent(component)
+				}
+			}
+		}
 	}
 
 	onDisable() {
 		if(this.update) {
 			Engine.removeUpdating(this)
 		}
+		if(this.components) {
+			for(let n = 0; n < this.components.length; n++) {
+				const component = this.components[n]
+				component.onDisable()
+				if(component.update) {
+					Engine.removeUpdatingComponent(component)
+				}
+			}
+		}		
 	}
 
 	get position() {
@@ -287,6 +305,14 @@ class Entity
 			this.components.push(component)
 		}
 
+		if(this.enabled) {
+			component.onEnable()
+			
+			if(component.update) {
+				Engine.addUpdatingComponent(component)
+			}			
+		}
+
 		return component
 	}
 
@@ -300,6 +326,14 @@ class Entity
 		component.remove()
 		this.components[index] = this.components[this.components.length - 1]
 		this.components.pop()
+
+		component.onDisable()
+
+		if(this.enabled) {
+			if(component.update) {
+				Engine.removeUpdatingComponent(component)
+			}			
+		}		
 	}
 
 	removeComponents()

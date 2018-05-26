@@ -158,6 +158,11 @@ class EngineWindow
 
 		Time.alpha = Time.accumulator / Time.updateFreq
 
+		const updatingComponents = Engine.updatingComponents
+		for(let n = 0; n < updatingComponents.length; n++) {
+			updatingComponents[n].update(Time.deltaF)	
+		}
+
 		const updating = Engine.updating
 		for(let n = 0; n < updating.length; n++) {
 			updating[n].update(Time.deltaF)	
