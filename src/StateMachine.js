@@ -4,7 +4,7 @@ class StateMachine
 	constructor(config) {
 		this.state = config.state || null
 		this.states = config.states || {}
-		this.transitions = config.transitions || {}
+		this.transitions = config.transitions || { auto: {} }
 	}
 
 	create(data, prefix = "") {
@@ -21,9 +21,9 @@ class StateMachineState
 		this.stateConfig = null
 		this.prefix = prefix
 		this._transitionFunc = () => {
-			const transition = this.machine.transitions[this.state]
-			if(transition) {
-				this.execute(transition)
+			const state = this.machine.transitions.auto[this.state]
+			if(state) {
+				this.execute(state)
 			}
 		}
 		this.execute(state)
@@ -59,8 +59,7 @@ class StateMachineState
 
 		if(this.state) {
 			this.sprite.play(`${this.prefix}${stateConfig.animation}`)
-			const transition = this.machine.transitions[this.state]
-			if(transition) {
+			if(this.machine.transitions.auto[this.state]) {
 				this.sprite.onAnimEnd = this._transitionFunc
 			}
 			else {
@@ -79,6 +78,27 @@ class StateMachineState
 				this.sprite.scale.set(this.sprite._scale.x, -this.sprite._scale.y)
 			}
 		}
+	}
+
+	transition(transitionType = null) {
+		if(transitionType) {
+			const transitions = this.machine.transitions[transitionType]
+			if(!transitions) {
+				console.warn(`(StateMachineState.transition) Invalid transition type: ${transitionType}`)
+			}
+			else {
+				const state = transitions[this.state]
+				if(state) {
+					this.execute(state)
+					return
+				}
+			}
+		}
+
+		const state = this.machine.transitions.auto[this.state]
+		if(state) {
+			this.execute(state)
+		}		
 	}
 }
 
