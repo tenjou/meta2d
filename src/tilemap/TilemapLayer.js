@@ -207,7 +207,7 @@ class TilemapLayer extends Renderable
 		if(id >= this.data.length) {
 			return 0
 		}
-		return this.data[id]
+		return this.data[id] - this.tileset.gid
 	}
 
 	getProperties(gid) {
