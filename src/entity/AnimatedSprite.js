@@ -14,6 +14,7 @@ class AnimatedSprite extends Sprite
 		this.loop = false	
 		this.reverse = false
 		this.pauseLastFrame = false
+		this.onAnimEnd = null
 	}
 
 	draw() {
@@ -50,7 +51,9 @@ class AnimatedSprite extends Sprite
 						this._frameIndex = 0
 						this.speed = 0
 					}
-					this.onAnimEnd()
+					if(this.onAnimEnd) {
+						this.onAnimEnd()
+					}
 				}
 			}
 			else {
@@ -67,7 +70,9 @@ class AnimatedSprite extends Sprite
 						this._frameIndex = 0
 						this.speed = 0
 					}
-					this.onAnimEnd()
+					if(this.onAnimEnd) {
+						this.onAnimEnd()
+					}
 				}		
 			}
 
@@ -119,8 +124,6 @@ class AnimatedSprite extends Sprite
 	get frameIndex() {
 		return this._frameIndex
 	}
-
-	onAnimEnd() {}
 }
 
 export default AnimatedSprite
