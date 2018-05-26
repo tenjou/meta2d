@@ -21,6 +21,8 @@ const FLIPPED_VERTICALLY_FLAG = 0x40000000
 const FLIPPED_DIAGONALLY_FLAG = 0x20000000
 const ALL_FLAGS = (FLIPPED_HORIZONTALLY_FLAG | FLIPPED_VERTICALLY_FLAG | FLIPPED_DIAGONALLY_FLAG)
 
+const output = new Vector2(0, 0)
+
 class TilemapLayer extends Renderable
 {
 	constructor() {
@@ -30,6 +32,8 @@ class TilemapLayer extends Renderable
 		this.numTilesY = 0
 		this.tileWidth = 0
 		this.tileHeight = 0
+		this.halfTileWidth = 0
+		this.halfTileHeight = 0		
 		this.offsetX = 0
 		this.offsetY = 0
 		this.tileset = null
@@ -45,6 +49,8 @@ class TilemapLayer extends Renderable
 		this.numTilesY = numTilesY
 		this.tileWidth = tileWidth
 		this.tileHeight = tileHeight
+		this.halfTileWidth = tileWidth * 0.5
+		this.halfTileHeight = tileHeight * 0.5
 		this.dataInfo = new Array(numTilesX * numTilesY)
 		this.updateData(data)
 		this.extractTileset()
@@ -79,7 +85,6 @@ class TilemapLayer extends Renderable
 		if(this._entityMode) {
 			return
 		}
-		const output = TilemapLayer.output
 		this.buffer = new Float32Array(this.numTilesX * this.numTilesY * 16)
 		
 		let index = 0
@@ -89,7 +94,7 @@ class TilemapLayer extends Renderable
 				const id = x + (y * this.numTilesX)
 				let gid = this.data[id] - this.tileset.gid
 				if(gid > -1) {
-					this.getWorldFromTile(x, y)
+					this.getWorldFromTile(x, y, output, false)
 					const frame = this.tileset.getTileFrame(gid)
 					const posX = output.x
 					const posY = output.y
@@ -205,10 +210,6 @@ class TilemapLayer extends Renderable
 		return this.data[id]
 	}
 
-	getTile(gid) {
-		return this.tileset.getTile(gid - this.tileset.gid)
-	}
-
 	getProperties(gid) {
 		return this.tileset.getProperties(gid - this.tileset.gid)
 	}
@@ -219,7 +220,5 @@ class TilemapLayer extends Renderable
 		}, this.drawCommand.material.uniforms)	
 	}	
 }
-
-TilemapLayer.output = new Vector2(0, 0)
 
 export default TilemapLayer
