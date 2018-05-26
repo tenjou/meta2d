@@ -1,3 +1,4 @@
+import Engine from "../Engine"
 import Vector2 from "../math/Vector2"
 import Matrix3 from "../math/Matrix3"
 import AABB from "../math/AABB"
@@ -33,9 +34,17 @@ class Entity
 
 	draw() {}
 
-	onEnable() {}
+	onEnable() {
+		if(this.update) {
+			Engine.addUpdating(this)
+		}
+	}
 
-	onDisable() {}
+	onDisable() {
+		if(this.update) {
+			Engine.removeUpdating(this)
+		}
+	}
 
 	get position() {
 		this.needUpdateTransform = true
