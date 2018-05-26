@@ -113,7 +113,7 @@ class Tilemap extends Entity
 		if(!this.children) { return null }
 		
 		const child = this.children[0]
-		return child.getTileFromWorldPos(x, y, output)
+		return child.getTileFromWorld(x, y, output)
 	}
 
 	getWorldFromTile(x, y, output) {
