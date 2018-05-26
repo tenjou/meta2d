@@ -270,7 +270,6 @@ class RendererWebGL extends Renderer
 					}
 					else {
 						gl.bindTexture(gl.TEXTURE_2D, emptyTexture.instance)
-						console.warn(`(Renderer.updateUniforms) Empty SAMPLER_2D uniform used for: ${uniform.name}`)
 					}
 					
 					gl.uniform1i(uniform.loc, numSamplers++)
