@@ -8,6 +8,8 @@ class TileBody extends Component
 {
 	constructor() {
 		super()
+		this.x = 0
+		this.y = 0
 		this.speed = 60
 		this.speedX = 0
 		this.speedY = 0
@@ -21,6 +23,9 @@ class TileBody extends Component
 	onEnable() {
 		this.targetX = this.parent.x
 		this.targetY = this.parent.y
+		this.parent.parent.getTileFromWorld(this.targetX, this.targetY, point)
+		this.x = point.x
+		this.y = point.y
 	}
 
 	update(tDelta) {
@@ -36,8 +41,7 @@ class TileBody extends Component
 				speed = distance
 				if(this._path && this._path.length > 0) {
 					const node = this._path.pop()
-					this.parent.parent.getWorldFromTile(node.x, node.y, point)
-					this.target(point.x, point.y)
+					this.target(node.x, node.y)
 				}
 				else {
 					this._target = false
@@ -60,19 +64,19 @@ class TileBody extends Component
 	}
 
 	target(x, y) {
-		this.targetX = x
-		this.targetY = y
+		this.parent.parent.getWorldFromTile(x, y, point)
+		this.x = x
+		this.y = y
+		this.targetX = point.x
+		this.targetY = point.y
 		this._target = true
 	}
 
 	path(path) {
 		this._path = path
-		if(!this._target && path) {
+		if(!this._target && path && path.length > 0) {
 			const node = path.pop()
-			if(node) {
-				this.parent.parent.getWorldFromTile(node.x, node.y, point)
-				this.target(point.x, point.y)
-			}
+			this.target(node.x, node.y)
 		}
 	}
 }
