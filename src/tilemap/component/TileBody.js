@@ -17,6 +17,7 @@ class TileBody extends Component
 		this.targetY = 0
 		this._target = false
 		this._path = null
+		this.onNewTarget = null
 		this.onTargetDone = null
 	}
 
@@ -64,6 +65,9 @@ class TileBody extends Component
 	}
 
 	target(x, y) {
+		if(this.onNewTarget) {
+			this.onNewTarget(x, y)
+		}
 		this.parent.parent.getWorldFromTile(x, y, point)
 		this.x = x
 		this.y = y
