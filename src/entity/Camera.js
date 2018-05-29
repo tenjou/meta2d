@@ -32,6 +32,12 @@ class Camera extends Entity
 	getCullMask(layer) {
 		return ((this.cullMask >> layer) % 2 != 0)
 	}
+
+	updateTransform() {
+		super.updateTransform()
+		this._transform.m[6] = (this._transform.m[6] * -1 * this._scale.x)
+		this._transform.m[7] = (this._transform.m[7] * -1 * this._scale.y) 
+	}
 }
 
 export default Camera
