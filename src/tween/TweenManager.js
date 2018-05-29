@@ -8,7 +8,7 @@ class TweenManager {
 
 	update(tDeltaF) {
 		for(let n = 0; n < this.tweens.length; n++) {
-			this.tweens[n].update()
+			this.tweens[n].updateLink()
 		}
 	}
 

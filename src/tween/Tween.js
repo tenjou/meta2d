@@ -48,10 +48,10 @@ class Tween extends Component {
 		this.link = null
 		this.linkIndex = -1
 		TweenManager.remove(this)
+		this._index = -1
 	}
 
-	update(tDelta)
-	{
+	updateLink(tDelta) {
 		let tElapsed = (Time.current - this.tStart) / this.link.duration
 		if(tElapsed > 1) {
 			tElapsed = 1
@@ -67,7 +67,7 @@ class Tween extends Component {
 				endValue = startValue + parseFloat(endValue, 4)
 			}
 
-			const result = startValue + (endValue - startValue) * value;
+			const result = startValue + (endValue - startValue) * value
 			if(this.rounding) {
 				result = Math.round(result)
 			}
@@ -90,8 +90,7 @@ class Tween extends Component {
 		}
 	}
 
-	next() 
-	{
+	next() {
 		this.linkIndex++
 		if(this.linkIndex >= this.links.length) {
 			if(this.loop) {
@@ -116,6 +115,21 @@ class Tween extends Component {
 		const endValues = this.link.endValues
 		for(let key in endValues) {
 			this.startValues[key] = this.parent[key]
+		}
+	}
+
+	reset() {
+		this.stop()
+		this.linkIndex = 0
+		this.link = this.links[this.linkIndex]
+		this.tStart = Time.current
+		this._repeat = this.link.repeat
+		for(let key in this.startValues) {
+			this.parent[key] = this.startValues[key]
+		}	
+		TweenManager.add(this)
+		if(this.onStart) {
+			this.onStart()
 		}
 	}
 
