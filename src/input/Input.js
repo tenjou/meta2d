@@ -132,6 +132,7 @@ class Input
 
 		const wnd = Engine.window
 		const camera = Engine.camera
+		const transform = camera.transform
 
 		this.prevScreenX = this.screenX
 		this.prevScreenY = this.screenY
@@ -139,8 +140,8 @@ class Input
 		this.screenY = ((domEvent.pageY - wnd.offsetTop) * wnd.scaleY) / wnd.ratio
 		this.prevX = this.x
 		this.prevY = this.y
-		this.x = (this.screenX - camera.x) / camera._scale.x / wnd.ratio | 0
-		this.y = (this.screenY - camera.y) / camera._scale.y / wnd.ratio | 0
+		this.x = (this.screenX - transform.m[6]) / camera._scale.x / wnd.ratio | 0
+		this.y = (this.screenY - transform.m[7]) / camera._scale.y / wnd.ratio | 0
 
 		const inputEvent = new Input.Event()
 		inputEvent.domEvent = domEvent
@@ -216,6 +217,7 @@ class Input
 
 		const wnd = Engine.window
 		const camera = Engine.camera
+		const transform = camera.transform
 
 		const changedTouches = domEvent.changedTouches
 		for(let n = 0; n < changedTouches.length; n++)
@@ -243,8 +245,8 @@ class Input
 
 			const screenX = ((touch.pageX - wnd.offsetLeft) * wnd.scaleX)
 			const screenY = ((touch.pageY - wnd.offsetTop) * wnd.scaleY)
-			const x = (screenX - camera.x) / camera._scale.x | 0
-			const y = (screenY - camera.y) / camera._scale.y | 0
+			const x = (screenX - transform.m[6]) / camera._scale.x | 0
+			const y = (screenY - transform.m[7]) / camera._scale.y | 0
 			const keyCode = id + Key.BUTTON_ENUM_OFFSET
 
 			const inputEvent = new Input.Event()
