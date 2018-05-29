@@ -105,6 +105,14 @@ class Sprite extends Renderable
 			color: this.color
 		}, this.drawCommand.material.uniforms)	
 	}
+
+	set alpha(value) {
+		this.color.w = value
+	}
+
+	get alpha() {
+		return this.color.w
+	}
 }
 
 export default Sprite
