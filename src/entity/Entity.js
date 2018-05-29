@@ -252,8 +252,8 @@ class Entity
 	}
 
 	set needUpdateTransform(value) {
-		if(this._needUpdatetransform === value) { return }
-		this._needUpdatetransform = value
+		if(this._needUpdateTransform === value) { return }
+		this._needUpdateTransform = value
 		if(value && this.children) {
 			for(let n = 0; n < this.children.length; n++) {
 				this.children[n].needUpdateTransform = true
@@ -262,7 +262,7 @@ class Entity
 	}
 
 	get needUpdateTransform() {
-		return this._needUpdatetransform
+		return this._needUpdateTransform
 	}
 
 	get transform() {
