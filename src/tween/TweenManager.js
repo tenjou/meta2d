@@ -13,6 +13,7 @@ class TweenManager {
 	}
 
 	add(tween) {
+		if(tween._index !== -1) { return }
 		tween._index = this.tweens.length
 		this.tweens.push(tween)
 	}
