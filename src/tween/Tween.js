@@ -119,7 +119,6 @@ class Tween extends Component {
 	}
 
 	reset() {
-		this.stop()
 		this.linkIndex = 0
 		this.link = this.links[this.linkIndex]
 		this.tStart = Time.current
