@@ -137,7 +137,13 @@ class TilemapLayer extends Renderable
 			}
 			break
 		}
+		
+		if(!tileset) {
+			tileset = tilesets[0]
+		}
+
 		this.tileset = tileset
+
 		if(tileset) {
 			this.drawCommand.uniforms.albedo = this.tileset.instance
 		}
@@ -196,7 +202,7 @@ class TilemapLayer extends Renderable
 	setGid(x, y, gid) {
 		const id = x + (y * this.numTilesX)
 		this.data[id] = gid
-		this.updateInfo(id)
+		this.needUpdateMesh = true
 	}
 
 	getGid(x, y) {
