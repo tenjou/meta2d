@@ -23,7 +23,6 @@ class Sound extends Resource
 	}
 
 	stop() {
-		Audio.ctx.stop()
 		for(let n = 0; n < this.instancesActive; n++) {
 			this.instances[n].stop()
 		}
