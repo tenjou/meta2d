@@ -22,8 +22,7 @@ class AnimatedSprite extends Sprite
 		super.draw()
 	}
 
-	updateAnim() 
-	{
+	updateAnim() {
 		if(this.speed === 0) { return }
 		if(this.tFrameDelay === 0) {
 			console.warn(`(AnimatedSprite.updateAnim) Frame delay is zero: ${this}`)
@@ -81,8 +80,7 @@ class AnimatedSprite extends Sprite
 		}
 	}
 
-	play(animationId, loop, speed, reverse) 
-	{
+	play(animationId, loop, speed, reverse) {
 		const newAnimation = Resources.get(animationId)
 		if(!newAnimation) {
 			console.error(`(AnimatedSprite.play) No such animation found: ${animationId}`)

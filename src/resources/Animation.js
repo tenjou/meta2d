@@ -15,6 +15,9 @@ class Animation extends Resource
 	}
 
 	loadFromConfig(config) {
+		if(config.fps) {
+			config.delay = 1000 / config.fps 
+		}
 		this.delay = config.delay || 100
 		this.pauseLastFrame = config.pauseLastFrame || false
 		this.loadFrames(config.frames)
