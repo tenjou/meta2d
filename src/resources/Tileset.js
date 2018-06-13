@@ -48,7 +48,7 @@ class Tileset extends Texture
 		const tilesY = Math.floor(this.height / this.tileHeight)
 		const widthUV = 1.0 / this.width
 		const heightUV = 1.0 / this.height
-		const innerSpacing = 0.0001
+		const innerSpacing = 0.00001
 		this.frames = new Array(tilesX * tilesY)
 		
 		let index = 0
@@ -58,8 +58,8 @@ class Tileset extends Texture
 			for(let x = 0; x < tilesX; x++) {
 				const minX = widthUV * posX + innerSpacing
 				const minY = heightUV * posY + innerSpacing
-				const maxX = widthUV * (posX + this.tileWidth - this.margin) - innerSpacing
-				const maxY = heightUV * (posY + this.tileHeight - this.margin) - innerSpacing
+				const maxX = widthUV * (posX + this.tileWidth - this.margin)
+				const maxY = heightUV * (posY + this.tileHeight - this.margin)
 				this.frames[index] = new Frame(this, [
 					this.tileWidth, this.tileHeight, 	maxX, maxY,
 					0, this.tileHeight, 				minX, maxY,
