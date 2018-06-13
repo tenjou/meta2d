@@ -17,6 +17,7 @@ class EngineWindow
 		this.scaleY = 1		
 		this.bgColor = new Vector4(0.8, 0.8, 0.8, 1)
 		this._cursor = "auto"
+		this._updating = false
 	}
 
 	create() 
@@ -158,6 +159,7 @@ class EngineWindow
 
 		Time.alpha = Time.accumulator / Time.updateFreq
 
+		this._updating = true
 		const updatingComponents = Engine.updatingComponents
 		for(let n = 0; n < updatingComponents.length; n++) {
 			updatingComponents[n].update(Time.deltaF)	
@@ -167,6 +169,22 @@ class EngineWindow
 		for(let n = 0; n < updating.length; n++) {
 			updating[n].update(Time.deltaF)	
 		}
+		this._updating = false
+
+		if(Engine.updatingRemove.length > 0) {
+			const buffer = Engine.updatingRemove.length
+			for(let n = 0; n < buffer.length; n++) {
+				Engine.removeUpdating(buffer[n])
+			}
+			buffer.length = 0
+		}
+		if(Engine.updatingComponentsRemove.length > 0) {
+			const buffer = Engine.updatingComponentsRemove.length
+			for(let n = 0; n < buffer.length; n++) {
+				Engine.removeUpdatingComponent(buffer[n])
+			}
+			buffer.length = 0
+		}		
 
 		Engine.emit("update", Time.deltaF)
 	
@@ -198,7 +216,7 @@ class EngineWindow
 		requestAnimationFrame(this.renderFunc)
 	}
 
-	background(r, g, b) {
+	backgroundColor(r, g, b) {
 		const weight = 1 / 255
 		this.bgColor.set(r * weight, g * weight, b * weight, 1)
 		Engine.gl.clearColor(this.bgColor.x, this.bgColor.y, this.bgColor.z, this.bgColor.w)

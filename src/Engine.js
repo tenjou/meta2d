@@ -13,6 +13,8 @@ const Engine =
 	view: null,
 	updating: [],
 	updatingComponents: [],
+	updatingRemove: [],
+	updatingComponentsRemove: [],
 
 	defaultSettings: {
 		width: 0,
@@ -27,23 +29,33 @@ const Engine =
 	},
 
 	removeUpdating(entity) {
-		const index = this.updating.indexOf(entity)
-		if(index === -1) { return }
-
-		this.updating[index] = this.updating[this.updating.length - 1]
-		this.updating.pop()
+		if(this.window._updating) {
+			this.updatingRemove.push(entity)
+		}
+		else {
+			const index = this.updating.indexOf(entity)
+			if(index === -1) { return }
+	
+			this.updating[index] = this.updating[this.updating.length - 1]
+			this.updating.pop()			
+		}
 	},
 
-	addUpdatingComponent(entity) {
-		this.updatingComponents.push(entity)
+	addUpdatingComponent(component) {
+		this.updatingComponents.push(component)
 	},
 
-	removeUpdatingComponent(entity) {
-		const index = this.updatingComponents.indexOf(entity)
-		if(index === -1) { return }
-
-		this.updatingComponents[index] = this.updatingComponents[this.updatingComponents.length - 1]
-		this.updatingComponents.pop()
+	removeUpdatingComponent(component) {
+		if(this.window._updating) {
+			this.updatingComponentsRemove.push(component)
+		}
+		else {
+			const index = this.updatingComponents.indexOf(component)
+			if(index === -1) { return }
+	
+			this.updatingComponents[index] = this.updatingComponents[this.updatingComponents.length - 1]
+			this.updatingComponents.pop()
+		}
 	},
 
 	on(event, func) {
