@@ -4,10 +4,8 @@ import Time from "./Time"
 import Resources from "./resources/Resources"
 import Vector4 from "./math/Vector4"
 
-class EngineWindow 
-{
-	constructor() 
-	{		
+class EngineWindow {
+	constructor() {		
 		this.width = 0
 		this.height = 0
 		this.offsetLeft = 0
@@ -18,10 +16,12 @@ class EngineWindow
 		this.bgColor = new Vector4(0.8, 0.8, 0.8, 1)
 		this._cursor = "auto"
 		this._updating = false
+		this._updateWorker = null
+		this.readyFunc = null
+		this.renderFunc = null
 	}
 
-	create() 
-	{
+	create() {
 		const container = document.createElement("div")
 		container.style.cssText = "position:absolute; width:100%; height:100%; background: #ddd; display:flex; align-items:center; justify-content:center;"
 	
@@ -51,9 +51,9 @@ class EngineWindow
 	
 		this.updateScreenSize()
 		Device.on("resize", this.updateScreenSize.bind(this))
+		Device.on("visible", this.handleVisible.bind(this))
 
 		this.readyFunc = this.ready.bind(this)
-		this.updateFunc = this.update.bind(this)
 		this.renderFunc = this.render.bind(this)
 	
 		Resources.on("ready", this.readyFunc)
@@ -74,8 +74,7 @@ class EngineWindow
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 	}
 
-	updateScreenSize()
-	{
+	updateScreenSize() {
 		const settings = Engine.settings
 		const container = Engine.container
 		const canvas = Engine.canvas
@@ -116,8 +115,7 @@ class EngineWindow
 		Engine.emit("resize")
 	}
 
-	updateOffset()
-	{
+	updateOffset() {
 		this.offsetLeft = 0
 		this.offsetTop = 0
 
@@ -139,24 +137,13 @@ class EngineWindow
 		this.offsetTop += rect.top
 	}
 
-	ready()
-	{
+	ready() {
 		Resources.off("ready", this.readyFunc)
 	
 		if(Engine.app.ready) {
 			Engine.app.ready()
 		}
 
-		// const workerUpdateFunc = function() {
-		// 	setInterval(() => {
-		// 		postMessage("update")
-		// 	}, 1000 / 60)			
-		// }
-		// this.updateWorker = new Worker(URL.createObjectURL(
-		// 	new Blob([ `(${workerUpdateFunc.toString()})()` ], { type: "text/javascript" })))
-		// this.updateWorker.onmessage = (msg) => {
-		// 	this.update()
-		// }
 		this.render(Time.deltaF)
 	}
 
@@ -228,14 +215,34 @@ class EngineWindow
 		requestAnimationFrame(this.renderFunc)
 	}
 
+	handleVisible(visible) {
+		if(visible) {
+			if(this.updateWorker) {
+				this.updateWorker.terminate()
+				this.updateWorker = null
+			}
+		}
+		else {
+			const workerUpdateFunc = function() {
+				setInterval(() => {
+					postMessage("update")
+				}, 1000 / 60)			
+			}
+			this.updateWorker = new Worker(URL.createObjectURL(
+				new Blob([ `(${workerUpdateFunc.toString()})()` ], { type: "text/javascript" })))
+			this.updateWorker.onmessage = (msg) => {
+				this.update()
+			}
+		}
+	}
+
 	backgroundColor(r, g, b) {
 		const weight = 1 / 255
 		this.bgColor.set(r * weight, g * weight, b * weight, 1)
 		Engine.gl.clearColor(this.bgColor.x, this.bgColor.y, this.bgColor.z, this.bgColor.w)
 	}
 
-	set cursor(type) 
-	{
+	set cursor(type) {
 		if(this._cursor === type) { return }
 		this._cursor = type
 
