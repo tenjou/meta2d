@@ -52,6 +52,7 @@ class EngineWindow {
 		this.updateScreenSize()
 		Device.on("resize", this.updateScreenSize.bind(this))
 		Device.on("visible", this.handleVisible.bind(this))
+		this.handleVisible(Device.visible)
 
 		this.readyFunc = this.ready.bind(this)
 		this.renderFunc = this.render.bind(this)
