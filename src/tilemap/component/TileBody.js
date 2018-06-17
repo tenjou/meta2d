@@ -1,4 +1,5 @@
 import Component from "../../Component"
+import Time from "../../Time"
 import Vector2 from "../../math/Vector2"
 
 const point = new Vector2()
@@ -10,13 +11,15 @@ class TileBody extends Component
 		super()
 		this.x = 0
 		this.y = 0
-		this.speed = 60
-		this.speedX = 0
-		this.speedY = 0
 		this.targetX = 0
-		this.targetY = 0
-		this.targeting = false
+		this.targetY = 0		
+		this.speed = 250
+		this._path = null
+		this.direction = new Vector2(0, 0)
 		this.onTargetDone = null
+		this.onPathDone = null
+		this.tStart = 0
+		this.duration = 0
 	}
 
 	onEnable() {
@@ -25,48 +28,67 @@ class TileBody extends Component
 	}
 
 	update(tDelta) {
-		this.speedX = 0
-		this.speedY = 0
-
-		if(this.targeting) {
-			let speed = this.speed * tDelta
-
-			direction.set(this.targetX - this.parent.x, this.targetY - this.parent.y)
-			const distance = direction.length()
-			if(distance <= speed) {
-				speed = distance
-				this.targeting = false
-			}
-			direction.normalize()
-			this.speedX = direction.x * speed
-			this.speedY = direction.y * speed
-			this.parent.move(this.speedX, this.speedY)
-
-			if(!this.targeting) {
-				this.speedX = 0
-				this.speedY = 0
-				this.targeting = false			
+		if(this.tStart > 0) {
+			let elapsed = (Time.current - this.tStart) / this.duration
+			if(elapsed >= 1) {
+				this.tStart = 0
+				this.direction.set(0, 0)					
+				this.parent.position.set(this.targetX, this.targetY)
 				if(this.onTargetDone) {
 					this.onTargetDone()
-				}			
+				}
+				if(this.path && this.path.length > 0) {
+					const node = this.path.pop()
+					if(node) {
+						this.moveTo(node.x, node.y)
+						return
+					}
+				}
+				if(this.onPathDone) {
+					this.onPathDone()
+				}
 			}
+			else {
+				const x = this.startX + (this.targetX - this.startX) * elapsed
+				const y = this.startY + (this.targetY - this.startY) * elapsed
+				this.parent.position.set(x, y)
+			}
+		}
+		else {
+			if(this.path && this.path.length > 0) {
+				const node = this.path.pop()
+				if(node) {
+					this.moveTo(node.x, node.y)
+					return
+				}
+			}			
 		}
 	}
 
-	target(x, y) {
+	moveTo(x, y) {
+		if(this.x === x && this.y === y) { 
+			return 
+		}
 		this.parent.parent.getWorldFromTile(x, y, point)
 		this.x = x
 		this.y = y
+		this.startX = this.parent.x
+		this.startY = this.parent.y
 		this.targetX = point.x
 		this.targetY = point.y
-		this.targeting = true
-	}
 
-	tile(x, y) {
+		this.direction.set(this.targetX - this.parent.x, this.targetY - this.parent.y)
+		this.direction.normalize()
+	
+		this.tStart = Time.current
+		this.duration = this.speed
+	}	
+
+	setTile(x, y) {
 		this.x = x
 		this.y = y
 		if(this.parent.parent) {
-			this.parent.parent.getWorldFromTile(data.x, data.y, point)
+			this.parent.parent.getWorldFromTile(x, y, point)
 			this.parent.position.set(point.x, point.y)	
 		}
 	}
