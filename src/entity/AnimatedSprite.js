@@ -31,7 +31,7 @@ class AnimatedSprite extends Sprite
 
 		const maxFrames = this.animation.frames.length
 
-		this.tFrame += Time.delta * this.speed
+		this.tFrame += Time.deltaRender * this.speed
 
 		while(this.tFrame > this.tFrameDelay) {
 			this.tFrame -= this.tFrameDelay
