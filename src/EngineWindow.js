@@ -146,12 +146,23 @@ class EngineWindow
 		if(Engine.app.ready) {
 			Engine.app.ready()
 		}
-	
+
+		// const workerUpdateFunc = function() {
+		// 	setInterval(() => {
+		// 		postMessage("update")
+		// 	}, 1000 / 60)			
+		// }
+		// this.updateWorker = new Worker(URL.createObjectURL(
+		// 	new Blob([ `(${workerUpdateFunc.toString()})()` ], { type: "text/javascript" })))
+		// this.updateWorker.onmessage = (msg) => {
+		// 	this.update()
+		// }
 		this.render(Time.deltaF)
 	}
 
-	update()
-	{
+	update() {
+		Time.start()
+
 		while(Time.accumulator >= Time.updateFreq) {
 			Time.accumulator -= Time.updateFreq
 			Engine.emit("updateFixed", Time.updateFreq)
@@ -191,13 +202,14 @@ class EngineWindow
 		if(Engine.app.update) {
 			Engine.app.update(Time.deltaF)
 		}
+
+		Time.end()
 	}
 	
-	render()
-	{
-		Time.start()
-
+	render() {
 		this.update()
+
+		Time.startRender()
 
 		const gl = Engine.gl
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
@@ -211,7 +223,7 @@ class EngineWindow
 			Engine.app.render(Time.deltaRenderF)
 		}
 	
-		Time.end()
+		Time.endRender()
 	
 		requestAnimationFrame(this.renderFunc)
 	}

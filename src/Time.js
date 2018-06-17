@@ -7,11 +7,15 @@ class Time
 	{
 		this.delta = 0
 		this.deltaF = 0.0
+		this.deltaRender = 0
+		this.deltaRenderF = 0.0
 		this.maxDelta = 250.0
 		this.scale = 1.0
 		this.fps = 0
 		this.current = Date.now()
 		this.prev = this.current
+		this.currentRender = this.current
+		this.prevRender = this.current
 		this.accumulator = 0.0
 		this.frameIndex = 0
 		this.updateFreq = 1 / 40
@@ -26,15 +30,12 @@ class Time
 		this._fps = 0
 	}
 
-	start()
-	{
+	start() {
 		this.current = Date.now()
-		this.frameIndex++
-		this.alpha = 0
 
 		if(this.paused) {
 			this.delta = 0
-			this.deltaF = 0
+			this.deltaF = 0.0
 		}
 		else {
 			this.delta = this.current - this.prev
@@ -54,16 +55,8 @@ class Time
 
 		this.updating = false
 
-		if(this.current - this._fpsCurrent >= 1000) {
-			this._fpsCurrent = this.current
-			this.fps = this._fps
-			this._fps = 0
-		}
-
-		if(this.timersRemove.length > 0)
-		{
-			for(let n = 0; n < this.timersRemove.length; n++)
-			{
+		if(this.timersRemove.length > 0) {
+			for(let n = 0; n < this.timersRemove.length; n++) {
 				const timerA = this.timersRemove[n]
 				const timerB = this.timers[this.timers.length - 1]
 				timerB.__index = timerA.__index
@@ -71,18 +64,46 @@ class Time
 				this.timers[timerB.__index] = timerB
 				this.timers.pop()
 			}
-
 			this.timersRemove.length = 0
 		}
 	}
 
 	end() {
-		this._fps++
 		this.prev = this.current
 	}
 
-	timer(func, tDelta, numTimes)
-	{
+	startRender() {
+		this.currentRender = Date.now()
+		this.frameIndex++
+		this.alpha = 0
+
+		if(this.paused) {
+			this.deltaRender = 0
+			this.deltaRenderF = 0.0
+		}
+		else {
+			this.deltaRender = this.currentRender - this.prevRender
+			if(this.deltaRender > 250) {
+				this.deltaRender = 250
+			}
+			this.deltaRender *= this.scale
+			this.deltaRenderF = this.deltaRender / 1000
+			this.accumulator += this.deltaRenderF
+		}
+
+		if(this.currentRender - this._fpsCurrent >= 1000) {
+			this._fpsCurrent = this.currentRender
+			this.fps = this._fps
+			this._fps = 0
+		}
+	}
+
+	endRender() {
+		this._fps++
+		this.prevRender = this.currentRender
+	}
+
+	timer(func, tDelta, numTimes) {
 		if(!func || !tDelta) {
 			console.warn("(Timer.create) Invalid params passed")
 			return null
@@ -95,10 +116,8 @@ class Time
 	}
 }
 
-class Timer
-{
-	constructor(time, func, tDelta, numTimes)
-	{
+class Timer {
+	constructor(time, func, tDelta, numTimes) {
 		this.time = time
 		this.id = timerId++
 		this.func = func
@@ -114,21 +133,17 @@ class Timer
 		this.__index = -1
 	}
 
-	play()
-	{
+	play() {
 		if(this.__index !== -1) { return }
-
 		this.__index = this.time.timers.push(this) - 1
 	}
 
-	_stop()
-	{
+	_stop() {
 		if(this.__index === -1) { return }
 		if(this.updating) {
 			this.time.timersRemove.push(this)
 		}
-		else
-		{
+		else {
 			const timers = this.time.timers
 			const timer = timers[timers.length - 1]
 			timer.__index = this.__index
@@ -139,8 +154,7 @@ class Timer
 		this.__index = -1
 	}
 
-	stop()
-	{
+	stop() {
 		this._stop()
 		this.paused = false
 		this.numTimes = 0
@@ -150,34 +164,27 @@ class Timer
 		}
 	}
 
-	pause()
-	{
+	pause() {
 		this._stop()
 		this.paused = true
 	}
 
-	resume()
-	{
+	resume() {
 		if(!this.paused) { return }
-
 		this.paused = false
 		this.tStart = Date.now()
 	}
 
-	reset()
-	{
+	reset() {
 		this.tAccumulator = 0
 		this.numTimes = this.initNumTimes
 		this.paused = false
 		this.play()
 	}
 
-	update(tDelta)
-	{
+	update(tDelta) {
 		this.tAccumulator += tDelta
-
-		while(this.tAccumulator >= this.tDelta)
-		{
+		while(this.tAccumulator >= this.tDelta) {
 			this.tAccumulator -= this.tDelta
 
 			if(this.numTimes !== 0) {
