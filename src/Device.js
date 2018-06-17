@@ -14,8 +14,7 @@ let str_exitPointerLock = null
 let str_onpointerlockchange = null
 let str_pointerLockElement = null
 
-const Device = 
-{
+const Device = {
 	name: "Unknown",
 	version: "0",
 	versionBuffer: null,
@@ -29,8 +28,7 @@ const Device =
 	audioFormats: [],
 	backingStoreRatio: 1,
 
-	pointerLock(element)
-	{
+	pointerLock(element) {
 		if(!Device.supports.pointerLock) { return }
 
 		if(element) {
@@ -41,15 +39,13 @@ const Device =
 		}
 	},
 
-	get pointerLockElement() 
-	{
+	get pointerLockElement() {
 		if(!Device.supports.pointerLock) { return null }
 
 		return document[str_pointerLockElement]
 	},
 
-	set fullscreen(element) 
-	{
+	set fullscreen(element) {
 		if(Device.fullscreenEnabled) {
 			element[str_requestFullscreen]()
 		}
@@ -58,42 +54,34 @@ const Device =
 		}
 	},
 
-	get fullscreen()
-	{
+	get fullscreen() {
 		if(Device.fullscreenEnabled) {
 			return document[str_fullscreen]
 		}
-
-		return false;
+		return false
 	},
 
-	get fullscreenEnabled() 
-	{
+	get fullscreenEnabled() {
 		if(Device.supports.fullscreen && document[str_fullscreenEnabled]) {
-			return true;
+			return true
 		}
-
-		return false;
+		return false
 	},
 
-	get fullscreenElement()
-	{
+	get fullscreenElement() {
 		if(!Device.fullscreenEnabled) {
-			return null;
+			return null
 		}
-
 		return document[str_fullscreenElement]
 	},
 
-	fullscreenExit()
-	{
+	fullscreenExit() {
 		if(Device.fullscreenEnabled) {
 			document[str_exitFullscreen]()
 		}
 	},
 
-	on(event, func)
-	{
+	on(event, func) {
 		let buffer = listeners[event]
 		if(buffer) {
 			buffer.push(func)
@@ -104,8 +92,7 @@ const Device =
 		}
 	},
 
-	off(event, func)
-	{
+	off(event, func) {
 		const buffer = listeners[event]
 		if(!buffer) { return }
 
@@ -116,8 +103,7 @@ const Device =
 		buffer.pop()
 	},
 
-	emit(event, arg)
-	{
+	emit(event, arg) {
 		const buffer = listeners[event]
 		if(!buffer) { return }
 
@@ -127,8 +113,7 @@ const Device =
 	}	
 }
 
-const load = function()
-{
+const load = () => {
 	checkBrowser()
 	checkMobileAgent()
 	checkCanvas()
@@ -153,8 +138,7 @@ const load = function()
 	addEventListeners()
 }
 
-const checkBrowser = function()
-{
+const checkBrowser = () => {
 	const regexps = {
 		"Chrome": [ /Chrome\/(\S+)/ ],
 		"Firefox": [ /Firefox\/(\S+)/ ],
@@ -171,12 +155,9 @@ const checkBrowser = function()
 	let name, currRegexp, match
 	let numElements = 2
 
-	for(name in regexps)
-	{
-		while(currRegexp = regexps[name].shift())
-		{
-			if(match = userAgent.match(currRegexp))
-			{
+	for(name in regexps) {
+		while(currRegexp = regexps[name].shift()) {
+			if(match = userAgent.match(currRegexp)) {
 				Device.version = (match[1].match(new RegExp("[^.]+(?:\.[^.]+){0," + --numElements + "}")))[0]
 				Device.name = name
 
@@ -186,7 +167,6 @@ const checkBrowser = function()
 				for(let n = 0; n < versionBufferLength; n++) {
 					Device.versionBuffer[n] = parseInt(versionBuffer[n])
 				}
-
 				break
 			}
 		}
@@ -195,8 +175,7 @@ const checkBrowser = function()
 	if(Device.versionBuffer === null || Device.name === "unknown") {
 		console.warn("(Device) Could not detect browser.")
 	}
-	else 
-	{
+	else {
 		if(Device.name === "Chrome" || Device.name === "Safari" || Device.name === "Opera") {
 			Device.vendor = "webkit"
 		}
@@ -209,12 +188,11 @@ const checkBrowser = function()
 	}				
 }
 
-const checkMobileAgent = function() {
+const checkMobileAgent = () => {
 	Device.mobile = (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
 }
 
-const checkBackingStoreRatio = function() 
-{
+const checkBackingStoreRatio = () => {
 	if(!Device.supports.canvas) { return }
 
 	const canvas = document.createElement("canvas")
@@ -228,20 +206,17 @@ const checkBackingStoreRatio = function()
 	}
 }
 
-const checkCanvas= function() {
+const checkCanvas = () => {
 	Device.supports.canvas = !!window.CanvasRenderingContext2D;
 }
 
-const checkWebGL = function()
-{
+const checkWebGL = () => {
 	const canvas = document.createElement("canvas")
 	const context = canvas.getContext("webgl") || canvas.getContext("experimental-webgl")
-
 	Device.supports.webgl = !!context
 }
 
-const checkAudioFormats = function()
-{
+const checkAudioFormats = () => {
 	const audio = document.createElement("audio")
 	if(audio.canPlayType("audio/mp4")) {
 		Device.audioFormats.push("m4a")
@@ -257,8 +232,7 @@ const checkAudioFormats = function()
 	}		
 }
 
-const checkAudioAPI = function()
-{
+const checkAudioAPI = () => {
 	if(!window.AudioContext) 
 	{
 		window.AudioContext = window.webkitAudioContext || 
@@ -272,8 +246,7 @@ const checkAudioAPI = function()
 	}
 }
 
-const checkPageVisibility = function()
-{
+const checkPageVisibility = () => {
 	if(document.hidden !== undefined) {
 		str_hidden = "hidden"
 		str_visibilityChange = "visibilitychange"
@@ -289,8 +262,7 @@ const checkPageVisibility = function()
 	}
 }
 
-const checkFullscreen = function()
-{
+const checkFullscreen = () => {
 	// fullscreen
 	if(document.fullscreen !== undefined) {
 		str_fullscreen = "fullscreen"
@@ -357,8 +329,7 @@ const checkFullscreen = function()
 	}	
 }
 
-const checkConsoleCSS = function() 
-{
+const checkConsoleCSS = () => {
 	if(!Device.mobile && (Device.name === "Chrome" || Device.name === "Opera")) {
 		Device.supports.consoleCSS = true
 	}
@@ -367,8 +338,7 @@ const checkConsoleCSS = function()
 	}		
 }
 
-const checkFileAPI = function() 
-{
+const checkFileAPI = () => {
 	if(window.File && window.FileReader && window.FileList && window.Blob) {
 		Device.supports.fileAPI = true
 	}
@@ -377,8 +347,7 @@ const checkFileAPI = function()
 	}
 }
 
-const checkFileSystemAPI = function() 
-{
+const checkFileSystemAPI = () => {
 	if(!window.requestFileSystem) 
 	{
 		window.requestFileSystem = window.webkitRequestFileSystem || 
@@ -392,19 +361,16 @@ const checkFileSystemAPI = function()
 	}
 }
 
-const polyfill = function()
-{
+const polyfill = () => {
 	if(!Number.MAX_SAFE_INTEGER) {
 		Number.MAX_SAFE_INTEGER = 9007199254740991
 	}
-
 	supportConsole()
 	supportRequestAnimFrame()
 	supportPerformanceNow()
 }
 
-const supportConsole = function()
-{
+const supportConsole = () => {
 	if(!window.console) 
 	{
 		window.console = {
@@ -415,12 +381,9 @@ const supportConsole = function()
 	}
 }
 
-const supportRequestAnimFrame = function()
-{
-	if(!window.requestAnimationFrame)
-	{
-		window.requestAnimationFrame = (function()
-		{
+const supportRequestAnimFrame = () => {
+	if(!window.requestAnimationFrame) {
+		window.requestAnimationFrame = (function() {
 			return window.webkitRequestAnimationFrame ||
 				window.mozRequestAnimationFrame ||
 				window.oRequestAnimationFrame ||
@@ -433,8 +396,7 @@ const supportRequestAnimFrame = function()
 	}
 }
 
-const supportPerformanceNow = function()
-{
+const supportPerformanceNow = () => {
 	if(window.performance === undefined) {
 		window.performance = {}
 	}
@@ -444,8 +406,7 @@ const supportPerformanceNow = function()
 	}
 }
 
-const addEventListeners = function()
-{
+const addEventListeners = () => {
 	window.addEventListener("resize", onResize, false)
 	window.addEventListener("orientationchange", onOrientationChange, false);
 
@@ -467,8 +428,7 @@ const addEventListeners = function()
 	}
 }
 
-const onResize = function(domEvent)
-{
+const onResize = (domEvent) => {
 	Device.emit("resize", window)
 
 	if(window.innerHeight > window.innerWidth) 
@@ -484,8 +444,7 @@ const onResize = function(domEvent)
 	}
 }
 
-const onOrientationChange = function(domEvent)
-{
+const onOrientationChange = (domEvent) => {
 	Device.emit("resize", window);
 
 	if(window.innerHeight > window.innerWidth) {
@@ -498,35 +457,32 @@ const onOrientationChange = function(domEvent)
 	}
 }
 
-const onFocus = function(domEvent) {
+const onFocus = (domEvent) => {
 	Device.visible = true
-	Device.emit("visibile", true)
+	Device.emit("visible", true)
 }
 
-const onBlur = function(domEvent) {
+const onBlur = (domEvent) => {
 	Device.visible = false
-	Device.emit("visibile", false)
+	Device.emit("visible", false)
 }
 
-const onVisibilityChange = function(domEvent) {
+const onVisibilityChange = (domEvent) => {
 	Device.visible = !document[str_hidden]
-	Device.emit("visibile", Device.visible)
+	Device.emit("visible", Device.visible)
 }
 
-const onFullscreenChange = function(domEvent) {
+const onFullscreenChange = (domEvent) => {
 	Device.emit("fullscreen", Device.fullscreenElement)
 }
 
-const onFullscreenError = function(domEvent) {
+const onFullscreenError = (domEvent) => {
 	console.error("Fullscreen denied.")
 }
 
-const onPointerLockChange = function(domEvent) {
-	
-}
+const onPointerLockChange = (domEvent) => {}
 
-const checkPointerLock = function() 
-{
+const checkPointerLock = () => {
 	const canvas = HTMLCanvasElement.prototype
 
 	if(canvas.requestPointerLock !== undefined) {

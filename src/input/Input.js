@@ -3,8 +3,8 @@ import Engine from "../Engine"
 import Key from "./Key"
 
 const numKeys = 256
-const numInputs = 10
-const numTotalKeys = numKeys + numInputs + 1
+const numTouches = 10
+const numTotalKeys = numKeys + numTouches + 1
 
 function Subscriber(owner, func) {
 	this.owner = owner
