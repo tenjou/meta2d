@@ -10,8 +10,8 @@ class Tilemap extends Entity
 {
 	constructor(resource) {
 		super()
-		this.numTilesX = 0
-		this.numTilesY = 0
+		this.sizeX = 0
+		this.sizeY = 0
 		this.tileWidth = 0
 		this.tileHeight = 0
 		this.type = Tilemap.Type.Orthographic
@@ -21,15 +21,15 @@ class Tilemap extends Entity
 		}
 	}
 
-	create(numTilesX, numTilesY, tileWidth, tileHeight, type = Tilemap.Type.Orthographic, name = "Layer") {
+	create(sizeX, sizeY, tileWidth, tileHeight, type = Tilemap.Type.Orthographic, name = "Layer") {
 		this.name = name
-		this.numTilesX = numTilesX
-		this.numTilesY = numTilesY
+		this.sizeX = sizeX
+		this.sizeY = sizeY
 		this.tileWidth = tileWidth
 		this.tileHeight = tileHeight
 		this.type = type
 		this.tilesets = []
-		this.size.set(numTilesX * tileWidth, numTilesY * tileHeight)
+		this.size.set(sizeX * tileWidth, sizeY * tileHeight)
 	}
 
 	createLayer(data, tileWidth, tileHeight, type, name) {
@@ -50,7 +50,7 @@ class Tilemap extends Entity
 		}
 
 		this.addChild(layer)
-		layer.create(this.numTilesX, this.numTilesY, this.tileWidth, this.tileHeight, data, name)
+		layer.create(this.sizeX, this.sizeY, this.tileWidth, this.tileHeight, data, name)
 		return layer
 	}
 
@@ -60,10 +60,8 @@ class Tilemap extends Entity
 		this.tilesets.push(tileset)
 	}
 
-	loadFromResource(resource) 
-	{
+	loadFromResource(resource) {
 		let ref = null
-
 		if(typeof resource === "string") {
 			ref = Resources.get(resource)
 			if(!ref) {
@@ -121,6 +119,10 @@ class Tilemap extends Entity
 		
 		const child = this.children[0]
 		return child.getWorldFromTile(x, y, output)
+	}
+
+	getProperties(gid) {
+		return this.tileset.getProperties(gid - this.tileset.gid)
 	}
 }
 
