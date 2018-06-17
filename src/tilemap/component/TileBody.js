@@ -5,8 +5,7 @@ import Vector2 from "../../math/Vector2"
 const point = new Vector2()
 const direction = new Vector2()
 
-class TileBody extends Component
-{
+class TileBody extends Component {
 	constructor() {
 		super()
 		this.x = 0
@@ -16,10 +15,12 @@ class TileBody extends Component
 		this.speed = 250
 		this._path = null
 		this.direction = new Vector2(0, 0)
-		this.onTargetDone = null
-		this.onPathDone = null
 		this.tStart = 0
 		this.duration = 0
+
+		this.onMoveStart = null
+		this.onMoveDone = null
+		this.onPathDone = null
 	}
 
 	onEnable() {
@@ -34,8 +35,8 @@ class TileBody extends Component
 				this.tStart = 0
 				this.direction.set(0, 0)					
 				this.parent.position.set(this.targetX, this.targetY)
-				if(this.onTargetDone) {
-					this.onTargetDone()
+				if(this.onMoveDone) {
+					this.onMoveDone()
 				}
 				if(this.path && this.path.length > 0) {
 					const node = this.path.pop()
@@ -66,8 +67,8 @@ class TileBody extends Component
 	}
 
 	moveTo(x, y) {
-		if(this.x === x && this.y === y) { 
-			return 
+		if(this.onMoveStart) {
+			this.onMoveStart(x, y)
 		}
 		this.parent.parent.getWorldFromTile(x, y, point)
 		this.x = x
