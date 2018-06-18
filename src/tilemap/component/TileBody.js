@@ -68,7 +68,9 @@ class TileBody extends Component {
 
 	moveTo(x, y) {
 		if(this.onMoveStart) {
-			this.onMoveStart(x, y)
+			if(this.onMoveStart(x, y)) {
+				return
+			}
 		}
 		this.parent.parent.getWorldFromTile(x, y, point)
 		this.x = x
