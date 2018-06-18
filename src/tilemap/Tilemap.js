@@ -16,6 +16,7 @@ class Tilemap extends Entity
 		this.tileHeight = 0
 		this.type = Tilemap.Type.Orthographic
 		this.tilesets = []
+		this.properties = {}
 		if(resource) {
 			this.loadFromResource(resource)
 		}
@@ -81,6 +82,7 @@ class Tilemap extends Entity
 	loadFromTiled(tiled) {
 		this.create(tiled.width, tiled.height, tiled.tileWidth, tiled.tileHeight, tiled.orientation, tiled.name)
 		this.tilesets = tiled.tilesets
+		this.properties = tiled.properties
 		const layers = tiled.layers
 		for(let n = 0; n < layers.length; n++) {
 			const layerInfo = layers[n]
@@ -108,21 +110,27 @@ class Tilemap extends Entity
 	}
 
 	getTileFromWorld(x, y, output) {
-		if(!this.children) { return null }
+		if(!this.children) { return }
 		
 		const child = this.children[0]
 		return child.getTileFromWorld(x, y, output)
 	}
 
 	getWorldFromTile(x, y, output) {
-		if(!this.children) { return null }
+		if(!this.children) { return }
 		
 		const child = this.children[0]
 		return child.getWorldFromTile(x, y, output)
 	}
 
 	getProperties(gid) {
-		return this.tileset.getProperties(gid - this.tileset.gid)
+		for(let n = 0; n < this.tilesets.length; n++) {
+			const tileset = this.tilesets[n]
+			if(tileset.gid <= gid) {
+				return tileset.getProperties(gid - tileset.gid)
+			}
+		}
+		return null
 	}
 }
 

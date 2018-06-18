@@ -23,6 +23,7 @@ class Tiled extends Resource
 		this.orientation = null
 		this.layers = null
 		this.tilesets = null
+		this.properties = {}
 		this.path = null
 		this._dependencies = 0
 		this._dependenciesLoaded = 0
@@ -86,6 +87,7 @@ class Tiled extends Resource
 		this.tileWidth = data.tilewidth
 		this.tileHeight = data.tileheight
 		this.orientation = data.orientation
+		this.properties = data.properties
 
 		const tilesets = data.tilesets
 		const rootPath = Utils.getRootPath(this.path)
@@ -209,6 +211,15 @@ class Tiled extends Resource
 					layer.data = layerData
 					this.layers.push(layer)
 				} break
+
+				case "properties":
+					const children = child.childNodes
+					for(let n = 0; n < children.length; n++) {
+						const child = children[n]
+						if(child.nodeName === "#text") { continue }
+						this.properties[child.getAttribute("name")] = child.getAttribute("value")
+					}
+					break
 			}
 		}
 
