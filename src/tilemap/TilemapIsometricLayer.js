@@ -8,11 +8,11 @@ class TilemapIsometricLayer extends TilemapLayer
 	}
 
 	updateSize() {
-		this.startX = this.halfTileWidth * (this.numTilesY - 1)
+		this.startX = this.halfTileWidth * (this.sizeY - 1)
 		this.startY = 0
 		this.size.set(
-			this.tileset.tileWidth + ((this.numTilesX - 1) * this.halfTileWidth) + (this.numTilesY - 1) * this.halfTileWidth,
-			this.tileset.tileHeight + ((this.numTilesX - 1) * this.halfTileHeight) + (this.numTilesY - 1) * this.halfTileHeight)
+			this.tileset.tileWidth + ((this.sizeX - 1) * this.halfTileWidth) + (this.sizeY - 1) * this.halfTileWidth,
+			this.tileset.tileHeight + ((this.sizeX - 1) * this.halfTileHeight) + (this.sizeY - 1) * this.halfTileHeight)
 	}
 
 	getWorldFromTile(x, y, output, tileCenter = true) {
@@ -28,10 +28,10 @@ class TilemapIsometricLayer extends TilemapLayer
 
 	getTileFromWorld(worldX, worldY, output) {	
 		const transform = this.transform
-		worldX -= transform.m[6] + ((this.numTilesX - 1) * this.halfTileWidth) - this.tileset.offsetX
+		worldX -= transform.m[6] + ((this.sizeX - 1) * this.halfTileWidth) - this.tileset.offsetX
 		worldY -= transform.m[7] + this._size.y - this.halfTileHeight - this.tileset.offsetY
-		output.x = Math.floor((worldX / this.halfTileWidth + (worldY / this.halfTileHeight)) / 2) + this.numTilesX - 1
-		output.y = Math.floor((worldY / this.halfTileHeight - (worldX / this.halfTileWidth)) / 2) + this.numTilesY
+		output.x = Math.floor((worldX / this.halfTileWidth + (worldY / this.halfTileHeight)) / 2) + this.sizeX - 1
+		output.y = Math.floor((worldY / this.halfTileHeight - (worldX / this.halfTileWidth)) / 2) + this.sizeY
 	}
 }
 

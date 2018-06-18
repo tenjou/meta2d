@@ -28,8 +28,8 @@ class TilemapLayer extends Renderable
 	constructor() {
 		super()
 		this.name = "Layer"
-		this.numTilesX = 0
-		this.numTilesY = 0
+		this.sizeX = 0
+		this.sizeY = 0
 		this.tileWidth = 0
 		this.tileHeight = 0
 		this.halfTileWidth = 0
@@ -43,22 +43,22 @@ class TilemapLayer extends Renderable
 		this._entityMode = false
 	}
 
-	create(numTilesX, numTilesY, tileWidth, tileHeight, data, name = "Layer") {
+	create(sizeX, sizeY, tileWidth, tileHeight, data, name = "Layer") {
 		this.name = name
-		this.numTilesX = numTilesX
-		this.numTilesY = numTilesY
+		this.sizeX = sizeX
+		this.sizeY = sizeY
 		this.tileWidth = tileWidth
 		this.tileHeight = tileHeight
 		this.halfTileWidth = tileWidth * 0.5
 		this.halfTileHeight = tileHeight * 0.5
-		this.dataInfo = new Array(numTilesX * numTilesY)
+		this.dataInfo = new Array(sizeX * sizeY)
 		this.updateData(data)
 		this.extractTileset()
 		if(this.tileset) {
 			this.updateSize()
 		}
 
-		const numTiles = numTilesX * numTilesY
+		const numTiles = sizeX * sizeY
 		this.indices = new Uint16Array(numTiles * 6)
 		let indiceIndex = 0
 		let verticeOffset = 0
@@ -85,13 +85,13 @@ class TilemapLayer extends Renderable
 		if(this._entityMode) {
 			return
 		}
-		this.buffer = new Float32Array(this.numTilesX * this.numTilesY * 16)
+		this.buffer = new Float32Array(this.sizeX * this.sizeY * 16)
 		
 		let index = 0
 		let numElements = 0
-		for(let y = 0; y < this.numTilesY; y++) {
-			for(let x = 0; x < this.numTilesX; x++) {
-				const id = x + (y * this.numTilesX)
+		for(let y = 0; y < this.sizeY; y++) {
+			for(let x = 0; x < this.sizeX; x++) {
+				const id = x + (y * this.sizeX)
 				let gid = this.data[id] - this.tileset.gid
 				if(gid > -1) {
 					this.getWorldFromTile(x, y, output, false)
@@ -119,7 +119,7 @@ class TilemapLayer extends Renderable
 	}
 
 	extractTileset() {
-		const num = this.numTilesX * this.numTilesY
+		const num = this.sizeX * this.sizeY
 		const tilesets = this.parent.tilesets
 
 		let tileset = null
@@ -160,9 +160,9 @@ class TilemapLayer extends Renderable
 	}
 
 	createSprites() {
-		for(let y = 0; y < this.numTilesY; y++) {
-			for(let x = 0; x < this.numTilesX; x++) {
-				const id = x + (y * this.numTilesX)
+		for(let y = 0; y < this.sizeY; y++) {
+			for(let x = 0; x < this.sizeX; x++) {
+				const id = x + (y * this.sizeX)
 				let gid = this.data[id] - this.tileset.gid
 				if(gid > -1) {
 					this.createSprite(gid, x, y)
@@ -175,7 +175,7 @@ class TilemapLayer extends Renderable
 		const output = TilemapLayer.output
 		const sprite = new Sprite()
 		sprite.frame = this.tileset.getFrame(gid & ~ALL_FLAGS)
-		sprite.z = x + (y * this.numTilesX)
+		sprite.z = x + (y * this.sizeX)
 		this.addChild(sprite)
 		this.getWorldFromTile(x, y)
 		sprite.position.set(output.x, output.y)
@@ -199,14 +199,16 @@ class TilemapLayer extends Renderable
 		}
 	}
 
+	saveData() {}
+
 	setGid(x, y, gid) {
-		const id = x + (y * this.numTilesX)
+		const id = x + (y * this.sizeX)
 		this.data[id] = gid
 		this.needUpdateMesh = true
 	}
 
 	getGid(x, y) {
-		const id = x + (y * this.numTilesX)
+		const id = x + (y * this.sizeX)
 		if(id < 0) {
 			return 0
 		}
