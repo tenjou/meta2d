@@ -222,6 +222,11 @@ class TilemapLayer extends Renderable
 		return this.tileset.getProperties(gid - this.tileset.gid)
 	}
 
+	getPropertiesFromTile(x, y) {
+		const gid = this.getGid(x, y)
+		return this.getProperties(gid)
+	}
+
 	updateUniforms() {
 		this.drawCommand.uniforms = Object.assign({
 			color: this.color
