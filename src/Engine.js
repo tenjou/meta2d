@@ -21,7 +21,8 @@ const Engine =
 		height: 0,
 		antialias: true,
 		alpha: true,
-		upscale: true
+		upscale: true,
+		container: null
 	},
 
 	addUpdating(entity) {

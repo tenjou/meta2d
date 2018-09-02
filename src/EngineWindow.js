@@ -22,9 +22,15 @@ class EngineWindow {
 	}
 
 	create() {
-		const container = document.createElement("div")
-		container.style.cssText = "position:absolute; width:100%; height:100%; background: #ddd; display:flex; align-items:center; justify-content:center;"
-	
+		let container = null
+		if(Engine.settings.container) {
+			container = document.querySelector(Engine.settings.container)
+		}
+		if(!container) {
+			container = document.createElement("div")
+			container.style.cssText = "position:absolute; width:100%; height:100%; background: #ddd; display:flex; align-items:center; justify-content:center;"
+		}
+		
 		const canvas = document.createElement("canvas")
 		const gl = canvas.getContext("webgl", { 
 			antialias: Engine.settings.antialias, 
@@ -80,11 +86,11 @@ class EngineWindow {
 		const container = Engine.container
 		const canvas = Engine.canvas
 
-		const targetWidth = settings.width ? settings.width : window.innerWidth
-		const targetHeight = settings.height ? settings.height : window.innerHeight
+		const targetWidth = settings.width ? settings.width : container.clientWidth
+		const targetHeight = settings.height ? settings.height : container.clientHeight
 
-		const widthRatio = window.innerWidth / targetWidth
-		const heightRatio = window.innerHeight / targetHeight
+		const widthRatio = container.clientWidth / targetWidth
+		const heightRatio = container.clientHeight / targetHeight
 		const currRatio = (widthRatio < heightRatio) ? widthRatio : heightRatio 
 
 		let ratio
