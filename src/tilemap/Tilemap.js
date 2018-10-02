@@ -2,12 +2,10 @@ import Entity from "../entity/Entity"
 import Resources from "../resources/Resources"
 import Tileset from "../resources/Tileset"
 import Tiled from "../resources/Tiled"
-import Texture from "../resources/Texture"
 import TilemapOrthogonalLayer from "./TilemapOrthogonalLayer"
 import TilemapIsometricLayer from "./TilemapIsometricLayer"
 
-class Tilemap extends Entity
-{
+class Tilemap extends Entity {
 	constructor(resource) {
 		super()
 		this.sizeX = 0
@@ -57,7 +55,7 @@ class Tilemap extends Entity
 
 	createTileset(config) {
 		const tileset = new Tileset()
-		tileset.loadFromCfg(config)
+		tileset.loadFromConfig(config)
 		this.tilesets.push(tileset)
 	}
 
