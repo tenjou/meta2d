@@ -20,7 +20,7 @@ class Tilemap extends Entity {
 		}
 	}
 
-	create(sizeX, sizeY, tileWidth, tileHeight, type = Tilemap.Type.Orthographic, name = "Layer") {
+	create(sizeX, sizeY, tileWidth, tileHeight, type = Tilemap.Type.Orthogonal, name = "Layer") {
 		this.name = name
 		this.sizeX = sizeX
 		this.sizeY = sizeY
@@ -31,9 +31,9 @@ class Tilemap extends Entity {
 		this.size.set(sizeX * tileWidth, sizeY * tileHeight)
 	}
 
-	createLayer(data, tileWidth, tileHeight, type, name) {
+	createLayer(data, name) {
 		let layer = null
-		switch(type) {
+		switch(this.type) {
 			case Tilemap.Type.Orthogonal:
 				layer = new TilemapOrthogonalLayer()
 				break
@@ -84,7 +84,7 @@ class Tilemap extends Entity {
 		const layers = tiled.layers
 		for(let n = 0; n < layers.length; n++) {
 			const layerInfo = layers[n]
-			const layer = this.createLayer(layerInfo.data, layerInfo.tileWidth, layerInfo.tileHeight, this.type, layerInfo.name)
+			const layer = this.createLayer(layerInfo.data, layerInfo.name)
 			if(layer) {
 				if(layer.tileset) {
 					layer.hidden = layerInfo.visible ? false : true

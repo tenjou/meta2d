@@ -21,7 +21,6 @@ class Sprite extends Renderable {
 		super(null)
 		this._texture = null
 		this._frame = null
-		this.frameIndex = null
 		this.color = new Vector4(1, 1, 1, 1)
 
 		this.material = spriteMaterial
@@ -49,11 +48,11 @@ class Sprite extends Renderable {
 	}
 
 	set texture(texture) {
-		this.frameIndex = "0"
-
 		if(this._texture) {
 			this.texture.unwatch(this.handleTextureFunc)
 		}
+
+		let frameName = null
 
 		if(typeof texture === "string") {
 			let newTexture
@@ -65,7 +64,7 @@ class Sprite extends Renderable {
 			else {
 				const textureInfo = texture.split("/")
 				newTexture = Resources.get(textureInfo[0])
-				this.frameIndex = textureInfo[1]
+				frameName = textureInfo[1]
 			}
 
 			if(!newTexture) {
@@ -80,10 +79,10 @@ class Sprite extends Renderable {
 			this._texture = texture
 		}
 		
-		if(texture) {
-			texture.watch(this.handleTextureFunc)
-			if(texture.loaded) {
-				this.frame = this._texture.getFrame(this.frameIndex)
+		if(this._texture) {
+			this._texture.watch(this.handleTextureFunc)
+			if(this._texture.loaded) {
+				this.frame = this._texture.getFrame(frameName || 0)
 			}
 		}
 		else {
