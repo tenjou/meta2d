@@ -1,7 +1,5 @@
-import Resources from "./Resources"
 import Texture from "./Texture"
 import Frame from "./Frame"
-import Utils from "../Utils"
 
 const FLIPPED_HORIZONTALLY_FLAG = 0x80000000
 const FLIPPED_VERTICALLY_FLAG = 0x40000000
@@ -30,11 +28,9 @@ class Tileset extends Texture
 		this._magFilter = Texture.NEAREST
 		this._wrapS = Texture.CLAMP_TO_EDGE
 		this._wrapT = Texture.CLAMP_TO_EDGE
-		this.gid = cfg.gid
-		this.width = cfg.width || 0
-		this.height = cfg.height || 0
-		this.tileWidth = cfg.tileWidth || 0
-		this.tileHeight = cfg.tileHeight || 0
+		this.gid = cfg.gid || 0
+		this.tileWidth = cfg.tileWidth || 1
+		this.tileHeight = cfg.tileHeight || 1
 		this.columns = cfg.columns || 0
 		this.offsetX = cfg.offsetX || 0
 		this.offsetY = cfg.offsetY || 0
