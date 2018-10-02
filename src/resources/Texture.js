@@ -37,8 +37,8 @@ class Texture extends Resource
 		this.path = null
 		this.framesX = config.framesX || 1
 		this.framesY = config.framesY || 1
-		this._minFilter = config.minFilter || Texture.LINEAR
-		this._magFilter = config.magFilter || Texture.LINEAR
+		this._minFilter = config.pixelated ? Texture.NEAREST : (config.minFilter || Texture.LINEAR)
+		this._magFilter = config.pixelated ? Texture.NEAREST : (config.magFilter || Texture.LINEAR)
 		this._wrapS = config.wrapS || Texture.CLAMP_TO_EDGE
 		this._wrapT = config.wrapT || Texture.CLAMP_TO_EDGE
 		if(config.path) {
@@ -90,17 +90,16 @@ class Texture extends Resource
 		else {
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, this._wrapS)
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this._wrapT)
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this._magFilter)
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this._minFilter)
 		}
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this._magFilter)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this._minFilter)		
 		gl.bindTexture(gl.TEXTURE_2D, null)
 
 		this.updateFrames()
 		this.loading = false
 	}
 
-	loadFromCanvas(canvas, resize = true)
-	{
+	loadFromCanvas(canvas, resize = true) {
 		const gl = Engine.gl
 
 		if(resize) {
