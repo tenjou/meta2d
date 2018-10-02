@@ -135,7 +135,6 @@ class Texture extends Resource
 
 		for(let y = 0; y < this.framesY; y++) {
 			for(let x = 0; x < this.framesX; x++) {
-				const frame = this.frames[index]
 				const minX = posX * widthUV
 				const minY = posY * heightUV
 				const maxX = (posX + frameWidth) * widthUV

@@ -16,17 +16,25 @@ Engine.on("setup", () => {
 	})
 })
 
-class Sprite extends Renderable
-{
+class Sprite extends Renderable {
 	constructor(texture) {
 		super(null)
 		this._texture = null
 		this._frame = null
+		this.frameIndex = null
 		this.color = new Vector4(1, 1, 1, 1)
 
 		this.material = spriteMaterial
+		this.handleTextureFunc = this.handleTexture.bind(this)
 		if(texture) {
 			this.texture = texture
+		}
+	}
+
+	onDisable() {
+		super.onDisable()
+		if(this.texture) {
+			this.texture.unwatch(this.handleTextureFunc)
 		}
 	}
 
@@ -40,12 +48,14 @@ class Sprite extends Renderable
 		this.needUpdateMesh = false
 	}
 
-	set texture(texture) 
-	{
-		let frameName = "0"
+	set texture(texture) {
+		this.frameIndex = "0"
 
-		if(typeof texture === "string") 
-		{
+		if(this._texture) {
+			this.texture.unwatch(this.handleTextureFunc)
+		}
+
+		if(typeof texture === "string") {
 			let newTexture
 
 			const index = texture.indexOf("/")
@@ -55,22 +65,26 @@ class Sprite extends Renderable
 			else {
 				const textureInfo = texture.split("/")
 				newTexture = Resources.get(textureInfo[0])
-				frameName = textureInfo[1]
+				this.frameIndex = textureInfo[1]
 			}
 
 			if(!newTexture) {
 				console.warn(`(Sprite.texture) Could not find resource with id: ${texture}`)
-				texture = null
+				this._texture = null
 			}
 			else {
-				texture = newTexture
+				this._texture = newTexture
 			}
 		}
-
-		this._texture = texture
+		else {
+			this._texture = texture
+		}
+		
 		if(texture) {
-			this.frame = this._texture.getFrame(frameName)
-			
+			texture.watch(this.handleTextureFunc)
+			if(texture.loaded) {
+				this.frame = this._texture.getFrame(this.frameIndex)
+			}
 		}
 		else {
 			this.size.set(0, 0)
@@ -112,6 +126,10 @@ class Sprite extends Renderable
 
 	get alpha() {
 		return this.color.w
+	}
+
+	handleTexture(event, texture) {
+		this.frame = texture.getFrame(this.frameIndex)
 	}
 }
 
