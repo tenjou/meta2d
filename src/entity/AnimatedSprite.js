@@ -2,11 +2,9 @@ import Sprite from "./Sprite"
 import Time from "../Time"
 import Resources from "../resources/Resources"
 
-class AnimatedSprite extends Sprite
-{
+class AnimatedSprite extends Sprite {
 	constructor(texture) {
 		super(texture)
-		this.animation = null
 		this._frameIndex = 0
 		this.tFrame = 0
 		this.tFrameDelay = 0
@@ -29,7 +27,7 @@ class AnimatedSprite extends Sprite
 			return
 		}
 
-		const maxFrames = this.animation.frames.length
+		const maxFrames = this.texture.frames.length
 
 		this.tFrame += Time.deltaRender * this.speed
 
@@ -75,7 +73,7 @@ class AnimatedSprite extends Sprite
 				}		
 			}
 
-			this.frame = this.animation.getFrame(this._frameIndex)
+			this.frame = this.texture.getFrame(this._frameIndex)
 			this.tFrameDelay = this.frame.delay
 		}
 	}
@@ -86,17 +84,17 @@ class AnimatedSprite extends Sprite
 			console.error(`(AnimatedSprite.play) No such animation found: ${animationId}`)
 			return
 		}
-		if(this.animation === newAnimation) { 
+		if(this.texture === newAnimation) { 
 			return 
 		}
-		this.animation = newAnimation
+		this.texture = newAnimation
 
 		this.loop = loop || true
 		this.speed = speed || 1	
 		this.reverse = reverse || false
-		this.pauseLastFrame = this.animation.pauseLastFrame
+		this.pauseLastFrame = this.texture.pauseLastFrame
 		if(reverse) {
-			this.frameIndex = this.animation.frames.length - 1
+			this.frameIndex = this.texture.frames.length - 1
 		}
 		else {
 			this.frameIndex = 0
@@ -106,7 +104,7 @@ class AnimatedSprite extends Sprite
 	stop() {
 		this.speed = 0
 		if(reverse) {
-			this.frameIndex = this.animation.frames.length - 1
+			this.frameIndex = this.texture.frames.length - 1
 		}
 		else {
 			this.frameIndex = 0
@@ -115,13 +113,13 @@ class AnimatedSprite extends Sprite
 
 	set frameIndex(frameIndex) {
 		this._frameIndex = frameIndex
-		this.frame = this.animation.getFrame(this._frameIndex)
+		this.frame = this.texture.getFrame(this._frameIndex)
 		this.tFrameDelay = this.frame.delay
 	}
 	
 	get frameIndex() {
 		return this._frameIndex
-	}
+	}		
 }
 
 export default AnimatedSprite
