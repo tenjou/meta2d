@@ -1,8 +1,7 @@
 
 const listeners = {}
 
-const Engine = 
-{
+const Engine = {
 	app: null,
 	container: null,
 	canvas: null,
@@ -69,8 +68,7 @@ const Engine =
 		}
 	},
 	
-	off(event, func)
-	{
+	off(event, func) {
 		const buffer = listeners[event]
 		if(!buffer) { return }
 	
@@ -81,8 +79,7 @@ const Engine =
 		buffer.pop()
 	},
 	
-	emit(event, arg)
-	{
+	emit(event, arg) {
 		const buffer = listeners[event]
 		if(!buffer) { return }
 	
@@ -96,7 +93,7 @@ const Engine =
 				buffer[n](arg)
 			}
 		}
-	}	
+	}
 }
 
 export default Engine

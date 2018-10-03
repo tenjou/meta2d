@@ -23,8 +23,10 @@ class EngineWindow {
 
 	create() {
 		let container = null
-		if(Engine.settings.container) {
-			container = document.querySelector(Engine.settings.container)
+
+		const engineContainer = Engine.settings.container
+		if(engineContainer) {
+			container = (typeof engineContainer === "string") ? document.querySelector(engineContainer) : engineContainer
 		}
 		if(!container) {
 			container = document.createElement("div")
@@ -42,7 +44,9 @@ class EngineWindow {
 		}
 		
 		container.appendChild(canvas)
-		document.body.appendChild(container)
+		if(!engineContainer) {
+			document.body.appendChild(container)
+		}
 	
 		Engine.container = container
 		Engine.canvas = canvas
