@@ -211,9 +211,7 @@ const checkCanvas = () => {
 }
 
 const checkWebGL = () => {
-	const canvas = document.createElement("canvas")
-	const context = canvas.getContext("webgl") || canvas.getContext("experimental-webgl")
-	Device.supports.webgl = !!context
+	Device.supports.webgl = (WebGLRenderingContext !== undefined)
 }
 
 const checkAudioFormats = () => {
