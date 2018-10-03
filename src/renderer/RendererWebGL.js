@@ -23,10 +23,10 @@ class RendererWebGL extends Renderer
 		super()
 		this.prevProjection = null
 		this.prevView = null
-		this.prevMesh = null
 		this.camera = null
 		this.material = null
-		this.indiceBuffer = null
+		this.prevBuffer = null
+		this.prevIndiceBuffer = null
 		Engine.on("setup", this.setup.bind(this))	
 	}
 
@@ -69,8 +69,8 @@ class RendererWebGL extends Renderer
 		this.updateAttribs(command.mesh, command.material)
 		this.updateUniforms(command.material, command.uniforms, command.transform)
 
-		if(this.indiceBuffer !== mesh.indices) {
-			this.indiceBuffer = mesh.indices
+		if(this.prevIndiceBuffer !== mesh.indices) {
+			this.prevIndiceBuffer = mesh.indices
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indices)
 		}
 		gl.drawElements(command.mode, mesh.numElements, gl.UNSIGNED_SHORT, 0)
@@ -117,8 +117,8 @@ class RendererWebGL extends Renderer
 			color: new Vector4(1, 0, 0, 1)	
 		}, command.transform)
 
-		if(this.indiceBuffer !== this.debugMesh.indices) {
-			this.indiceBuffer = this.debugMesh.indices
+		if(this.prevIndiceBuffer !== this.debugMesh.indices) {
+			this.prevIndiceBuffer = this.debugMesh.indices
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.debugMesh.indices)
 		}
 		gl.drawElements(gl.TRIANGLES, this.debugMesh.numElements, gl.UNSIGNED_SHORT, 0)
@@ -152,33 +152,30 @@ class RendererWebGL extends Renderer
 	}
 
 	updateAttribs(mesh, material) {
-		if(this.prevMesh === mesh) {
-			return
-		}
 		const gl = Engine.gl
 		const attribData = material.attribData
 
+		if(this.prevBuffer !== mesh.buffer) {
+			this.prevBuffer = mesh.buffer
+			gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffer)
+		}
+		
 		for(let n = 0; n < attribData.length; n++) {
 			const attrib = attribData[n]
 			switch(attrib.name)
 			{
 				case "position":
-					gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffer)
 					gl.vertexAttribPointer(attrib.loc, 2, gl.FLOAT, false, mesh.stride, 0)
 					break
 
 				case "uv":
-					gl.bindBuffer(gl.ARRAY_BUFFER, mesh.buffer);
 					gl.vertexAttribPointer(attrib.loc, 2, gl.FLOAT, false, mesh.stride, 8)
 					break
 			}
 		}
-
-		this.prevMesh = mesh
 	}
 
-	updateUniforms(material, uniforms, transform)
-	{
+	updateUniforms(material, uniforms, transform) {
 		let numSamplers = 0
 
 		const gl = Engine.gl
@@ -186,7 +183,7 @@ class RendererWebGL extends Renderer
 
 		for(let n = 0; n < uniformData.length; n++) {
 			const uniform = uniformData[n]
-			switch(uniform.type)
+			switch(uniform.type) 
 			{
 				case gl.FLOAT_MAT4:
 				{
@@ -283,6 +280,24 @@ class RendererWebGL extends Renderer
 			}
 		}
 	}	
+
+	updateBuffer(buffer, data) {
+		const gl = Engine.gl
+		if(this.prevBuffer !== buffer) { 
+			this.prevBuffer = buffer	
+			gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+		}
+		gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW)		
+	}
+	
+	updateIndices(buffer, indices) {
+		const gl = Engine.gl
+		if(this.prevIndiceBuffer !== buffer) { 
+			this.prevIndiceBuffer = buffer	
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer)
+		}		
+		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.DYNAMIC_DRAW)		
+	}
 }
 
 export default RendererWebGL

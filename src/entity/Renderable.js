@@ -42,11 +42,10 @@ class Renderable extends Entity
 		this.drawCommand.uniforms = Object.assign({}, this.drawCommand.material.uniforms)		
 	}
 
-	set material(material) 
-	{
+	set material(material) {
 		if(typeof material === "string") {
 			const newMaterial = Resources.get(material)
-			if(!material) {
+			if(!newMaterial) {
 				console.warn(`(Sprite.material) Could not find resource with id: ${material}`)
 			}
 			else {

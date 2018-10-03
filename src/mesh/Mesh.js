@@ -1,9 +1,7 @@
 import Engine from "../Engine"
 
-class Mesh
-{
-	constructor(buffer, indices)
-	{
+class Mesh {
+	constructor(buffer, indices) {
 		const gl = Engine.gl
 
 		if(!buffer) {
@@ -14,16 +12,14 @@ class Mesh
 		}
 
 		this.buffer = gl.createBuffer()
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
-		gl.bufferData(gl.ARRAY_BUFFER, buffer, gl.DYNAMIC_DRAW)
+		Engine.renderer.updateBuffer(this.buffer, buffer)
 
 		this.stride = 16
 		
 		if(indices) {
 			this.numElements = indices.length
 			this.indices = gl.createBuffer()
-			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indices)
-			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.DYNAMIC_DRAW)
+			Engine.renderer.updateIndices(this.indices, indices)
 		}
 		else {
 			this.numElements = 0
@@ -31,21 +27,13 @@ class Mesh
 		}
 	}
 
-	upload(buffer)
-	{
-		const gl = Engine.gl
-
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
-		gl.bufferData(gl.ARRAY_BUFFER, buffer, gl.DYNAMIC_DRAW)
+	upload(data) {
+		Engine.renderer.updateBuffer(this.buffer, data)
 	}
 
-	uploadIndices(indices)
-	{
-		const gl = Engine.gl
-
+	uploadIndices(indices) {
 		this.numElements = indices.length
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indices)
-		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.DYNAMIC_DRAW)
+		Engine.renderer.updateIndices(this.indices, indices)
 	}
 }
 
