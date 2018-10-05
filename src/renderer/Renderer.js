@@ -24,7 +24,6 @@ class Renderer {
 	}
 
 	render() {
-		// console.log("start")
 		const buffer = Stage.buffer
 		for(let n = 0; n < buffer.length; n++) {
 			buffer[n].draw()				
@@ -45,7 +44,6 @@ class Renderer {
 					}
 				}	
 			}
-			// console.log(layer.count)
 			layer.count = 0
 		}
 
@@ -55,7 +53,6 @@ class Renderer {
 		}
 		this.debugCount = 0
 		this.reset()
-		// console.log("end")
 	}
 
 	draw(command) {
