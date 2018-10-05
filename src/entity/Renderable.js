@@ -68,7 +68,7 @@ class Renderable extends Entity
 	}
 
 	get z() {
-		return this.drawCommand.z
+		return this.drawCommand.key
 	}
 
 	setLayer(layerId, recursive = true) {
