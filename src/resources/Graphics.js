@@ -1,14 +1,13 @@
 import Texture from "./Texture"
-import Engine from "../Engine"
 
-class Graphics extends Texture
-{
+class Graphics extends Texture {
 	constructor() {
 		super()
 		this.canvas = document.createElement("canvas")
 		this.ctx = this.canvas.getContext("2d")
 		this.updateFrames()
 		this.needUpdate = true
+		this.loaded = true
 	}
 
 	resize(width, height) {
