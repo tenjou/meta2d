@@ -3,7 +3,6 @@ import Time from "../../Time"
 import Vector2 from "../../math/Vector2"
 
 const point = new Vector2()
-const direction = new Vector2()
 
 class TileBody extends Component {
 	constructor() {
@@ -24,7 +23,7 @@ class TileBody extends Component {
 	}
 
 	onEnable() {
-		this.parent.parent.getWorldFromTile(this.x, this.y, point)
+		this.parent.parent.getWorldFromTile(this.x, this.y, point, true)
 		this.parent.position.set(point.x, point.y)	
 	}
 
@@ -72,7 +71,7 @@ class TileBody extends Component {
 				return
 			}
 		}
-		this.parent.parent.getWorldFromTile(x, y, point)
+		this.parent.parent.getWorldFromTile(x, y, point, true)
 		this.x = x
 		this.y = y
 		this.startX = this.parent.x
@@ -94,6 +93,14 @@ class TileBody extends Component {
 			this.parent.parent.getWorldFromTile(x, y, point)
 			this.parent.position.set(point.x, point.y)	
 		}
+	}
+
+	set path(path) {
+		this._path = path
+	}
+
+	get path() {
+		return this._path
 	}
 }
 
