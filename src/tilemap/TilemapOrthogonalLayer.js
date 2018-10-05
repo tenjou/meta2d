@@ -15,7 +15,7 @@ class TilemapOrthogonalLayer extends TilemapLayer
 			this.tileset.offsetY + (this.sizeY * this.tileHeight))
 	}
 
-	getWorldFromTile(tileX, tileY, output, tileCenter = true) {
+	getWorldFromTile(tileX, tileY, output, tileCenter = false) {
 		if(tileCenter) {
 			output.x = this.startX + (tileX * this.tileWidth) + (this.tileWidth * 0.5)
 			output.y = this.startY + (tileY * this.tileHeight) + (this.tileHeight * 0.5)
