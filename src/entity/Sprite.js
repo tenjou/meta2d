@@ -128,7 +128,7 @@ class Sprite extends Renderable {
 	}
 
 	handleTexture(event, texture) {
-		this.frame = texture.getFrame(this.frameIndex)
+		this.frame = texture.getFrame(0)
 	}
 }
 
