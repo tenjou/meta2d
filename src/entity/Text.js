@@ -99,11 +99,11 @@ class Text extends Sprite
 		}		
 
 		for(let n = 0; n < this._lineBuffer.length; n++) {
-			ctx.fillText(this._lineBuffer[n], posX, posY)
-
 			if(this._outline) {
-				ctx.strokeText(this._lineBuffer[n], posY, posY)
+				ctx.strokeText(this._lineBuffer[n], posX, posY)
 			}
+
+			ctx.fillText(this._lineBuffer[n], posX, posY)
 
 			posY += fontHeight
 		}
