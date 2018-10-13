@@ -2,25 +2,13 @@ import Texture from "./Texture"
 import Frame from "./Frame"
 import Utils from "../Utils"
 
-class Spritesheet extends Texture
-{
+class Spritesheet extends Texture {
 	constructor() {
 		super()
 		this.path = null
 	}
 
-	loadFromConfig(config) {
-		this.loading = true
-		if(config.path) {
-			this.loadFromPath(config.path)
-		}
-		else {
-			this.loading = false
-		}
-	}
-
-	loadFromPath(path) 
-	{
+	loadFromPath(path) {
 		this.loading = true
 		this.path = path
 
@@ -47,11 +35,9 @@ class Spritesheet extends Texture
 		}
 	}
 
-	loadFromJson(data)
-	{
+	loadFromJson(data) {
 		const rootPath = Utils.getRootPath(this.path)
 
-		this.loading = true
 		this.width = data.meta.size.w
 		this.height = data.meta.size.h
 		super.loadFromPath(`${rootPath}${data.meta.image}`)
@@ -71,14 +57,14 @@ class Spritesheet extends Texture
 				this.createFrame(key, frame.x, frame.y, frame.w, frame.h)
 			}
 		}
+
+		this.loading = true
 	}
 
-	loadFromXml(xml)
-	{
+	loadFromXml(xml) {
 		const rootPath = Utils.getRootPath(this.path)
 		const document = xml.documentElement
 
-		this.loading = true
 		this.width = parseInt(document.getAttribute("width"))
 		this.height = parseInt(document.getAttribute("height"))
 		const imagePath = document.getAttribute("imagePath")
@@ -111,6 +97,8 @@ class Spritesheet extends Texture
 					break
 			}
 		}
+
+		this.loading = true
 	}
 
 	createFrame(name, x, y, width, height) {

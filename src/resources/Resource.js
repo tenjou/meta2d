@@ -26,8 +26,7 @@ class Resource
 		}
 	}
 
-	set loaded(value) 
-	{
+	set loaded(value) {
 		if(value) {
 			if(!this._loaded) {
 				this._loaded = true
@@ -46,8 +45,7 @@ class Resource
 		return this._loaded
 	}
 
-	set loading(value) 
-	{
+	set loading(value) {
 		if(value) {
 			if(!this._loading) {
 				this._loading = true

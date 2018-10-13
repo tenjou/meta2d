@@ -1,47 +1,44 @@
-import Texture from "./Texture"
+import Spritesheet from "./Spritesheet"
 import Frame from "./Frame"
 import Utils from "../Utils"
 
-class Font extends Texture
-{
+class Font extends Spritesheet {
 	constructor() {
 		super()
-		this.path = null
-		this.frames = null
-		this.kerning = null
-		this.kerningData = null
+		this.kerning = new Array(256)
+		this.kerningData = {}
 		this.lineHeight = 0
 	}
 
-	loadFromConfig(config) {
+	loadFromPath(path) {
 		this.loading = true
-		if(config.path) {
-			this.loadFromPath(config.path)
-		}
-		else {
-			this.loading = false
+		
+		const ext = Utils.getExt(path)
+		switch(ext) {
+			case "fnt":
+				this.path = path
+				fetch(path)
+					.then(response => response.text())
+					.then(this.loadFromFnt.bind(this))
+				break
+			default:
+				super.loadFromPath(path)
+				break
 		}
 	}
 
-	loadFromPath(path) 
-	{
-		this.loading = true
-		this.path = path
-
-		fetch(path)
-		.then(response => response.text())
-		.then(this.loadFromFnt.bind(this))
+	loadFromJson(data) {
+		super.loadFromJson(data)
+		for(let key in this.frames) {
+			const frame = this.frames[key]
+			this.kerning[parseInt(key)] = frame.coords[0]
+		}	
 	}
 
-	loadFromFnt(data)
-	{
+	loadFromFnt(data) {
 		let textureFilename = null
 		let widthUV = 0
 		let heightUV = 0
-
-		this.frames = new Array(256)
-		this.kerning = new Array(256)
-		this.kerningData = {}
 		this.loading = true
 		this.lineHeight = 0
 

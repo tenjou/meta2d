@@ -16,10 +16,10 @@ const generateIndices = (indices, offset) => {
 
 class BitmapText extends Sprite
 {
-	constructor(font, text) {
+	constructor(font, text = "") {
 		super()
 		this._font = null
-		this._text = null
+		this._text = text
 		this._lineBuffer = new Array(1)
 		this._wordBuffer = null
 		this._limitWidth = 0
@@ -72,7 +72,6 @@ class BitmapText extends Sprite
 		let x = 0
 		let y = 0
 		let bufferOffset = 0
-		let indiceOffset = 0
 		let prevChar = 0
 		let sizeX = 0
 		let sizeY = 0
@@ -100,7 +99,7 @@ class BitmapText extends Sprite
 					sizeY = this.buffer[bufferOffset + 1]
 				}
 				
-				x += this._font.kerning[nextChar]
+				x += this._font.kerning[nextChar] - 1
 				bufferOffset += 16
 				prevChar = nextChar				
 			}

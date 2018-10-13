@@ -91,6 +91,9 @@ class Texture extends Resource
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, this._wrapS)
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this._wrapT)
 		}
+
+		this._minFilter = Texture.NEAREST
+		this._magFilter = Texture.NEAREST
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this._magFilter)
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this._minFilter)		
 		gl.bindTexture(gl.TEXTURE_2D, null)
