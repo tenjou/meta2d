@@ -104,12 +104,12 @@ class EngineWindow {
 			this.ratio = (currRatio > 1.0) ? 1.0 : currRatio
 		}
 	
-		this.width = targetWidth
-		this.height = targetHeight
-		canvas.width = targetWidth
-		canvas.height = targetHeight
-		canvas.style.width = `${targetWidth * this.ratio}px`
-		canvas.style.height = `${targetHeight * this.ratio}px`
+		this.width = targetWidth | 0
+		this.height = targetHeight | 0
+		canvas.width = this.width
+		canvas.height = this.height
+		canvas.style.width = `${(targetWidth * this.ratio) | 0}px`
+		canvas.style.height = `${(targetHeight * this.ratio) | 0}px`
 		this.updateOffset()
 
 		Engine.gl.viewport(0, 0, targetWidth, targetHeight)
