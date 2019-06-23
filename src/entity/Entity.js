@@ -273,7 +273,8 @@ class Entity
 	}
 
 	updateVolume() {
-		this._volume.set(this._transform.m[6], this._transform.m[7], this._size.x, this._size.y)	
+		this._volume.set(this._transform.m[6], this._transform.m[7], 
+			this._size.x * this._scale.x, this._size.y * this._scale.y)	
 		this.needUpdateVolume = false	
 	}
 
