@@ -97,20 +97,19 @@ class EngineWindow {
 		const heightRatio = container.clientHeight / targetHeight
 		const currRatio = (widthRatio < heightRatio) ? widthRatio : heightRatio 
 
-		let ratio
 		if(settings.upscale) {
-			ratio = currRatio
+			this.ratio = currRatio
 		}
 		else {
-			ratio = (currRatio > 1.0) ? 1.0 : currRatio
+			this.ratio = (currRatio > 1.0) ? 1.0 : currRatio
 		}
 	
 		this.width = targetWidth
 		this.height = targetHeight
 		canvas.width = targetWidth
 		canvas.height = targetHeight
-		canvas.style.width = `${targetWidth * ratio}px`
-		canvas.style.height = `${targetHeight * ratio}px`
+		canvas.style.width = `${targetWidth * this.ratio}px`
+		canvas.style.height = `${targetHeight * this.ratio}px`
 		this.updateOffset()
 
 		Engine.gl.viewport(0, 0, targetWidth, targetHeight)
