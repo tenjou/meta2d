@@ -37,6 +37,12 @@ class Camera extends Entity
 		super.updateTransform()
 		this._transform.m[6] = (this._transform.m[6] * -1 * this._scale.x)
 		this._transform.m[7] = (this._transform.m[7] * -1 * this._scale.y) 
+		// if(this._transform.m[6] > 0) {
+		// 	this._transform.m[6] = 0
+		// }
+		// if(this._transform.m[7] > 0) {
+		// 	this._transform.m[7] = 0
+		// }		
 	}
 }
 

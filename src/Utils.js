@@ -3,8 +3,7 @@ const isPowerOf2 = (value) => {
 	return (value & (value - 1)) == 0
 }
 
-const onDomLoad = (func) =>
-{
+const onDomLoad = (func) => {
 	if((document.readyState === "interactive" || document.readyState === "complete")) {
 		func()
 		return

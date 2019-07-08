@@ -22,18 +22,38 @@ class EngineWindow {
 	}
 
 	create() {
-		let container = null
+		if(Engine.app.init) {
+			Engine.app.init()
+		}
 
-		const engineContainer = Engine.settings.container
-		if(engineContainer) {
-			container = (typeof engineContainer === "string") ? document.querySelector(engineContainer) : engineContainer
+		let wrapper = null
+		let container = null
+		let canvas = null
+
+		if(Engine.settings.wrapper) {
+			wrapper = (typeof Engine.settings.wrapper === "string") ? document.querySelector(Engine.settings.wrapper) : Engine.settings.wrapper
+			container = wrapper.querySelector("container")
+			canvas = container.querySelector("canvas")		
+		}
+
+		if(!wrapper) {
+			wrapper = document.createElement("div")
 		}
 		if(!container) {
 			container = document.createElement("div")
-			container.style.cssText = "position:absolute; width:100%; height:100%; background: #ddd; display:flex; align-items:center; justify-content:center;"
+			wrapper.appendChild(container)
 		}
+		if(!canvas) {
+			canvas = document.createElement("canvas")
+			container.appendChild(canvas)
+		}		
+
+		wrapper.style.cssText = "width:100%; height:100%; display:flex; align-items:center; justify-content:center;"
+		container.style.cssText = "position:absolute; width:100%; height:100%; background: #ddd;"
+		canvas.style.position = "absolute"
+		canvas.style.width = "100%"
+		canvas.style.height = "100%"
 		
-		const canvas = document.createElement("canvas")
 		const gl = canvas.getContext("webgl", { 
 			antialias: Engine.settings.antialias, 
 			alpha: Engine.settings.alpha 
@@ -43,11 +63,11 @@ class EngineWindow {
 			return
 		}
 		
-		container.appendChild(canvas)
-		if(!engineContainer) {
-			document.body.appendChild(container)
+		if(!wrapper.parentElement) {
+			document.body.appendChild(wrapper)
 		}
 	
+		Engine.wrapper = wrapper
 		Engine.container = container
 		Engine.canvas = canvas
 		Engine.gl = gl	
@@ -87,14 +107,17 @@ class EngineWindow {
 
 	updateScreenSize() {
 		const settings = Engine.settings
+		const wrapper = Engine.wrapper
 		const container = Engine.container
 		const canvas = Engine.canvas
 
-		const targetWidth = settings.width ? settings.width : container.clientWidth
-		const targetHeight = settings.height ? settings.height : container.clientHeight
+		const targetWidth = settings.width ? settings.width : wrapper.clientWidth
+		const targetHeight = settings.height ? settings.height : wrapper.clientHeight
 
-		const widthRatio = container.clientWidth / targetWidth
-		const heightRatio = container.clientHeight / targetHeight
+		console.log(wrapper.clientWidth)
+
+		const widthRatio = wrapper.clientWidth / targetWidth
+		const heightRatio = wrapper.clientHeight / targetHeight
 		const currRatio = (widthRatio < heightRatio) ? widthRatio : heightRatio 
 
 		if(settings.upscale) {
@@ -108,8 +131,8 @@ class EngineWindow {
 		this.height = targetHeight | 0
 		canvas.width = this.width
 		canvas.height = this.height
-		canvas.style.width = `${(targetWidth * this.ratio) | 0}px`
-		canvas.style.height = `${(targetHeight * this.ratio) | 0}px`
+		container.style.width = `${(targetWidth * this.ratio) | 0}px`
+		container.style.height = `${(targetHeight * this.ratio) | 0}px`
 		this.updateOffset()
 
 		Engine.gl.viewport(0, 0, targetWidth, targetHeight)
@@ -129,7 +152,7 @@ class EngineWindow {
 		this.offsetLeft = 0
 		this.offsetTop = 0
 
-		let element = Engine.container
+		let element = Engine.wrapper
 		if(element.offsetParent)
 		{
 			do {
@@ -138,7 +161,7 @@ class EngineWindow {
 			} while(element = element.offsetParent);
 		}
 
-		let rect = Engine.container.getBoundingClientRect()
+		let rect = Engine.wrapper.getBoundingClientRect()
 		this.offsetLeft += rect.left
 		this.offsetTop += rect.top
 

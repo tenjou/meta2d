@@ -49,8 +49,7 @@ import Tween from "./tween/Tween"
 import Easing from "./tween/Easing"
 import "./Loading"
 
-Engine.create = (app) => 
-{
+Engine.create = (app) => {
 	if(Engine.app) {
 		console.warn("(Engine.create) Creating multiple engine instances is not supported!")
 		return

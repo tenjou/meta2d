@@ -3,6 +3,7 @@ const listeners = {}
 
 const Engine = {
 	app: null,
+	wrapper: null,
 	container: null,
 	canvas: null,
 	gl: null,
@@ -21,7 +22,7 @@ const Engine = {
 		antialias: true,
 		alpha: true,
 		upscale: true,
-		container: null
+		wrapper: null
 	},
 
 	addUpdating(entity) {
@@ -37,7 +38,7 @@ const Engine = {
 			if(index === -1) { return }
 	
 			this.updating[index] = this.updating[this.updating.length - 1]
-			this.updating.pop()			
+			this.updating.pop()
 		}
 	},
 
