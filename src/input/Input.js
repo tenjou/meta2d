@@ -430,18 +430,19 @@ class Input
 	}
 }
 
-const addEventListeners = (input) =>
-{
+const addEventListeners = (input) => {
+	const passiveTouches = { passive: false }
+
 	window.addEventListener("mousedown", input.handleMouseDown.bind(input))
 	window.addEventListener("mouseup", input.handleMouseUp.bind(input))
 	window.addEventListener("mousemove", input.handleMouseMove.bind(input))
 	window.addEventListener("mousewheel", input.handleMouseWheel.bind(input))
 	window.addEventListener("dblclick", input.handleMouseDblClick.bind(input))
-	window.addEventListener("touchstart", input.handleTouchDown.bind(input))
-	window.addEventListener("touchend", input.handleTouchUp.bind(input))
-	window.addEventListener("touchmove", input.handleTouchMove.bind(input))
-	window.addEventListener("touchcancel", input.handleTouchUp.bind(input))
-	window.addEventListener("touchleave", input.handleTouchUp.bind(input))
+	window.addEventListener("touchstart", input.handleTouchDown.bind(input), passiveTouches)
+	window.addEventListener("touchend", input.handleTouchUp.bind(input), passiveTouches)
+	window.addEventListener("touchmove", input.handleTouchMove.bind(input), passiveTouches)
+	window.addEventListener("touchcancel", input.handleTouchUp.bind(input), passiveTouches)
+	window.addEventListener("touchleave", input.handleTouchUp.bind(input), passiveTouches)
 
 	if(Device.supports.onkeydown) {
 		window.addEventListener("keydown", input.handleKeyDown.bind(input))
