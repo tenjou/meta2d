@@ -50,8 +50,8 @@ class Graphics extends Texture {
 		this.ctx.strokeRect(x, y, width, height)
 	}
 
-	arc(x, y, r, sAngle, eAngle, counterClockwise) {
-		this.beginPath()
+	arc(x, y, r = 2, sAngle = 0, eAngle = 2 * Math.PI, counterClockwise = false) {
+		this.ctx.beginPath()
 		this.ctx.arc(x, y, r, sAngle, eAngle, counterClockwise)
 	}
 
@@ -77,6 +77,14 @@ class Graphics extends Texture {
 
 	get fillStyle() {
 		return this.ctx.fillStyle
+	}
+
+	set lineWidth(value) {
+		this.ctx.lineWidth = value
+	}
+
+	get lineWidth() {
+		return this.ctx.lineWidth
 	}
 }
 
