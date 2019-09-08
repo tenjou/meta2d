@@ -3,7 +3,6 @@ const listeners = {}
 
 const Engine = {
 	app: null,
-	wrapper: null,
 	container: null,
 	canvas: null,
 	gl: null,
@@ -22,7 +21,7 @@ const Engine = {
 		antialias: true,
 		alpha: true,
 		upscale: true,
-		wrapper: null
+		canvas: null
 	},
 
 	addUpdating(entity) {

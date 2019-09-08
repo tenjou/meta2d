@@ -1,7 +1,6 @@
 import Stage from "./Stage"
 import Engine from "../Engine"
 import Radix from "../RadixSort"
-import Renderable from "../entity/Renderable"
 import DebugDrawCommand from "./DebugDrawCommand" 
 
 const defaultBufferSize = 64

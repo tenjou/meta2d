@@ -1,6 +1,5 @@
 
-class Stage 
-{
+class Stage {
 	constructor() {
 		this.buffer = []
 	}

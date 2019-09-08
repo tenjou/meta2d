@@ -147,8 +147,7 @@ class Entity
 		return this._pivot
 	}
 
-	addChild(entity)
-	{
+	addChild(entity) {
 		if(entity.parent) {
 			console.warn(`(Entity.addChild) Entity already has parent: ${entity.parent}`)
 			return false
@@ -164,12 +163,12 @@ class Entity
 		entity.parent = this
 		entity.enable = this.enabled
 		entity.needUpdateTransform = true
+		entity.setLayer(this._layer)
 
 		return true
 	}
 
-	removeChild(entity) 
-	{
+	removeChild(entity) {
 		if(!this.children) { return false }
 
 		if(entity.parent !== this) {
