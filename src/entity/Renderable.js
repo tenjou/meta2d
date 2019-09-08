@@ -2,7 +2,6 @@ import Entity from "./Entity"
 import Engine from "../Engine"
 import Mesh from "../mesh/Mesh"
 import Resources from "../resources/Resources"
-import Material from "../resources/Material"
 import Stage from "../renderer/Stage"
 import DrawCommand from "../renderer/DrawCommand"
 
@@ -19,7 +18,7 @@ class Renderable extends Entity
 	}
 
 	draw() {
-		if(this.hidden) { 
+		if(this.hidden || !this.drawCommand.material) { 
 			return
 		}
 		if(this.needUpdateMesh) {
@@ -73,11 +72,11 @@ class Renderable extends Entity
 
 	setLayer(layerId, recursive = true) {
 		this.drawCommand.layer = layerId
-		if(recursive && this.children) {
-			for(let n = 0; n < this.children.length; n++) {
-				this.children[n].setLayer(layerId, true)
-			}
-		}
+        if(recursive && this.children) {
+            for(let n = 0; n < this.children.length; n++) {
+                this.children[n].setLayer(layerId, true)
+            }
+        }
 	}	
 
 	getLayer() {
