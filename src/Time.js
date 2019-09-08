@@ -9,6 +9,7 @@ class Time
 		this.deltaF = 0.0
 		this.deltaRender = 0
 		this.deltaRenderF = 0.0
+		this.totalRender = 0
 		this.maxDelta = 250.0
 		this.scale = 1.0
 		this.fps = 0
@@ -20,6 +21,7 @@ class Time
 		this.frameIndex = 0
 		this.updateFreq = 1 / 40
 		this.alpha = 0
+		this.ms = 0
 
 		this.timers = []
 		this.timersRemove = []
@@ -31,7 +33,7 @@ class Time
 	}
 
 	start() {
-		this.current = Date.now()
+		this.current = performance.now()
 
 		if(this.paused) {
 			this.delta = 0
@@ -83,6 +85,7 @@ class Time
 		}
 		else {
 			this.deltaRender = this.currentRender - this.prevRender
+			this.totalRender += this.deltaRender
 			if(this.deltaRender > 250) {
 				this.deltaRender = 250
 			}
@@ -95,6 +98,9 @@ class Time
 			this._fpsCurrent = this.currentRender
 			this.fps = this._fps
 			this._fps = 0
+
+			this.ms = this.totalRender / this.fps | 0
+			this.totalRender = 0
 		}
 	}
 
