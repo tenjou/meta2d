@@ -6,10 +6,7 @@ type SoundConfigType = ResourceConfigType & {
     path: string
 }
 
-export enum SoundEvent {
-    Loaded = "loaded",
-    Unloaded = "unloaded"
-}
+export type SoundEvent = ResourceEvent & "ended"
 
 class AudioSystem {
     ctx: AudioContext
@@ -171,7 +168,7 @@ export class Sound extends Resource {
 			prevInstance.index = instance.index
 			instance.index = this.instancesActive
 		}
-		this.emit(ResourceEvent.Ended)
+		this.emit("ended")
 	}
 }
 

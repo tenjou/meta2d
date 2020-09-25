@@ -4,13 +4,7 @@ export type ResourceConfigType = {
     type: string
     [prop: string]: unknown
 }
-
-export enum ResourceEvent {
-    Loaded = "loaded",
-    Unloaded = "unloaded",
-    Ended = "ended"
-}
-
+export type ResourceEvent = "loaded" | "unloaded" | "ended"
 export type ResourceCallback = (eventId: ResourceEvent, resource: Resource) => void
 
 export class Resource {
@@ -48,7 +42,7 @@ export class Resource {
 		else {
 			if(this._loaded) {
 				this._loaded = false
-				this.emit(ResourceEvent.Unloaded)
+				this.emit("unloaded")
 			}
 		}
 	}
@@ -62,7 +56,7 @@ export class Resource {
 			if(!this._loading) {
 				this._loading = true
 				this._loaded = false
-				this.emit(ResourceEvent.Unloaded)
+				this.emit("unloaded")
 				Resources.resourceLoading(this)
 			}
 		}
@@ -70,7 +64,7 @@ export class Resource {
 			if(this._loading) {
 				this._loading = false
 				this._loaded = true
-				this.emit(ResourceEvent.Loaded)
+				this.emit("loaded")
 				Resources.resourceLoaded(this)
 			}			
 		}
