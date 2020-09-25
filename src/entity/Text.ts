@@ -1,5 +1,5 @@
 import Sprite from "./Sprite"
-import Graphics from "../resources/Graphics"
+import { Graphics } from "../resources/Graphics"
 import Texture from "../resources/Texture"
 
 class Text extends Sprite {
