@@ -1,5 +1,5 @@
 import Entity from "../entity/Entity"
-import Resources from "../resources/Resources"
+import { Resources } from "../resources/Resources"
 import Tileset from "../resources/Tileset"
 import Tiled from "../resources/Tiled"
 import TilemapOrthogonalLayer from "./TilemapOrthogonalLayer"

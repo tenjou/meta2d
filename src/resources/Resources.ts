@@ -1,9 +1,4 @@
-import { Resource } from "./Resource"
-
-export type ResourceConfigType = {
-    type: string
-    [prop: string]: unknown
-}
+import { Resource, ResourceConfigType } from "./Resource"
 
 export type ResourceLoadLater = {
     resource: Resource
@@ -133,4 +128,5 @@ class Resources {
     }
 }
 
-export default new Resources()
+const instance = new Resources()
+export { instance as Resources }

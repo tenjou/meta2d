@@ -1,4 +1,4 @@
-import Resources from "./Resources"
+import { Resources } from "./Resources"
 import { Resource } from "./Resource"
 import Texture from "./Texture"
 import Spritesheet from "./Spritesheet"
@@ -83,5 +83,7 @@ class Animation extends Resource
 		return this.frames[frameIndex]
 	}
 }
+
+Resources.register(Animation)
 
 export default Animation

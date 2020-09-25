@@ -1,4 +1,4 @@
-import Resources from "./Resources"
+import { Resources } from "./Resources"
 import Input from "../input/Input"
 
 class Audio

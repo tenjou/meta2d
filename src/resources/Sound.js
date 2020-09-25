@@ -1,5 +1,6 @@
 import Audio from "./Audio"
 import { Resource } from "./Resource"
+import { Resources } from "./Resources"
 
 class Sound extends Resource
 {
@@ -189,5 +190,7 @@ class SoundInstance
 		this.parent.handleSoundEnded(this)
 	}
 }
+
+Resources.register(Sound)
 
 export default Sound

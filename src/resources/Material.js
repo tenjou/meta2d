@@ -1,5 +1,6 @@
 import Engine from "../Engine"
 import { Resource } from "./Resource"
+import { Resources } from "./Resources"
 
 const requestTextFunc = (request) => { return request.text() }
 
@@ -112,5 +113,7 @@ class Material extends Resource
 		}
 	}
 }
+
+Resources.register(Material)
 
 export default Material

@@ -1,4 +1,4 @@
-import Resources from "./Resources"
+import { Resources } from "./Resources"
 import { Resource } from "./Resource"
 import Tileset from "./Tileset"
 import Utils from "../Utils"
@@ -319,5 +319,7 @@ class Tiled extends Resource
 		}
 	}
 }
+
+Resources.register(Tiled)
 
 export default Tiled

@@ -1,6 +1,7 @@
 import Spritesheet from "./Spritesheet"
 import Frame from "./Frame"
 import Utils from "../Utils"
+import { Resources } from "./Resources"
 
 class Font extends Spritesheet {
 	constructor() {
@@ -118,5 +119,7 @@ class Font extends Spritesheet {
 		return secondCharData ? secondCharData : 0
 	}
 }
+
+Resources.register(Font)
 
 export default Font

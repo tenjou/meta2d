@@ -1,7 +1,7 @@
 import Engine from "../Engine"
 import Renderable from "./Renderable"
 import Vector4 from "../math/Vector4"
-import Resources from "../resources/Resources"
+import { Resources } from "../resources/Resources"
 import Material from "../resources/Material"
 import Mesh from "../mesh/Mesh"
 import spriteVertexSrc from "../../shaders/sprite.vertex.glsl"

@@ -1,5 +1,6 @@
 import Texture from "./Texture"
 import Frame from "./Frame"
+import { Resources } from "./Resources"
 
 const FLIPPED_HORIZONTALLY_FLAG = 0x80000000
 const FLIPPED_VERTICALLY_FLAG = 0x40000000
@@ -112,5 +113,7 @@ class Tileset extends Texture
 		return properties ? properties : null
 	}
 }
+
+Resources.register(Tileset)
 
 export default Tileset

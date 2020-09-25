@@ -1,5 +1,5 @@
 import Sprite from "./Sprite"
-import Resources from "../resources/Resources"
+import { Resources } from "../resources/Resources"
 
 const generateIndices = (indices, offset) => {
 	let indiceOffset = offset

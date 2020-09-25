@@ -1,6 +1,6 @@
 import Sprite from "./Sprite"
 import Time from "../Time"
-import Resources from "../resources/Resources"
+import { Resources } from "../resources/Resources"
 
 class AnimatedSprite extends Sprite {
 	constructor(texture) {

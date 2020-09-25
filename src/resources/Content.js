@@ -1,4 +1,5 @@
 import { Resource } from "./Resource"
+import { Resources } from "./Resources"
 
 class Content extends Resource 
 {
@@ -24,5 +25,7 @@ class Content extends Resource
 		this.loading = false
 	}
 }
+
+Resources.register(Content)
 
 export default Content

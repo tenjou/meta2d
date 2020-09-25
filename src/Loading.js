@@ -1,5 +1,5 @@
 import Engine from "./Engine"
-import Resources from "./resources/Resources"
+import { Resources } from "./resources/Resources"
 
 const loadingHolder = document.createElement("div")
 loadingHolder.style.cssText = "position:absolute; display:flex; width:100%; height:100%; background:black; align-items:center; justify-content: center;"

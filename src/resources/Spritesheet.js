@@ -1,6 +1,7 @@
 import Texture from "./Texture"
 import Frame from "./Frame"
 import Utils from "../Utils"
+import { Resources } from "./Resources"
 
 class Spritesheet extends Texture {
 	constructor() {
@@ -116,5 +117,7 @@ class Spritesheet extends Texture {
 		], 0)
 	}
 }
+
+Resources.register(Spritesheet)
 
 export default Spritesheet

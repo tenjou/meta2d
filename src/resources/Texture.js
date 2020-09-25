@@ -1,5 +1,5 @@
 import { Resource } from "./Resource"
-import Resources from "./Resources"
+import { Resources } from "./Resources"
 import Frame from "./Frame"
 import Engine from "../Engine"
 import Utils from "../Utils"

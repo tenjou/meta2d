@@ -1,3 +1,4 @@
+import { Resources } from "./Resources"
 import Texture from "./Texture"
 
 class Graphics extends Texture {
@@ -87,5 +88,7 @@ class Graphics extends Texture {
 		return this.ctx.lineWidth
 	}
 }
+
+Resources.register(Graphics)
 
 export default Graphics
