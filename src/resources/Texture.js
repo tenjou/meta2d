@@ -113,7 +113,7 @@ class Texture extends Resource
 		gl.bindTexture(gl.TEXTURE_2D, this.instance)
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas)
 
-		if(isPowerOf2(canvas.width) && isPowerOf2(canvas.height)) {
+		if(Utils.isPowerOf2(canvas.width) && Utils.isPowerOf2(canvas.height)) {
 			gl.generateMipmap(gl.TEXTURE_2D)
 		}
 		else {
