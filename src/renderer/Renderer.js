@@ -1,6 +1,6 @@
 import { Stage } from "./Stage"
 import Engine from "../Engine"
-import Radix from "../RadixSort"
+import { radixSort } from "./RadixSort"
 import { DebugDrawCommand } from "./DebugDrawCommand" 
 
 const defaultBufferSize = 64
@@ -33,7 +33,7 @@ class Renderer {
 			const layer = this.layers[nLayer]
 			if(layer.count === 0) { continue }
 
-			Radix(layer.buffer, this.buffer, layer.count)
+			radixSort(layer.buffer, this.buffer, layer.count)
 			for(let nCamera = 0; nCamera < cameras.length; nCamera++) {
 				const camera = cameras[nCamera]
 				if((camera.cullMask >> nLayer) % 2 !== 0) {
