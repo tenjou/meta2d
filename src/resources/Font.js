@@ -1,7 +1,7 @@
-import Spritesheet from "./Spritesheet"
-import Frame from "./Frame"
-import Utils from "../Utils"
+import { Spritesheet } from "./Spritesheet"
+import { Frame } from "./Texture"
 import { Resources } from "./Resources"
+import { getExt, getRootPath } from "../Utils"
 
 class Font extends Spritesheet {
 	constructor() {
@@ -14,7 +14,7 @@ class Font extends Spritesheet {
 	loadFromPath(path) {
 		this.loading = true
 		
-		const ext = Utils.getExt(path)
+		const ext = getExt(path)
 		switch(ext) {
 			case "fnt":
 				this.path = path
@@ -105,7 +105,7 @@ class Font extends Spritesheet {
 			const filenameStartIndex = this.path.lastIndexOf("/")
 			const filenameEndIndex = this.path.lastIndexOf(".")
 			const filename = this.path.slice(filenameStartIndex + 1, filenameEndIndex)
-			const rootPath = Utils.getRootPath(this.path)
+			const rootPath = getRootPath(this.path)
 			super.loadFromPath(`${rootPath}/${filename}.png`)
 		}
 	}

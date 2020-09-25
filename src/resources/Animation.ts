@@ -1,44 +1,46 @@
 import { Resources } from "./Resources"
-import { Resource } from "./Resource"
-import Texture from "./Texture"
-import Spritesheet from "./Spritesheet"
-import Frame from "./Frame"
+import { Resource, ResourceConfigType } from "./Resource"
+import { Texture, Frame, FrameConfig } from "./Texture"
 
-class Animation extends Resource
-{
+type AnimationConfigType = ResourceConfigType & {
+    fps?: number
+    delay?: number
+    pauseLastFrame?: boolean
+    frames: Array<FrameConfig>
+}
+
+export class Animation extends Resource {
+    frames: Array<Frame> = []
+    delay: number = 0
+    pauseLastFrame: boolean = false
+
 	constructor() {
 		super()
 		this.loadLater = true
-		this.frames = []
-		this.delay = 0
-		this.pauseLastFrame = false
 	}
 
-	loadFromConfig(config) {
+	loadFromConfig(config: AnimationConfigType) {
 		if(config.fps) {
 			config.delay = 1000 / config.fps 
-		}
-		this.delay = config.delay || 100
+        }
+        else {
+            this.delay = config.delay || 100
+        }
 		this.pauseLastFrame = config.pauseLastFrame || false
-		this.loadFrames(config.frames)
-	}
-
-	loadFrames(frames) {
-		for(let n = 0; n < frames.length; n++) {
-			const frameInfo = frames[n]
-			if(typeof frameInfo === "string") {
-				this.loadFrame(frameInfo, this.delay)
-			}
-			else {
-				this.loadFrame(frameInfo.texture, frameInfo.delay || this.delay, frameInfo.regex)
-			}
+		this.loadFramesFromConfig(config.frames)
+    }
+    
+    loadFramesFromConfig(frames: Array<FrameConfig>) {
+        for(let n = 0; n < frames.length; n++) {
+            const frameInfo = frames[n]
+            this.loadFrame(frameInfo.texture, this.delay, null)
 		}
-	}
+    }
 
-	loadFrame(texture, delay, regex) {
-		const index = texture.indexOf("/")
+	loadFrame(textureId: string, delay: number, regex: RegExp = null) {
+		const index = textureId.indexOf("/")
 		if(index === -1) {
-			const source = Resources.get(texture)
+			const source = Resources.get(textureId)
 			if(source instanceof Texture) {
 				const sourceFrames = source.frames
 				if(regex) {
@@ -60,12 +62,12 @@ class Animation extends Resource
 				}
 			}
 			else {
-				console.warn(`(Animation.loadFrames) Unsupported source type: ${source.name}`)
+				console.warn(`(Animation.loadFrames) Unsupported source type: ${textureId}`)
 				return
 			}
 		}
 		else {
-			const sourceInfo = texture.split("/")
+			const sourceInfo = textureId.split("/")
 			const source = Resources.get(sourceInfo[0])
 			if(source instanceof Texture) {
 				const sourceFrame = source.getFrame(sourceInfo[1])
@@ -73,17 +75,11 @@ class Animation extends Resource
 				this.frames.push(frame)
 			}
 			else {
-				console.warn(`(Animation.loadFrames) Unsupported source type: ${source.name}`)
+				console.warn(`(Animation.loadFrames) Unsupported source type: ${textureId}`)
 				return
 			}
 		}
 	}
-
-	getFrame(frameIndex) {	
-		return this.frames[frameIndex]
-	}
 }
 
 Resources.register(Animation)
-
-export default Animation

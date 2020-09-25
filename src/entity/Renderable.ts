@@ -9,10 +9,10 @@ export class Renderable extends Entity {
     needUpdateMesh: boolean = true
     drawCommand: DrawCommand = null
 
-	constructor(mesh: Mesh = null) {
+	constructor(mesh?: Mesh) {
 		super()
 		if(!mesh) {
-			mesh = new Mesh(null, null)
+			mesh = new Mesh()
 		}
 		this.hidden = false
 		this.drawCommand = new DrawCommand(this._transform, mesh, null, null)

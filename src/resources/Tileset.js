@@ -1,5 +1,4 @@
-import Texture from "./Texture"
-import Frame from "./Frame"
+import { Texture, Frame } from "./Texture"
 import { Resources } from "./Resources"
 
 const FLIPPED_HORIZONTALLY_FLAG = 0x80000000

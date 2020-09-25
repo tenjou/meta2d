@@ -15,8 +15,6 @@ export class Mesh {
     static defaultIndices = new Uint16Array([
         0, 2, 1, 0, 3, 2
     ])
-    static prevBuffer: WebGLBuffer = null
-    static prevIndiceBuffer: WebGLBuffer = null
 
     constructor(vertices: Float32Array = Mesh.defaultBuffer, indices: Uint16Array = Mesh.defaultIndices) {
         const gl = Engine.gl
@@ -38,19 +36,13 @@ export class Mesh {
 
     upload(vertices: Float32Array) {
         const gl = Engine.gl
-        if(Mesh.prevBuffer !== this.buffer) {
-            Mesh.prevBuffer = this.buffer
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
-        }
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer)
         gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW)
     }
 
     uploadIndices(indices: Uint16Array) {
         const gl = Engine.gl
-        if(Mesh.prevIndiceBuffer !== this.indices) {
-            Mesh.prevIndiceBuffer = this.indices
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indices)
-        }
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indices)
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.DYNAMIC_DRAW)
         this.numElements = indices.length
     }

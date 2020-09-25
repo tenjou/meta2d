@@ -1,6 +1,6 @@
 import { Sprite } from "./Sprite"
 import { Graphics } from "../resources/Graphics"
-import Texture from "../resources/Texture"
+import { Texture } from "../resources/Texture"
 
 export class Text extends Sprite {
     _lineBuffer: Array<string> = [ "" ]

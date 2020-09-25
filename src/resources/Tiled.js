@@ -1,7 +1,6 @@
 import { Resources } from "./Resources"
 import { Resource } from "./Resource"
-import Tileset from "./Tileset"
-import Utils from "../Utils"
+import { getRootPath } from "../Utils"
 
 function Layer() {
 	this.name = null
@@ -90,7 +89,7 @@ class Tiled extends Resource
 		this.properties = data.properties
 
 		const tilesets = data.tilesets
-		const rootPath = Utils.getRootPath(this.path)
+		const rootPath = getRootPath(this.path)
 		this.tilesets = new Array(tilesets.length)
 
 		for(let n = 0; n < tilesets.length; n++) {
@@ -167,7 +166,7 @@ class Tiled extends Resource
 		this.tilesets = new Array()
 		this.layers = new Array()
 
-		const rootPath = Utils.getRootPath(this.path)
+		const rootPath = getRootPath(this.path)
 		const children = node.childNodes
 		for(let n = 0; n < children.length; n++) {
 			const child = children[n]

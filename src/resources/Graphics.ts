@@ -1,5 +1,5 @@
 import { Resources } from "./Resources"
-import Texture from "./Texture"
+import { Texture } from "./Texture"
 
 export class Graphics extends Texture {
     canvas: HTMLCanvasElement
@@ -27,7 +27,7 @@ export class Graphics extends Texture {
             this.loadFromCanvas(this.canvas, false)
             this.needUpdate = false
         }
-        return this.instance
+        return this._instance
     }
 
     clearRect(x: number = 0, y: number = 0, width: number = 0, height: number = 0) {

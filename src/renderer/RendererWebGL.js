@@ -5,7 +5,7 @@ import { Vector4 } from "../math/Vector4"
 import { Matrix3 } from "../math/Matrix3"
 import { Matrix4 } from "../math/Matrix4"
 import { Mesh } from "../mesh/Mesh"
-import Texture from "../resources/Texture"
+import { Texture } from "../resources/Texture"
 import { Material } from "../resources/Material"
 import debugVertexSrc from "../../shaders/debug.vertex.glsl"
 import debugFragmentSrc from "../../shaders/debug.fragment.glsl"
@@ -72,7 +72,8 @@ class RendererWebGL extends Renderer
 		if(this.prevIndiceBuffer !== mesh.indices) {
 			this.prevIndiceBuffer = mesh.indices
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indices)
-		}
+        }
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indices)
 		gl.drawElements(command.mode, mesh.numElements, gl.UNSIGNED_SHORT, 0)
 	}
 
@@ -165,8 +166,7 @@ class RendererWebGL extends Renderer
 		
 		for(let n = 0; n < attribData.length; n++) {
 			const attrib = attribData[n]
-			switch(attrib.name)
-			{
+			switch(attrib.name) {
 				case "position":
 					gl.vertexAttribPointer(attrib.loc, 2, gl.FLOAT, false, mesh.stride, 0)
 					break
@@ -266,10 +266,10 @@ class RendererWebGL extends Renderer
 					gl.activeTexture(gl.TEXTURE0 + numSamplers)
 
 					if(texture) {
-						gl.bindTexture(gl.TEXTURE_2D, texture)
+						gl.bindTexture(gl.TEXTURE_2D, texture.getInstance())
 					}
 					else {
-						gl.bindTexture(gl.TEXTURE_2D, emptyTexture.instance)
+						gl.bindTexture(gl.TEXTURE_2D, emptyTexture.getInstance())
 					}
 					
 					gl.uniform1i(uniform.loc, numSamplers++)
@@ -283,24 +283,6 @@ class RendererWebGL extends Renderer
 			}
 		}
 	}	
-
-	updateBuffer(buffer, data) {
-		const gl = Engine.gl
-		if(this.prevBuffer !== buffer) { 
-			this.prevBuffer = buffer	
-			gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-		}
-		gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW)		
-	}
-	
-	updateIndices(buffer, indices) {
-		const gl = Engine.gl
-		if(this.prevIndiceBuffer !== buffer) { 
-			this.prevIndiceBuffer = buffer	
-			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer)
-		}		
-		gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.DYNAMIC_DRAW)		
-	}
 }
 
 export default RendererWebGL

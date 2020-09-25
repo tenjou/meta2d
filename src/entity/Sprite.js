@@ -100,7 +100,7 @@ export class Sprite extends Renderable {
         this.needUpdateMesh = true
 
         if(frame) {
-            this.drawCommand.uniforms.albedo = this._frame.texture.getInstance()
+            this.drawCommand.uniforms.albedo = this._frame.texture
             this.size.set(frame.coords[0], frame.coords[1])
         }
         else {
