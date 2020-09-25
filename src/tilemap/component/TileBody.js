@@ -1,6 +1,6 @@
-import Component from "../../Component"
+import { Component } from "../../Component"
 import Time from "../../Time"
-import Vector2 from "../../math/Vector2"
+import { Vector2 } from "../../math/Vector2"
 
 const point = new Vector2()
 

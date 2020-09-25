@@ -1,8 +1,10 @@
 import { EPSILON } from "./Common"
+import { Vector3 } from "./Vector3"
 
-class Matrix4
-{
-	constructor(matrix) {
+export class Matrix4 {
+	m: Float32Array = null
+
+	constructor(matrix: Float32Array = null) {
 		if(matrix) {
 			this.m = new Float32Array(matrix)
 		}
@@ -15,7 +17,7 @@ class Matrix4
 		}
 	}
 
-	copy(src) {
+	copy(src: Matrix4) {
 		this.m.set(src.m)
 	}
 
@@ -24,8 +26,7 @@ class Matrix4
 		return m
 	}
 
-	identity()
-	{
+	identity() {
 		this.m[0] = 1.0
 		this.m[1] = 0.0
 		this.m[2] = 0.0
@@ -47,20 +48,18 @@ class Matrix4
 		this.m[15] = 1.0
 	}
 
-	set(matrix) {
-		this.m.assing(matrix)
+	set(matrix: Float32Array) {
+		this.m.set(matrix)
 	}
 
-	translate(x, y, z)
-	{
+	translate(x: number, y: number, z: number) {
 		this.m[12] = this.m[0] * x + this.m[4] * y + this.m[8] * z + this.m[12]
 		this.m[13] = this.m[1] * x + this.m[5] * y + this.m[9] * z + this.m[13]
 		this.m[14] = this.m[2] * x + this.m[6] * y + this.m[10] * z + this.m[14]
 		this.m[15] = this.m[3] * x + this.m[7] * y + this.m[11] * z + this.m[15]
 	}
 
-	rotate(rad, x, y, z)
-	{
+	rotate(rad: number, x: number, y: number, z: number) {
 		const a00 = this.m[0]
 		const a01 = this.m[1]
 		const a02 = this.m[2]
@@ -75,7 +74,9 @@ class Matrix4
 		const a23 = this.m[11]
 
 		let lenght = Math.sqrt(x * x + y * y + z * z)
-		if(Math.abs(lenght) < Number.EPSILON) { return }
+		if(Math.abs(lenght) < Number.EPSILON) { 
+			return 
+		}
 
 		lenght = 1.0 / lenght
 		x *= lenght
@@ -110,8 +111,7 @@ class Matrix4
 		this.m[11] = a03 * b20 + a13 * b21 + a23 * b22
 	}
 
-	scale(x, y, z)
-	{
+	scale(x: number, y: number, z: number) {
 		this.m[0] *= x
 		this.m[1] *= x
 		this.m[2] *= x
@@ -128,8 +128,7 @@ class Matrix4
 		this.m[11] *= z
 	}
 
-	mul(src)
-	{
+	mul(src: Matrix4) {
 		let a0 = this.m[0]
 		let a1 = this.m[1]
 		let a2 = this.m[2]
@@ -167,8 +166,7 @@ class Matrix4
 		this.m[15] = a0 * src.m[3] + a1 * src.m[7] + a2 * src.m[11] + a3 * src.m[15]
 	}
 
-	perspective(fov, aspect, near, far)
-	{
+	perspective(fov: number, aspect: number, near: number, far: number) {
 		const f = 1.0 / Math.tan(fov / 2)
 		const nf = 1 / (near - far)
 
@@ -193,8 +191,7 @@ class Matrix4
 		this.m[15] = 0
 	}
 
-	ortho(left, right, bottom, top, zNear, zFar)
-	{
+	ortho(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number) {
 		this.m[0] = 2.0 / (right - left)
 		this.m[1] = 0.0
 		this.m[2] = 0.0
@@ -216,8 +213,7 @@ class Matrix4
 		this.m[15] = 1.0
 	}
 
-	lookAt(position, target, up)
-	{
+	lookAt(position: Vector3, target: Vector3, up: Vector3) {
 		const Px = position.x
 		const Py = position.y
 		const Pz = position.z
@@ -300,8 +296,7 @@ class Matrix4
 		this.m[15] = 1
 	}
 
-	invert()
-	{
+	invert() {
 		const a00 = this.m[0]
 		const a01 = this.m[1]
 		const a02 = this.m[2]
@@ -357,8 +352,7 @@ class Matrix4
 		this.m[15] = (a20 * b03 - a21 * b01 + a22 * b00) * det
 	}
 
-	transpose()
-	{
+	transpose() {
 		const a01 = this.m[1]
 		const a02 = this.m[2]
 		const a03 = this.m[3]
@@ -380,13 +374,10 @@ class Matrix4
 		this.m[14] = a23
 	}
 
-	print()
-	{
+	print() {
 		return `Matrix4(${this.m[0]}, ${this.m[1]}, ${this.m[2]}, ${this.m[3]},
 						${this.m[4]}, ${this.m[5]}, ${this.m[6]}, ${this.m[7]},
 						${this.m[8]}, ${this.m[9]}, ${this.m[10]}, ${this.m[11]},
 						${this.m[12]}, ${this.m[13]}, ${this.m[14]}, ${this.m[15]})`
 	}
 }
-
-export default Matrix4

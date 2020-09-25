@@ -1,5 +1,5 @@
-import Renderable from "./entity/Renderable"
-import Text from "./entity/Text"
+import { Renderable } from "./entity/Renderable"
+import { Text } from "./entity/Text"
 import Engine from "./Engine"
 import Time from "./Time"
 

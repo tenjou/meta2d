@@ -4,7 +4,7 @@ import Time from "./Time"
 import Debug from "./Debug"
 import Input from "./input/Input"
 import { Resources } from "./resources/Resources"
-import Vector4 from "./math/Vector4"
+import { Vector4 } from "./math/Vector4"
 
 class EngineWindow {
 	constructor() {		

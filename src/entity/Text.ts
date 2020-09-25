@@ -1,8 +1,8 @@
-import Sprite from "./Sprite"
+import { Sprite } from "./Sprite"
 import { Graphics } from "../resources/Graphics"
 import Texture from "../resources/Texture"
 
-class Text extends Sprite {
+export class Text extends Sprite {
     _lineBuffer: Array<string> = [ "" ]
     _wordBuffer: Array<Array<string>> = null
     _text: string = ""
@@ -31,9 +31,9 @@ class Text extends Sprite {
     }
 
     updateMesh() {
-        const ctx = this._texture.ctx 
+        const ctx = this._texture.ctx
         ctx.font = this._style + " " + this._fontSizePx + " " + this._font
-        
+
         const newlineIndex = this._text.indexOf("\n")
         if(newlineIndex !== -1) {
             this._lineBuffer = this._text.split("\n")
@@ -84,7 +84,7 @@ class Text extends Sprite {
         if(this._outline) {
             ctx.lineWidth = this._outlineWidth
             ctx.strokeStyle = this._outlineColor
-        }		
+        }
 
         for(let n = 0; n < this._lineBuffer.length; n++) {
             if(this._outline) {
@@ -121,7 +121,7 @@ class Text extends Sprite {
 
         for(let n = 0; n < this._lineBuffer.length; n++) {
             const words = this._wordBuffer[n]
-    
+
             if(words.length === 1) {
                 const word = words[0]
                 const metrics = ctx.measureText(word)
@@ -156,7 +156,7 @@ class Text extends Sprite {
                             }
 
                             width = 0
-                            text = null							
+                            text = null
                         }
                         else {
                             text = word
@@ -178,7 +178,7 @@ class Text extends Sprite {
                             }
 
                             text = null
-                            width = 0			
+                            width = 0
                         }
                         else {
                             width += metrics.width
@@ -186,7 +186,7 @@ class Text extends Sprite {
                     }
                 }
             }
-        }	
+        }
 
         this._lineBuffer = lineBuffer
     }
@@ -208,8 +208,8 @@ class Text extends Sprite {
     }
 
     set font(font) {
-        if(this._font === font) { 
-            return 
+        if(this._font === font) {
+            return
         }
         this._font = font
         this.needUpdateMesh = true
@@ -220,8 +220,8 @@ class Text extends Sprite {
     }
 
     set fontSize(size) {
-        if(this._fontSize === size) { 
-            return 
+        if(this._fontSize === size) {
+            return
         }
         this._fontSize = size
         this._fontSizePx = `${size}px`
@@ -233,8 +233,8 @@ class Text extends Sprite {
     }
 
     set fontColor(fontColor) {
-        if(this._fontColor === fontColor) { 
-            return 
+        if(this._fontColor === fontColor) {
+            return
         }
         this._fontColor = fontColor
         this.needUpdateMesh = true
@@ -244,59 +244,59 @@ class Text extends Sprite {
         return this._fontColor
     }
 
-    set style(style) { 
-        if(this._style === style) { 
-            return 
+    set style(style) {
+        if(this._style === style) {
+            return
         }
         this._style = style
         this.needUpdateMesh = true
     }
 
-    get style() { 
-        return this._style 
+    get style() {
+        return this._style
     }
 
-    set outlineColor(color) { 
-        if(this._outlineColor === color) { 
-            return 
+    set outlineColor(color) {
+        if(this._outlineColor === color) {
+            return
         }
         this._outlineColor = color
         this._outline = true
         this.needUpdateMesh = true
     }
 
-    get outlineColor() { 
-        return this._outlineColor 
+    get outlineColor() {
+        return this._outlineColor
     }
 
-    set outlineWidth(width) { 
-        if(this._outlineWidth === width) { 
-            return 
+    set outlineWidth(width) {
+        if(this._outlineWidth === width) {
+            return
         }
         this._outlineWidth = width
         this._outline = true
         this.needUpdateMesh = true
     }
 
-    get outlineWidth() { 
-        return this._outlineWidth 
+    get outlineWidth() {
+        return this._outlineWidth
     }
 
     set outline(value) {
-        if(this._outline === value) { 
-            return 
+        if(this._outline === value) {
+            return
         }
         this._outline = value
         this.needUpdateMesh = true
     }
 
-    get outline() { 
-        return this._outline 
-    }	
+    get outline() {
+        return this._outline
+    }
 
     set shadow(shadow) {
-        if(this._shadow === shadow) { 
-            return 
+        if(this._shadow === shadow) {
+            return
         }
         this._shadow = shadow
         this.needUpdateMesh = true
@@ -307,8 +307,8 @@ class Text extends Sprite {
     }
 
     set shadowColor(color) {
-        if(this._shadowColor === color) { 
-            return 
+        if(this._shadowColor === color) {
+            return
         }
         this._shadowColor = color
         this.needUpdateMesh = true
@@ -319,16 +319,16 @@ class Text extends Sprite {
     }
 
     set shadowOffsetX(offsetX) {
-        if(this._shadowOffsetX === offsetX) { 
-            return 
+        if(this._shadowOffsetX === offsetX) {
+            return
         }
         this._shadowOffsetX = offsetX
         this.needUpdateMesh = true
     }
 
     set shadowOffsetY(offsetY) {
-        if(this._shadowOffsetY === offsetY) { 
-            return 
+        if(this._shadowOffsetY === offsetY) {
+            return
         }
         this._shadowOffsetY = offsetY
         this.needUpdateMesh = true
@@ -343,8 +343,8 @@ class Text extends Sprite {
     }
 
     set limitWidth(value) {
-        if(this._limitWidth === value) { 
-            return 
+        if(this._limitWidth === value) {
+            return
         }
         this._limitWidth = value
         if(value === 0) {
@@ -358,7 +358,5 @@ class Text extends Sprite {
 
     get limitWidth() {
         return this._limitWidth
-    }	
+    }
 }
-
-export default Text

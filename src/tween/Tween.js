@@ -1,4 +1,4 @@
-import Component from "../Component"
+import { Component}  from "../Component"
 import Time from "../Time"
 import TweenManager from "./TweenManager"
 import Easing from "./Easing"

@@ -1,4 +1,4 @@
-import Sprite from "./Sprite"
+import { Sprite } from "./Sprite"
 import Time from "../Time"
 import { Resources } from "../resources/Resources"
 

@@ -1,6 +1,6 @@
-import AABB from "../math/AABB"
-import Matrix3 from "../math/Matrix3"
-import Vector2 from "../math/Vector2"
+import { AABB } from "../math/AABB"
+import { Matrix3 } from "../math/Matrix3"
+import { Vector2 } from "../math/Vector2"
 
 export class DebugDrawCommand {
     transform: Matrix3 = null

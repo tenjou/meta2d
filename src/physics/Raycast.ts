@@ -1,4 +1,4 @@
-import Renderable from "../entity/Renderable"
+import { Renderable } from "../entity/Renderable"
 import { Stage } from "../renderer/Stage"
 
 export const onBuffer = (x: number, y: number, buffer: Array<Renderable>, result: Array<Renderable>, depth: number = Number.MAX_SAFE_INTEGER) => {

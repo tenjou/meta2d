@@ -1,11 +1,11 @@
-import Entity from "./Entity"
+import { Entity } from "./Entity"
 import Engine from "../Engine"
 import Mesh from "../mesh/Mesh"
 import { Stage } from "../renderer/Stage"
 import { DrawCommand } from "../renderer/DrawCommand"
 import { Material } from "../resources/Material"
 
-class Renderable extends Entity {
+export class Renderable extends Entity {
     needUpdateMesh: boolean = true
     drawCommand: DrawCommand = null
 
@@ -57,13 +57,17 @@ class Renderable extends Entity {
 
 	get z() {
 		return this.drawCommand.key
-	}
+    }
+    
+    updateFromParent() {
+        this.setLayer(this.parent._layer)
+    }
 
 	setLayer(layerId: number, recursive: boolean = true) {
 		this.drawCommand.layer = layerId
         if(recursive && this.children) {
             for(let n = 0; n < this.children.length; n++) {
-                this.children[n].setLayer(layerId, true)
+                this.children[n].updateFromParent()
             }
         }
 	}	
@@ -82,5 +86,3 @@ class Renderable extends Entity {
 		super.onDisable()
 	}
 }
-
-export default Renderable

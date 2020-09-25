@@ -1,4 +1,4 @@
-import Renderable from "../entity/Renderable"
+import { Renderable } from "../entity/Renderable"
 
 class Stage {
     buffer: Array<Renderable> = []
