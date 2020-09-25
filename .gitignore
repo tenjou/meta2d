@@ -1,6 +1,3 @@
 .DS_Store
 .idea
-renderer/*
-store/*
-projects/*
-renderer/*
+node_modules/*
