@@ -1,7 +1,7 @@
 import Engine from "../Engine"
 import Renderable from "../entity/Renderable"
 import Sprite from "../entity/Sprite"
-import Material from "../resources/Material"
+import { Material } from "../resources/Material"
 import Vector2 from "../math/Vector2"
 import Vector4 from "../math/Vector4"
 import tilemapVertexSrc from "../../shaders/tilemap.vertex.glsl"

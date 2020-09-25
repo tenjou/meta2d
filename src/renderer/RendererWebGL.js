@@ -6,7 +6,7 @@ import Matrix3 from "../math/Matrix3"
 import Matrix4 from "../math/Matrix4"
 import Mesh from "../mesh/Mesh"
 import Texture from "../resources/Texture"
-import Material from "../resources/Material"
+import { Material } from "../resources/Material"
 import debugVertexSrc from "../../shaders/debug.vertex.glsl"
 import debugFragmentSrc from "../../shaders/debug.fragment.glsl"
 
