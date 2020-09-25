@@ -1,4 +1,4 @@
-import Stage from "./Stage"
+import { Stage } from "./Stage"
 import Engine from "../Engine"
 import Radix from "../RadixSort"
 import DebugDrawCommand from "./DebugDrawCommand" 

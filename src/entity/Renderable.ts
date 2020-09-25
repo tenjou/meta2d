@@ -1,7 +1,7 @@
 import Entity from "./Entity"
 import Engine from "../Engine"
 import Mesh from "../mesh/Mesh"
-import Stage from "../renderer/Stage"
+import { Stage } from "../renderer/Stage"
 import DrawCommand from "../renderer/DrawCommand"
 import Material from "../resources/Material"
 

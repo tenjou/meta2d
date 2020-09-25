@@ -32,7 +32,7 @@ import Font from "./resources/Font"
 import Tiled from "./resources/Tiled"
 import Tileset from "./resources/Tileset"
 import Mesh from "./mesh/Mesh"
-import Raycast from "./physics/Raycast"
+import * as Raycast from "./physics/Raycast"
 import Vector2 from "./math/Vector2"
 import Vector3 from "./math/Vector3"
 import Vector4 from "./math/Vector4"
@@ -41,7 +41,7 @@ import Matrix4 from "./math/Matrix4"
 import AABB from "./math/AABB"
 import Circle from "./math/Circle"
 import Random from "./math/Random"
-import Stage from "./renderer/Stage"
+import { Stage } from "./renderer/Stage"
 import DrawCommand from "./renderer/DrawCommand"
 import Renderer from "./renderer/RendererWebGL"
 import RendererWebGL from "./renderer/RendererWebGL"
@@ -88,15 +88,15 @@ Engine.removeCamera = (camera) => {
 }
 
 export { 
+    Stage, Raycast,
 	Engine, Device, Time, StateMachine,
 	Input, Gamepad, 
 	Entity, Sprite, AnimatedSprite, Camera, Text, BitmapText,
 	Tilemap, TilemapLayer, TilemapOrthogonalLayer, TilemapIsometricLayer, TileBody,
 	Resources, Audio, Resource, Material, Texture, Graphics, Animation, Spritesheet, Sound, Content, Tiled, Tileset,
 	Mesh,
-	Raycast,
 	radians, degrees, length, clamp, EPSILON, 
 	Vector2, Vector3, Vector4, Matrix3, Matrix4, AABB, Circle, Random,
-	Stage, DrawCommand, Renderer, RendererWebGL,
+	DrawCommand, Renderer, RendererWebGL,
 	Tween, Easing
 }
