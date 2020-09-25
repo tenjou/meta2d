@@ -1,18 +1,19 @@
 import Entity from "./Entity"
 import Engine from "../Engine"
 import Mesh from "../mesh/Mesh"
-import Resources from "../resources/Resources"
 import Stage from "../renderer/Stage"
 import DrawCommand from "../renderer/DrawCommand"
+import Material from "../resources/Material"
 
-class Renderable extends Entity 
-{
-	constructor(mesh) {
+class Renderable extends Entity {
+    needUpdateMesh: boolean = true
+    drawCommand: DrawCommand = null
+
+	constructor(mesh: Mesh = null) {
 		super()
 		if(!mesh) {
 			mesh = new Mesh(null, null)
 		}
-		this.needUpdateMesh = true
 		this.hidden = false
 		this.drawCommand = new DrawCommand(this._transform, mesh, null, null)
 	}
@@ -41,20 +42,8 @@ class Renderable extends Entity
 		this.drawCommand.uniforms = Object.assign({}, this.drawCommand.material.uniforms)		
 	}
 
-	set material(material) {
-		if(typeof material === "string") {
-			const newMaterial = Resources.get(material)
-			if(!newMaterial) {
-				console.warn(`(Sprite.material) Could not find resource with id: ${material}`)
-			}
-			else {
-				this.drawCommand.material = material
-			}
-		}
-		else {
-			this.drawCommand.material = material
-		}
-
+	set material(material: Material) {
+		this.drawCommand.material = material
 		this.updateUniforms()
 	}
 
@@ -70,7 +59,7 @@ class Renderable extends Entity
 		return this.drawCommand.key
 	}
 
-	setLayer(layerId, recursive = true) {
+	setLayer(layerId: number, recursive: boolean = true) {
 		this.drawCommand.layer = layerId
         if(recursive && this.children) {
             for(let n = 0; n < this.children.length; n++) {
