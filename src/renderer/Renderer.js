@@ -1,7 +1,7 @@
 import { Stage } from "./Stage"
 import Engine from "../Engine"
 import Radix from "../RadixSort"
-import DebugDrawCommand from "./DebugDrawCommand" 
+import { DebugDrawCommand } from "./DebugDrawCommand" 
 
 const defaultBufferSize = 64
 const layers = 8
