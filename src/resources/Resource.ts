@@ -7,7 +7,8 @@ export type ResourceConfigType = {
 
 export enum ResourceEvent {
     Loaded = "loaded",
-    Unloaded = "unloaded"
+    Unloaded = "unloaded",
+    Ended = "ended"
 }
 
 export type ResourceCallback = (eventId: ResourceEvent, resource: Resource) => void

@@ -7,7 +7,7 @@ export type ResourceLoadLater = {
 
 export type ResourceCallback = (arg?: unknown) => void
 
-export enum ResourceEvent {
+export enum ResourcesEvent {
     Loading = "loading",
     Ready = "ready",
     Progress = "progress"
@@ -67,7 +67,7 @@ class Resources {
     resourceLoading(resource: Resource) {
         if(this.numToLoad === 0) {
             this.loading = true
-            this.emit(ResourceEvent.Loading)
+            this.emit(ResourcesEvent.Loading)
         }
         this.numToLoad++
         this.numToLoadMax++
@@ -75,11 +75,11 @@ class Resources {
 
     resourceLoaded(resource: Resource) {
         this.numToLoad--
-        this.emit(ResourceEvent.Progress, (100 / this.numToLoadMax) * (this.numToLoadMax - this.numToLoad))
+        this.emit(ResourcesEvent.Progress, (100 / this.numToLoadMax) * (this.numToLoadMax - this.numToLoad))
         if(this.numToLoad === 0) {
             this.loadDelayed()
             this.loading = false
-            this.emit(ResourceEvent.Ready)
+            this.emit(ResourcesEvent.Ready)
         }
     }
 
@@ -87,7 +87,7 @@ class Resources {
         return (this.resources[id] || null) as T
     }
 
-    on(eventId: ResourceEvent, callback: ResourceCallback) {
+    on(eventId: ResourcesEvent, callback: ResourceCallback) {
         const buffer = this.listeners[eventId]
         if(buffer) {
             buffer.push(callback)
@@ -97,7 +97,7 @@ class Resources {
         }
     }
 
-    off(eventId: ResourceEvent, callback: ResourceCallback) {
+    off(eventId: ResourcesEvent, callback: ResourceCallback) {
         const buffer = this.listeners[eventId]
         if(!buffer) { 
             return 
@@ -110,7 +110,7 @@ class Resources {
         buffer.pop()
     }
 
-    emit(eventId: ResourceEvent, arg?: unknown) {
+    emit(eventId: ResourcesEvent, arg?: unknown) {
         const buffer = this.listeners[eventId]
         if(!buffer) { 
             return 
