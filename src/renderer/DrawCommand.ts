@@ -1,6 +1,6 @@
 import { Material, UniformDictionary } from "../resources/Material"
 import { Matrix3 } from "../math/Matrix3"
-import Mesh from "../mesh/Mesh"
+import { Mesh } from "../mesh/Mesh"
 
 export enum ModeType {
     Triangles = WebGL2RenderingContext.TRIANGLES
