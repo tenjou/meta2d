@@ -1,4 +1,4 @@
-import Resource from "./Resource"
+import { Resource } from "./Resource"
 import Resources from "./Resources"
 import Frame from "./Frame"
 import Engine from "../Engine"

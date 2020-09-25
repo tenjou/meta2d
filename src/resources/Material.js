@@ -1,5 +1,5 @@
 import Engine from "../Engine"
-import Resource from "./Resource"
+import { Resource } from "./Resource"
 
 const requestTextFunc = (request) => { return request.text() }
 

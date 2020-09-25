@@ -1,5 +1,5 @@
 import Resources from "./Resources"
-import Resource from "./Resource"
+import { Resource } from "./Resource"
 import Tileset from "./Tileset"
 import Utils from "../Utils"
 

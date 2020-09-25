@@ -1,5 +1,5 @@
 import Audio from "./Audio"
-import Resource from "./Resource"
+import { Resource } from "./Resource"
 
 class Sound extends Resource
 {

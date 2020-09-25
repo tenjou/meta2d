@@ -1,5 +1,5 @@
 import Resources from "./Resources"
-import Resource from "./Resource"
+import { Resource } from "./Resource"
 import Texture from "./Texture"
 import Spritesheet from "./Spritesheet"
 import Frame from "./Frame"

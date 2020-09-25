@@ -1,13 +1,15 @@
 import Resources from "./Resources"
 
-class Resource 
+export class Resource 
 {
 	constructor() {
 		this.watchers = []
 		this.loadLater = false
 		this._loaded = false
 		this._loading = false
-	}
+    }
+    
+    loadFromConfig(config) {}
 
 	watch(func) {
 		this.watchers.push(func)
@@ -68,7 +70,3 @@ class Resource
 		return this._loading
 	}
 }
-
-Resources.Resource = Resource
-
-export default Resource
