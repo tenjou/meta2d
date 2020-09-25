@@ -43,7 +43,7 @@ class EngineWindow {
 			container = canvas.parentElement
 		}
 
-		const gl = canvas.getContext("webgl", { 
+		const gl = canvas.getContext("webgl2", { 
 			antialias: Engine.settings.antialias, 
 			alpha: Engine.settings.alpha 
 		})

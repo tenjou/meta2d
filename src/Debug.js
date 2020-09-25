@@ -35,6 +35,6 @@ const toggle = () => {
 	Engine.camera.setCullMask(debugLayer, active)
 }
 
-export {
+export default {
 	update, toggle
 }

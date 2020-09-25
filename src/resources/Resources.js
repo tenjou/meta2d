@@ -4,7 +4,8 @@ class Resources
 	constructor() {
 		this.resources = {}
 		this.listeners = {}
-		this.loadLaterBuffer = []
+        this.loadLaterBuffer = []
+        this.resourcesTypes = {}
 		this.loading = false
 		this.numToLoad = 0
 		this.numToLoadMax = 0
@@ -14,7 +15,11 @@ class Resources
 		for(let key in config) {
 			this.load(key, config[key])
 		}
-	}
+    }
+    
+    register(resourceCls) {
+        this.resourcesTypes[resourceCls.name] = resourceCls 
+    }
 
 	load(id, config) 
 	{
@@ -23,8 +28,7 @@ class Resources
 			return
 		}
 
-		const classes = this.Resource.__inherit
-		const cls = classes[config.type]
+		const cls = this.resourcesTypes[config.type]
 		if(!cls) {
 			console.warn(`(Resources.load) No such resource type registered: ${config.type}`)
 			return
@@ -116,6 +120,4 @@ class Resources
 	}
 }
 
-const instance = new Resources()
-
-export default instance
+export default new Resources()

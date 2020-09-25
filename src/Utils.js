@@ -29,7 +29,7 @@ const getExt = (path) => {
 	return ext
 }
 
-export {
+export default {
 	isPowerOf2,
 	onDomLoad,
 	getRootPath,

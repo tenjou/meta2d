@@ -13,7 +13,8 @@ class Entity
 		this._size = new Vector2(0, 0)
 		this._pivot = new Vector2(0, 0)
 		this._anchor = null
-		this._rotation = 0
+        this._rotation = 0
+        this._layer = 0
 
 		this.parent = null
 		this.children = null

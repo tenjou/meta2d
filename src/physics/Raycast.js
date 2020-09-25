@@ -61,4 +61,4 @@ const onLayer = (x, y, layerId, result, depth = Number.MAX_SAFE_INTEGER) => {
 	return result
 }
 
-export { onBuffer, onLayer }
+export default { onBuffer, onLayer }

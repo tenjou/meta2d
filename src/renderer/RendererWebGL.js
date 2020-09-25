@@ -111,11 +111,14 @@ class RendererWebGL extends Renderer
 		this.debugVertices[23] = pivotY - 3
 		this.debugMesh.upload(this.debugVertices)
 
+        const transform = new Matrix3()
+        transform.translate(command.volume.minX, command.volume.minY)
+
 		this.useMaterial(debugMaterial)
 		this.updateAttribs(this.debugMesh, debugMaterial)
 		this.updateUniforms(debugMaterial, {
 			color: new Vector4(1, 0, 0, 1)	
-		}, command.transform)
+		}, transform)
 
 		if(this.prevIndiceBuffer !== this.debugMesh.indices) {
 			this.prevIndiceBuffer = this.debugMesh.indices

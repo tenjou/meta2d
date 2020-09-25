@@ -22,7 +22,9 @@ const Engine = {
 		alpha: true,
 		upscale: true,
 		canvas: null
-	},
+    },
+    
+    create(app) {},
 
 	addUpdating(entity) {
 		this.updating.push(entity)

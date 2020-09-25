@@ -215,7 +215,7 @@ const bounceInOut = (k) => {
 	return bounceOut(k * 2 - 1) * 0.5 + 0.5
 }
 
-export {
+export default {
 	linear, 
 	quadIn, quadOut, quadInOut, 
 	cubicIn, cubicOut, cubicInOut,

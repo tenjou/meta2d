@@ -1,7 +1,8 @@
 import Resource from "./Resource"
+import Resources from "./Resources"
 import Frame from "./Frame"
 import Engine from "../Engine"
-import { isPowerOf2 } from "../Utils"
+import Utils from "../Utils"
 
 const greenPixel = new Uint8Array([ 0, 255, 0, 255 ])
 const pixels = new Uint8Array(4)
@@ -84,7 +85,7 @@ class Texture extends Resource
 		gl.bindTexture(gl.TEXTURE_2D, this.instance)
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image)
 
-		if(isPowerOf2(image.width) && isPowerOf2(image.height)) {
+		if(Utils.isPowerOf2(image.width) && Utils.isPowerOf2(image.height)) {
 			gl.generateMipmap(gl.TEXTURE_2D)
 		}
 		else {
@@ -165,6 +166,8 @@ class Texture extends Resource
 		return pixels
 	}
 }
+
+Resources.register(Texture)
 
 Texture.TEXTURE_2D = WebGLRenderingContext.TEXTURE_2D
 Texture.TEXTURE_3D = WebGLRenderingContext.TEXTURE_3D

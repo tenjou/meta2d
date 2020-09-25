@@ -5,7 +5,7 @@ import Time from "./Time"
 import StateMachine from "./StateMachine"
 import Input from "./input/Input"
 import Gamepad from "./input/Gamepad"
-import { onDomLoad } from "./Utils"
+import Utils from "./Utils"
 import Entity from "./entity/Entity"
 import Sprite from "./entity/Sprite"
 import AnimatedSprite from "./entity/AnimatedSprite"
@@ -67,7 +67,7 @@ Engine.create = (app) => {
 	Engine.camera.setCullMask(0, true)
 	Engine.cameras = [ Engine.camera ]
 	
-	onDomLoad(() => {
+	Utils.onDomLoad(() => {
 		Engine.window.create()
 		Engine.view.enable = true
 	})
