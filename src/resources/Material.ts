@@ -34,6 +34,8 @@ class Uniform {
     }
 }
 
+export type UniformDictionary = { [prop: string]: any }
+
 export class Material extends Resource {
     ctx: RenderingContext = null
     program: WebGLProgram = null
@@ -42,7 +44,7 @@ export class Material extends Resource {
     uniform: { [prop: string]: WebGLUniformLocation } = null
     uniformData: Array<Uniform> = null
     numAttribs: number = 0
-    uniforms: { [prop: string]: any } = {}
+    uniforms: UniformDictionary = {}
 
     loadFromConfig(config: MaterialConfigType) {
         this.loading = true
