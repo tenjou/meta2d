@@ -26,8 +26,8 @@ import { Graphics } from "./resources/Graphics"
 import { Animation } from "./resources/Animation"
 import { Spritesheet } from "./resources/Spritesheet"
 import { Sound, Audio } from "./resources/Sound"
-import Content from "./resources/Content"
-import Font from "./resources/Font"
+import { Content } from "./resources/Content"
+import { Font } from "./resources/Font"
 import Tiled from "./resources/Tiled"
 import Tileset from "./resources/Tileset"
 import { Mesh } from "./mesh/Mesh"
@@ -92,7 +92,7 @@ export {
 	Input, Gamepad, 
 	Entity, Sprite, AnimatedSprite, Camera, Text, BitmapText,
 	Tilemap, TilemapLayer, TilemapOrthogonalLayer, TilemapIsometricLayer, TileBody,
-	Resources, Audio, Resource, Material, Texture, Graphics, Animation, Spritesheet, Sound, Content, Tiled, Tileset,
+	Resources, Audio, Resource, Material, Texture, Graphics, Animation, Spritesheet, Sound, Content, Tiled, Tileset, Font,
 	Mesh,
 	radians, degrees, length, clamp, EPSILON, 
 	Vector2, Vector3, Vector4, Matrix3, Matrix4, AABB, Circle, Random,

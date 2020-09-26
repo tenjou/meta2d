@@ -6,8 +6,6 @@ type SoundConfigType = ResourceConfigType & {
     path: string
 }
 
-export type SoundEvent = ResourceEvent & "ended"
-
 class AudioSystem {
     ctx: AudioContext
     gainNode: GainNode
@@ -31,7 +29,7 @@ class AudioSystem {
         else if(volume > 1) {
             volume = 1
         }
-        
+
         if(this._volume === volume) { return }
         this._volume = volume
         this.gainNode.gain.setValueAtTime(volume, 0)
@@ -73,103 +71,103 @@ export class Sound extends Resource {
     _volume: number = 1
     _mute: boolean = false
 
-	constructor() {
-		super()
-		this.gainNode = Audio.ctx.createGain()
-		this.gainNode.connect(Audio.gainNode)
-	}
+    constructor() {
+        super()
+        this.gainNode = Audio.ctx.createGain()
+        this.gainNode.connect(Audio.gainNode)
+    }
 
-	play(loop: boolean = false, offset: number = 0) {
-		if(this.instances.length === this.instancesActive) {
-			this.instances.push(new SoundInstance(this, this.instances.length))
-		}
-		const instance = this.instances[this.instancesActive++]
-		instance.play(loop, offset)
-	}
+    play(loop: boolean = false, offset: number = 0) {
+        if(this.instances.length === this.instancesActive) {
+            this.instances.push(new SoundInstance(this, this.instances.length))
+        }
+        const instance = this.instances[this.instancesActive++]
+        instance.play(loop, offset)
+    }
 
-	stop() {
-		for(let n = 0; n < this.instancesActive; n++) {
-			this.instances[n].stop()
-		}
-	}
+    stop() {
+        for(let n = 0; n < this.instancesActive; n++) {
+            this.instances[n].stop()
+        }
+    }
 
-	pause() {
-		for(let n = 0; n < this.instancesActive; n++) {
-			this.instances[n].pause()
-		}
-	}
+    pause() {
+        for(let n = 0; n < this.instancesActive; n++) {
+            this.instances[n].pause()
+        }
+    }
 
-	resume() {
-		Audio.ctx.resume()
-		for(let n = 0; n < this.instancesActive; n++) {
-			this.instances[n].resume()
-		}
-	}
+    resume() {
+        Audio.ctx.resume()
+        for(let n = 0; n < this.instancesActive; n++) {
+            this.instances[n].resume()
+        }
+    }
 
-	set volume(volume) {
-		if(volume < 0) { volume = 0 }
-		else if(volume > 1) { volume = 1 }
+    set volume(volume) {
+        if(volume < 0) { volume = 0 }
+        else if(volume > 1) { volume = 1 }
 
-		if(this._volume === volume) { return }
-		this._volume = volume
-		
-		this.gainNode.gain.setValueAtTime(volume, 0)
-	}
+        if(this._volume === volume) { return }
+        this._volume = volume
 
-	get volume() {
-		return this._volume
-	}
+        this.gainNode.gain.setValueAtTime(volume, 0)
+    }
 
-	set mute(mute) {
-		if(this._mute === mute) { return }
-		this._mute = mute
+    get volume() {
+        return this._volume
+    }
 
-		if(mute) {
-			this.gainNode.gain.setValueAtTime(0, 0)
-		}
-		else {
-			this.gainNode.gain.setValueAtTime(this._volume, 0)
-		}
-	}
+    set mute(mute) {
+        if(this._mute === mute) { return }
+        this._mute = mute
 
-	get mute() {
-		return this._mute
-	}
+        if(mute) {
+            this.gainNode.gain.setValueAtTime(0, 0)
+        }
+        else {
+            this.gainNode.gain.setValueAtTime(this._volume, 0)
+        }
+    }
 
-	loadFromConfig(cfg: SoundConfigType) {
-		this.loading = true
-		this.loadFromPath(cfg.path)
-	}
+    get mute() {
+        return this._mute
+    }
 
-	loadFromPath(path: string) {
-		this.loading = true
-		fetch(path)
-		.then(response => { return response.arrayBuffer() })
-		.then(this.decodeAudio.bind(this))		
-	}
+    loadFromConfig(cfg: SoundConfigType) {
+        this.loading = true
+        this.loadFromPath(cfg.path)
+    }
 
-	decodeAudio(arrayBuffer: ArrayBuffer) {
-		Audio.ctx.decodeAudioData(arrayBuffer, (buffer) => {
-			this.buffer = buffer
-			this.loading = false
-		}, this.handleError.bind(this))
-	}
+    loadFromPath(path: string) {
+        this.loading = true
+        fetch(path)
+        .then(response => { return response.arrayBuffer() })
+        .then(this.decodeAudio.bind(this))
+    }
 
-	handleError(error: DOMException) {
-		this.loading = false
-	}
+    decodeAudio(arrayBuffer: ArrayBuffer) {
+        Audio.ctx.decodeAudioData(arrayBuffer, (buffer) => {
+            this.buffer = buffer
+            this.loading = false
+        }, this.handleError.bind(this))
+    }
 
-	handleSoundEnded(instance: SoundInstance) {
-		if(!instance.loop) {
-			this.instancesActive--
-			const prevInstance = this.instances[this.instancesActive]
-			this.instances[instance.index] = prevInstance
-			this.instances[this.instancesActive] = instance
-			prevInstance.index = instance.index
-			instance.index = this.instancesActive
-		}
-		this.emit("ended")
-	}
+    handleError(error: DOMException) {
+        this.loading = false
+    }
+
+    handleSoundEnded(instance: SoundInstance) {
+        if(!instance.loop) {
+            this.instancesActive--
+            const prevInstance = this.instances[this.instancesActive]
+            this.instances[instance.index] = prevInstance
+            this.instances[this.instancesActive] = instance
+            prevInstance.index = instance.index
+            instance.index = this.instancesActive
+        }
+        this.emit("ended")
+    }
 }
 
 export class SoundInstance {
@@ -182,76 +180,76 @@ export class SoundInstance {
     tStart: number = 0
     _onEndFunc: () => void
 
-	constructor(parent: Sound, index: number) {
-		this.parent = parent
-		this.index = index
-		this._onEndFunc = this.handleEnded.bind(this)
-	}
+    constructor(parent: Sound, index: number) {
+        this.parent = parent
+        this.index = index
+        this._onEndFunc = this.handleEnded.bind(this)
+    }
 
-	play(loop: boolean = false, offset: number = 0) {
-		this.loop = loop
-		this.playing = true
-		this.tPaused = -1
-		this.source = Audio.ctx.createBufferSource()
-		this.source.buffer = this.parent.buffer
-		this.source.connect(this.parent.gainNode)
-		this.source.onended = this._onEndFunc
+    play(loop: boolean = false, offset: number = 0) {
+        this.loop = loop
+        this.playing = true
+        this.tPaused = -1
+        this.source = Audio.ctx.createBufferSource()
+        this.source.buffer = this.parent.buffer
+        this.source.connect(this.parent.gainNode)
+        this.source.onended = this._onEndFunc
 
-		if(offset < 0) {
-			offset = 0
-		}
-		else if(offset > this.source.buffer.duration) {
-			offset = this.source.buffer.duration
-		}
-		this.source.start(0, offset)
-		this.tStart = this.source.context.currentTime - offset
-	}
+        if(offset < 0) {
+            offset = 0
+        }
+        else if(offset > this.source.buffer.duration) {
+            offset = this.source.buffer.duration
+        }
+        this.source.start(0, offset)
+        this.tStart = this.source.context.currentTime - offset
+    }
 
-	stop() {
-		if(!this.playing) { return }
-		this.playing = false
-		this.loop = false
-		if(this.tPaused !== -1) {
-			this.tPaused = -1
-			this.parent.handleSoundEnded(this)
-		}
-		else {
-			this.source.stop(0)
-		}
-	}
+    stop() {
+        if(!this.playing) { return }
+        this.playing = false
+        this.loop = false
+        if(this.tPaused !== -1) {
+            this.tPaused = -1
+            this.parent.handleSoundEnded(this)
+        }
+        else {
+            this.source.stop(0)
+        }
+    }
 
-	pause() {
-		if(!this.playing) { return }
-		if(this.tPaused !== -1) { return }
-		this.tPaused = this.source.context.currentTime - this.tStart
-		this.source.stop(0)
-	}
+    pause() {
+        if(!this.playing) { return }
+        if(this.tPaused !== -1) { return }
+        this.tPaused = this.source.context.currentTime - this.tStart
+        this.source.stop(0)
+    }
 
-	resume() {
-		if(this.tPaused === -1) { return }
-		this.play(this.loop, this.tPaused)
-		this.tPaused = -1
-	}
+    resume() {
+        if(this.tPaused === -1) { return }
+        this.play(this.loop, this.tPaused)
+        this.tPaused = -1
+    }
 
-	set currentTime(offset) {
-		this.stop()
-		this.play(this.loop, offset)
-	}
+    set currentTime(offset) {
+        this.stop()
+        this.play(this.loop, offset)
+    }
 
-	get currentTime() {
-		if(!this.playing) {
-			return 0
-		}
-		return this.source.context.currentTime - this.tStart
-	}
+    get currentTime() {
+        if(!this.playing) {
+            return 0
+        }
+        return this.source.context.currentTime - this.tStart
+    }
 
-	handleEnded() {
-		if(this.tPaused !== -1) { return }
-		if(this.loop) {
-			this.play(true, 0)
-		}
-		this.parent.handleSoundEnded(this)
-	}
+    handleEnded() {
+        if(this.tPaused !== -1) { return }
+        if(this.loop) {
+            this.play(true, 0)
+        }
+        this.parent.handleSoundEnded(this)
+    }
 }
 
 Resources.register(Sound)

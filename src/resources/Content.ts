@@ -1,31 +1,30 @@
 import { Resource } from "./Resource"
 import { Resources } from "./Resources"
+import { ResourceConfigType } from "./Resource"
 
-class Content extends Resource 
-{
-	constructor() {
-		super()
-		this.text = null
-	}
+type ContentConfigType = ResourceConfigType & {
+    path: string
+}
 
-	loadFromConfig(config) {
+export class Content extends Resource {
+    text: string = null
+
+	loadFromConfig(config: ContentConfigType) {
 		this.loading = true
 		this.loadFromPath(config.path)
 	}
 
-	loadFromPath(path) {
+	loadFromPath(path: string) {
 		this.loading = true
 		fetch(path)
 			.then((response) => response.text())
 			.then(this.loadFromText.bind(this))
 	}
 
-	loadFromText(text) {
+	loadFromText(text: string) {
 		this.text = text
 		this.loading = false
 	}
 }
 
 Resources.register(Content)
-
-export default Content

@@ -1,17 +1,19 @@
-import { Spritesheet } from "./Spritesheet"
+import { Spritesheet, SpritesheetJsonConfig } from "./Spritesheet"
 import { Frame } from "./Texture"
 import { Resources } from "./Resources"
+import { ResourceConfigType } from "./Resource"
 import { getExt, getRootPath } from "../Utils"
 
-class Font extends Spritesheet {
-	constructor() {
-		super()
-		this.kerning = new Array(256)
-		this.kerningData = {}
-		this.lineHeight = 0
-	}
+type ContentConfigType = ResourceConfigType & {
+    path: string
+}
 
-	loadFromPath(path) {
+export class Font extends Spritesheet {
+    kerning: Array<number> = new Array(256)
+    kerningData: Record<string, Record<string, number>> = {}
+    lineHeight: number = 0
+
+	loadFromPath(path: string) {
 		this.loading = true
 		
 		const ext = getExt(path)
@@ -28,7 +30,7 @@ class Font extends Spritesheet {
 		}
 	}
 
-	loadFromJson(data) {
+	loadFromJson(data: SpritesheetJsonConfig) {
 		super.loadFromJson(data)
 		for(let key in this.frames) {
 			const frame = this.frames[key]
@@ -36,7 +38,7 @@ class Font extends Spritesheet {
 		}	
 	}
 
-	loadFromFnt(data) {
+	loadFromFnt(data: string) {
 		let textureFilename = null
 		let widthUV = 0
 		let heightUV = 0
@@ -46,8 +48,7 @@ class Font extends Spritesheet {
 		const buffer = data.split("\n")
 		for(let n = 0; n < buffer.length; n++) {
 			const line = buffer[n].trim().split(/\s+/)
-			switch(line[0]) 
-			{
+			switch(line[0]) {
 				case "char":
 					const index = parseInt(line[1].split("=")[1])
 					const x = parseInt(line[2].split("=")[1])
@@ -61,12 +62,12 @@ class Font extends Spritesheet {
 					const minY = y * heightUV
 					const maxX = (x + width) * widthUV
 					const maxY = (y + height) * heightUV				
-					this.frames[index] = new Frame(this, [
+					this.frames[index] = new Frame(this, new Float32Array([
 						width + offsetX, 	height + offsetY, 	maxX, maxY,
 						0.0 + offsetX, 		height + offsetY, 	minX, maxY,
 						0.0 + offsetX, 		0.0 + offsetY, 		minX, minY,
 						width + offsetX, 	0.0 + offsetY, 		maxX, minY
-					], 0)
+					]), 0)
 					this.kerning[index] = kerning
 					break
 
@@ -110,8 +111,7 @@ class Font extends Spritesheet {
 		}
 	}
 
-	getKerning(firstChar, secondChar)
-	{
+	getKerning(firstChar: string, secondChar: string) {
 		const firstCharData = this.kerningData[firstChar]
 		if(!firstCharData) { return 0 }
 
@@ -121,5 +121,3 @@ class Font extends Spritesheet {
 }
 
 Resources.register(Font)
-
-export default Font

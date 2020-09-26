@@ -5,7 +5,7 @@ export type ResourceConfigType = {
     [prop: string]: unknown
 }
 export type ResourceEvent = "loaded" | "unloaded" | "ended"
-export type ResourceCallback = (eventId: ResourceEvent, resource: Resource) => void
+export type ResourceCallback = (eventId: string, resource: Resource) => void
 
 export class Resource {
     watchers: Array<ResourceCallback> = []

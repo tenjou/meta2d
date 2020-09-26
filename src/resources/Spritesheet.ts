@@ -3,7 +3,7 @@ import { ResourceConfigType } from "./Resource"
 import { Texture, Frame } from "./Texture"
 import { getExt, getRootPath } from "../Utils"
 
-type SpritesheetJsonConfig = {
+export type SpritesheetJsonConfig = {
     meta: {
         size: {
             w: number,
