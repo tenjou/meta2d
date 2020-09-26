@@ -12,10 +12,10 @@ export class DrawCommand {
     transform: Matrix3
     mesh: Mesh
     material: Material
-    uniforms: UniformDictionary
+    uniforms: UniformDictionary = {}
     mode: number
 
-    constructor(transform: Matrix3, mesh: Mesh, material: Material, uniforms: UniformDictionary, mode: ModeType = ModeType.Triangles) {
+    constructor(transform: Matrix3, mesh: Mesh, material: Material, uniforms: UniformDictionary = {}, mode: ModeType = ModeType.Triangles) {
         this.transform = transform
         this.mesh = mesh
         this.material = material

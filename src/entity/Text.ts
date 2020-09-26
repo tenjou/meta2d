@@ -31,7 +31,8 @@ export class Text extends Sprite {
     }
 
     updateMesh() {
-        const ctx = this._texture.ctx
+        const texture = this._texture as Graphics
+        const ctx = texture.ctx
         ctx.font = this._style + " " + this._fontSizePx + " " + this._font
 
         const newlineIndex = this._text.indexOf("\n")
@@ -68,7 +69,7 @@ export class Text extends Sprite {
         const width = Math.ceil(this._maxWidth)
         const height = Math.ceil(fontHeight * this._lineBuffer.length)
         this.size.set(width, height)
-        this._texture.resize(width, height)
+        texture.resize(width, height)
 
         ctx.clearRect(0, 0, this._texture.width, this._texture.height)
         ctx.font = this._style + " " + this._fontSizePx + " " + this._font
@@ -97,7 +98,7 @@ export class Text extends Sprite {
         }
 
         if(width > 0) {
-            this._texture.needUpdate = true
+            texture.needUpdate = true
             this._frame = null
             this.frame = this._texture.getFrame("0")
             super.updateMesh()
@@ -110,7 +111,7 @@ export class Text extends Sprite {
 
     calcLineBuffer() {
         const lineBuffer = []
-        const ctx = this._texture.ctx
+        const ctx = (this._texture as Graphics).ctx
         let text = ""
         let width = 0
 

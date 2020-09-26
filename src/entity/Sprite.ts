@@ -6,25 +6,30 @@ import { Material } from "../resources/Material"
 import { Mesh } from "../mesh/Mesh"
 import spriteVertexSrc from "../../shaders/sprite.vertex.glsl"
 import spriteFragmentSrc from "../../shaders/sprite.fragment.glsl"
+import { Texture } from "../index"
+import { Frame } from "../resources/Texture"
+import { ResourceEvent } from "../resources/Resource"
 
-let spriteMaterial = null
+let spriteMaterial: Material = null
 Engine.on("setup", () => {
     spriteMaterial = new Material()
     spriteMaterial.loadFromConfig({
+        type: "Material",
         vertexSrc: spriteVertexSrc,
         fragmentSrc: spriteFragmentSrc
     })
 })
 
 export class Sprite extends Renderable {
-    constructor(texture) {
-        super(null)
-        this._texture = null
-        this._frame = null
-        this.color = new Vector4(1, 1, 1, 1)
+    _texture: Texture = null
+    _frame: Frame = null
+    _handleTextureFunc: () => void
+    color: Vector4 = new Vector4(1, 1, 1, 1)
 
+    constructor(texture: Texture = null) {
+        super()
         this.material = spriteMaterial
-        this.handleTextureFunc = this.handleTexture.bind(this)
+        this._handleTextureFunc = this.handleTexture.bind(this)
         if(texture) {
             this.texture = texture
         }
@@ -33,7 +38,7 @@ export class Sprite extends Renderable {
     onDisable() {
         super.onDisable()
         if(this.texture) {
-            this.texture.unwatch(this.handleTextureFunc)
+            this.texture.unwatch(this._handleTextureFunc)
         }
     }
 
@@ -49,40 +54,14 @@ export class Sprite extends Renderable {
 
     set texture(texture) {
         if(this._texture) {
-            this.texture.unwatch(this.handleTextureFunc)
+            this.texture.unwatch(this._handleTextureFunc)
         }
 
-        let frameName = null
-
-        if(typeof texture === "string") {
-            let newTexture
-
-            const index = texture.indexOf("/")
-            if(index === -1) {
-                newTexture = Resources.get(texture)
-            }
-            else {
-                const textureInfo = texture.split("/")
-                newTexture = Resources.get(textureInfo[0])
-                frameName = textureInfo[1]
-            }
-
-            if(!newTexture) {
-                console.warn(`(Sprite.texture) Could not find resource with id: ${texture}`)
-                this._texture = null
-            }
-            else {
-                this._texture = newTexture
-            }
-        }
-        else {
-            this._texture = texture
-        }
-
+        this._texture = texture
         if(this._texture) {
-            this._texture.watch(this.handleTextureFunc)
+            this._texture.watch(this._handleTextureFunc)
             if(this._texture.loaded) {
-                this.frame = this._texture.getFrame(frameName || 0)
+                this.frame = this._texture.getFrame("0")
             }
         }
         else {
@@ -114,9 +93,7 @@ export class Sprite extends Renderable {
     }
 
     updateUniforms() {
-        this.drawCommand.uniforms = Object.assign({
-            color: this.color
-        }, this.drawCommand.material.uniforms)
+        this.drawCommand.uniforms.color = this.color
     }
 
     set alpha(value) {
@@ -127,7 +104,7 @@ export class Sprite extends Renderable {
         return this.color.w
     }
 
-    handleTexture(event, texture) {
-        this.frame = texture.getFrame(0)
+    handleTexture(eventId: ResourceEvent, texture: Texture) {
+        this.frame = texture.getFrame("0")
     }
 }

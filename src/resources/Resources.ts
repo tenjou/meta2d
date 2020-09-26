@@ -26,9 +26,9 @@ class Resources {
         this.resourceTypes[resourceCls.name] = resourceCls 
     }
 
-    loadFromConfig(config: { [key:string]: ResourceConfigType }) {
-        for(let key in config) {
-            this.load(key, config[key])
+    loadFromConfig(config: Record<string, ResourceConfigType>) {
+        for(let resourceId in config) {
+            this.load(resourceId, config[resourceId])
         }
     }
 

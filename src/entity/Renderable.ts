@@ -9,13 +9,13 @@ export class Renderable extends Entity {
     needUpdateMesh: boolean = true
     drawCommand: DrawCommand = null
 
-	constructor(mesh?: Mesh) {
+	constructor(mesh: Mesh = null) {
 		super()
 		if(!mesh) {
 			mesh = new Mesh()
 		}
 		this.hidden = false
-		this.drawCommand = new DrawCommand(this._transform, mesh, null, null)
+		this.drawCommand = new DrawCommand(this._transform, mesh, null)
 	}
 
 	draw() {
@@ -38,9 +38,7 @@ export class Renderable extends Entity {
 		this.needUpdateMesh = false
 	}
 
-	updateUniforms() {
-		this.drawCommand.uniforms = Object.assign({}, this.drawCommand.material.uniforms)		
-	}
+	updateUniforms() {}
 
 	set material(material: Material) {
 		this.drawCommand.material = material
