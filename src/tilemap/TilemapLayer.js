@@ -145,7 +145,7 @@ class TilemapLayer extends Renderable
 		this.tileset = tileset
 
 		if(tileset) {
-			this.drawCommand.uniforms.albedo = this.tileset.instance
+			this.drawCommand.uniforms.albedo = this.tileset
 		}
 		else {
 			this.drawCommand.uniforms.albedo = null
@@ -228,9 +228,7 @@ class TilemapLayer extends Renderable
 	}
 
 	updateUniforms() {
-		this.drawCommand.uniforms = Object.assign({
-			color: this.color
-		}, this.drawCommand.material.uniforms)	
+        this.drawCommand.uniforms.color = this.color
 	}	
 }
 

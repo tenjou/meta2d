@@ -11,8 +11,8 @@ import debugVertexSrc from "../../shaders/debug.vertex.glsl"
 import debugFragmentSrc from "../../shaders/debug.fragment.glsl"
 
 let debugMaterial = null
-const emptyVector3 = new Vector3()
-const emptyVector4 = new Vector4()
+const emptyVector3 = new Vector3(1, 1, 1)
+const emptyVector4 = new Vector4(1, 1, 1, 1)
 const emptyMatrix3 = new Matrix3()
 const emptyMatrix4 = new Matrix4()
 let emptyTexture = null
