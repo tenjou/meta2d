@@ -24,15 +24,15 @@ export type FrameConfig = {
     delay: number
 }
 
-type TextureConfigType = ResourceConfigType & {
+export type TextureConfigType = ResourceConfigType & {
     path: string
-    framesX: number
-    framesY: number
-    minFilter: number
-    magFilter: number
-    wrapS: number
-    wrapT: number
-    pixelated: boolean
+    framesX?: number
+    framesY?: number
+    minFilter?: number
+    magFilter?: number
+    wrapS?: number
+    wrapT?: number
+    pixelated?: boolean
 }
 
 export class Texture extends Resource {

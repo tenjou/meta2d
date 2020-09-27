@@ -1,0 +1,366 @@
+import { Resources } from "./Resources"
+import { Resource, ResourceConfigType } from "./Resource"
+import { getRootPath, getExt } from "../Utils"
+import { Tileset, TilesetConfigType } from "./Tileset"
+
+export type TiledConfigType = ResourceConfigType & {
+    path: string
+}
+
+export class TiledLayer {
+    name: string = null
+    width: number = 0
+    height: number = 0
+    tileWidth: number = 0
+    tileHeight: number = 0
+    opacity: number = 1.0
+    visible: number = 1
+    data: string = null
+}
+
+export type TiledJsonConfig = {
+    width: number
+    height: number
+    tilewidth: number
+    tileheight: number
+    orientation: string
+    properties: Record<string, any>
+    tilesets: Array<{
+        firstgid: number
+        source: string
+        image: string
+        imagewidth: number
+        imageheight: number
+        tilewidth: number
+        tileheight: number
+        columns: number
+        spacing: number
+        margin: number
+        tileproperties: Record<string, any>
+        offset: {
+            x: number
+            y: number
+        }
+    }>
+    layers: Array<{
+        name: string
+        data: string
+        encoding: string
+        width: number
+        height: number
+        visible: number
+        opacity: number
+    }>
+}
+
+export class Tiled extends Resource {
+    path: string = null
+    width: number = 0
+    height: number = 0
+    tileWidth: number = 0
+    tileHeight: number = 0
+    orientation: string = null
+    layers: Array<TiledLayer> = null
+    tilesets: Array<Tileset> = null
+    properties: Record<string, any> = {}
+    _dependencies: number = 0
+    _dependenciesLoaded: number = 0
+
+    loadFromConfig(config: TiledConfigType) {
+        this.loading = true
+        this.loadFromPath(config.path)
+    }
+
+    loadFromPath(path: string) {
+        this.loading = true
+        this.path = path
+
+        const ext = getExt(path)
+        switch(ext) {
+            case "json": {
+                fetch(path)
+                .then(response => { return response.json() })
+                .then(this.parseJson.bind(this))
+            } break
+
+            case "tmx": {
+                fetch(path)
+                .then(response => response.text())
+                .then(str => new DOMParser().parseFromString(str, "text/xml"))
+                .then(this.parseTmx.bind(this))
+            } break
+        }
+    }
+
+    parseData(data: string, encoding: string) {
+        if(encoding) {
+            switch(encoding) {
+                case "csv":
+                    return JSON.parse(`[${data}]`)
+                case "base64": {
+                    data = atob(data)
+                    const result = new Array(data.length / 4)
+                    let index = 0
+                    for(let n = 0; n < result.length; n++) {
+                        result[n] = data.charCodeAt(index) |
+                                    data.charCodeAt(index + 1) << 8 |
+                                    data.charCodeAt(index + 2) << 16 |
+                                    data.charCodeAt(index + 3) << 24
+                        index += 4
+                    }
+                    return result
+                }
+                default:
+                    console.error(`(Tiled.parseData) Unsupported encoding format for layer: ${encoding}`)
+                    return null
+            }
+        }
+        return data
+    }
+
+    parseJson(data: TiledJsonConfig) {
+        this.width = data.width
+        this.height = data.height
+        this.tileWidth = data.tilewidth
+        this.tileHeight = data.tileheight
+        this.orientation = data.orientation
+        this.properties = data.properties
+
+        const tilesets = data.tilesets
+        const rootPath = getRootPath(this.path)
+        this.tilesets = new Array<Tileset>(tilesets.length)
+
+        for(let n = 0; n < tilesets.length; n++) {
+            const tilesetInfo = tilesets[n]
+            const gid = tilesetInfo.firstgid
+            if(tilesetInfo.source) {
+                this._dependencies++
+                fetch(`${rootPath}${tilesetInfo.source}`)
+                .then(response => response.text())
+                .then(str => (new DOMParser()).parseFromString(str, "text/xml"))
+                .then((data) => {
+                    this.parseTsxTileset(data.documentElement, gid, rootPath)
+                })
+            }
+            else {
+                const image = tilesetInfo.image
+                const id = `${rootPath}${image}.${gid}`
+                let tileset = Resources.get<Tileset>(id)
+                if(!tileset) {
+                    const data: TilesetConfigType = {
+                        type: "Tileset",
+                        path: `${rootPath}${image}`,
+                        gid,
+                        tileWidth: tilesetInfo.tilewidth,
+                        tileHeight: tilesetInfo.tileheight,
+                        columns: tilesetInfo.columns,
+                        spacing: tilesetInfo.spacing | 0,
+                        margin: tilesetInfo.margin | 0,
+                        properties: tilesetInfo.tileproperties,
+                        offsetX: 0,
+                        offsetY: 0
+                    }
+                    if(tilesetInfo.offset) {
+                        data.offsetX = tilesetInfo.offset.x
+                        data.offsetY = tilesetInfo.offset.y
+                    }
+                    tileset = Resources.load(id, data) as Tileset
+                }
+                this.tilesets[n] = tileset
+            }
+        }
+
+        const numLayers = data.layers.length
+        this.layers = new Array(numLayers)
+
+        for(let n = 0; n < numLayers; n++) {
+            const layerInfo = data.layers[n]
+            const layerData = this.parseData(layerInfo.data, layerInfo.encoding)
+            if(!layerData) {
+                continue
+            }
+            const layer = new TiledLayer()
+            layer.name = layerInfo.name
+            layer.width = layerInfo.width
+            layer.height = layerInfo.height
+            layer.data = layerData
+            layer.visible = (layerInfo.visible !== undefined) ? layerInfo.visible : 1
+            layer.opacity = (layerInfo.opacity !== undefined) ? layerInfo.opacity : 1.0
+            this.layers[n] = layer
+        }
+
+        if(this._dependencies === 0) {
+            this.loading = false
+        }
+    }
+
+    parseTmx(data: XMLDocument) {
+        const node = data.documentElement
+        this.width = parseInt(node.getAttribute("width"))
+        this.height = parseInt(node.getAttribute("height"))
+        this.tileWidth = parseInt(node.getAttribute("tilewidth"))
+        this.tileHeight = parseInt(node.getAttribute("tileheight"))
+        this.orientation = node.getAttribute("orientation")
+        this.tilesets = new Array()
+        this.layers = new Array()
+
+        const rootPath = getRootPath(this.path)
+        const children = node.children
+        for(let n = 0; n < children.length; n++) {
+            const child = children[n]
+            switch(child.nodeName) {
+                case "tileset":
+                    this.parseTmxTileset(child, rootPath)
+                    break
+
+                case "layer": {
+                    let layerData = null
+                    const children = child.children
+                    for(let n = 0; n < children.length; n++) {
+                        const child = children[n]
+                        switch(child.nodeName) {
+                            case "data":
+                                const encoding = child.getAttribute("encoding")
+                                if(encoding) {
+                                    layerData = this.parseData(child.textContent, encoding)
+                                }
+                                else {
+                                    const children = child.children
+                                    layerData = new Array(children.length)
+                                    for(let n = 0; n < layerData.length; n++) {
+                                        layerData[n] = parseInt(children[n].getAttribute("gid"))
+                                    }
+                                }
+                                if(!layerData) {
+                                    continue
+                                }
+                                break
+                        }
+                    }
+                    const visible = child.getAttribute("visible")
+                    const opacity = child.getAttribute("opacity")
+                    const layer = new TiledLayer()
+                    layer.name = child.getAttribute("name")
+                    layer.width = parseInt(child.getAttribute("width"))
+                    layer.height = parseInt(child.getAttribute("height"))
+                    layer.visible = (visible !== null) ? parseInt(visible) : 1
+                    layer.opacity = (opacity !== null) ? parseFloat(opacity) : 1.0
+                    layer.data = layerData
+                    this.layers.push(layer)
+                } break
+
+                case "properties":
+                    const children = child.children
+                    for(let n = 0; n < children.length; n++) {
+                        const child = children[n]
+                        if(child.nodeName === "#text") { continue }
+                        this.properties[child.getAttribute("name")] = child.getAttribute("value")
+                    }
+                    break
+            }
+        }
+
+        if(this._dependencies === 0) {
+            this.loading = false
+        }
+    }
+
+    parseTmxTileset(node: Element, rootPath: string) {
+        const gid = parseInt(node.getAttribute("firstgid"))
+        const source = node.getAttribute("source")
+        if(source) {
+            this._dependencies++
+            fetch(`${rootPath}${source}`)
+            .then((response) => {
+                if(!response.ok) {
+                    throw new Error()
+                }
+                return response.text()
+            })
+            .then(str => (new DOMParser()).parseFromString(str, "text/xml"))
+            .then(data => this.parseTsxTileset(data.documentElement, gid, rootPath))
+            .catch((error) => {
+                this.loading = false
+            })
+        }
+        else {
+            this.parseTsxTileset(node, gid, rootPath)
+        }
+    }
+
+    parseTsxTileset(node: Element, gid: number, rootPath: string) {
+        const tileWidth = parseInt(node.getAttribute("tilewidth"))
+        const tileHeight = parseInt(node.getAttribute("tileheight"))
+        const columns = parseInt(node.getAttribute("columns"))
+        const properties: Record<string, any> = {}
+        const data: TilesetConfigType = {
+            type: "Tileset",
+            gid,
+            path: null,
+            width: 0,
+            height: 0,
+            tileWidth,
+            tileHeight,
+            columns,
+            offsetX: 0,
+            offsetY: 0,
+            spacing: 0,
+            margin: 0,
+            properties
+        }
+        let source = null
+
+        const children = node.children
+        for(let n = 0; n < children.length; n++) {
+            const child = children[n]
+            switch(child.nodeName) {
+                case "tile":
+                    const tileProperties: Record<string, any> = {}
+                    const id = parseInt(child.getAttribute("id"))
+                    const tileChildren = child.children
+                    for(let i = 0; i < tileChildren.length; i++) {
+                        const tileChild = tileChildren[i]
+                        switch(tileChild.nodeName) {
+                            case "properties":
+                                const propertiesChildren = tileChild.children
+                                for(let m = 0; m < propertiesChildren.length; m++) {
+                                    const property = propertiesChildren[m]
+                                    tileProperties[property.getAttribute("name")] = property.getAttribute("value")
+                                }
+                                break
+                        }
+                    }
+                    properties[id] = tileProperties
+                    break
+                case "image":
+                    source = child.getAttribute("source")
+                    data.width = parseInt(child.getAttribute("width"))
+                    data.height = parseInt(child.getAttribute("height"))
+                    data.spacing = parseInt(node.getAttribute("spacing")) || 0
+                    data.margin = parseInt(node.getAttribute("margin")) || 0
+                    break
+                case "tileoffset":
+                    data.offsetX = parseInt(child.getAttribute("x"))
+                    data.offsetY = parseInt(child.getAttribute("y"))
+                    break
+            }
+        }
+
+        const id = `${source}.${gid}`
+        let tileset = Resources.get<Tileset>(id)
+        if(!tileset) {
+            data.path = `${rootPath}${source}`
+            tileset = Resources.load(id, data) as Tileset
+        }
+        this.tilesets.push(tileset)
+
+        if(this._dependencies > 0) {
+            this._dependenciesLoaded++
+            if(this._dependencies === this._dependenciesLoaded) {
+                this.loading = false
+            }
+        }
+    }
+}
+
+Resources.register(Tiled)

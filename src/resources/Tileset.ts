@@ -1,5 +1,6 @@
-import { Texture, Frame } from "./Texture"
+import { Texture, TextureConfigType, Frame } from "./Texture"
 import { Resources } from "./Resources"
+import { ResourceConfigType } from "./Resource"
 
 const FLIPPED_HORIZONTALLY_FLAG = 0x80000000
 const FLIPPED_VERTICALLY_FLAG = 0x40000000
@@ -7,36 +8,44 @@ const FLIPPED_DIAGONALLY_FLAG = 0x20000000
 const ALL_FLAGS = (FLIPPED_HORIZONTALLY_FLAG | FLIPPED_VERTICALLY_FLAG | FLIPPED_DIAGONALLY_FLAG)
 const frameOutput = new Float32Array(16)
 
-class Tileset extends Texture
-{
-	constructor() {
-		super()
-		this.gid = 1
-		this.tileWidth = 0
-		this.tileHeight = 0
-		this.columns = 0
-		this.offsetX = 0
-		this.offsetY = 0
-		this.spacing = 0
-		this.margin = 0
-		this.properties = {}
-	}
+export type TilesetConfigType = ResourceConfigType & TextureConfigType & {
+    gid: number
+    tileWidth: number
+    tileHeight: number
+    columns: number
+    offsetX: number
+    offsetY: number
+    spacing: number
+    margin: number
+    properties: Record<string, any>
+}
 
-	loadFromConfig(cfg) {
-		super.loadFromConfig(cfg)
+export class Tileset extends Texture {
+    gid: number = 1
+    tileWidth: number = 0
+    tileHeight: number = 0
+    columns: number = 0
+    offsetX: number = 0
+    offsetY: number = 0
+    spacing: number = 0
+    margin: number = 0
+    properties: Record<string, any> = {}
+
+	loadFromConfig(config: TilesetConfigType) {
+		super.loadFromConfig(config)
 		this._minFilter = Texture.NEAREST
 		this._magFilter = Texture.NEAREST
 		this._wrapS = Texture.CLAMP_TO_EDGE
 		this._wrapT = Texture.CLAMP_TO_EDGE
-		this.gid = cfg.gid || 0
-		this.tileWidth = cfg.tileWidth || 1
-		this.tileHeight = cfg.tileHeight || 1
-		this.columns = cfg.columns || 0
-		this.offsetX = cfg.offsetX || 0
-		this.offsetY = cfg.offsetY || 0
-		this.spacing = cfg.spacing || 0
-		this.margin = cfg.margin || 0
-		this.properties = cfg.properties || {}
+		this.gid = config.gid || 0
+		this.tileWidth = config.tileWidth || 1
+		this.tileHeight = config.tileHeight || 1
+		this.columns = config.columns || 0
+		this.offsetX = config.offsetX || 0
+		this.offsetY = config.offsetY || 0
+		this.spacing = config.spacing || 0
+		this.margin = config.margin || 0
+		this.properties = config.properties || {}
 	}
 
 	updateFrames() {
@@ -45,7 +54,7 @@ class Tileset extends Texture
 		const widthUV = 1.0 / this.width
 		const heightUV = 1.0 / this.height
 		const innerSpacing = 0.00001
-		this.frames = new Array(tilesX * tilesY)
+		this.frames = {}
 		
 		let index = 0
 		let posX = this.spacing
@@ -56,12 +65,12 @@ class Tileset extends Texture
 				const minY = heightUV * posY + innerSpacing
 				const maxX = widthUV * (posX + this.tileWidth - this.margin)
 				const maxY = heightUV * (posY + this.tileHeight - this.margin)
-				this.frames[index] = new Frame(this, [
+				this.frames[index] = new Frame(this, new Float32Array([
 					this.tileWidth, this.tileHeight, 	maxX, maxY,
 					0, this.tileHeight, 				minX, maxY,
 					0, 0,								minX, minY,
 					this.tileWidth, 0,					maxX, minY
-				], 0)
+				]), 0)
 				posX += this.tileWidth + this.spacing
 				index++
 			}
@@ -70,7 +79,7 @@ class Tileset extends Texture
 		}
 	}
 
-	getTileFrame(gid) {
+	getTileFrame(gid: number) {
 		if(gid < FLIPPED_DIAGONALLY_FLAG) {	
 			return this.frames[gid].coords
 		}
@@ -107,12 +116,10 @@ class Tileset extends Texture
 		return frameOutput
 	}
 
-	getProperties(gid) {
+	getProperties(gid: number) {
 		const properties = this.properties[gid]
 		return properties ? properties : null
 	}
 }
 
 Resources.register(Tileset)
-
-export default Tileset
